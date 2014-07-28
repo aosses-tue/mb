@@ -1,0 +1,10 @@
+Everything involving FFT and frequency analysis
+
+1. Functions:
+
+freqfft.m
+One_third_OB_analysis.m
+smoothfft.m
+
+Last updated on: 23/06/2014
+Alejandro Osses
