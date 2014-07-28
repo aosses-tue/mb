@@ -30,7 +30,7 @@ function misc = Get_TUe_paths(type)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 15/03/2014
 % Last update on: 28/07/2014
-% Last used on  : 28/07/2014
+% Last use on   : 29/07/2014
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Alejandro's paths
@@ -79,7 +79,8 @@ else
     if info.bOnline
         misc.MATLAB             = ['G:\MATLAB' delim];
     else
-        misc.MATLAB         = ['D:\MATLAB-off-line' delim];
+        % misc.MATLAB         = ['D:\MATLAB-off-line' delim];
+        misc.MATLAB	    = ['D:\MATLAB_git' delim];
     end
     misc.MATLAB_KUL         = ['D:\SVN-KU-Leuven\alejandro\MATLAB_svn' delim];
     misc.Databases          = ['D:\Databases' delim];
