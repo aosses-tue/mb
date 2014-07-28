@@ -9,9 +9,9 @@ function [y,Fs,bits,opt_ck] = Wavread(filename)
 % 3. Stand-alone example:
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
-% Created on: 23/6/2014
-% Last update: 23/6/2014 % Update this date manually
-% Last used: 23/6/2014 % Update this date manually
+% Created on    : 23/06/2014
+% Last update on: 29/07/2014 % Update this date manually
+% Last use on   : 29/07/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 [y,Fs,bits,opt_ck] = wavread(filename);
