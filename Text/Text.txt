@@ -1,0 +1,7 @@
+This directory contains functions used to generate automatically LaTeX files
+
+Functions:
+	- GenerateLaTeXFile: generate a LaTeX file with all the eps figures inside the input directory
+	- Create_empy_latex
+
+Directory created on: 16/05/2014

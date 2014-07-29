@@ -1,17 +1,18 @@
-function y = VoD_synchro
-% function y = VoD_synchro
+function VoD_synchro
+% function VoD_synchro
 %
 % 1. Description:
 %
 % 2. Additional info:
-%   Tested cross-platform: No
+%       Tested cross-platform: Yes
 %
-% 3. Stand-alone example:
-%
+% 3. Stand-alone example. Results are going to be displayed on screen:
+%       VoD_synchro;
+% 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
-% Created on    : 25/7/2014
-% Last update on: 25/7/2014 % Update this date manually
-% Last used on  : 25/7/2014 % Update this date manually
+% Created on    : 25/07/2014
+% Last update on: 25/07/2014 % Update this date manually
+% Last use on   : 28/07/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 ti      = [  0.260 0.859 1.464; ... % mode 2
