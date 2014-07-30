@@ -8,8 +8,16 @@ function [t F0] = Get_F0_AC_praat(inputfile,outputfile, type)
 %   outputfile = '/home/alejandro/Bureaublad/F0-test.txt';
 %   Get_F0_AC_praat(inputfile,outputfile);
 %
-% Original location: /home/alejandro/Documenten/TF/matlab/trunk/itd_eas/praat_get_pitch.m
-% script='get_pitch.praat';
+% % 2. Example + plot:
+% 
+% inputfile  = '~/Documenten/Databases/dir01-Instruments/Voice-of-dragon/03-Wav-files-predicted/03-Wav-files-calibrated/modus-4-v_2filt.wav';
+% outputfile = '~/Bureaublad/F0-test.txt';
+% type = 3;
+% Get_F0_AC_praat(inputfile,outputfile,type);
+% info.F0max = 1400; 
+% [t F0] = Get_F0_praat_from_txt(outputfile, info);
+% plot(t,F0)
+% 
 %
 % Programmed by Alejandro Osses, ExpORL 2014
 % Last updated on: 19/05/2014
@@ -61,7 +69,20 @@ switch type
         octave_jump_cost = 0.0; % octaveJumpCost
         vUv_cost    = 0.05; % vUvCost 
         maxf0       = 800; 
+
+    case 3 % Alejandro Osses, TU/e
         
+        framelen    = 10e-3; % speechFrameLength
+        minf0       = 75; % pitchFloor
+        numcand     = 15; % numCandidates
+        % veryAccurate = no % Set as constant
+        silence_thr = 0.01; % silenceThreshold
+        voicing_thr = 0.45; % voicingThreshold
+        octave_cost = 0.01; % octaveCost
+        octave_jump_cost = 0.35; % octaveJumpCost
+        vUv_cost    = 0.14; % vUvCost 
+        maxf0       = 1400;
+    
 end
 
 if nargin < 3
