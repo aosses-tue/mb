@@ -7,8 +7,8 @@ function [freq_warped, H_dB, freq] = ConvertFFT2FAT(filename)
 % 
 % Programmed by Alejandro Osses
 % Created in: 2013
-% Last updated on: 21/05/2014
-% Last used on   : 21/05/2014
+% Last update on: 21/05/2014
+% Last used on  : 21/05/2014
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin == 0
