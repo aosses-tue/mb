@@ -1,5 +1,5 @@
-function Diary(name, directory)
-% function Diary(name, directory)
+function Diary(name, bDoDiary, directory)
+% function Diary(name, bDoDiary, directory)
 %
 % 1. Description:
 %
@@ -10,15 +10,24 @@ function Diary(name, directory)
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 01/07/2014
-% Last update on: 03/07/2014 % Update this date manually
-% Last used on  : 03/07/2014 % Update this date manually
+% Last update on: 30/07/2014 % Update this date manually
+% Last use on   : 30/07/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-p = Get_date;
-
 if nargin < 2
+    bDoDiary = 1;
+end
+
+if bDoDiary == 0 
+    disp(['Diary (log) for function/script ' name ' disabled. Change bDoDiary to 1 to enable this feature...'])
+    return;
+end
+
+if nargin < 3
     directory = Get_TUe_paths('outputs');
 end
+
+p = Get_date;
 
 filename = [directory 'log-' name '-' p.date2print];
 disp(['Don''t forget to set diary to off by the end of the function/script ' name])

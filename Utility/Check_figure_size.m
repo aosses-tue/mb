@@ -12,9 +12,9 @@ function Check_figure_size(h)
 % 3. Stand-alone example:
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
-% Created on: 2/6/2014
-% Last update: 2/6/2014 % Update this date manually
-% Last used: 2/6/2014 % Update this date manually
+% Created on    : 02/06/2014
+% Last update on: 02/06/2014 % Update this date manually
+% Last use on   : 30/07/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin == 0

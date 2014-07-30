@@ -1,5 +1,5 @@
-function VoD_comparisons2
-% function VoD_comparisons2
+function VoD_comparisons2(bDiary)
+% function VoD_comparisons2(bDiary)
 %
 % 1. Description:
 %       Same than VoD_comparisons, but here analysis is done over aligned/
@@ -15,7 +15,8 @@ function VoD_comparisons2
 %       far-field : NO,  OK 
 %
 % 3. Stand-alone example:
-%       VoD_comparisons2;
+%       bDiary = 1; % to generate a log-file
+%       VoD_comparisons2(bDiary);
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 01/07/2014
@@ -24,6 +25,12 @@ function VoD_comparisons2
 % 
 % Original file name: VoD_comparisons.m
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+if nargin == 0 
+    bDiary = 1;
+end
+Diary(mfilename,bDiary)
+
 %                         % tested on 01/07/2014
 bDo_STFT        = 1;    % Analysis 1
 bDoZwicker      = 0;    % Analysis 2
@@ -52,14 +59,6 @@ h_Loudness  = [];
 % m = [];
 % s = [];
  
-bDiary = 1;
-
-if bDiary
-    
-    Diary(mfilename)
-    
-end
-
 close all;
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

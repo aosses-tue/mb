@@ -21,13 +21,17 @@ function y = Get_filenames(directory, exp2filter, extra)
 %   file_orig = Get_filenames(directory,['*.wav']);
 % 
 % Programmed by Alejandro Osses, ExpORL, KU Leuven, Belgium, 2014
-% Created in      : 2013-2014
-% Last updated on : 03/07/2014
-% Last used on    : 03/07/2014
+% Created in     : 2013-2014
+% Last update on : 30/07/2014
+% Last use on    : 30/07/2014
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 3
     extra.bExtension = 1;
+end
+
+if nargin < 2 
+    exp2filter = '';
 end
 
 ytmp = dir([directory delim exp2filter]);

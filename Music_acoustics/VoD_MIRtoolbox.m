@@ -26,6 +26,10 @@ if nargin == 0
     rootfolder = m.dir_calibrated_p;
 
     filename = [rootfolder  'modus-1-v_2filt.wav'];
+    
+    disp('In case is not running, please remove MIR tb from PsySound and add MIR toolbox v15')
+    disp('press any button to continue...')
+    pause
 
 end
 
@@ -35,7 +39,7 @@ end
 % Extracting a part, then playing the excerpt:
 if ischar(filename)
     y = miraudio(filename, 'Extract',0,1); % extracting from second 1 to 2
-    miraudio(filename, 'Extract',0,1)
+    % miraudio(filename, 'Extract',0,1)
 else
     if isnumeric(filename)
         if nargin < 2
