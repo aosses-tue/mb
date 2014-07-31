@@ -7,6 +7,8 @@ function info = analysis_F0_wav(directory)
 % % Example:
 %       info = analysis_F0_wav;
 % 
+% Original name: analysis_F0_wav (changed on 31/07/2014)
+% 
 % Programmed by Alejandro Osses, ExpORL, 2014
 % Created on     : March 2014
 % Last updated on: 19/05/2014

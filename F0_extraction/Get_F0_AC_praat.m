@@ -2,30 +2,49 @@ function [t F0] = Get_F0_AC_praat(inputfile,outputfile, type)
 % function [t F0] = Get_F0_AC_praat(inputfile,outputfile, type)
 %
 % 1. Description:
+%       Gets F0 contours using Praat Analyser by means of the autocorrelation
+%       method (AC).
 % 
-% % Example (Linux):
-%   inputfile = '~/Documenten/LaTeX_Docs/predoc_plan_wekelijkse_update/wu033_nodate/Audio_files-in-noise/Sweep-log-44100-up-to-1kHz-20dBFS-dir_out-SNR-99.wav';
-%   outputfile = '/home/alejandro/Bureaublad/F0-test.txt';
-%   Get_F0_AC_praat(inputfile,outputfile);
+% 2. Additional info:
+%       Tested cross-platform: Yes
+%       Dependencies:   - uses ''Get_F0_ACF_unix.praat' Praat script in case of Linux
+%                       - uses 'GetF0ACFwin.praat' Praat script in case of Win
+% 
+% 3. Stand-alone example:
+% 3.1 Example (Linux):
+% 
+%       inputfile = '~/Documenten/LaTeX_Docs/predoc_plan_wekelijkse_update/wu033_nodate/Audio_files-in-noise/Sweep-log-44100-up-to-1kHz-20dBFS-dir_out-SNR-99.wav';
+%       outputfile = '/home/alejandro/Bureaublad/F0-test.txt';
+%       Get_F0_AC_praat(inputfile,outputfile);
 %
-% % 2. Example + plot:
+% 3.2.a Example + plot for Linux:
 % 
-% inputfile  = '~/Documenten/Databases/dir01-Instruments/Voice-of-dragon/03-Wav-files-predicted/03-Wav-files-calibrated/modus-4-v_2filt.wav';
-% outputfile = '~/Bureaublad/F0-test.txt';
-% type = 3;
-% Get_F0_AC_praat(inputfile,outputfile,type);
-% info.F0max = 1400; 
-% [t F0] = Get_F0_praat_from_txt(outputfile, info);
-% plot(t,F0)
+%       inputfile  = '~/Documenten/Databases/dir01-Instruments/Voice-of-dragon/03-Wav-files-predicted/03-Wav-files-calibrated/modus-4-v_2filt.wav';
+%       outputfile = '~/Bureaublad/F0-test.txt';
+%       type = 3;
+%       Get_F0_AC_praat(inputfile,outputfile,type);
+%       info.F0max = 1400; 
+%       [t F0] = Get_F0_praat_from_txt(outputfile, info);
+%       plot(t,F0)
 % 
-%
-% Programmed by Alejandro Osses, ExpORL 2014
-% Last updated on: 19/05/2014
-% Last used on   : 19/05/2014
+% 3.2.b Example + plot for Windows:
+% 
+%       inputfile  = 'D:\Databases\dir01-Instruments\Voice-of-dragon\03-Wav-files-predicted\03-Wav-files-calibrated\modus-4-v_2filt.wav';
+%       outputfile = 'D:\MATLAB\Output\F0-test.txt';
+%       type = 3;
+%       Get_F0_AC_praat(inputfile,outputfile,type);
+%       info.F0max = 1400; 
+%       [t F0] = Get_F0_praat_from_txt(outputfile, info);
+%       plot(t,F0)
+% 
+% Programmed by Alejandro Osses, ExpORL, KU Leuven, Belgium 2013-2014
+% Created in    : 2013-2014
+% Last update on: 31/07/2014 % Update this date manually
+% Last use on   : 31/07/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 3
-    type = 0; % As applied by Alejandro Osses, ExpORL, Physical validation
+    type = 3; % As applied by Alejandro Osses, TU/e, for VoD analysis
 end
 
 switch type
@@ -115,7 +134,8 @@ disp([mfilename '.m: ' command4system])
 [s r] = system( command4system );
 
 if nargout ~= 0
-    [t F0] = Get_F0_praat_from_txt(outputfile); % F0max constrained to 1000 Hz
+    info.F0max = maxf0;
+    [t F0] = Get_F0_praat_from_txt(outputfile, info); % F0max constrained to 1000 Hz
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
