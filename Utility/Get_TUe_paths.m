@@ -128,30 +128,15 @@ misc.tb_APEX_tools      = [misc.tb_APEX  'tools'           delim];
 misc.tb_Loudness_v12    = [misc.MATLAB   'tb_Loudness_v12' delim];
 
 %     addpath([misc.MATLAB 'Classes']); % Matthias' GUI
-try
-    addpath([misc.MATLAB_KUL 'Benchs_F0mod']);
-    addpath([misc.MATLAB_KUL 'Benchs_F0mod_NMT']); 
-    addpath([misc.MATLAB_KUL 'Meas' delim 'Experiments']);
-    addpath(misc.Simulink);
-    addpath(misc.SubjectMaps);
-    addpath(misc.SubjectMapsClinical);
-end
-%     
-%     % Add NMT and subfolders:
-%     addpath([misc.TB_NMT 'Matlab' delim 'LoudnessGrowth' delim]);
-%     addpath([misc.TB_NMT 'Matlab' delim 'Filterbank'     delim]); % Cos_window.m
-%     addpath([misc.TB_NMT 'Matlab' delim 'FTM'            delim]); % Reject_smallest.m
-%     addpath([misc.TB_NMT 'Matlab' delim 'Implant'        delim]); % Ensure_implant_params.m
-%     addpath([misc.TB_NMT 'Matlab' delim 'Strategy'       delim]); % Ensure_rate_params.m
-%     
-%     addpath( misc.TB_NMTAddOns);
-%     addpath([misc.TB_NMTAddOns 'F0Extraction'   delim]); %'Autoc_opt2_Alt_proc.m'
-%     addpath([misc.TB_NMTAddOns 'Strategy'       delim]); %'ACE_map_201401.m'
-%     addpath([misc.TB_NMTAddOns 'Sequence'       delim]); % Scale_magnitude_proc.m
-%     addpath([misc.TB_NMTAddOns 'Filterbank'     delim]); % FFT_filterbank_cell_in_proc.m
-%     addpath([misc.TB_NMTAddOns 'FTM'            delim]); % LPF_zero_ph_proc.m
-%     addpath(misc.tb_APEX_tools);
- 
+% try
+%     addpath([misc.MATLAB_KUL 'Benchs_F0mod']);
+%     addpath([misc.MATLAB_KUL 'Benchs_F0mod_NMT']); 
+%     addpath([misc.MATLAB_KUL 'Meas' delim 'Experiments']);
+%     addpath(misc.Simulink);
+%     addpath(misc.SubjectMaps);
+%     addpath(misc.SubjectMapsClinical);
+% end
+     
 if (nargin==1)
     if (~isfield(misc,type))
         error('Invalid type');

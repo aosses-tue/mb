@@ -150,34 +150,27 @@ if bGetT == 1
     % Information to be displayed
     params.info = [MeasNr N m' minmax(T)];
     
-    % Real boxplot:
-    [h   stats] = Boxplot(T');
-    ylabel('Period [s]')
-    xlabel('Measurement Number')
-    
-    hFig(end+1) = gcf;
-    
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % % Uncomment the following lines to carry out the same analysis as presented
-    % % In report sent on 20/06/2014
-    %
-    % TT = T - repmat(stats.Median',1,size(T,2)); 
-    % figure;
-    % Boxplot(TT');
-    % ylabel('Period - Median(Period) [s]')
-    % xlabel('Measurement Number')
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
-    % Ration as discussed on 23/07/2014
-    TT = T ./ repmat(stats.Median',1,size(T,2)); 
-    figure;
-    Boxplot(TT');
-    ylabel('Period / Median(Period) [dimensionless]')
-    xlabel('Measurement Number')
-    
-    hFig(end+1) = gcf;
-    
     if bSave
+        % Real boxplot:
+        [h   stats] = Boxplot(T');
+        ylabel('Period [s]')
+        xlabel('Measurement Number')
+    
+        hFig(end+1) = gcf;
+    
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Box plot as presented in report sent on 20/06/2014: go back to a version
+        % of this file before 31/07/2014
+
+        % Ratio as discussed on 23/07/2014
+        TT = T ./ repmat(stats.Median',1,size(T,2)); 
+        figure;
+        Boxplot(TT');
+        ylabel('Period / Median(Period) [dimensionless]')
+        xlabel('Measurement Number')
+
+        hFig(end+1) = gcf;
+    
         disp('Copy the following into your LaTeX file: ')
         latex(params.info);
         

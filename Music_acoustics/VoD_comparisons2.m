@@ -137,8 +137,6 @@ for mode = info.modes2check
                 t_coil = t_coil_noalign-repmat(tmp.ti_measured',1,length(t_coil_noalign));
                 t_coil( find(t_coil < 0) ) = NaN;
                 t_coil = Delete_NaN_columns(t_coil);
-                close;
-                close;
             end
             
             CurrT = misc.Tmodel(mode_idx);

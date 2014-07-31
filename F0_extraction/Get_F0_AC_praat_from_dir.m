@@ -1,19 +1,33 @@
-function info = analysis_F0_wav(directory)
-% function info = analysis_F0_wav(directory)
+function info = Get_F0_AC_praat_from_dir(directory, bDiary)
+% function info = Get_F0_AC_praat_from_dir(directory, bDiary)
 %
-% Creates F0 contours using Praat (in case they do not exist yet) for all 
-% the audio files (*.wav) under the info.wav directory
+%  1. Description:
+%       Creates F0 contours using Praat (in case they do not exist yet) for 
+%       all the audio files (*.wav) under the info.wav directory.
 %
-% % Example:
+%   2. Additional info:
+%       
+%   3. Examples:
+%   3.1 Old example (valid for versions before 31/07/2014):
 %       info = analysis_F0_wav;
 % 
-% Original name: analysis_F0_wav (changed on 31/07/2014)
+%   3.2 Example. Run the following line, then select the directory:
+%       info = Get_F0_AC_praat_from_dir;
 % 
+%   3.3 Example
+%       dirs = Get_TUe_subpaths('db_voice_of_dragon');
+%       Get_F0_AC_praat_from_dir(dirs.dir_calibrated_m); % F0 Extraction of measured signals
+%       Get_F0_AC_praat_from_dir(dirs.dir_calibrated_p); % F0 Extraction of predicted signals
+%    
 % Programmed by Alejandro Osses, ExpORL, 2014
-% Created on     : March 2014
-% Last updated on: 19/05/2014
-% Last used on   : 19/05/2014
+% Original name : analysis_F0_wav (changed on 31/07/2014)
+% Created on    : March 2014
+% Last update on: 31/07/2014
+% Last use on   : 31/07/2014
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if nargin < 2 
+    bDiary = 1;
+end
 
 info = [];
 if nargin == 0
@@ -24,30 +38,44 @@ if nargin < 2
     p = [];
 end
 
-p = Ensure_field(p, 'F0max', 300);
-p = Ensure_field(p, 'F0min',  75);
+p = Ensure_field(p, 'F0max', 1400); % default KU Leuven = 300 Hz
+p = Ensure_field(p, 'F0min',   75);
 
 close all
 clc
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% info    = Ensure_field(info, 'speaker', 'LIST-f'); % Female 
 info    = Ensure_field(info, 'speaker', ''); % VlMatrix 
 info    = Ensure_field(info, 'tstep'  , 10e-3);
 info    = Ensure_field(info, 'analysed_wav_files',[]);
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 info            = Ensure_field(info, 'root_dir'  , directory);
-% info            = Ensure_field(info, 'results_dir', [info.root_dir 'results' delim]);
-
-info.praat      = [info.root_dir 'praat'    delim]; 
 
 extra.bExtension = 0; % To delete extension
 file_orig       = Get_filenames(info.root_dir,['*.wav'],extra);
 
 if length(file_orig)~=0
-    Mkdir(info.praat);
+    
+    try
+        tmp = Get_date;
+        info.outputs  = [Get_TUe_paths('outputs') tmp.date2print delim];
+    catch
+        info.outputs  = [info.root_dir 'F0_from_praat'    delim]; 
+    end
+    Mkdir(info.outputs);
+    Diary(mfilename,bDiary,info.outputs);
+    
+    fprintf('\n\n');
+    fprintf('Running script %s.m\n', mfilename);
+    fprintf('\tF0 Extraction of files inside dir %s (input 1)\n', info.root_dir);
+    fprintf('\tResults are going to be stored at %s (see log-file)\n\n', info.outputs);
+    fprintf('List of files to be processed:\n')
+    fprintf('\t#\t file name\n')
+    for k = 1:length(file_orig)
+        fprintf('\t%.0f\t%s.wav\n',k,file_orig{k});
+    end
+    
 end
 
 close all, clc
@@ -80,18 +108,18 @@ for k = 1:length(file_orig)
 
     %%% Loading F0 contour from Praat %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    outputfile  = [info.praat file '.txt'];
+    outputfile  = [info.outputs file '.txt'];
 
     try
-        [tF0 F0ref] = Get_F0_praat_from_txt(outputfile);
+        [tF0 F0ref] = Get_F0_praat_from_txt(outputfile,p);
 
     catch % Then txt files from Praat do not exist yet
 
         inputfile = [filename '.wav'];
-        type = 0; 
+        type = 3; 
         [tF0 F0ref]    = Get_F0_AC_praat(inputfile,outputfile,type);
-        if type == 1 | type == 2
-            disp('Using de Cheveigne''s aprroach')
+        if type == 0 | type == 1 | type == 2
+            disp('Not using TU/e approach')
         end
 
     end
@@ -131,6 +159,10 @@ disp(['Total voiced   [s]: ' num2str(info.tstep*(cumtF0))])
 disp(['Total unvoiced [s]: ' num2str(info.tstep*(cumt_uv))])
 disp(['Avg F0        [Hz]: ' num2str(Avg_F0_tot)])
 disp(['Number of analysed audio files: ' num2str(k)])
+
+if bDiary
+    diary off
+end
 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end

@@ -33,11 +33,10 @@ function [y_measured y_modelled misc] = VoD_read_aligned(bHPF,info)
 %       [y_measured y_modelled misc] = VoD_read_aligned(bHPF,info);
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
-% Created on    : 01/07/2014
-% Last update on: 28/07/2014 % Update this date manually
-% Last use on   : 28/07/2014 % Update this date manually
-% 
 % Original file name: VoD_run
+% Created on    : 01/07/2014
+% Last update on: 31/07/2014 % Update this date manually
+% Last use on   : 31/07/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Default inputs:
@@ -77,6 +76,8 @@ subdir_db_vod = Get_TUe_subpaths('db_voice_of_dragon');
 % dir calibrated predicted (modelled) signals:
 dir_calibrated_m = subdir_db_vod.dir_calibrated_m; 
 dir_calibrated_p = subdir_db_vod.dir_calibrated_p; 
+dir_f0_m         = subdir_db_vod.dir_f0_m;
+dir_f0_p         = subdir_db_vod.dir_f0_p;
 dir_meas_def     = subdir_db_vod.dir_meas_def;
 
 % Assumes audio files were already generated:
@@ -93,11 +94,11 @@ for mode = info.modes2check
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Audio files:
     % 1. Measured wav files:
-        
     field = '1';
     filename{1} = [dir_calibrated_m 'modus-' modus '_v' num2str(take) '-' field lblFilter '.wav'];
     field = '2';
     filename{2} = [dir_calibrated_m 'modus-' modus '_v' num2str(take) '-' field lblFilter '.wav'];
+    file_f0_m   = [dir_f0_m         'modus-' modus '_v' num2str(take) '-' field lblFilter '.txt']; % added on 31/07/2014
     filename{3} = [dir_meas_def 'modus ' modus '_v' num2str(take) '-3.wav'];
     
     % 2. Modelled wav files:
@@ -105,6 +106,7 @@ for mode = info.modes2check
     filename{4} = [dir_calibrated_p 'modus-' modus '-v_' field lblFilter '.wav'];
     field = '2';
     filename{5} = [dir_calibrated_p 'modus-' modus '-v_' field lblFilter '.wav'];
+    file_f0_p   = [dir_f0_p         'modus-' modus '-v_' field lblFilter '.txt']; % added on 31/07/2014
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Loading audio files...
     
@@ -119,67 +121,88 @@ for mode = info.modes2check
     misc.near_field_filename{end  ,2} = filename{5}; % modelled file name
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % % Actual alignment, Version 1:
-    %     % Truncation according to stored intial time values:
-    %     t       = misc.t;
-    %     idx_t  = min(find( t >= misc.ti_measured(mode_idx) ));
-    %     idx_tp = min(find( t >=    misc.ti_model(mode_idx) ));
-    %     
-    %     yneartrunc   = ynear(idx_t:end);
-    %     yfartrunc    = yfar(idx_t:end);
-    %     ynearptrunc  = ynearp(idx_tp:end);
-    %     yfarptrunc   = yfarp(idx_tp:end);
-    %     
-    %     L = min( length(yneartrunc), length(ynearptrunc));
-    %     
-    %     ynear_noalign   = ynear;
-    %     ynear_noalignp  = ynearp;
-    %     t_noalign = t; 
-    %     ynear   = Do_truncate(yneartrunc , L);
-    %     yfar    = Do_truncate(yfartrunc  , L);
-    %     ynearp  = Do_truncate(ynearptrunc, L);
-    %     yfarp   = Do_truncate(yfarptrunc , L);
-    % 	t       = Do_truncate(t,L);
-
+    % Actual alignment, Version 1: see script version before 31/07/2014
+    
     % Actual alignment, Version 2:
     % Truncation according to stored intial time values:
-    t       = misc.t;
-    idx_t  = min(find( t >= misc.ti_measured(mode_idx) ));
-    idx_tp = min(find( t >= misc.ti_model(mode_idx) ));
+    [ynear , tm] = Do_alignment(  misc.t, ynear , misc.ti_measured(mode_idx)  );
+    [yfar  , tm] = Do_alignment(  misc.t, yfar  , misc.ti_measured(mode_idx)  );
     
-    yneartrunc   = ynear(idx_t:end);
-    yfartrunc    = yfar(idx_t:end);
-    ynearptrunc  = ynearp(idx_tp:end);
-    yfarptrunc   = yfarp(idx_tp:end);
+    [ynearp, tp] = Do_alignment(  misc.t, ynearp, misc.ti_model(mode_idx)     );
+    [yfarp , tp] = Do_alignment(  misc.t, yfarp , misc.ti_model(mode_idx)     );
     
-    L = min( length(yneartrunc), length(ynearptrunc));
+    L = min( length(ynear), length(ynearp));
     
-    ynear_noalign   = ynear;
-    ynear_noalignp  = ynearp;
-    t_noalign = t; 
-    ynear   = Do_truncate(yneartrunc , L);
-    yfar    = Do_truncate(yfartrunc  , L);
-    ynearp  = Do_truncate(ynearptrunc, L);
-    yfarp   = Do_truncate(yfarptrunc , L);
-	t       = Do_truncate(t,L);
+    ynear   = Do_truncate(ynear , L);
+    yfar    = Do_truncate(yfar  , L);
+    ynearp  = Do_truncate(ynearp, L);
+    yfarp   = Do_truncate(yfarp , L);
+	t       = Do_truncate(tm,L); % same t for measured and modelled
 
-    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if info.bPlot
         
+        try
+            
+            n = 4; 
+            
+            [t_f0m f0m] = Get_F0_praat_from_txt(file_f0_m);
+            [f0m tfm] = Do_alignment( t_f0m, f0m, misc.ti_measured(mode_idx) );
+            
+            [t_f0p f0p] = Get_F0_praat_from_txt(file_f0_p);
+            [f0p tfp] = Do_alignment( t_f0p, f0p, misc.ti_model(mode_idx) );
+            
+            Lf0 = min(length(tfm),length(tfp));
+            
+            tf = Do_truncate(tfm,Lf0); % same time for both
+            
+            f0m = Do_truncate(f0m,Lf0);
+            f0p = Do_truncate(f0p,Lf0);
+            
+        catch
+            n = 2;
+            disp([mfilename '.m: no f0 information found']);
+        end
         figure; 
-        subplot(2,1,1)
+        subplot(n,1,1)
         plot(t,ynear, t, yfar), 
-        xlim([0 3*misc.Tmodel(mode_idx)])
+        ha = gca;
+        
         legend('near-field','far-field')
         title(sprintf('Aligned time signals, ac.mode = %.0f: measured (above), modelled (bottom)',mode))
         ylabel('Amplitude')
-        subplot(2,1,2)
+        subplot(n,1,2)
         plot(t,ynearp, t, yfarp), 
-        xlim([0 3*misc.Tmodel(mode_idx)])
-        xlabel('Time [s]')
+        ha(end+1) = gca;
+        
+        if n == 2
+            xlabel('Time [s]')
+        end
+        
         ylabel('Amplitude')
-
+        
+        if n==4
+            
+            subplot(n,1,3)
+            plot(   tf,f0m, ...
+                    tf,f0p   )
+            grid on, hold on;
+            ha(end+1) = gca;
+            ylabel('Frequency [Hz]')
+            legend('f0 meas','f0 modelled');
+            
+            subplot(n,1,4)
+            plot(   tf,(f0p-f0m)/misc.mf(mode_idx)*100   )
+            grid on, hold on;
+            ha(end+1) = gca;
+            xlabel('Time [s]')
+            ylabel('\Delta f / f_n [%]')
+            
+        end
+        
+        linkaxes(ha,'x')
+        xlim([0 3*misc.Tmodel(mode_idx)]);
+        
         misc.hFig(end+1) = gcf;
        
     end

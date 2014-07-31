@@ -23,7 +23,7 @@ if nargin < 2
     info = [];
 end
 
-info = Ensure_field(info, 'F0max', 1000);
+info = Ensure_field(info, 'F0max', 1400);
 info = Ensure_field(info, 'bPrint', 0);
 info = Ensure_field(info, 'time2compensate', 0);
 

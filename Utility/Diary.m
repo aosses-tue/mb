@@ -10,8 +10,8 @@ function Diary(name, bDoDiary, directory)
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 01/07/2014
-% Last update on: 30/07/2014 % Update this date manually
-% Last use on   : 30/07/2014 % Update this date manually
+% Last update on: 31/07/2014 % Update this date manually
+% Last use on   : 31/07/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 2
@@ -33,7 +33,7 @@ filename = [directory 'log-' name '-' p.date2print];
 disp(['Don''t forget to set diary to off by the end of the function/script ' name])
 
 diary(filename)
-disp([name 'log started...'])
+disp([name ' : log started...'])
 disp(['Output file: ' filename])
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
