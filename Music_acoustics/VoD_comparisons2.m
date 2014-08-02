@@ -20,8 +20,8 @@ function VoD_comparisons2(bDiary)
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 01/07/2014
-% Last update on: 28/07/2014 % Update this date manually
-% Last use on   : 28/07/2014 % Update this date manually
+% Last update on: 01/08/2014 % Update this date manually
+% Last use on   : 01/08/2014 % Update this date manually
 % 
 % Original file name: VoD_comparisons.m
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -33,7 +33,8 @@ Diary(mfilename,bDiary)
 
 %                         % tested on 01/07/2014
 bDo_STFT        = 1;    % Analysis 1
-bDoZwicker      = 0;    % Analysis 2
+bDoZwicker      = 0;    % Analysis replaced by bDoChalupper
+bDoChalupper    = 1;
 bMIR            = 0;    % Analysis discarded according to meeting on 23/07/2014
 
 % bDo_OB          = 1;    % different buffer size than STFT
@@ -56,6 +57,8 @@ overlap_p = 5;      % STFT
 h_STFT      = [];
 h_STFT_Mesh = [];
 h_Loudness  = [];
+hMeas = [];
+hModel = [];
 % m = [];
 % s = [];
  
@@ -65,7 +68,9 @@ close all;
 % 1. Signal alignment:
 %       - You get the following plots (if info.bPlot == 1):
 %           * 4 x Near and far field aligned signals (1 per acoustic mode)
+info.bSave = ~info.bSave; % to not to save again aligned files
 [ymeasured ymodelled misc] = VoD_read_aligned(bHPF,info);
+info.bSave = ~info.bSave;
 fs = misc.fs;
  
 % Show_figures_one_by_one(0.5);
@@ -131,7 +136,6 @@ for mode = info.modes2check
                 Delta_coil_ti = nan(4,100);
                 
                 bGetT = 1;
-                figure;
                 tmp = Get_VoD_params(bGetT);
                 t_coil_noalign = tmp.t_coil; % Correct this with the use of .t_coil
                 t_coil = t_coil_noalign-repmat(tmp.ti_measured',1,length(t_coil_noalign));
@@ -144,19 +148,31 @@ for mode = info.modes2check
             
             Freq_res = misc.mf(mode_idx);
             
-            % Predominant frequencies:
-            fpmeas = Get_predominant_values(f,HdBmeas);
             subplot(2,1,1)
             hold on;
             plot(get(gca,'XLim'),[Freq_res Freq_res],'g--')
-            plot(t/info.normalise_time_factor,fpmeas,'r')
+            
+            if isfield(misc,'f0m1') % ACF values from Praat
+                Exp1 = ['plot(misc.tf0' num2str(mode_idx) '/info.normalise_time_factor,misc.f0m' num2str(mode_idx) ',''r'')'];
+                eval(Exp1)
+            else
+                % Predominant frequencies:
+                fpmeas = Get_predominant_values(f,HdBmeas);
+                plot(t/info.normalise_time_factor,fpmeas,'r') % centroid
+            end
 
             subplot(2,1,2)
             hold on;
-            fpmodel = Get_predominant_values(f,HdBmodel);
-            hold on;
             plot(get(gca,'XLim'),[Freq_res Freq_res],'g--')
-            plot(t/info.normalise_time_factor,fpmodel,'r')
+            
+            if isfield(misc,'f0p1') % ACF values from Praat
+                Exp1 = ['plot(misc.tf0' num2str(mode_idx) '/info.normalise_time_factor,misc.f0p' num2str(mode_idx) ',''r'')'];
+                eval(Exp1)
+            else
+                % Predominant frequencies:
+                fpmodel = Get_predominant_values(f,HdBmodel);
+                plot(t/info.normalise_time_factor,fpmodel,'r') % centroid
+            end
 
             % Cross initial position:
             %   - Assumes perfect synchronisation between measured and modelled
@@ -386,6 +402,31 @@ for mode = info.modes2check
             hZwicker_band(end+1) = gcf;
         end 
     end
+    
+    % 4. Chalupper's model
+    %       - Last used on: 01/08/2014
+    if bDoChalupper
+        tmp_hMeas = [];
+        tmp_hModel = [];
+        
+        % info.title = sprintf('Ac mode = %.0f, Meas.',mode_idx+1);
+        paths       = Get_TUe_subpaths('db_voice_of_dragon');
+        filenames   = Get_filenames(paths.dir_calibrated_ms,'*.wav');
+        [tmp_hMeas ha1]   = PsySoundCL([paths.dir_calibrated_ms filenames{mode_idx}],info);
+        hMeas = [hMeas tmp_hMeas];
+        
+        % xlim([0 3*misc.Tmodel(mode_idx)/info.normalise_time_factor])
+        
+        filenames = Get_filenames(paths.dir_calibrated_ps,'*.wav');
+        %info.title = sprintf('Ac mode = %.0f, Model',mode_idx+1);
+        [tmp_hModel ha2]  = PsySoundCL([paths.dir_calibrated_ps filenames{mode_idx}],info);
+        hModel = [hModel tmp_hModel];
+        
+        linkaxes([ha1(end-3:end) ha2(end-3:end)],'x')
+        xlim([0 3*misc.Tmodel(mode_idx)])
+        
+    end
+    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % 4. MIR analysis:
     %       - Analysis discarded according to meeting on 23/07/2014
@@ -424,6 +465,14 @@ if info.bSave
             Saveas(hZwicker_band(j),[paths.outputs 'zwicker-per-band' num2str(j)]);
         end
         
+    end
+    
+    if bDoChalupper
+        for j = 1:length(hMeas)
+            
+            Saveas(hMeas(j),[paths.outputs 'chalupper-' num2str(j) '-meas']);
+            Saveas(hModel(j),[paths.outputs 'chalupper-' num2str(j) '-model']);
+        end
     end
     
 end

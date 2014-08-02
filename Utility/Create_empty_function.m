@@ -1,5 +1,5 @@
-function Create_empty_function(filename)
-% function Create_empty_function(filename)
+function Create_empty_function(filename, options)
+% function Create_empty_function(filename, options)
 %
 % 1. Description:
 %   Creates an empty MATLAB function (m-file)
@@ -10,11 +10,17 @@ function Create_empty_function(filename)
 % 3. Stand-alone example to create a function named hola.m:
 %   Create_empty_function('hola');
 % 
-% Programmed by Alejandro Osses, HIT, TU/e, the Netherlands, 2014
-% Created on: 12/05/2014
-% Last update: 14/05/2014 % Update this date manually
-% Last used: 17/05/2014 % Update this date manually
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Created on    : 12/05/2014
+% Last update on: 02/08/2014 % Update this date manually
+% Last used on  : 02/08/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+if nargin < 2
+    options = [];
+end
+
+options = Ensure_field(options,'bIncludeLog',input('Do you want to include a log for the script/function? (1 = yes, 0 = no): '));
 
 misc.MATLAB = Get_TUe_paths('MATLAB');
 
@@ -27,11 +33,18 @@ outputfile = [misc.MATLAB 'Utility' delim 'New-scripts' delim filename '.m'];
 Mkdir([misc.MATLAB 'Utility' delim 'New-scripts']);
 
 p = Get_date;
-% p.dd = '12';
-% p.mm = '05';
-% p.yyyy = '2014'; 
 
 p.functionname=filename;
+
+if options.bIncludeLog
+    p.log_begin = sprintf('\nbDiary = 1;\nDiary(mfilename,bDiary);\n\n');
+    p.log_end   = sprintf('\nif bDiary\n\tdiary off\nend\n');
+    p.eof       = 'disp([''EOF: '' mfilename ''.m''])';
+else
+    p.log_begin = '';
+    p.log_end   = '';
+    p.eof       = 'end';
+end
 
 output = readfile_replace(inputfile,p);
 
@@ -43,4 +56,4 @@ fclose(fid);
 disp(['m-file: ' outputfile '.m successfully created'])
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-disp(['EOF: ' mfilename '.m'])
+end

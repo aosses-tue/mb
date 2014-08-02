@@ -24,7 +24,7 @@ if bDoDiary == 0
 end
 
 if nargin < 3
-    directory = Get_TUe_paths('outputs');
+    directory = [Get_TUe_paths('outputs') name 'delim'];
 end
 
 p = Get_date;

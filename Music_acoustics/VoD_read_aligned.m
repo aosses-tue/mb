@@ -60,7 +60,7 @@ else
 end
 
 info = Ensure_field(info,'modes2check',2:5);
-
+info = Ensure_field(info,'bSave',0);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 misc        = Get_VoD_params(1); % input = 0, to not store 'period' results
@@ -76,6 +76,8 @@ subdir_db_vod = Get_TUe_subpaths('db_voice_of_dragon');
 % dir calibrated predicted (modelled) signals:
 dir_calibrated_m = subdir_db_vod.dir_calibrated_m; 
 dir_calibrated_p = subdir_db_vod.dir_calibrated_p; 
+dir_calibrated_ms = subdir_db_vod.dir_calibrated_ms; 
+dir_calibrated_ps = subdir_db_vod.dir_calibrated_ps; 
 dir_f0_m         = subdir_db_vod.dir_f0_m;
 dir_f0_p         = subdir_db_vod.dir_f0_p;
 dir_meas_def     = subdir_db_vod.dir_meas_def;
@@ -139,6 +141,19 @@ for mode = info.modes2check
     yfarp   = Do_truncate(yfarp , L);
 	t       = Do_truncate(tm,L); % same t for measured and modelled
 
+    if info.bSave
+        time2save = 5;
+        filename1 = [dir_calibrated_ms 'modus-' modus '_v' num2str(take) '-' field lblFilter '.wav'];
+        ynear2 = resample(ynear,44100,fs);
+        ynear2 = ynear2(1:time2save*44100);
+        Wavwrite(ynear2,44100,filename1);
+        
+        filename2 = [dir_calibrated_ps 'modus-' modus '-v_' field lblFilter '.wav'];
+        ynearp2 = resample(ynearp,44100,fs);
+        ynearp2 = ynearp2(1:time2save*44100);
+        Wavwrite(ynearp2,44100,filename2);
+    end
+    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if info.bPlot
         
@@ -159,6 +174,12 @@ for mode = info.modes2check
             f0m = Do_truncate(f0m,Lf0);
             f0p = Do_truncate(f0p,Lf0);
             
+            Exp1 = sprintf('misc.tf0%.0f = tf' ,mode_idx);
+            Exp2 = sprintf('misc.f0p%.0f = f0p;',mode_idx);
+            Exp3 = sprintf('misc.f0m%.0f = f0m;',mode_idx);
+            eval(Exp1)
+            eval(Exp2)
+            eval(Exp3)
         catch
             n = 2;
             disp([mfilename '.m: no f0 information found']);

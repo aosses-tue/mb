@@ -29,8 +29,10 @@ if strcmp(type,'db_voice_of_dragon')
     
     misc.dir_meas_wav      = [path '02-Wav-files' delim];
     misc.dir_calibrated_m  = [misc.dir_meas_wav '03-Wav-files-calibrated' delim]; 
+    misc.dir_calibrated_ms = [misc.dir_meas_wav '04-Wav-files-calibrated-synchro' delim];
     misc.dir_predicted_txt = [path '03-Wav-files-predicted' delim '01-model' delim 'Data' delim];
     misc.dir_calibrated_p  = [path '03-Wav-files-predicted' delim '03-Wav-files-calibrated' delim]; 
+    misc.dir_calibrated_ps = [path '03-Wav-files-predicted' delim '05-Wav-files-calibrated-synchro' delim]; 
     misc.dir_f0_m          = [path '04-f0' delim '20140731-at-10h53m-f0-VoD-measured' delim];
     misc.dir_f0_p          = [path '04-f0' delim '20140731-at-10h58m-f0-VoD-modelled' delim];
     misc.dir_measurements  ={[misc.dir_meas_wav '1 referentie'     delim], ...
