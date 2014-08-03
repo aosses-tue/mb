@@ -30,7 +30,7 @@ function misc = Get_TUe_paths(type)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 15/03/2014
 % Last update on: 28/07/2014
-% Last use on   : 29/07/2014
+% Last use on   : 03/08/2014
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Alejandro's paths
@@ -50,7 +50,8 @@ if isunix
     if info.bOnline
         misc.MATLAB         = ['~/Documenten/Dropbox/TUe/MATLAB/']; % TU/e MATLAB dropbox
     else
-        misc.MATLAB         = ['~/Documenten/MATLAB/MATLAB_TUe/'];
+        % misc.MATLAB         = ['~/Documenten/MATLAB/MATLAB_TUe/']; % commented on 03/08/2014
+        misc.MATLAB         = ['~/Documenten/MATLAB/MATLAB_git/'];
     end
     misc.Databases          = ['~/Documenten/Databases' delim];
 
@@ -80,7 +81,7 @@ else
         misc.MATLAB             = ['G:\MATLAB' delim];
     else
         % misc.MATLAB         = ['D:\MATLAB-off-line' delim];
-        misc.MATLAB	    = ['D:\MATLAB_git' delim];
+        misc.MATLAB         = ['D:\MATLAB_git' delim];
     end
     misc.MATLAB_KUL         = ['D:\SVN-KU-Leuven\alejandro\MATLAB_svn' delim];
     misc.Databases          = ['D:\Databases' delim];

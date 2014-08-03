@@ -3,9 +3,9 @@
 %
 % Programmed by Alejandro Osses, TU/e 2014
 % PC:           Toshiba (mi compu), Ubuntu
-% Created on     : 18/05/2014
-% Last updated on: 28/06/2014
-% Last used on   : 28/06/2014
+% Created on    : 18/05/2014
+% Last update on: 04/08/2014
+% Last use on   : 04/08/2014
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 info.bOnline = 0; % default = 0
@@ -19,9 +19,11 @@ if bTUe
         addpath('~/Documenten/Dropbox/TUe/MATLAB/tb_NMT_4.31/Matlab/Processing/');
         disp('Using on-line set-up');
     else
-        % Last used: 29/06/2014
-        addpath('~/Documenten/MATLAB/MATLAB_TUe/Utility');
-        addpath('~/Documenten/MATLAB/MATLAB_TUe/tb_NMT_4.31/Matlab/Processing/');
+        % Last used: 04/08/2014
+        % addpath('~/Documenten/MATLAB/MATLAB_TUe/Utility');
+        % addpath('~/Documenten/MATLAB/MATLAB_TUe/tb_NMT_4.31/Matlab/Processing/');
+        addpath('~/Documenten/MATLAB/MATLAB_git/Utility');
+        addpath('~/Documenten/MATLAB/MATLAB_git/tb_NMT_4.31/Matlab/Processing/');
         disp('Using local TU/e MATLAB files, change bTUe to 0 if you want to use the KUL set-up');
     end
     Start_TUe;

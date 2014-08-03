@@ -132,19 +132,24 @@ try
     % This finds the path of the configPsySound3 MFILE
     folderpath = fileparts(mfilename('fullpath'));
 
-    % % If not the same then move to correct directory
-    % if ~strcmp(pwd,folderpath) 
-    %     cd (folderpath)
-    % end
+    old_dir = cd;
+    % If not the same then move to correct directory
+    if ~strcmp(pwd,folderpath)
+        cd (folderpath)
+    end
       
     % Add the PsySound3 dir
-    addpath(pwd);
+    try
+        Add_paths(pwd);
+    catch
+        addpath(pwd);
+    end
   
     %subdirs = {'GUI', 'AudioAnalysers', 'DataAnalysers', 'dataObjects', ...
     %           'dataStorage', 'utils'};
   
     subdir = genpath(pwd);
-	%% Do not add .svn paths
+	% Do not add .svn paths
 
     if isunix
         colons = findstr(subdir,':');
@@ -163,12 +168,18 @@ try
     end
   
     for dr = subdirs
-        addpath(char(dr));
+        try
+            Add_paths(char(dr));
+        catch
+            addpath(char(dr));
+        end
     end
   
     disp('Added PsySound3 directories to path successfully.');
     disp('');
   
+    cd(old_dir);
+    
     % Now save the path
     if savepath,
         disp(['Unable to save Matlab path. Please check write permissions ' ...
