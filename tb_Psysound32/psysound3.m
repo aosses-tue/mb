@@ -7,29 +7,29 @@ function psysound3(bOpenGUI)
 % Modules available in PsySound3:
 %   Module name                 Tested 	Date tested     Reference
 %   -----------                 ------  -----------     ---------
-%   FFT Spectrum
-%   CZT Spectrum
-%   Hilbert
-%   Cepstrum (real)
-%   Cepstrum (complex)
-%   Auto-correlation
-%   Auto & Cross-correlation
-%   Sound level meter
-%   Revised LF B-Curve
-%   1/3-Octave Band Spectrum
-%   1/3 & Oct Spectrum (FFT)
+%   FFT Spectrum                No
+%   CZT Spectrum                No
+%   Hilbert                     No
+%   Cepstrum (real)             No
+%   Cepstrum (complex)          No
+%   Auto-correlation            No
+%   Auto & Cross-correlation    No
+%   Sound level meter           No
+%   Revised LF B-Curve          No
+%   1/3-Octave Band Spectrum    No
+%   1/3 & Oct Spectrum (FFT)    No
 %   Dynamic Loudness (C&F)      YES     01/08/2014      Chalupper2002
-%   Loudness
-%   Loudness
+%   Loudness                    No
+%   Loudness                    No
 %   Roughness                   YES     22/07/2014      Daniel1997
-%   Pitch (Terhardt)
-%   MirToolbox (MIRPITCH)
-%   Pitch
-%   Beatroot Beat Detection
-%   1/N Band Spectrum (FFT)
-%   Reverberation Time
-%   1/12-Oct Spect Const Q Transform
-%   1/12-Oct Spect IEC (FFT)
+%   Pitch (Terhardt)            No                      Terhardt1982
+%   MirToolbox (MIRPITCH)       No
+%   Pitch                       No
+%   Beatroot Beat Detection     No
+%   1/N Band Spectrum (FFT)     No 
+%   Reverberation Time          No
+%   1/12-Oct Spect Const Q Transform    No
+%   1/12-Oct Spect IEC (FFT)    No
 % 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Author        : Sam Ferguson et al.

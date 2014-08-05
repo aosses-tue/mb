@@ -13,7 +13,7 @@ function [h ha] = PsySoundCL(filename,option)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 22/07/2014
 % Last update on: 29/07/2014 % Update this date manually
-% Last use on   : 29/07/2014 % Update this date manually
+% Last use on   : 04/08/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 h = [];

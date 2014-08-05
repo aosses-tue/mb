@@ -20,8 +20,8 @@ function VoD_comparisons2(bDiary)
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 01/07/2014
-% Last update on: 01/08/2014 % Update this date manually
-% Last use on   : 01/08/2014 % Update this date manually
+% Last update on: 04/08/2014 % Update this date manually
+% Last use on   : 04/08/2014 % Update this date manually
 % 
 % Original file name: VoD_comparisons.m
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -31,8 +31,9 @@ if nargin == 0
 end
 Diary(mfilename,bDiary)
 
-%                         % tested on 01/07/2014
-bDo_STFT        = 1;    % Analysis 1
+                        % tested on 01/07/2014
+bDo_load_audio  = 0;    % Required to perform Analysis 1
+bDo_STFT        = 0;    % Analysis 1
 bDoZwicker      = 0;    % Analysis replaced by bDoChalupper
 bDoChalupper    = 1;
 bMIR            = 0;    % Analysis discarded according to meeting on 23/07/2014
@@ -59,19 +60,21 @@ h_STFT_Mesh = [];
 h_Loudness  = [];
 hMeas = [];
 hModel = [];
-% m = [];
-% s = [];
- 
+
 close all;
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 1. Signal alignment:
 %       - You get the following plots (if info.bPlot == 1):
 %           * 4 x Near and far field aligned signals (1 per acoustic mode)
-info.bSave = ~info.bSave; % to not to save again aligned files
-[ymeasured ymodelled misc] = VoD_read_aligned(bHPF,info);
-info.bSave = ~info.bSave;
-fs = misc.fs;
+if bDo_load_audio
+    info.bSave = ~info.bSave; % to not to save again aligned files
+    [ymeasured ymodelled misc] = VoD_read_aligned(bHPF,info);
+    info.bSave = ~info.bSave;
+    fs = misc.fs;
+else % only gets VoD params
+    misc       = Get_VoD_params(1);
+end
  
 % Show_figures_one_by_one(0.5);
 
@@ -82,8 +85,11 @@ disp([mfilename '.m: analysing ' type{idx} ' field']);
 for mode = info.modes2check
     
     mode_idx = mode-1;
-    ymeas       = eval(['ymeasured.y' type{idx} num2str(mode) '_short;']);
-    ymodel      = eval(['ymodelled.y' type{idx} num2str(mode) '_short;']);
+    
+    if bDo_load_audio
+        ymeas       = eval(['ymeasured.y' type{idx} num2str(mode) '_short;']);
+        ymodel      = eval(['ymodelled.y' type{idx} num2str(mode) '_short;']);
+    end
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % 2. STFT:
@@ -394,7 +400,7 @@ for mode = info.modes2check
             subplot(2,1,2)
             legend(['meas.' res{1}.txt_db],['modelled ' res{2}.txt_db])
             halocal(end+1) = gca;
-            Ylimit = get(halocal(end),'YLim'); %YLim = [-0.04 0.04]
+            Ylimit = get(halocal(end),'YLim'); 
             set(halocal(end),'YLim',[Ylimit(1) Ylimit(2)*scale]);
 
             linkaxes(halocal,'x')
@@ -421,6 +427,15 @@ for mode = info.modes2check
         %info.title = sprintf('Ac mode = %.0f, Model',mode_idx+1);
         [tmp_hModel ha2]  = PsySoundCL([paths.dir_calibrated_ps filenames{mode_idx}],info);
         hModel = [hModel tmp_hModel];
+        
+        for i = 1:length(ha1)
+            
+            YLimits = [get(ha1(i),'YLim'); get(ha2(i),'YLim')];
+            YLimits = [min(min(YLimits)) max(max(YLimits))];
+            linkaxes([ha1(i) ha2(i)],'y');
+            set(ha1(i),'YLim',YLimits);
+            
+        end
         
         linkaxes([ha1(end-3:end) ha2(end-3:end)],'x')
         xlim([0 3*misc.Tmodel(mode_idx)])
