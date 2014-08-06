@@ -1,4 +1,6 @@
 function lf=fluct(main_N)
+% function lf=fluct(main_N)
+% 
 % lf=fluct(main_N);
 % calculates loudness fluctuation lf for normal and hearing-impaired listeners
 % References:
@@ -18,7 +20,8 @@ function lf=fluct(main_N)
 % original version: 12.12.2000
 % new version (with comments and examples): 6.2.2007
 % required functions: korrel.m, kernl2lg.m
-
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 HL_ohc=zeros(1,24);
 HL_ihc=zeros(1,24);
