@@ -1,9 +1,9 @@
+function [ceps,freqresp,fb,fbrecon,freqrecon] = mfcc(input, samplingRate, frameRate)
 %  mfcc - Mel frequency cepstrum coefficient analysis.
-%   [ceps,freqresp,fb,fbrecon,freqrecon] = ...
-%			mfcc(input, samplingRate, [frameRate])
-% Find the cepstral coefficients (ceps) corresponding to the
-% input.  Four other quantities are optionally returned that
-% represent:
+%   [ceps,freqresp,fb,fbrecon,freqrecon] = mfcc(input, samplingRate, [frameRate])
+% 
+% Find the cepstral coefficients (ceps) corresponding to the input.  Four 
+% other quantities are optionally returned that represent:
 %	the detailed fft magnitude (freqresp) used in MFCC calculation, 
 %	the mel-scale filter bank output (fb)
 %	the filter bank output by inverting the cepstrals with a cosine 
@@ -18,9 +18,8 @@
 % Added filterbank inversion to reconstruct spectrum - 11/1/95
 
 % (c) 1998 Interval Research Corporation  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [ceps,freqresp,fb,fbrecon,freqrecon] = ...
-		mfcc(input, samplingRate, frameRate)
 global mfccDCTMatrix mfccFilterWeights
 
 [r c] = size(input);
@@ -53,8 +52,7 @@ totalFilters = linearFilters + logFilters;
 % edges are all consequtive interesting frequencies. 
 
 freqs = lowestFrequency + (0:linearFilters-1)*linearSpacing;
-freqs(linearFilters+1:totalFilters+2) = ...
-		      freqs(linearFilters) * logSpacing.^(1:logFilters+2);
+freqs(linearFilters+1:totalFilters+2) = freqs(linearFilters) * logSpacing.^(1:logFilters+2);
 
 lower = freqs(1:totalFilters);
 center = freqs(2:totalFilters+1);
@@ -86,8 +84,7 @@ if 0					% Window it like ComplexSpectrum
 	b = -.46;
 	wr = sqrt(windowStep/windowSize);
 	phi = pi/windowSize;
-	hamWindow = 2*wr/sqrt(4*a*a+2*b*b)* ...
-		(a + b*cos(2*pi*(0:windowSize-1)/windowSize + phi));
+	hamWindow = 2*wr/sqrt(4*a*a+2*b*b)* (a + b*cos(2*pi*(0:windowSize-1)/windowSize + phi));
 end
 
 % Figure out Discrete Cosine Transform.  We want a matrix
