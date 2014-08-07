@@ -10,11 +10,16 @@ function VoD_MIRtoolbox(filename,fs)
 % 2. Additional info:
 %       Tested cross-platform: No
 %
-% 3. Stand-alone example:
+% 3.1 Stand-alone example:
 %       % Make sure you have not run PsySound3
 %       % Make sure MIRToolbox v. 1.5 has been added to path
 %       VoD_MIRtoolbox;
 %
+% % Audio excerpt into double:
+%       xx = get(y,'Data');
+%       xx = xx{1};
+%       xx = xx{1};
+%       
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 21/07/2014
 % Last update on: 06/08/2014 % Update this date manually

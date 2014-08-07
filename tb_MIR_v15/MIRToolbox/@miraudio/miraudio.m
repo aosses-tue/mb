@@ -131,12 +131,6 @@ end
         sampling.when = 'Both';
     option.sampling = sampling;
         
-   %     segment.key = 'Segment';
-   %     segment.type = 'Integer';
-   %     segment.default = [];
-   %     segment.when = 'After';
-   % option.segment = segment;
-
         reverse.key = 'Reverse';
         reverse.type = 'Boolean';
         reverse.default = 0;
@@ -352,9 +346,7 @@ for h = 1:length(d)
         end
         d{h}{k} = dk;
         t{h}{k} = tk;
-        %if isfield(para,'reverse') && para.reverse
-        %    d{h}{k} = flipdim(d{h}{k},1);
-        %end
+
     end
 end
 a = set(a,'Data',d,'Time',t,'Sampling',f,'Clusters',cl);
