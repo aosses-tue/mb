@@ -1,5 +1,5 @@
 function [h ha] = PsySoundCL(filename,option)
-% function [h ha] = PsySoundCL(filename,info)
+% function [h ha] = PsySoundCL(filename,option)
 % 
 % 1. Description:
 %       Executes PsySound3 from command line
@@ -12,15 +12,12 @@ function [h ha] = PsySoundCL(filename,option)
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 22/07/2014
-% Last update on: 29/07/2014 % Update this date manually
-% Last use on   : 04/08/2014 % Update this date manually
+% Last update on: 07/08/2014 % Update this date manually
+% Last use on   : 07/08/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 h = [];
 ha = [];
-
-nAnalyser = 12; % Dynamic loudness
-% nAnalyser = 15; % Roughness
 
 % Step 1:
 
@@ -29,6 +26,11 @@ nAnalyser = 12; % Dynamic loudness
 if nargin < 2
     option = [];
 end
+
+option = Ensure_field(option,'nAnalyser',12);
+nAnalyser = option.nAnalyser;
+% nAnalyser = 12; % Dynamic loudness
+% nAnalyser = 15; % Roughness
 
 if nargin == 0
     % filename = 'D:\Databases\dir01-Instruments\Voice-of-dragon\02-Wav-files\05-Wav-files-calibrated-44.1kHz-filtered\modus-1_v2-2filt-fc-1000-Hz.wav';
@@ -181,7 +183,9 @@ switch nAnalyser
         xlabel('Critical band rate (Bark)')
         ylabel('Specific Roughness (Aspers/Bark)')
         grid on
-
+        h(end+1) = gcf;
+        ha(end+1) = gca;
+        
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % Roughness -> Graph (Visualisation - Single Axis, plot)
         
@@ -191,6 +195,9 @@ switch nAnalyser
         xlabel('Time (seconds)')
         ylabel('Roughness (aspers)')
         grid on
+        
+        h(end+1) = gcf;
+        ha(end+1) = gca;
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
 

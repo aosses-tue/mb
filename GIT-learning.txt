@@ -1,0 +1,7 @@
+git pull 	= 	git fetch
+			git merge FETCH_HEAD
+git status
+git add filename.filename
+git add -u % only adds edited
+ignoring files: http://git-scm.com/book/en/Git-Basics-Recording-Changes-to-the-Repository
+2.5 Showing your remotes

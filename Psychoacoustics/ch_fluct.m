@@ -13,11 +13,16 @@ function lf=ch_fluct(main_N)
 % [3] Chalupper, J. (2007): Modeling loudness fluctuation for norm and
 % hearing-impaired listeners. Proceedings of EFAS 2007, Heidelberg. in preparation 
 %
-% Author: Josef Chalupper (josef.chalupper@siemens.com)
-% original version: 12.12.2000
-% new version (with comments and examples): 6.2.2007
-% required functions: korrel.m, kernl2lg.m
+% required functions: ch_korrel.m, ch_kernl2lg.m
 %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Author        : Josef Chalupper (josef.chalupper@siemens.com)
+% Created on    : 12/12/2000
+% Edited on     : 06/02/2007 (new version with comments and examples)
+% Downloaded on : 07/08/2014 (approx.)
+% Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Last update on: 07/08/2014 % Update this date manually
+% Last use on   : 07/08/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 HL_ohc  = zeros(1,24);
