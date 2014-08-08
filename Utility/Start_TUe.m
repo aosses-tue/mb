@@ -18,7 +18,7 @@ function misc = Start_TUe
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 01/05/2014
 % Last update on: 28/07/2014
-% Last use on   : 28/07/2014
+% Last use on   : 07/08/2014
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 misc = Get_TUe_paths;

@@ -36,7 +36,7 @@ function [y_measured y_modelled misc] = VoD_read_aligned(bHPF,info)
 % Original file name: VoD_run
 % Created on    : 01/07/2014
 % Last update on: 31/07/2014 % Update this date manually
-% Last use on   : 31/07/2014 % Update this date manually
+% Last use on   : 07/08/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Default inputs:
@@ -186,14 +186,17 @@ for mode = info.modes2check
         end
         figure; 
         subplot(n,1,1)
-        plot(t,ynear, t, yfar), 
+        % plot(t,ynear, t, yfar),
+        plot(t,ynear)
         ha = gca;
         
+        % legend('near-field')
         legend('near-field','far-field')
         title(sprintf('Aligned time signals, ac.mode = %.0f: measured (above), modelled (bottom)',mode))
         ylabel('Amplitude')
         subplot(n,1,2)
-        plot(t,ynearp, t, yfarp), 
+        % plot(t,ynearp, t, yfarp), 
+        plot(t,ynearp), 
         ha(end+1) = gca;
         
         if n == 2
@@ -205,12 +208,12 @@ for mode = info.modes2check
         if n==4
             
             subplot(n,1,3)
-            plot(   tf,f0m, ...
-                    tf,f0p   )
+            plot(   tf,f0m, 'b-','LineWidth',1), grid on, hold on
+            plot(   tf,f0p, 'r-','LineWidth',2)
             grid on, hold on;
             ha(end+1) = gca;
             ylabel('Frequency [Hz]')
-            legend('f0 meas','f0 modelled');
+            legend('f0 meas','f0 model');
             
             subplot(n,1,4)
             plot(   tf,(f0p-f0m)/misc.mf(mode_idx)*100   )

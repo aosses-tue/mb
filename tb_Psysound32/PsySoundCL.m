@@ -56,8 +56,8 @@ fh = readData(filename);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Step 2: Calibation
-% % To calibrate your files by using a file ‘CalFile.wav’ that represents 91 dB:
-% fhs = calibrate(fhs, ’WithFiles’, ’CalFile.wav’, 91)
+% % To calibrate your files by using a file ï¿½CalFile.wavï¿½ that represents 91 dB:
+% fhs = calibrate(fhs, ï¿½WithFilesï¿½, ï¿½CalFile.wavï¿½, 91)
 fh = calibrate(fh, 'WithFiles', filename, dB_value); % calibrated with itself
 % fh.calCoeff = 1; % To avoid calibration set this value to 1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -182,6 +182,7 @@ switch nAnalyser
         plot(z, mean(DataSpecRoughness) );
         xlabel('Critical band rate (Bark)')
         ylabel('Specific Roughness (Aspers/Bark)')
+        title(sprintf('Average Roughness - %s', option.title));
         grid on
         h(end+1) = gcf;
         ha(end+1) = gca;
@@ -194,6 +195,7 @@ switch nAnalyser
         plot(t, DataRoughness);
         xlabel('Time (seconds)')
         ylabel('Roughness (aspers)')
+        title(sprintf('Roughness - %s', option.title));
         grid on
         
         h(end+1) = gcf;
@@ -202,7 +204,7 @@ switch nAnalyser
 end
 
 % % To estimate the time the analysis will take
-% runanalysis(fhs, ’FFT’, ’Hilbert’, ’SLM’, ’estimate’)
+% runanalysis(fhs, ï¿½FFTï¿½, ï¿½Hilbertï¿½, ï¿½SLMï¿½, ï¿½estimateï¿½)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end

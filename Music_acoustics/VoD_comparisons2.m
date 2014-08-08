@@ -32,8 +32,8 @@ end
 Diary(mfilename,bDiary)
 
                         % tested on 01/07/2014
-bDo_load_audio  = 0;    % Required to perform Analysis 1
-bDo_STFT        = 0;    % Analysis 1
+bDo_STFT        = 1;    % Analysis 1
+bDo_load_audio  = bDo_STFT;    % Required to perform Analysis 1
 bDoZwicker      = 0;    % Analysis replaced by bDoChalupper
 bDoChalupper    = 1;
 bMIR            = 0;    % Analysis discarded according to meeting on 23/07/2014
@@ -59,6 +59,7 @@ hMeas = [];
 hModel = [];
 hMeasr = [];
 hModelr = [];
+idx_i = 0; % to count figure handles
 
 close all;
  
@@ -70,11 +71,10 @@ if bDo_load_audio
     info.bSave = ~info.bSave; % to not to save again aligned files
     [ymeasured ymodelled misc] = VoD_read_aligned(bHPF,info);
     info.bSave = ~info.bSave;
-    fs = misc.fs;
 else % only gets VoD params
     misc       = Get_VoD_params(1);
 end
- 
+fs = misc.fs;
 % Show_figures_one_by_one(0.5);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -248,10 +248,10 @@ for mode = info.modes2check
             set(gca,'CLim',[min(min(HdBmeas))-40 max(max((HdBmeas)))+20]) % scaled respect to the other plot
             view([110 30])
             colorbar
+            h_STFT_Mesh(end+1) = gcf;
         end
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        h_STFT_Mesh(end+1) = gcf;
         
     end
     
@@ -265,40 +265,49 @@ for mode = info.modes2check
     
     % 4. Chalupper's model
     %       - Last used on: 01/08/2014
+    
     if bDoChalupper
-        
-        tmp_hMeas = [];
-        tmp_hModel = [];
+        ha1 = [];
+        ha2 = [];    
+        tmp_h = [];
+        tmp_h = [];
         options = info;
-        
         paths       = Get_TUe_subpaths('db_voice_of_dragon');
                 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         filenames   = Get_filenames(paths.dir_calibrated_ms,'*.wav');
         
         options.nAnalyser = 12;
-        [tmp_hMeas ha1]   = PsySoundCL([paths.dir_calibrated_ms filenames{mode_idx}],options);
-        hMeas = [hMeas tmp_hMeas];
+        [tmp_h tmp_ha]   = PsySoundCL([paths.dir_calibrated_ms filenames{mode_idx}],options); % 6 figures
+        hMeas(10*idx_i+[1:6]) = tmp_h;
+        ha1([1:6]) = tmp_ha;
+        % 1. Average main loudness (Bark)       4. Main loudness (s)
+        % 2. Average specific loudness (Bark)   5. Specific loudness (s)
+        % 3. Loudness (s)                       6. Sharpness (s)
         
         options.nAnalyser = 15;
-        [tmp_hMeasr ha1r]   = PsySoundCL([paths.dir_calibrated_ms filenames{mode_idx}],options);
-        hMeasr = [hMeasr tmp_hMeasr];
+        [tmp_h tmp_ha]   = PsySoundCL([paths.dir_calibrated_ms filenames{mode_idx}],options); % 2 figures
+        hMeas(10*idx_i+[7:8]) = tmp_h;
+        ha1([7:8]) = tmp_ha;
+        % 7. Specific roughness [Bark]
+        % 8. Roughness [s]
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         filenames = Get_filenames(paths.dir_calibrated_ps,'*.wav');
         
         options.nAnalyser = 12;
-        [tmp_hModel ha2]  = PsySoundCL([paths.dir_calibrated_ps filenames{mode_idx}],options);
+        [tmp_h tmp_ha]  = PsySoundCL([paths.dir_calibrated_ps filenames{mode_idx}],options);
+        hModel(10*idx_i+[1:6]) = tmp_h;
+        ha2([1:6]) = tmp_ha;
         
         options.nAnalyser = 15;
-        [tmp_hModelr ha2r]  = PsySoundCL([paths.dir_calibrated_ps filenames{mode_idx}],options);
-        
-        hModel = [hModel tmp_hModel];
-        hModelr = [hModelr tmp_hModelr];
+        [tmp_h tmp_ha]  = PsySoundCL([paths.dir_calibrated_ps filenames{mode_idx}],options);
+        hModel(10*idx_i+[7:8]) = tmp_h;
+        ha2([7:8]) = tmp_ha;
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
-        for i = 1:length(ha1)
+        for i = 1:8
             
             YLimits = [get(ha1(i),'YLim'); get(ha2(i),'YLim')];
             YLimits = [min(min(YLimits)) max(max(YLimits))];
@@ -307,22 +316,11 @@ for mode = info.modes2check
             
         end
         
-        linkaxes([ha1(end-3:end) ha2(end-3:end) ha1r(end) ha2r(end)],'x')
+        linkaxes([ha1([3:6,8]) ha2([3:6,8])],'x')
         xlim([0 3*misc.Tmodel(mode_idx)])
         
-%         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%         filenames = VoD_MIRtoolbox(0); % "clean" file names
-%         
-%         options.nAnalyser = 12;
-%         [tmp_hMeas ha1]   = PsySoundCL(filenames{mode_idx},options);
-%         hMeas = [hMeas tmp_hMeas];
-%         
-%         options.nAnalyser = 15;
-%         [tmp_hMeasr ha1r]   = PsySoundCL(filenames{mode_idx},options);
-%         hMeasr = [hMeasr tmp_hMeasr];
-%         
-%         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        idx_i = idx_i+1;
     end
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -349,9 +347,6 @@ if info.bSave
         for j = 1:length(h_STFT)
             Saveas(h_STFT(j),[paths.outputs 'stft-ac_mode-' num2str(j+1)]);
         end
-        for j = 1:length(h_STFT_Mesh)
-            Saveas(h_STFT_Mesh(j),[paths.outputs 'stft-mesh-ac_mode-' num2str(j+1)]);
-        end
     end
     
     if bDoZwicker
@@ -366,20 +361,24 @@ if info.bSave
     end
     
     if bDoChalupper
+        nPlots = 8;
+        idx = find(hMeas == 0);
+        hMeas(idx) = [];
+        idx = find(hModel == 0);
+        hModel(idx) = [];
+        ac_mode = ceil( hMeas /nPlots/2)+1;
+        descrip = mod(hMeas,nPlots);
+        
         for j = 1:length(hMeas)
-            
-            Saveas(hMeas(j),[paths.outputs 'chalupper-' num2str(j) '-meas']);
-            Saveas(hModel(j),[paths.outputs 'chalupper-' num2str(j) '-model']);
+            % figure(hMeas(j))
+            option.bPrint = 0;
+            txt = ['chalupper-ac' num2str(ac_mode(j)) '-descrip-' Num2str(descrip(j))];
+            Saveas(hMeas(j),[paths.outputs  txt '-meas'],option);
+            % figure(hModel(j));
+            Saveas(hModel(j),[paths.outputs txt '-model'],option);
             
         end
         
-        % we save Roughness plots:
-        for j = 1:length(hMeasr)
-            
-            Saveas(hMeasr(j),[paths.outputs 'chalupper-rough-' num2str(j) '-meas']);
-            Saveas(hModelr(j),[paths.outputs 'chalupper-rough-' num2str(j) '-model']);
-            
-        end
     end
     
 end
