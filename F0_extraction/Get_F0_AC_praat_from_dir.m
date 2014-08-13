@@ -19,7 +19,7 @@ function info = Get_F0_AC_praat_from_dir(directory, bDiary)
 %       Get_F0_AC_praat_from_dir(dirs.dir_calibrated_m); % F0 Extraction of measured signals
 %       Get_F0_AC_praat_from_dir(dirs.dir_calibrated_p); % F0 Extraction of predicted signals
 %    
-% Programmed by Alejandro Osses, ExpORL, 2014
+% Programmed by Alejandro Osses, ExpORL, Belgium, 2014
 % Original name : analysis_F0_wav (changed on 31/07/2014)
 % Created on    : March 2014
 % Last update on: 31/07/2014

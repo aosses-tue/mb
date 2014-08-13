@@ -38,7 +38,8 @@ end
 
 %% Read columns of data as strings:
 % For more information, see the TEXTSCAN documentation.
-formatSpec = '%s%s%[^\n\r]';
+% formatSpec = '%s%s%[^\n\r]';
+formatSpec = '%s%s%s%s%s%[^\n\r]';
 
 %% Open the text file.
 fileID = fopen(filename,'r');
@@ -63,6 +64,12 @@ end
 
 raw_time_col = dataArray(:,1);
 raw_F0_col   = dataArray(:,2);
+try
+    raw_F2_col = dataArray(:,3);
+    raw_F3_col = dataArray(:,4);
+    raw_F4_col = dataArray(:,5);
+    raw_F5_col = dataArray(:,6);
+end
  
 R = cellfun(@(x) strcmp(x,'='), raw_time_col,'UniformOutput',false); % Find non-numeric cells
 idx = find(cell2mat(R)==1);
@@ -77,6 +84,12 @@ for k = 1:length(idx)
     end
 end
 F0 = str2double(raw_F0_col{1,1}); % Replace non-numeric cells
+try
+    for i = 2:5
+        Exp1 = ['F0 = [F0 str2double(raw_F' num2str(i) '_col{1,1})];'];
+        eval(Exp1);
+    end
+end
 F0(idx) = NaN;
 
 t = t - time2compensate;

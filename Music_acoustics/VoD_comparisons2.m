@@ -44,7 +44,8 @@ type        = {'f','n'};
 info.bSave  = 1;
 info.bPlot  = 1;
 info.modes2check = 2:5;
-bGridOn     = 1;
+bGridOn     = 0;
+bFormants   = ~bGridOn;
 
 info.wntype = 1;    % Hanning
 nfft      = 4096;   % STFT, N-point FFT and STFT
@@ -60,6 +61,8 @@ hModel = [];
 hMeasr = [];
 hModelr = [];
 idx_i = 0; % to count figure handles
+
+paths = Get_TUe_subpaths('db_voice_of_dragon');
 
 close all;
  
@@ -108,6 +111,13 @@ for mode = info.modes2check
         HdBmeas = 20*log10(abs(Hmeas));
         
         halocal = gca;
+        hold on
+        
+        if bFormants
+            % plot formants
+            [t_formants_m formants_m] = Get_formants_from_file( [paths.dir_fn_m misc.filename_m{mode_idx} '.txt'] );
+            plot(t_formants_m/info.normalise_time_factor,formants_m,'rx')
+        end
         
         title(sprintf('Acoustic mode = %.0f, Measured (top panel), Modelled (bottom panel)',mode))
         xlabel('') % to delete xlabel subplot 2,1,1
@@ -125,16 +135,28 @@ for mode = info.modes2check
         set(hcb,'YLim',cbYLim);
         
         title('') % to delete title subplot 2,1,2
+        hold on
+        
+        if bFormants
+            % plot formants
+            [t_formants_p formants_p] = Get_formants_from_file( [paths.dir_fn_p misc.filename_p{mode_idx} '.txt'] );
+            plot(t_formants_p/info.normalise_time_factor,formants_p,'rx')
+        end
         
         linkaxes(halocal,'xy');
         
         xlim([0 3*misc.Tmodel(mode_idx)/info.normalise_time_factor]) % showing 3 periods
-        ylim([YLim_spec(mode_idx,:)])
+        
+        if ~bFormants
+            ylim([YLim_spec(mode_idx,:)])
+        else
+            ylim([0 4950]) % Default Praat
+        end
         
         h_STFT(end+1) = gcf;
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                
+        
         if bGridOn
             
             if mode_idx == 1 % Only done once!
@@ -272,7 +294,6 @@ for mode = info.modes2check
         tmp_h = [];
         tmp_h = [];
         options = info;
-        paths       = Get_TUe_subpaths('db_voice_of_dragon');
                 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         filenames   = Get_filenames(paths.dir_calibrated_ms,'*.wav');

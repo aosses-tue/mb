@@ -14,9 +14,10 @@ function [t f0] = Get_F0_praat_from_txt(filename, info)
 % % Example:
 %   [t f0] = Get_F0_praat_from_txt('/home/alejandro/Documenten/MATLAB/MATLAB_svn/new_audio/wdz6.txt');
 %
-% Programmed by Alejandro Osses, ExpORL 2014
-% Last updated on: 19/05/2014
-% Last used on   : 19/05/2014
+% Programmed by Alejandro Osses, ExpORL, KU Leuven, 2014
+% Created in    : 2014
+% Last update on: 19/05/2014
+% Last use on   : 19/05/2014
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 2

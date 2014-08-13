@@ -69,6 +69,7 @@ my_latex_info = Get_my_latex_info;
 p.author    = my_latex_info.author;
 p.email     = my_latex_info.email;
 p.supervisor = my_latex_info.supervisor;
+% p.titlehead = my_latex_info.titlehead;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % inputfile = [misc.lx_Templates templatefile];

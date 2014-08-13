@@ -9,14 +9,25 @@ function my_latex_info = Get_my_latex_info
 % 3. Stand-alone example:
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
-% Created on: 30/6/2014
-% Last update: 30/6/2014 % Update this date manually
-% Last used: 30/6/2014 % Update this date manually
+% Created on    : 30/06/2014
+% Last update on: 11/08/2014 % Update this date manually
+% Last use on   : 11/08/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 my_latex_info.author    = 'Alejandro Osses';
 my_latex_info.email     = 'a.osses@tue.nl';
 my_latex_info.supervisor = 'Armin Kohlrausch';
+my_latex_info.university = 'TU Eindhoven';
+my_latex_info.department = 'Department of Industrial Engineering \& Innovation Sciences';
+my_latex_info.researchgroup = 'Human-Technology Interaction Group';
+my_latex_info.address = 'P.O. Box 513, NL-5600MB Eindhoven, The Netherlands';
+
+a = sprintf('\\titlehead{\n\t {\\Large %s \n}\\\\ \n',my_latex_info.university);
+a = [a sprintf('%s\\\\\n',my_latex_info.department)];
+a = [a sprintf('%s\\\\\n',my_latex_info.researchgroup)];
+a = [a sprintf('%s\\\\}\n\n',my_latex_info.address)];
+
+my_latex_info.titlehead = a;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end

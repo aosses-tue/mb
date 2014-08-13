@@ -99,16 +99,19 @@ for mode = info.modes2check
     field = '1';
     filename{1} = [dir_calibrated_m 'modus-' modus '_v' num2str(take) '-' field lblFilter '.wav'];
     field = '2';
-    filename{2} = [dir_calibrated_m 'modus-' modus '_v' num2str(take) '-' field lblFilter '.wav'];
-    file_f0_m   = [dir_f0_m         'modus-' modus '_v' num2str(take) '-' field lblFilter '.txt']; % added on 31/07/2014
-    filename{3} = [dir_meas_def 'modus ' modus '_v' num2str(take) '-3.wav'];
+    filename1 = ['modus-' modus '_v' num2str(take) '-' field lblFilter];
+    filename{2} = [dir_calibrated_m filename1 '.wav'];
+    file_f0_m   = [dir_f0_m         filename1 '.txt']; % added on 31/07/2014
+    filename{3} = [dir_meas_def     'modus ' modus '_v' num2str(take) '-3.wav'];
     
     % 2. Modelled wav files:
     field = '1';
     filename{4} = [dir_calibrated_p 'modus-' modus '-v_' field lblFilter '.wav'];
+    
     field = '2';
-    filename{5} = [dir_calibrated_p 'modus-' modus '-v_' field lblFilter '.wav'];
-    file_f0_p   = [dir_f0_p         'modus-' modus '-v_' field lblFilter '.txt']; % added on 31/07/2014
+    filename2 = ['modus-' modus '-v_' field lblFilter];
+    filename{5} = [dir_calibrated_p filename2 '.wav'];
+    file_f0_p   = [dir_f0_p         filename2 '.txt']; % added on 31/07/2014
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Loading audio files...
     
@@ -141,19 +144,25 @@ for mode = info.modes2check
     yfarp   = Do_truncate(yfarp , L);
 	t       = Do_truncate(tm,L); % same t for measured and modelled
 
+    % filename1 = ['modus-' modus '_v' num2str(take) '-' field lblFilter];
+    % filename2 = ['modus-' modus '-v_' field lblFilter];
+    
+    misc.filename_m{mode_idx} = filename1;
+    misc.filename_p{mode_idx} = filename2;
+    
     if info.bSave
         time2save = 5;
-        filename1 = [dir_calibrated_ms 'modus-' modus '_v' num2str(take) '-' field lblFilter '.wav'];
         ynear2 = resample(ynear,44100,fs);
         ynear2 = ynear2(1:time2save*44100);
         Wavwrite(ynear2,44100,filename1);
-        
-        filename2 = [dir_calibrated_ps 'modus-' modus '-v_' field lblFilter '.wav'];
+                
         ynearp2 = resample(ynearp,44100,fs);
         ynearp2 = ynearp2(1:time2save*44100);
         Wavwrite(ynearp2,44100,filename2);
+        
+        disp([mfilename '.m: Synchronised file names returned...'])
     end
-    
+        
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if info.bPlot
         

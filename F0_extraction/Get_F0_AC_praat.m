@@ -127,6 +127,7 @@ if isunix
     command4system = [local_praat ' ' script ' "' inputfile '" "' outputfile '" "' num2str(framelen) '" "' num2str(minf0) '" "' num2str(numcand) '" "no" "' num2str(silence_thr) '" "' num2str(voicing_thr) '" "' num2str(octave_cost) '" "' num2str(octave_jump_cost) '" "' num2str(vUv_cost) '" "' num2str(maxf0) '"'];
 else
     % command4system = [local_praat ' ' script]; % this command is used only to open Praat (run it then manually: Ctrl+R)
+                                    % script      % in1:wav       % in2:txt        % in3                   % in4                % in5               % in6   % in7                      % in8
     command4system = [local_praat ' ' script ' "' inputfile '" "' outputfile '" "' num2str(framelen) '" "' num2str(minf0) '" "' num2str(numcand) '" "no" "' num2str(silence_thr) '" "' num2str(voicing_thr) '" "' num2str(octave_cost) '" "' num2str(octave_jump_cost) '" "' num2str(vUv_cost) '" "' num2str(maxf0) '"'];
 end
 

@@ -1,0 +1,58 @@
+1. New function:
+% 1. Description:
+%
+% 2. Additional info:
+%       Tested cross-platform: No
+%
+% 3. Stand-alone example:
+%       
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Created on    : $$dd$$/$$mm$$/$$yyyy$$
+% Last update on: $$dd$$/$$mm$$/$$yyyy$$ % Update this date manually
+% Last use on   : $$dd$$/$$mm$$/$$yyyy$$ % Update this date manually
+
+2. Adapted function (from third party):
+% 1. Description:
+%
+% 2. Additional info:
+%       Tested cross-platform: No
+%
+% 3. Stand-alone example:
+%       
+% Author        : GENESIS S.A. (www.genesis.fr)
+% Created in    : 2009
+% Downloaded on : $$dd$$/$$mm$$/$$yyyy$$
+% Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Last update on: $$dd$$/$$mm$$/$$yyyy$$ % Update this date manually
+% Last use on   : $$dd$$/$$mm$$/$$yyyy$$ % Update this date manually
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+3. Adapted function (from other AO's scripts):
+% 1. Description:
+%
+% 2. Additional info:
+%       Tested cross-platform: No
+%
+% 3. Stand-alone example:
+%       
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Adapted from  : xxxxxxxxxxxxxx.m
+% Created on    : $$dd$$/$$mm$$/$$yyyy$$
+% Last update on: $$dd$$/$$mm$$/$$yyyy$$ % Update this date manually
+% Last use on   : $$dd$$/$$mm$$/$$yyyy$$ % Update this date manually
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+4. Renamed function:
+% 1. Description:
+%
+% 2. Additional info:
+%       Tested cross-platform: No
+%
+% 3. Stand-alone example:
+%       
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Original file name: xxxxxxxxxxx.m (changed on: $$dd$$/$$mm$$/$$yyyy$$)
+% Created on    : $$dd$$/$$mm$$/$$yyyy$$
+% Last update on: $$dd$$/$$mm$$/$$yyyy$$ % Update this date manually
+% Last use on   : $$dd$$/$$mm$$/$$yyyy$$ % Update this date manually
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

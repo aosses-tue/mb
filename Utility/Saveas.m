@@ -1,5 +1,5 @@
-function Saveas(h, filename,option)
-% function Saveas(h, filename,option)
+function Saveas(h, filename, option)
+% function Saveas(h, filename, option)
 %
 % Function to save EPS files
 %
@@ -18,8 +18,8 @@ set(h,'PaperType', 'A4')
 Check_figure_size(h); % Constrains figure width to A4 Paper size
 set(h,'PaperPositionMode', 'auto')
 if option.bPrint
-    figure(h);
-    Print_date_on_figure;
+%     figure(h);
+%     Print_date_on_figure;
 end
 
 saveas(h, filename, 'epsc');

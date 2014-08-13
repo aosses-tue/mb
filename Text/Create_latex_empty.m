@@ -20,8 +20,17 @@ misc.lx_Templates = Get_TUe_paths('lx_Templates');
 misc.lx_Text      = Get_TUe_paths('lx_Text'     );
 templatefile      = 'doc_plain.tex';
 
+type_doc = input('Which kind of document do you want to create? (1 = weekly update): ');
+
 if nargin == 0
-    filename = input('Type a name for your new LaTeX document (between brackets, no spaces): ');
+    
+    switch type_doc
+        case 1 % weekly update
+            filename = 'update';
+        otherwise
+            filename = input('Type a name for your new LaTeX document (between brackets, no spaces): ');
+    end
+        
     lx_title = input('Type the title of the document (otherwise type enter): ');
 end
 
@@ -34,12 +43,20 @@ p.style     = templatefile; % style file
 p.filename  = filename;
 p.title     = lx_title;
 
+switch type_doc
+    case 1
+        p.comments = 'MATLAB script used: % complete this manually';
+    otherwise
+        p.comments = '';
+end
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 my_latex_info = Get_my_latex_info;
 
 p.author    = my_latex_info.author; % p.author    = 'Alejandro Osses';
 p.email     = my_latex_info.email;
 p.supervisor= my_latex_info.supervisor; % p.supervisor = 'Armin';
+%p.titlehead = my_latex_info.titlehead;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 inputfile = [misc.lx_Templates templatefile];
