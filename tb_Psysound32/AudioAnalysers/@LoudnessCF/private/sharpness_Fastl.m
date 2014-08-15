@@ -1,14 +1,12 @@
 function [sharp] = sharpness_Fastl(loudspec)
-
-% SHARPNESS
-%**************************************************************
+% function [sharp] = sharpness_Fastl(loudspec)
+% 
 % Method FASTL (1991)
-% Expression for weighting function obtained by fitting an 
-% equation to data given in 'Psychoacoustics: Facts and Models'
-% using MATLAB basic fitting function
+% Expression for weighting function obtained by fitting an equation to data 
+% given in 'Psychoacoustics: Facts and Models' using MATLAB basic fitting 
+% function
 % x: time signal
-% sh = sharpness [acum]
-%**************************************************************
+% sharp = sharpness [acum]
 % Claire Churchill Sep 2004
 
 n = length(loudspec);

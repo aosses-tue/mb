@@ -14,6 +14,19 @@ function [y,env]=ch_am(sig,fmod,x,option,fs,start_phase,const)
 % optional: bei start_phase = -pi/2 beginnt Modulation im Minimum (default)
 % optional: Maximum konstant halten (beliebigen Wert für const eingeben).
 %
+% 3. Example:
+%       fc = 2000;
+%       T = 1/fc;
+%       fmod = 200;
+%       Tmod = 3/fmod;
+%       dur = 1*Tmod;
+%       fs = 44100;
+%       sig = Create_sin(fc,dur,fs,0);
+%       m = 100-11;
+%       option = 'm';
+%       start_phase = pi/2; % begin in maximum. Use -pi/2 to begin in minimum
+%       ch_am(sig,fmod,m,option,fs,start_phase);
+% 
 % References: Schone1979
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -64,7 +77,7 @@ pause(2);
 % env=amp((1 + m * sin(2*pi*fmod*t+start_phase)),-korr);
 env = (1 + m * sin(2*pi*fmod*t+start_phase)       );
 env = env/max(abs(env));
-y = sig .* env; % Modulation beginnt im Minimum
+y = sig .* env; % Modulation beginnt in Minimum
 
 % Anhang: einige Formeln zur Amplitudenmodulation
 % Pegelabstand zwischen Träger und Seitenlinien
@@ -76,7 +89,14 @@ y = sig .* env; % Modulation beginnt im Minimum
 
 if nargout == 0
     figure;
-    plot( t,To_dB(sig),t,To_dB(y) )
+    subplot(2,1,1)
+    plot( t,sig,t,y )
     legend('no AM','with AM');
+    xlabel('time [s]')
+    grid on
+    
+    subplot(2,1,2)
+    plot( t,env,t,y )
+    xlabel('time [s]')
     grid on
 end

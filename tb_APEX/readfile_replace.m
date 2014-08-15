@@ -7,6 +7,7 @@ function result = readfile_replace(filename,replaces)
 %    p.value='smurf';
 %    readfile_replace('file.xml', p)
 %   will replace all occurences of $$value$$ by smurf
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if (~exist(filename, 'file'))
     warning(['Can''t open file ' filename ]);
@@ -40,3 +41,5 @@ while 1
     result=[result tline];
 end
 fclose(fid);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

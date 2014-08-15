@@ -56,14 +56,22 @@ my_latex_info = Get_my_latex_info;
 p.author    = my_latex_info.author; % p.author    = 'Alejandro Osses';
 p.email     = my_latex_info.email;
 p.supervisor= my_latex_info.supervisor; % p.supervisor = 'Armin';
-%p.titlehead = my_latex_info.titlehead;
+p.university = my_latex_info.university;
+p.department = my_latex_info.department;
+p.researchgroup = my_latex_info.researchgroup; 
+p.address = my_latex_info.address;
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 inputfile = [misc.lx_Templates templatefile];
 outputdir = [misc.lx_Text 'lx' p.yyyy '-' p.mm '-' p.dd '-' filename delim];
 outputfile = [outputdir filename '.tex'];
 
-Mkdir(outputdir);
+status = Mkdir(outputdir);
+
+if status == 0
+    error('Directory already exists')
+end
 
 p.functionname=filename;
 

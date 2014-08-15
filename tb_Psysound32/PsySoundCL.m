@@ -28,13 +28,15 @@ if nargin < 2
 end
 
 option = Ensure_field(option,'nAnalyser',12);
+
 nAnalyser = option.nAnalyser;
 % nAnalyser = 12; % Dynamic loudness
 % nAnalyser = 15; % Roughness
 
 if nargin == 0
     % filename = 'D:\Databases\dir01-Instruments\Voice-of-dragon\02-Wav-files\05-Wav-files-calibrated-44.1kHz-filtered\modus-1_v2-2filt-fc-1000-Hz.wav';
-    filename = 'D:\Documenten-TUe\10-Referenties\02-Mijn-boeken\Zwicker-Psychoacoustics\Sound\track_42.wav'; % 78.7013 dB
+    % filename = 'D:\Documenten-TUe\10-Referenties\02-Mijn-boeken\Zwicker-Psychoacoustics\Sound\track_42.wav'; % 78.7013 dB
+    filename = 'D:\Documenten-TUe\10-Referenties\02-Mijn-boeken\Fastl2007-psychoacoustics\Extracted\ref_sharpness.wav';
 end
 
 if ~isfield(option,'title')
@@ -48,17 +50,24 @@ if nargin ~= 1 & isnumeric(filename)
 else
     [x fs] = Wavread(filename);
 end
-% rmsdb(x)
-dB_value = dbspl(x);
-% 0 dBFS = 100 dB
+
+if ~isfield(option,'calfile')
+    disp([mfilename '.m: calibration file not specified. 0 dBFS = 100 dB SPL is going to be used...'])
+    option.calfile = filename;
+    option.callevel = dbspl(x);
+else
+    if ~isfield(option,'callevel')
+        option.callevel = input([mfilename '.m - Specify the level of the calibration tone [dB SPL] : ']);
+    end
+end
 
 fh = readData(filename);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Step 2: Calibation
-% % To calibrate your files by using a file �CalFile.wav� that represents 91 dB:
-% fhs = calibrate(fhs, �WithFiles�, �CalFile.wav�, 91)
-fh = calibrate(fh, 'WithFiles', filename, dB_value); % calibrated with itself
+% % To calibrate your files by using a file 'CalFile.wav' that represents 91 dB:
+% fhs = calibrate(fhs, 'WithFiles', 'CalFile.wav', 91)
+fh = calibrate(fh, 'WithFiles', option.calfile, option.callevel); 
 % fh.calCoeff = 1; % To avoid calibration set this value to 1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Step 3: Analysers

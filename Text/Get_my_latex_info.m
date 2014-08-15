@@ -18,16 +18,9 @@ my_latex_info.author    = 'Alejandro Osses';
 my_latex_info.email     = 'a.osses@tue.nl';
 my_latex_info.supervisor = 'Armin Kohlrausch';
 my_latex_info.university = 'TU Eindhoven';
-my_latex_info.department = 'Department of Industrial Engineering \& Innovation Sciences';
+my_latex_info.department = 'Department of Industrial Engineering \\& Innovation Sciences';
 my_latex_info.researchgroup = 'Human-Technology Interaction Group';
 my_latex_info.address = 'P.O. Box 513, NL-5600MB Eindhoven, The Netherlands';
-
-a = sprintf('\\titlehead{\n\t {\\Large %s \n}\\\\ \n',my_latex_info.university);
-a = [a sprintf('%s\\\\\n',my_latex_info.department)];
-a = [a sprintf('%s\\\\\n',my_latex_info.researchgroup)];
-a = [a sprintf('%s\\\\}\n\n',my_latex_info.address)];
-
-my_latex_info.titlehead = a;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
