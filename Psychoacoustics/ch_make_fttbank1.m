@@ -1,21 +1,32 @@
-function S = make_fttbank1(fs, cf)
-% fcoefs = make_fttbank1(fs,cf);
-% calculates sos-representation of a critical band filterbank with 24
+function S = ch_make_fttbank1(fs, cf)
+% function S = ch_make_fttbank1(fs,cf);
+%
+% Calculates sos-representation of a critical band filterbank with 24
 % filters (bandwidth  = 1 bark) with an impulse response of 4th order.
-% This implementation is based on M. Slaney "An efficient
-% implementation of the Patterson-Holdsworth filter bank"
-% see Apple Technical Report #35. It is an efficient way to implement an
+% This implementation is based on [5]. 
+% It is an efficient way to implement an
 % FTT filterbank or Gammatone filterbank.
 % Note that this implementation results in filters with less stop band
 % attenuation than complex modulation filterbanks.
+%
 % cf: column vector mit 24 center-frequencies (optional, default:
 % Bark center-frequencies according to Zwicker)
 % B: column vector mit 24 critical band widths (optional, default:
 % Bark bandwidths according to Zwicker)
 %
-% Author: Josef Chalupper (josef.chalupper@siemens.com)
-% original version: 12.12.2000
-% new version (with comments and examples): 6.1.2007
+% References:
+% [5] M. Slaney "An efficient implementation of the Patterson-Holdsworth 
+%     filter bank". See Apple Technical Report #35. 
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Author        : Josef Chalupper (josef.chalupper@siemens.com)
+% Created on    : 12/12/2000
+% Edited on     : 06/02/2007 (new version with comments and examples)
+% Downloaded on : 07/08/2014 (approx.)
+% Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Last update on: 07/08/2014 % Update this date manually
+% Last use on   : 07/08/2014 % Update this date manually
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Altered by flatmax is Matt Flax for the Psy-Sound project
 % Jan. 2007

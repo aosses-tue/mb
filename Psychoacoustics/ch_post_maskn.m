@@ -1,7 +1,9 @@
 function kernlaut_dyn = ch_post_maskn(kernlaut_stat,f_abt)
-% kernlaut_dyn = ch_post_maskn(kernlaut_stat,f_abt);
+% function kernlaut_dyn = ch_post_maskn(kernlaut_stat,f_abt)
+%
 % kernlaut_stat is the input matrix (stationary main loudness; (N,24)-matrix),
 % kernlaut_dyn is the output matrix (dynamic main loudness; (N,24)-matrix),
+%
 % f_abt (optional): sampling rate (default=500)
 %   Ae	output signal of a critical band
 %	Ze	state of accumulator
@@ -10,9 +12,15 @@ function kernlaut_dyn = ch_post_maskn(kernlaut_stat,f_abt)
 %	tau2  = 75 ms (Zwicker: 70 ms)
 %	tau12 = 11..17 ms (80..40 dB)
 %
-% Author: Josef Chalupper (josef.chalupper@siemens.com)
-% original version: 12.12.2000
-% new version (with comments and examples): 6.1.2007
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Author        : Josef Chalupper (josef.chalupper@siemens.com)
+% Created on    : 12/12/2000
+% Edited on     : 06/01/2007 (new version with comments and examples)
+% Downloaded on : 07/08/2014 (approx.)
+% Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Last update on: 07/08/2014 % Update this date manually
+% Last use on   : 07/08/2014 % Update this date manually
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Initialisation
 if nargin<2

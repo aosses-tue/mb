@@ -1,5 +1,7 @@
-function y = prctile(x,p);
-%PRCTILE gives the percentiles of the sample in X.
+function y = prctile(x,p)
+% function y = prctile(x,p)
+%
+%	PRCTILE gives the percentiles of the sample in X.
 %	Y = PRCTILE(X,P) returns a value that is greater than P percent
 %	of the values in X. For example, if P = 50  Y is the median of X. 
 %

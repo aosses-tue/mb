@@ -1,10 +1,12 @@
-function [y,env]=ch_am(sig,fmod,x,option,fs,start_phase,const)
-% [y,env]=ch_am(sig,fmod,x,option,start_phase,const);
+function [y,env] = ch_am(sig,fmod,x,option,fs,start_phase,const)
+% function [y,env] = ch_am(sig,fmod,x,option,start_phase,const);
 % 
+% 1. Description:
 % DE:   am.m amplitudenmoduliert beliebiges Signal 'sig' mit Modulationsfrequenz 
 %       fmod. 'option' ist entweder m oder d, je nachdem, ob Modulationsgrad 
-%       'm' (in %) oder Modulationsmaß d (dB) in 'x' angegeben wird. Falls 
+%       'm' (in %) oder Modulationsmass d (dB) in 'x' angegeben wird. Falls 
 %       sig eine Matrix ist, arbeitet am spaltenweise, y ist dann eine matrix
+% 
 % EN:   am.m modulates in amplitude signal 'sig' with modulation frequency
 %       f0mod. 'option' is either 'm' or 'd', depending on whether modulation
 %       factor 'm' or modulation depth 'd' is given. If 'sig' is a matrix, 
@@ -12,15 +14,18 @@ function [y,env]=ch_am(sig,fmod,x,option,fs,start_phase,const)
 % 
 % optional: Abtastrate (default 44,1 kHz)
 % optional: bei start_phase = -pi/2 beginnt Modulation im Minimum (default)
-% optional: Maximum konstant halten (beliebigen Wert für const eingeben).
+% optional: Maximum konstant halten (beliebigen Wert fuer const eingeben).
 %
+% 2. Additional info:
+%       Tested cross-platform: Yes
+% 
 % 3. Example:
-%       fc = 2000;
-%       T = 1/fc;
-%       fmod = 200;
+%       fc = 2000; % carrier frequency
+%       T = 1/fc; % period
+%       fmod = 200; % modulation frequency
 %       Tmod = 3/fmod;
-%       dur = 1*Tmod;
-%       fs = 44100;
+%       dur = 1*Tmod; 
+%       fs = 44100; % sampling frequency
 %       sig = Create_sin(fc,dur,fs,0);
 %       m = 100-11;
 %       option = 'm';
@@ -80,7 +85,7 @@ env = env/max(abs(env));
 y = sig .* env; % Modulation beginnt in Minimum
 
 % Anhang: einige Formeln zur Amplitudenmodulation
-% Pegelabstand zwischen Träger und Seitenlinien
+% Pegelabstand zwischen Trï¿½ger und Seitenlinien
 % deltal=20*log10(2/m);
 % d als Funktion von m
 % d=20*log10((1+m)/(1-m));
@@ -99,4 +104,6 @@ if nargout == 0
     plot( t,env,t,y )
     xlabel('time [s]')
     grid on
+    
+    legend('Envelope', 'AM-signal')
 end

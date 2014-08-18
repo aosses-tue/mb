@@ -12,22 +12,27 @@ function [N, main_N, spec_N] = ch_dlm(sig, HL, k)
 % (regarding definition of center frequencies and bandwidth)
 %
 % References:
-% Chalupper, J.,Fastl, H. (2002): Dynamic loudness model (DLM) for normal
-% and hearing-impaired listeners. ACUSTICA/acta acustica, 88: 378-386
-% Chalupper, J. (2001) - in german - : Perzeptive Folgen von
-% Innenohrschwerh?rigkeit:
-% Modellierung, Simulation und Rehabilitation. Dissertation at the Technical
-% University of Munich, Shaker Verlag.
-%
-% Author: Josef Chalupper (josef.chalupper@siemens.com)
-% original version: 12.12.2000
-% new version (with comments and examples): 6.1.2007
+% [1]   Chalupper, J.,Fastl, H. (2002): Dynamic loudness model (DLM) for 
+%       normal and hearing-impaired listeners. Acustica, 88: 378-386
+% [2]   Chalupper, J. (2001) - in german - : Perzeptive Folgen von
+%       Innenohrschwerh?rigkeit: Modellierung, Simulation und 
+%       Rehabilitation. Dissertation at the Technical University of Munich, 
+%       Shaker Verlag.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Author        : Josef Chalupper (josef.chalupper@siemens.com)
+% Created on    : 12/12/2000
+% Edited on     : 06/01/2007 (new version with comments and examples)
+% Downloaded on : 07/08/2014 (approx.)
+% Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Last update on: 07/08/2014 % Update this date manually
+% Last use on   : 07/08/2014 % Update this date manually
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Altered by MFFM Matt Flax <flatmax> for the Psy-Sound project
 % Jan. 2007
 % Comments :
-% This file is altered from its original form to allow block based
-% processing. Block processing is a requirement of the Psy-Sound project.
+% This file is altered from its original form to allow block based processing. 
+% Block processing is a requirement of the Psy-Sound project.
 % Block based processing requires that all necessary filter and data states
 % are remembered between 'dlm' function calls. In order for this to be
 % possible, the 'fileHandle' structure is altered accordingly.
@@ -52,7 +57,9 @@ end
 
 fs = 44100;
 
-% Splitting of hearing loss into HL_ihc and HL_ohc
+% Splitting of hearing loss into:
+%       - HL_ihc
+%       - HL_ohc: nonlinear component of hearing loss
 HL_ohc = k.*HL;
 HL_ihc = HL-HL_ohc;
 
@@ -73,8 +80,6 @@ kern_l = [];
 smooth.Zfa = [];
 smooth.Zfb = [];
 
-% Return the run function handle
-% out = @run;
 [N, main_N, spec_N] = run(sig);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -121,4 +126,6 @@ smooth.Zfb = [];
   N(find(N <0)) = 0;
   
   end % run
-end % dlm
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+end 

@@ -1,12 +1,23 @@
-function [h,t,erd,h_orig]=tep_window(t_pb,t_pa,t_sb,t_sa,w,fs)
-%[h,t,erd,h_orig]=tep_window(t_pb,t_pa,t_sb,t_sa,w);
-%calculates TEP-window (h) 
-%Plack & Moore: Temporal window shape as afunction of frequency and level
-%t: time vector; erd: equivalent rectangular duration; h_orig: impulse response
+function [h,t,erd,h_orig]=ch_tep_window(t_pb,t_pa,t_sb,t_sa,w,fs)
+% function [h,t,erd,h_orig]=ch_tep_window(t_pb,t_pa,t_sb,t_sa,w,fs)
 %
-% Author: Josef Chalupper (josef.chalupper@siemens.com)
-% original version: 12.12.2000
-% new version (with comments and examples): 6.1.2007
+% Calculates TEP-window (h)
+%
+% References: 
+% [4] Plack & Moore: Temporal window shape as afunction of frequency and level
+%	t  : time vector; 
+%	erd: equivalent rectangular duration; 
+%	h_orig: impulse response
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Author        : Josef Chalupper (josef.chalupper@siemens.com)
+% Created on    : 12/12/2000
+% Edited on     : 06/01/2007 (new version with comments and examples)
+% Downloaded on : 07/08/2014 (approx.)
+% Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Last update on: 07/08/2014 % Update this date manually
+% Last use on   : 07/08/2014 % Update this date manually
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Altered by Matt Flax is flatmax for the Psy-Sound project
 % Jan. 2007

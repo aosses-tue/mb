@@ -1,3 +1,6 @@
+function sig=ch_signal(laenge,samplerate,name,unit_x,unit_y,start_time)
+% function sig=ch_signal(laenge,samplerate,name,unit_x,unit_y,start_time)
+%
 % constructor of class @signal
 % parent class: none
 % function sig=signal(length,samplerate,name,unit_x,unit_y,start_time)
@@ -26,9 +29,6 @@
 % http://www.mrc-cbu.cam.ac.uk/cnbh/aimmanual
 % $Date: 2003/01/21 18:15:08 $
 % $Revision: 1.4 $
-
-function sig=signal(laenge,samplerate,name,unit_x,unit_y,start_time)
-
 
 if nargin < 6
     start_time=0;

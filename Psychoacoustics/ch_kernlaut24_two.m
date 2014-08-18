@@ -1,13 +1,25 @@
-function out = kernlaut24_two(rms, HL_ohc)
-% out=kernlaut24_two(rms, HL_ohc);
+function out = ch_kernlaut24_two(rms, HL_ohc)
+% function out = ch_kernlaut24_two(rms, HL_ohc)
+%
 % calculates main loudness for main excitation (rms) according to DIN45631
 % accounts for nonlinear component of hearing loss (HL_ohc)
 %
-% Author: Josef Chalupper (josef.chalupper@siemens.com)
-% original version: 12.12.2000
-% new version (with comments and examples): 6.1.2007
+% Data for thq and a0 from [3].
+% 
+% References:
+%   [3] Paulus; Zwicker. "Computer Programmes for Calculating Loudness from 
+%       Third-Octave Band Levels or from Critical Band Levels". ACUSTICA 
+%       Vol.27 1972 issue 5 S.261 TableI
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Author        : Josef Chalupper (josef.chalupper@siemens.com)
+% Created on    : 12/12/2000 (new version with comments and examples on 06/01/2007)
+% Downloaded on : 07/08/2014 (approx.)
+% Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Last update on: 07/08/2014 % Update this date manually
+% Last use on   : 08/08/2014 % Update this date manually
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Data for thq and a0 from  ACUSTICA Vol.27 1972 issue 5 S.261 TableI
 thq = [42 18.5 11.5 8.3 6.7 5.5 4.8 4.3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3];
 
 thq = thq+HL_ohc;
@@ -26,5 +38,7 @@ for i = 1:length(rms(:,1))
    nm(j)=0;
    
    out(i,:)=nm;
- end
- 
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+end

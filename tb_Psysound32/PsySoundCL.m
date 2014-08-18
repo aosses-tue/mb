@@ -3,7 +3,12 @@ function [h ha] = PsySoundCL(filename,option)
 % 
 % 1. Description:
 %       Executes PsySound3 from command line
-% 
+%       Specify:
+%           option.nAnalyser    - 12 = DLM Chalupper's model
+%                               - 15 = Daniel's Roughness
+%           option.calfile
+%           option.callevel
+%   
 % 2. Additional info:
 %       Tested cross-platform: No
 %
@@ -30,8 +35,6 @@ end
 option = Ensure_field(option,'nAnalyser',12);
 
 nAnalyser = option.nAnalyser;
-% nAnalyser = 12; % Dynamic loudness
-% nAnalyser = 15; % Roughness
 
 if nargin == 0
     % filename = 'D:\Databases\dir01-Instruments\Voice-of-dragon\02-Wav-files\05-Wav-files-calibrated-44.1kHz-filtered\modus-1_v2-2filt-fc-1000-Hz.wav';

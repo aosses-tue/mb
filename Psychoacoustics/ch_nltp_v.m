@@ -1,5 +1,7 @@
 function [Ae,Ze,B,lastcase] = nltp_V(Aa,Za,E,B,lastcase,f_abt)
-% applies nonlinear low pass to model forward masking
+% function [Ae,Ze,B,lastcase] = nltp_V(Aa,Za,E,B,lastcase,f_abt)
+%
+% Applies nonlinear low pass to model forward masking
 %	Aa	old output signal
 %	Za	old state of accumulator
 %	E	input signal
@@ -7,9 +9,15 @@ function [Ae,Ze,B,lastcase] = nltp_V(Aa,Za,E,B,lastcase,f_abt)
 %	Ae	new output signal
 %	Ze	new state of accumulator
 %
-% Author: Josef Chalupper (josef.chalupper@siemens.com)
-% original version: 12.12.2000
-% new version (with comments and examples): 6.1.2007
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Author        : Josef Chalupper (josef.chalupper@siemens.com)
+% Created on    : 12/12/2000
+% Edited on     : 06/01/2007 (new version with comments and examples)
+% Downloaded on : 07/08/2014 (approx.)
+% Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Last update on: 07/08/2014 % Update this date manually
+% Last use on   : 07/08/2014 % Update this date manually
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if E < Aa
    % case 1: "discharge" i.e. forward masking: time constant stays

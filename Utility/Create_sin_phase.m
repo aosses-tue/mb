@@ -44,7 +44,7 @@ if nargin < 3
 end
 
 if nargin < 4
-    start_phase = pi/2; % max
+    start_phase = 0; % min
 end
 
 window = 0;
@@ -55,10 +55,6 @@ t = t';
 w = 2*pi*f;
 y =  sin(w*t+start_phase);
 T = 1/f;
-
-[win, wtype] = Get_window(window,y);
-
-y = y.*win;
 
 if nargout == 0
     plot(t,y);

@@ -9,6 +9,7 @@ function z = hz2bark(f)
 % 3. Stand-alone example:
 %       f = 1000;
 %       z = hz2bark(f)
+%
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 15/08/2014
 % Last update on: 15/08/2014 % Update this date manually
