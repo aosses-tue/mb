@@ -1,14 +1,9 @@
-function [h ha] = PsySoundCL(filename,option)
-% function [h ha] = PsySoundCL(filename,option)
+function [h ha output] = PsySoundCL(filename,option)
+% function [h ha output] = PsySoundCL(filename,option)
 % 
 % 1. Description:
 %       Executes PsySound3 from command line
-%       Specify:
-%           option.nAnalyser    - 12 = DLM Chalupper's model
-%                               - 15 = Daniel's Roughness
-%           option.calfile
-%           option.callevel
-%   
+% 
 % 2. Additional info:
 %       Tested cross-platform: No
 %
@@ -17,8 +12,8 @@ function [h ha] = PsySoundCL(filename,option)
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 22/07/2014
-% Last update on: 07/08/2014 % Update this date manually
-% Last use on   : 07/08/2014 % Update this date manually
+% Last update on: 18/08/2014 % Update this date manually
+% Last use on   : 18/08/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 h = [];
@@ -35,6 +30,8 @@ end
 option = Ensure_field(option,'nAnalyser',12);
 
 nAnalyser = option.nAnalyser;
+% nAnalyser = 12; % Dynamic loudness
+% nAnalyser = 15; % Roughness
 
 if nargin == 0
     % filename = 'D:\Databases\dir01-Instruments\Voice-of-dragon\02-Wav-files\05-Wav-files-calibrated-44.1kHz-filtered\modus-1_v2-2filt-fc-1000-Hz.wav';
@@ -89,6 +86,9 @@ tmpObj  = get(obj,'output');
 
 t       = get(tmpObj{1,1},'Time');
 z       = get(tmpObj{1,2},'Freq'); % 1:24
+
+output.t = t;
+output.z = z;
 
 switch nAnalyser 
     case 12
@@ -182,6 +182,10 @@ switch nAnalyser
         h(end+1) = gcf;
         ha(end+1) = gca;
         
+        output.zspec = zspec;
+        output.DataLoud = DataLoud;
+        output.DataSharp = DataSharp;
+        
     case 15
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -202,9 +206,9 @@ switch nAnalyser
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % Roughness -> Graph (Visualisation - Single Axis, plot)
         
-        DataRoughness = get(tmpObj{1,1},'Data');
+        DataRough = get(tmpObj{1,1},'Data');
         figure;
-        plot(t, DataRoughness);
+        plot(t, DataRough);
         xlabel('Time (seconds)')
         ylabel('Roughness (aspers)')
         title(sprintf('Roughness - %s', option.title));
@@ -213,10 +217,10 @@ switch nAnalyser
         h(end+1) = gcf;
         ha(end+1) = gca;
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        
+        output.DataRough = DataRough;
+        
 end
-
-% % To estimate the time the analysis will take
-% runanalysis(fhs, �FFT�, �Hilbert�, �SLM�, �estimate�)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end

@@ -6,7 +6,7 @@ function Saveas(h, filename, option)
 % Programmed by Alejandro Osses, ExpORL, KULeuven, Belgium 2014
 % Created in    : January-March 2014
 % Last update on: 07/08/2014 % Update this date manually
-% Last use on   : 07/08/2014 % Update this date manually
+% Last use on   : 18/08/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 3

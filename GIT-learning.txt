@@ -5,3 +5,15 @@ git add filename.filename
 git add -u % only adds edited
 ignoring files: http://git-scm.com/book/en/Git-Basics-Recording-Changes-to-the-Repository
 2.5 Showing your remotes
+
+If you forgot to commit files while working in other computer... 
+
+In 'Ubuntu-pc'
+	Commit the changes from 'ubuntu-PC'
+In 'Win7-pc'
+	git pull
+In case git pull failes, that means you have edited some of the late committed files from ubuntu then:
+	Create a back-up of the updated doc in 'Win7-pc' (copy-paste)
+	type: 'git checkout -- Psychoacoustics/hz2bark.m'
+	type: 'git pull'
+	Apply again the changes manually from the copy-pasted document into the just updated document from the repository

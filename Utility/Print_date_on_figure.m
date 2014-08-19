@@ -14,7 +14,7 @@ function y = Print_date_on_figure
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 07/08/2014
 % Last update on: 07/08/2014 % Update this date manually
-% Last use on   : 07/08/2014 % Update this date manually
+% Last use on   : 18/08/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 try
@@ -25,7 +25,7 @@ end
 
 p = Get_date;
 
-txt2print = ['Printed on ' p.date2print];
+txt2print = ['Printed on ' p.date4plots];
 
 if isunix
     txt2print = [txt2print ' by AO-u'];

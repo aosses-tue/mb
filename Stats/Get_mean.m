@@ -4,10 +4,10 @@ function [m,s,ci] = Get_mean(data)
 % Get means 'm', standard deviation 's' and confidence interval 'ci' 
 % ignoring NaN data.
 %
-% Programmed by Matthias Milczynski 2008-2011
-% Adapted by Alejandro Osses, TU/e 2014
-% Last updated: 18/06/2014
-% Last used: 19/06/2014
+% Programmed by Matthias Milczynski, ExpORL, KU Leuven, Belgium 2008-2011
+% Edited by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Last update on : 18/08/2014
+% Last use on    : 18/08/2014
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % function [m,s,ci] = calcMeanStd(data)
 
@@ -17,6 +17,9 @@ ci = nan(1, size(data, 2)); %zeros
 for j=1:size(data, 2)
     d = data(:, j);
     idx = find(isnan(d)); %-1;
+    if length(idx > 0)
+        warning(sprintf('Excluding from mean and std calculation %.0f NaN data point(s)',length(idx)));
+    end
     d(idx) = [];
     if ~isempty(d)
         %if obj.interval

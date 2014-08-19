@@ -17,8 +17,8 @@ function str = Num2str(num, numDecimals) %, bEqualLenght)
 %
 % Programmed by Alejandro Osses, ExpORL, KU Leuven, Belgium, 2012-2013
 % Created in    : 2012-2013
-% Last update on: 02/08/2014 % Update this date manually
-% Last use on   : 02/08/2014 % Update this date manually
+% Last update on: 19/08/2014 % Update this date manually
+% Last use on   : 19/08/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin == 1
@@ -54,15 +54,15 @@ if mod(num,1) ~= 0 % then it is a decimal...
             str = [str str_tmp];
         end
     end
-else
+else % then it is an integer
     str = num2str(num);
-    if num < 10^(numDecimals-1)
-        tmp = [];
-        while length(tmp)+length(str) < numDecimals
-            tmp = ['0' tmp];
-        end
-        str = [tmp str];
+    
+    tmp = [];
+    while length(tmp)+length(str) < numDecimals
+        tmp = ['0' tmp];
     end
+    str = [tmp str];
+    
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end

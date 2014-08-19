@@ -25,7 +25,11 @@ cont            = find(name == '_');
 fig_name(cont)  = '-';
 
 if length(fig_name) > 24
-    fig_name = ['[..]' fig_name(end-24:end)];
+    try
+        [tmp1 fig_name] = fileparts(fig_name);
+    catch
+        fig_name = ['[..]' fig_name(end-24:end)];
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
