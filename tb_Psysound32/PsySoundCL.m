@@ -27,16 +27,20 @@ if nargin < 2
     option = [];
 end
 
-option = Ensure_field(option,'nAnalyser',12);
+option = Ensure_field(option,'nAnalyser'  ,15);
+option = Ensure_field(option,'bCosineRamp',0 );
+
+if option.bCosineRamp
+    option = Ensure_field(option,'bCosineRampOnset',25);
+end
 
 nAnalyser = option.nAnalyser;
 % nAnalyser = 12; % Dynamic loudness
 % nAnalyser = 15; % Roughness
 
 if nargin == 0
-    % filename = 'D:\Databases\dir01-Instruments\Voice-of-dragon\02-Wav-files\05-Wav-files-calibrated-44.1kHz-filtered\modus-1_v2-2filt-fc-1000-Hz.wav';
-    % filename = 'D:\Documenten-TUe\10-Referenties\02-Mijn-boeken\Zwicker-Psychoacoustics\Sound\track_42.wav'; % 78.7013 dB
-    filename = 'D:\Documenten-TUe\10-Referenties\02-Mijn-boeken\Fastl2007-psychoacoustics\Extracted\ref_sharpness.wav';
+    [f1 f2] = uigetfile(Get_TUe_paths('outputs'));
+    filename = [f2 f1];
 end
 
 if ~isfield(option,'title')
@@ -61,7 +65,22 @@ else
     end
 end
 
-fh = readData(filename);
+if ~option.bCosineRamp 
+    fh = readData(filename); % then no ramp is applied
+else
+    ramp2apply = cos_ramp(length(x),fs,option.bCosineRampOnset);
+    x = transpose(ramp2apply).*x;
+    
+    [xx filenametmp] = fileparts(filename); 
+    dirtmp = [Get_TUe_paths('outputs') delim 'tmp-PsySound' delim];
+    filenametmp = [dirtmp filenametmp '.wav'];
+    Mkdir(dirtmp);
+    Wavwrite(x,fs,filenametmp);
+    fh = readData(filenametmp);
+    fprintf('file calibrated to %.2f [dB SPL] if Zwicker''s tone were used\n',rmsdb(x)+90);
+    fprintf('file calibrated to %.2f [dB SPL] if Zwicker''s tone were used if AMT values are used\n',rmsdb(x)+100);
+end
+    
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Step 2: Calibation

@@ -5,6 +5,7 @@
 *.DS_Store
 *.exe
 *.glnx86
+*.m~
 *.mac
 *.maci
 *.maci64

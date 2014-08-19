@@ -41,7 +41,7 @@ bMIR            = 0;    % Analysis discarded according to meeting on 23/07/2014
 bHPF        = 1; % 1 = to load band-pass filtered audio files
 idx         = 2; % 1 = far field, 2 = near-field
 type        = {'f','n'};
-info.bSave  = 1;
+info.bSave  = 0;
 info.bPlot  = 1;
 info.modes2check = 2:5;
 bGridOn     = 0;
@@ -71,9 +71,9 @@ close all;
 %       - You get the following plots (if info.bPlot == 1):
 %           * 4 x Near and far field aligned signals (1 per acoustic mode)
 if bDo_load_audio
-    info.bSave = ~info.bSave; % to not to save again aligned files
+    info.bSave = 0; % ~info.bSave; % to not to save again aligned files
     [ymeasured ymodelled misc] = VoD_read_aligned(bHPF,info);
-    info.bSave = ~info.bSave;
+    % info.bSave = ~info.bSave;
 else % only gets VoD params
     misc       = Get_VoD_params(1);
 end
@@ -294,12 +294,17 @@ for mode = info.modes2check
         tmp_h = [];
         tmp_h = [];
         options = info;
-                
+        % options.calfile = [Get_TUe_paths('db_Fastl2007') 'track_03.wav'];
+        % options.callevel = 60;
+        options.calfile = [Get_TUe_paths('db_calfiles') 'track_03.wav'];
+        options.callevel = 70; % 'AMT' reference
+        
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         filenames   = Get_filenames(paths.dir_calibrated_ms,'*.wav');
-        
+        options.bCosineRamp = 0; % Cos ramp not yet applied for Loudness calculations
+        options.bCosineRampOnset = 0; %ms
         options.nAnalyser = 12;
-        [tmp_h tmp_ha]   = PsySoundCL([paths.dir_calibrated_ms filenames{mode_idx}],options); % 6 figures
+        [tmp_h tmp_ha out_summary]   = PsySoundCL([paths.dir_calibrated_ms filenames{mode_idx}],options); % 6 figures
         hMeas(10*idx_i+[1:6]) = tmp_h;
         ha1([1:6]) = tmp_ha;
         % 1. Average main loudness (Bark)       4. Main loudness (s)
@@ -307,7 +312,9 @@ for mode = info.modes2check
         % 3. Loudness (s)                       6. Sharpness (s)
         
         options.nAnalyser = 15;
-        [tmp_h tmp_ha]   = PsySoundCL([paths.dir_calibrated_ms filenames{mode_idx}],options); % 2 figures
+        options.bCosineRamp = 1;
+        options.bCosineRampOnset = 50; %ms
+        [tmp_h tmp_ha out_summary]   = PsySoundCL([paths.dir_calibrated_ms filenames{mode_idx}],options); % 2 figures
         hMeas(10*idx_i+[7:8]) = tmp_h;
         ha1([7:8]) = tmp_ha;
         % 7. Specific roughness [Bark]
@@ -317,12 +324,16 @@ for mode = info.modes2check
         filenames = Get_filenames(paths.dir_calibrated_ps,'*.wav');
         
         options.nAnalyser = 12;
-        [tmp_h tmp_ha]  = PsySoundCL([paths.dir_calibrated_ps filenames{mode_idx}],options);
+        options.bCosineRamp = 0;
+        options.bCosineRampOnset = 0; %ms
+        [tmp_h tmp_ha out_summary]  = PsySoundCL([paths.dir_calibrated_ps filenames{mode_idx}],options);
         hModel(10*idx_i+[1:6]) = tmp_h;
         ha2([1:6]) = tmp_ha;
         
         options.nAnalyser = 15;
-        [tmp_h tmp_ha]  = PsySoundCL([paths.dir_calibrated_ps filenames{mode_idx}],options);
+        options.bCosineRamp = 1;
+        options.bCosineRampOnset = 50; %ms
+        [tmp_h tmp_ha out_summary]  = PsySoundCL([paths.dir_calibrated_ps filenames{mode_idx}],options);
         hModel(10*idx_i+[7:8]) = tmp_h;
         ha2([7:8]) = tmp_ha;
         

@@ -12,8 +12,15 @@ function ramp = cos_ramp(sig_len, fs, attack, release)
 %
 % OUTPUT:
 % ramp:     Resulting envelope 
-% Programmed by Matthias Milczynski
+% 
+% Author        : Matthias Milczynski
+% Created in    : 2008-2012
+% Downloaded on : 06/09/2012
+% Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Last update on: 18/08/2014 % Update this date manually
+% Last use on   : 19/08/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 if nargin < 1
    sig_len = 44100; % only for demo
 end

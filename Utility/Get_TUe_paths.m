@@ -31,7 +31,7 @@ function misc = Get_TUe_paths(type)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 15/03/2014
 % Last update on: 07/08/2014
-% Last use on   : 07/08/2014
+% Last use on   : 19/08/2014
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Alejandro's paths
@@ -98,18 +98,20 @@ else
     misc.lx_Text            = ['D:\Documenten-TUe\01-Text\05-Doc-TUe'   delim];
     misc.outputs            = ['D:\MATLAB\Output' delim];
     misc.praat              = ['C:\praat5376_win32\praatcon.exe'];
-    misc.praat_scripts      = [misc.MATLAB 'Praat' delim];
     misc.Text               = [misc.MATLAB 'Text' delim];
     
 end
 
 misc.db_voice_of_dragon = [misc.Databases 'dir01-Instruments' delim 'Voice-of-dragon' delim];
 misc.db_HRIR_Oldenburg  = [misc.Databases 'dir02-HRTFs'       delim 'Oldenburg'       delim];
+misc.db_Fastl2007       = [misc.Databases 'dir04-Psychoacoustics' delim 'Fastl-and-Zwicker-2007' delim '03-Extracted-files' delim];
+misc.db_calfiles        = [misc.Databases 'dir04-Psychoacoustics' delim 'Fastl-and-Zwicker-2007' delim '03-Extracted-files' delim]; % TMP dir
 misc.DSP                = [misc.MATLAB   'DSP'             delim]; 
 misc.F0_extraction      = [misc.MATLAB   'F0_extraction' delim];
 misc.Filterbank         = [misc.MATLAB   'Filterbank'      delim];
 misc.language           = 'NL'; % other possibilities: 'EN'
 misc.Localisation       = [misc.MATLAB   'Localisation'    delim];
+misc.praat_scripts      = [misc.MATLAB   'Praat'           delim];
 misc.Psychoacoustics    = [misc.MATLAB   'Psychoacoustics' delim];
 misc.Music_acoustics    = [misc.MATLAB   'Music_acoustics' delim];
 misc.pl_Classes         = [misc.MATLAB_KUL 'Classes'       delim]; % Matthias' classes to plot
