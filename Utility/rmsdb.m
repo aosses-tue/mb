@@ -16,10 +16,6 @@ function y = rmsdb(x)
 % Last use on   : 21/07/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if nargin == 0
-    return;
-end
-
 if ischar(x)
     try
         x = Wavread(x);

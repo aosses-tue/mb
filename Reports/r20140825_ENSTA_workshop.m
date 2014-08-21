@@ -18,23 +18,24 @@ function r20140825_ENSTA_workshop
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 close all
-dst_folder = [Get_TUe_paths('lx_Presentations') '20140825-26-BATWOMAN-ENSTA' delim 'Audios' delim];
-options.dst_folder_fig = [Get_TUe_paths('lx_Presentations') '20140825-26-BATWOMAN-ENSTA' delim 'Figures-tmp' delim];
+% options.dst_folder     = [Get_TUe_paths('lx_Presentations') '20140825-26-BATWOMAN-ENSTA' delim 'Audios' delim];
+% options.dst_folder_fig = [Get_TUe_paths('lx_Presentations') '20140825-26-BATWOMAN-ENSTA' delim 'Figures-tmp' delim];
+options.dst_folder      = [Get_TUe_paths('outputs') 'tmp-Audio'  delim];
+options.dst_folder_fig  = [Get_TUe_paths('outputs') 'tmp-Figure' delim];
+Mkdir(options.dst_folder    );
 Mkdir(options.dst_folder_fig);
 
-bGenerate = 0;
-bDiary = 0;
-Diary(mfilename,bDiary,dst_folder);
+bGenerate = 1;
+bDiary = 1;
+Diary(mfilename,bDiary,options.dst_folder);
 
 outputfilename = {'vod_ac_2', 'vod_ac_5'};
 lvl = 70; % dB SPL
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if bGenerate == 1
-    options.bSave = 1;
-end
-
+options.bSave = 1;
+options.calmethod = 2; % 0 = AMT
 options.bPlot = 1;
 options.modes2check = [2 5];
 options.time2save = 5;
@@ -64,17 +65,21 @@ if bGenerate
 
         mode_idx = options.modes2check(i)-1;
         [x1 fs] = Wavread(out.Excerpt_m{mode_idx});
-        x1 = setdbspl(x1,lvl);
-        disp(['Overwrite with calibrated signal (across modes), adjusted to ' Num2str(lvl) 'dBSPL'])
-        Wavwrite(x1,fs,out.Excerpt_m{mode_idx}); % Overwrite with calibrated signal
-        movefile([out.Excerpt_m{mode_idx} '.wav'], dst_folder)
+        x1 = Do_calibration_level(options.calmethod,x1,lvl);
+        if options.bSave
+            disp(['Overwrite with calibrated signal (across modes), adjusted to ' Num2str(lvl) 'dBSPL'])
+            Wavwrite(x1,fs,out.Excerpt_m{mode_idx}); % Overwrite with calibrated signal
+            movefile([out.Excerpt_m{mode_idx} '.wav'], options.dst_folder)
+        end
 
         sil     = Gen_silence(2,fs);
 
         [x2 fs] = Wavread(out.Excerpt_p{mode_idx});
-        x2 = setdbspl(x2,lvl);
-        Wavwrite(x2,fs,out.Excerpt_p{mode_idx});
-        movefile([out.Excerpt_p{mode_idx} '.wav'], dst_folder)
+        x2 = Do_calibration_level(options.calmethod,x2,lvl); %setdbspl(x2,lvl);
+        if options.bSave
+            Wavwrite(x2,fs,out.Excerpt_p{mode_idx});
+            movefile([out.Excerpt_p{mode_idx} '.wav'], options.dst_folder)
+        end
 
         Exp1 = ['y' num2str(i) ' = [Do_cos_ramp(x1); sil; Do_cos_ramp(x2)];'];
         eval(Exp1);
@@ -89,7 +94,9 @@ end
 if bGenerate % To be used in Praat
     
     y = [y1; sil; y2];
-    Wavwrite(y,fs,[dst_folder 'VoD_ac_2_and_5.wav']);
+    if options.bSave
+        Wavwrite(y,fs,[options.dst_folder 'VoD_ac_2_and_5.wav']);
+    end
     
 end
 
@@ -99,18 +106,19 @@ end
 % Acoustic mode 2
 t1 = ti2;
 t2 = tf2;
-fi1 = [dst_folder 'modus-1_v2-2filt.wav']; % measured
-fi2 = [dst_folder 'modus-1-v_2filt.wav']; % predicted
+fi1 = [options.dst_folder 'modus-1_v2-2filt.wav']; % measured
+fi2 = [options.dst_folder 'modus-1-v_2filt.wav']; % predicted
 options.tanalysis = [t1 t2];
 options.label = 'ac-2';
+options.LineWidth = [2 1];
 Get_VoD_analysis(fi1,fi2,options)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Acoustic mode 5
 t1 = ti5;
 t2 = tf5;
-fi1 = [dst_folder 'modus-4_v3-2filt.wav']; % measured
-fi2 = [dst_folder 'modus-4-v_2filt.wav']; % predicted
+fi1 = [options.dst_folder 'modus-4_v3-2filt.wav']; % measured
+fi2 = [options.dst_folder 'modus-4-v_2filt.wav']; % predicted
 options.tanalysis = [t1 t2];
 options.label = 'ac-5';
 Get_VoD_analysis(fi1,fi2,options);

@@ -36,22 +36,10 @@ h = []; % handles figures
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-misc    = Get_VoD_params(1);
-% Show_figures_one_by_one(0.5);
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 disp([mfilename '.m: analysing ' filename1 ' and ' filename2]);
  
 % 4. Chalupper's model
 %       - Last used on: 01/08/2014
-
-% Initial_time = [0+misc.Tmodel(1); ...
-%                 7+misc.Tmodel(1); ...
-%                 14+misc.Tmodel(1); ...
-%                 22++misc.Tmodel(1)]; 
-% Delta = misc.Tmodel(1)*4;
-% time2zoom = [Initial_time Initial_time+Delta];
 
 if bDoChalupper
     ha1 = [];
@@ -83,14 +71,14 @@ if bDoChalupper
     % 7. Specific roughness [Bark]
     % 8. Roughness [s]
     
-    h(end+1) = PsySoundCL_Figures('loudness',out_summary1,out_summary2,options);
+    [h(end+1) xx stats] = PsySoundCL_Figures('loudness',out_summary1,out_summary2,options);
     legend('meas','model');
     
-    h(end+1) = PsySoundCL_Figures('sharpness',out_summary1,out_summary2,options);
-    legend('meas','model');
+    [h(end+1) xx stats] = PsySoundCL_Figures('sharpness',out_summary1,out_summary2,options);
+    % legend('meas','model');
     
-    h(end+1) = PsySoundCL_Figures('roughness',out_summary1_r,out_summary2_r,options);
-    legend('meas','model');
+    [h(end+1) xx stats] = PsySoundCL_Figures('roughness',out_summary1_r,out_summary2_r,options);
+    % legend('meas','model');
     
 end
     

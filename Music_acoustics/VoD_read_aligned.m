@@ -151,6 +151,9 @@ for mode = info.modes2check
     misc.filename_m{mode_idx} = filename1;
     misc.filename_p{mode_idx} = filename2;
     
+    misc.Excerpt_m{mode_idx} = [Get_TUe_paths('outputs') filename1];
+    misc.Excerpt_p{mode_idx} = [Get_TUe_paths('outputs') filename2]; 
+    
     if info.bSave
         info = Ensure_field(info, 'time2save', 5);
         ynear2 = resample(ynear,44100,fs);
@@ -164,6 +167,8 @@ for mode = info.modes2check
         Wavwrite(ynearp2,44100,misc.Excerpt_p{mode_idx});
         
         disp([mfilename '.m: Synchronised file names returned...'])
+    else
+        disp([mfilename '.m: Excerpt file names returned but not saved'])
     end
         
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

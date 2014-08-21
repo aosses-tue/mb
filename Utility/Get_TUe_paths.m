@@ -30,8 +30,8 @@ function misc = Get_TUe_paths(type)
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 15/03/2014
-% Last update on: 20/08/2014
-% Last use on   : 20/08/2014
+% Last update on: 21/08/2014
+% Last use on   : 21/08/2014
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Alejandro's paths
@@ -114,6 +114,7 @@ misc.language           = 'NL'; % other possibilities: 'EN'
 misc.Localisation       = [misc.MATLAB   'Localisation'    delim];
 misc.praat_scripts      = [misc.MATLAB   'Praat'           delim];
 misc.Psychoacoustics    = [misc.MATLAB   'Psychoacoustics' delim];
+misc.Reports            = [misc.MATLAB   'Reports'         delim];
 misc.Music_acoustics    = [misc.MATLAB   'Music_acoustics' delim];
 misc.pl_Classes         = [misc.MATLAB_KUL 'Classes'       delim]; % Matthias' classes to plot
 misc.Simulink           = [misc.MATLAB_KUL 'Simulink_XPC'  delim];

@@ -31,7 +31,7 @@ end
 
 info = Ensure_field(info,'bPlot3D',1);
 info = Ensure_field(info,'bPlot2D',~info.bPlot3D);
-
+info = Ensure_field(info,'title','');
 N = 10;
 M = 40;
 step_t = round(length(t)/N);
@@ -63,6 +63,12 @@ if info.bPlot2D
         title(sprintf('t = %.2f [s]',tm(1,i)))
         xlabel('Freq. [Hz]')
         ylabel(sprintf('Amplitude\n[dBFS]'))
+        
+        if i == 1
+            try
+                title(info.title);
+            end
+        end
     end
 
     h = ImageSetup; 
@@ -74,7 +80,21 @@ if info.bPlot2D
     h.I_TitleInAxis = 1;
     h.I_Space       = [0.01,0.01];
 
-    h.I_Ylim = [-105,5]; % Uncomment for fixing the limits in the y-axis
+    try
+        dr = info.ylim(2)-info.ylim(1);
+        if info.ylim(2) < max(max(zm))
+            info.ylim(2) = max(max(zm)) + 5;
+            info.ylim(1) = info.ylim(2) - dr;
+        end
+        h.I_Ylim = info.ylim;
+    catch
+        h.I_Ylim = [-105,5]; % Uncomment for fixing the limits in the y-axis
+    end
+    
+    try
+        h.I_Xlim = info.xlim;
+    end
+    
     % h.I_Xlim = [0,5];
     h.I_Grid = 'on'; 
     h.I_KeepColor = 0; 
@@ -85,7 +105,7 @@ if info.bPlot2D
 
     stName = Get_date;
     stName = stName.date2print;
-    Saveas(gcf,[Get_TUe_paths('outputs') mfilename '-' stName]);
+    Saveas(gcf,[Get_TUe_paths('outputs') mfilename '-' info.title '-' stName]);
     close;
     close;
 end

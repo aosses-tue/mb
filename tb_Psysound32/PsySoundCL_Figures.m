@@ -1,5 +1,5 @@
-function [h ha] = PsySoundCL_Figures(param,res1, res2, option)
-% function [h ha] = PsySoundCL_Figures(param,res1, res2, option)
+function [h ha stats] = PsySoundCL_Figures(param,res1, res2, option)
+% function [h ha stats] = PsySoundCL_Figures(param,res1, res2, option)
 % 
 % 1. Description:
 %       To plot PsySound results for 2 data series
@@ -29,10 +29,11 @@ if nargin < 4
     option = [];
 end
 
-option = Ensure_field(option, 'tanalysis',[min(res1.t) max(res1.t)]);
+option = Ensure_field(option,'tanalysis',[min(res1.t) max(res1.t)]);
 option = Ensure_field(option,'title',[]);
 option.color{1} = 'b-';
 option.color{2} = 'r-';
+option = Ensure_field(option,'LineWidth',[1 2]);
 
 if strcmp(param,'sharpness')
         
@@ -40,8 +41,8 @@ if strcmp(param,'sharpness')
         DataSharp2 = res2.DataSharp;
         
         figure;
-        plot(t,DataSharp1,option.color{1}              ); hold on
-        plot(t,DataSharp2,option.color{2},'LineWidth',2);
+        plot(t,DataSharp1,option.color{1},'LineWidth',option.LineWidth(1)); hold on
+        plot(t,DataSharp2,option.color{2},'LineWidth',option.LineWidth(2));
         
         xlabel('Time (Seconds)')
         ylabel('Sharpness (Acums)');
@@ -49,6 +50,7 @@ if strcmp(param,'sharpness')
         grid on;
         h(end+1) = gcf;
         ha(end+1) = gca;
+        stats = [];
         
 elseif strcmp(param,'loudness')
     % Loudness
@@ -56,8 +58,8 @@ elseif strcmp(param,'loudness')
         DataLoud2 = res2.DataLoud;
 
         figure;
-        plot(t,DataLoud1,option.color{1}              ); hold on
-        plot(t,DataLoud2,option.color{2},'LineWidth',2);
+        plot(t,DataLoud1,option.color{1},'LineWidth',option.LineWidth(1)); hold on
+        plot(t,DataLoud2,option.color{2},'LineWidth',option.LineWidth(2));
         
         xlabel('Time (Seconds)')
         ylabel('Loudness (Sones)');
@@ -65,6 +67,7 @@ elseif strcmp(param,'loudness')
         grid on;
         h(end+1) = gcf;
         ha(end+1) = gca;
+        stats = [];
         
 elseif strcmp(param,'roughness')
     
@@ -72,8 +75,8 @@ elseif strcmp(param,'roughness')
         DataRough2 = res2.DataRough;
         
         figure;
-        plot(t,DataRough1,option.color{1}              ); hold on
-        plot(t,DataRough2,option.color{2},'LineWidth',2);
+        plot(t,DataRough1,option.color{1},'LineWidth',option.LineWidth(1)); hold on
+        plot(t,DataRough2,option.color{2},'LineWidth',option.LineWidth(2));
         
         xlabel('Time (seconds)')
         ylabel('Roughness (aspers)')
@@ -82,6 +85,7 @@ elseif strcmp(param,'roughness')
         
         h(end+1) = gcf;
         ha(end+1) = gca;
+        stats = [];
 end
 
 try

@@ -1,5 +1,5 @@
-function VoD_comparisons2(bDiary)
-% function VoD_comparisons2(bDiary)
+function VoD_comparisons2(bDiary,info)
+% function VoD_comparisons2(bDiary,info)
 %
 % 1. Description:
 %       Same than VoD_comparisons, but here analysis is done over aligned/
@@ -18,6 +18,12 @@ function VoD_comparisons2(bDiary)
 %       bDiary = 1; % to generate a log-file
 %       VoD_comparisons2(bDiary);
 % 
+%       bDiary = 0;
+%       stOptions.bSave = 0;
+%       stOptions.bPlot = 1;
+%       stOptions.modes2check = [2 5];
+%       VoD_comparisons2(bDiary,stOptions);
+% 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 01/07/2014
 % Last update on: 04/08/2014 % Update this date manually
@@ -29,6 +35,11 @@ function VoD_comparisons2(bDiary)
 if nargin == 0 
     bDiary = 1;
 end
+
+if nargin < 2
+    info = [];
+end
+
 Diary(mfilename,bDiary)
 
                         % tested on 01/07/2014
@@ -41,9 +52,9 @@ bMIR            = 0;    % Analysis discarded according to meeting on 23/07/2014
 bHPF        = 1; % 1 = to load band-pass filtered audio files
 idx         = 2; % 1 = far field, 2 = near-field
 type        = {'f','n'};
-info.bSave  = 0;
-info.bPlot  = 1;
-info.modes2check = 2:5;
+info        = Ensure_field(info,'bSave',0);
+info        = Ensure_field(info,'bPlot',1);
+info        = Ensure_field(info,'modes2check', [2:5]);
 bGridOn     = 0;
 bFormants   = ~bGridOn;
 
@@ -251,7 +262,9 @@ for mode = info.modes2check
             figure;
             subplot(2,1,1)
         end
-        
+        tmpOption.title = sprintf('meas-ac-mode-%.0f',mode);
+        tmpOption.ylim = [-30 0];
+        tmpOption.xlim = [100 1200];
         Mesh(t/info.normalise_time_factor,f,HdBmeas,tmpOption);
         
         if tmpOption.bPlot3D
@@ -263,7 +276,7 @@ for mode = info.modes2check
         if tmpOption.bPlot3D
             subplot(2,1,2)
         end
-        
+        tmpOption.title = sprintf('model-ac-mode-%.0f',mode);
         Mesh(t/info.normalise_time_factor,f,HdBmodel,tmpOption);
         
         if tmpOption.bPlot3D
