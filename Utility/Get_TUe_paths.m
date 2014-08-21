@@ -30,8 +30,8 @@ function misc = Get_TUe_paths(type)
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 15/03/2014
-% Last update on: 07/08/2014
-% Last use on   : 19/08/2014
+% Last update on: 20/08/2014
+% Last use on   : 20/08/2014
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Alejandro's paths
@@ -94,6 +94,7 @@ else
     misc.db_speechmaterials = ['D:\Databases\dir03-Speech'];
     misc.db_fastl2007       = ['D:\Documenten-TUe\10-Referenties\02-Mijn-boeken\Fastl2007-psychoacoustics' delim 'Sound' delim];
     misc.ex_APEX_results    = [misc.SVN_KUL 'Meas' delim 'Experiments' delim 'Results_XML' delim]; % work at KUL
+    misc.lx_Presentations   = ['D:\Documenten-TUe\01-Text\70-Presentaties-TUe' delim];
     misc.lx_Templates       = ['D:\Documenten-TUe\01-Text\00-Templates' delim];
     misc.lx_Text            = ['D:\Documenten-TUe\01-Text\05-Doc-TUe'   delim];
     misc.outputs            = ['D:\MATLAB\Output' delim];

@@ -36,7 +36,7 @@ function [y_measured y_modelled misc] = VoD_read_aligned(bHPF,info)
 % Original file name: VoD_run
 % Created on    : 01/07/2014
 % Last update on: 31/07/2014 % Update this date manually
-% Last use on   : 07/08/2014 % Update this date manually
+% Last use on   : 19/08/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Default inputs:
@@ -65,6 +65,7 @@ info = Ensure_field(info,'bSave',0);
 
 misc        = Get_VoD_params(1); % input = 0, to not store 'period' results
 misc.hFig   = []; % empty figure handles
+misc.ha     = [];
 misc.near_field_filename = [];
 T           = misc.Tmodel;
 last_take   = misc.last_take;
@@ -151,14 +152,16 @@ for mode = info.modes2check
     misc.filename_p{mode_idx} = filename2;
     
     if info.bSave
-        time2save = 5;
+        info = Ensure_field(info, 'time2save', 5);
         ynear2 = resample(ynear,44100,fs);
-        ynear2 = ynear2(1:time2save*44100);
-        Wavwrite(ynear2,44100,filename1);
+        ynear2 = ynear2(1:round(info.time2save*44100));
+        misc.Excerpt_m{mode_idx} = [Get_TUe_paths('outputs') filename1];
+        Wavwrite(ynear2,44100,misc.Excerpt_m{mode_idx});
                 
         ynearp2 = resample(ynearp,44100,fs);
-        ynearp2 = ynearp2(1:time2save*44100);
-        Wavwrite(ynearp2,44100,filename2);
+        ynearp2 = ynearp2(1:round(info.time2save*44100));
+        misc.Excerpt_p{mode_idx} = [Get_TUe_paths('outputs') filename2]; 
+        Wavwrite(ynearp2,44100,misc.Excerpt_p{mode_idx});
         
         disp([mfilename '.m: Synchronised file names returned...'])
     end
@@ -195,17 +198,14 @@ for mode = info.modes2check
         end
         figure; 
         subplot(n,1,1)
-        % plot(t,ynear, t, yfar),
         plot(t,ynear)
         ha = gca;
         
-        % legend('near-field')
-        legend('near-field','far-field')
         title(sprintf('Aligned time signals, ac.mode = %.0f: measured (above), modelled (bottom)',mode))
         ylabel('Amplitude')
         subplot(n,1,2)
         % plot(t,ynearp, t, yfarp), 
-        plot(t,ynearp), 
+        plot(t,ynearp,'r'), 
         ha(end+1) = gca;
         
         if n == 2
@@ -222,11 +222,13 @@ for mode = info.modes2check
             grid on, hold on;
             ha(end+1) = gca;
             ylabel('Frequency [Hz]')
-            legend('f0 meas','f0 model');
+            title('Estimated fundamental frequency f0')
+            % legend('f0 meas','f0 model') %,'Location','NorthEastOutside');
             
             subplot(n,1,4)
-            plot(   tf,(f0p-f0m)/misc.mf(mode_idx)*100   )
+            plot(   tf,(f0p-f0m)/misc.mf(mode_idx)*100   ,'k')
             grid on, hold on;
+            title('\Delta f0')
             ha(end+1) = gca;
             xlabel('Time [s]')
             ylabel('\Delta f / f_n [%]')
@@ -237,7 +239,7 @@ for mode = info.modes2check
         xlim([0 3*misc.Tmodel(mode_idx)]);
         
         misc.hFig(end+1) = gcf;
-       
+        misc.ha(end+1) = ha(end);
     end
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

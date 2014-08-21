@@ -27,6 +27,10 @@ if nargin < 2
     option = [];
 end
 
+if nargin == 0
+    option.nAnalyser = input('Choose analyser to be used: \n - type 12 for DLM model or \n - type 15 for Roughness model :');
+end
+
 option = Ensure_field(option,'nAnalyser'  ,15);
 option = Ensure_field(option,'bCosineRamp',0 );
 
@@ -106,6 +110,13 @@ tmpObj  = get(obj,'output');
 t       = get(tmpObj{1,1},'Time');
 z       = get(tmpObj{1,2},'Freq'); % 1:24
 
+if isfield(option,'trange')
+    % for i = 1:size(option.trange,1)
+    %     tmp = Convert2nan_if_outofrange(t,option.trange);
+    % end
+    t = option.trange;
+end
+    
 output.t = t;
 output.z = z;
 

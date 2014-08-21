@@ -18,6 +18,9 @@ function Wavwrite(x,fs,outputfilename)
 wavwrite(x,fs,[outputfilename]);
 
 disp([mfilename '.m: file ' outputfilename ' created'])
+try
+    fprintf('%s.m: RMS of %.2f [dBFS]\n',mfilename,rmsdb(x))
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
