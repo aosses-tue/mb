@@ -12,8 +12,8 @@ function [h ha output] = PsySoundCL(filename,option)
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 22/07/2014
-% Last update on: 18/08/2014 % Update this date manually
-% Last use on   : 18/08/2014 % Update this date manually
+% Last update on: 29/08/2014 % Update this date manually
+% Last use on   : 29/08/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 h = [];
@@ -213,8 +213,13 @@ switch nAnalyser
         ha(end+1) = gca;
         
         output.zspec = zspec;
-        output.DataLoud = DataLoud;
-        output.DataSharp = DataSharp;
+        
+        output.DataLoud = DataLoud;             % Param 1: Loudness
+                                                % Param 2: Main loudness - 3D
+                                                % Param 3: Specific loudness - 3D
+                                                % Param 4: Average Main loudness % not interesting by now
+        output.DataAvSpecLoud = DataAvSpecLoud; % Param 5: Average specific loudness
+        output.DataSharp      = DataSharp;      % Param 6: Sharpness
         
     case 15
         
@@ -222,10 +227,10 @@ switch nAnalyser
         % Step 4: PostProcessing
 
         % Average Roughness -> Graph (Visualisation - Single Axis, line)
-        DataSpecRoughness = get(tmpObj{1,2},'Data');
+        DataSpecRough = get(tmpObj{1,2},'Data');
         
         figure
-        plot(z, mean(DataSpecRoughness) );
+        plot(z, mean(DataSpecRough) );
         xlabel('Critical band rate (Bark)')
         ylabel('Specific Roughness (Aspers/Bark)')
         title(sprintf('Average Roughness - %s', option.title));
@@ -249,6 +254,7 @@ switch nAnalyser
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
         output.DataRough = DataRough;
+        output.DataSpecRough = DataSpecRough;
         
 end
 

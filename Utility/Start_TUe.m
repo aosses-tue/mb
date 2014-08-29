@@ -17,8 +17,8 @@ function misc = Start_TUe
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 01/05/2014
-% Last update on: 28/07/2014
-% Last use on   : 21/08/2014
+% Last update on: 25/08/2014
+% Last use on   : 25/08/2014
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 misc = Get_TUe_paths;
@@ -42,6 +42,12 @@ if nargout == 0
     if isfield(misc,'tb_Plot4papers_JU')
         misc_sub = Get_TUe_subpaths('tb_Plot4papers_JU');
         disp(['Adding paths under: tb_Plot4papers_JU'])
+        Add_paths(misc_sub);
+    end
+    
+    if isfield(misc,'Reports_KUL')
+        misc_sub = Get_TUe_subpaths('Reports_KUL');
+        disp(['Adding paths under: Reports_KUL'])
         Add_paths(misc_sub);
     end
     

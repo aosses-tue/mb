@@ -1,5 +1,5 @@
-function PsySound_validate
-% function PsySound_validate
+function h = PsySound_validate(options)
+% function h = PsySound_validate(options)
 %
 % 1. Description:
 %
@@ -14,6 +14,12 @@ function PsySound_validate
 % Last use on   : 17/08/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+h = [];
+
+if nargin == 0
+    options = [];
+end
+
 if ~isunix
     dir_where_ref = 'D:\MATLAB\Output\tmp-cal\';
 else
@@ -25,9 +31,10 @@ close all
 bDiary = 0;
 Diary(mfilename,bDiary,dir_where_ref);
 
-bDoLoud = 0;
-bDoSharp = 0;
-bDoRough = 1;
+options.bDoLoud = 0;
+options.bDoSharp = 0;
+options.bDoRough = 0;
+options = Ensure_field(options,'bDoFluct',0);
 bSave = 1;
 
 if bSave == 1
@@ -54,7 +61,7 @@ ref_rough = [dir_where_ref 'ref_rough.wav'];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 1. Loudness
 
-if bDoLoud % validated on 18/08/2014
+if options.bDoLoud % validated on 18/08/2014
     
     hLoud = [];
     
@@ -94,7 +101,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 2. Sharpness
 
-if bDoSharp
+if options.bDoSharp
     hSharp = [];
     
     option.bExtension = 0;
@@ -121,11 +128,134 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 3. Fluctuation strength
+% 3.1 AM Tones
+if options.bDoFluct
+
+    option.bExtension = 0;
+    fc = 1000;
+    fluct_files =Get_filenames(dir_where_ref,['*_fluct_fc_' num2str(fc) '*.wav'],option);
+    % [f1 f2] = fileparts('D:\Databases\dir04-Psychoacoustics\Fastl-and-Zwicker-2007\03-Extracted-files\track_35_t05.wav')
+    % fluct_files{1} = f2;
+    % dir_where_ref = [f1 delim];
+    % fmod = 4;
+    lf = [];
+    le_min = [];
+    le_max = [];
+    fmod = [0.5 1 2 4 8 16 32];
+    for i=1:length(fluct_files)
+        [x fs] = Wavread([dir_where_ref fluct_files{i} '.wav']);
+        x = From_dB(-10)*x;
+        fprintf('RMS to be considered: %.2f dB SPL (0 dBFS = 110 dB SPL)\n',rmsdb(x)+110);
+        outstmp = Do_fluct(x,fs);
+        lf      = [lf; outstmp.lf];
+        le_min  = [le_min; outstmp.le_min];
+        le_max  = [le_max; outstmp.le_max];
+        FS(i)   = ( 0.008*sum(outstmp.le_diff) )/( fmod(i)/4 + 4/fmod(i) );
+        FS2(i)   = ( 0.008*sum(outstmp.le_max-outstmp.le_min) )/( fmod(i)/4 + 4/fmod(i) );
+        FS2 - FS
+    end
+    
+    if fmod(2)==1 & fmod(4)==4 & fmod(6)==16
+        
+        figure;
+        subplot(1,2,1)
+        plot(1:24, le_max([1 4],:),'o-','LineWidth',1), grid on, hold on
+        plot(1:24, le_min([1 4],:),'LineWidth',3) 
+        ylabel('L_E [dB]')
+        xlabel('Critical-band rate [Bark]')
+        ha = gca;
+        legend('fmod = 1 Hz','fmod = 4 Hz')
+        title(sprintf('AM Sine tones at %.0f [Hz]',fc))
+        
+        subplot(1,2,2)
+        plot(1:24, le_max([6 4],:),'o-','LineWidth',1), grid on, hold on
+        plot(1:24, le_min([6 4],:),'LineWidth',3) 
+        ylabel('L_E [dB]')
+        xlabel('Critical-band rate [Bark]')
+        ha(end+1) = gca;
+        legend('fmod = 16 Hz','fmod = 4 Hz')
+        linkaxes(ha,'xy');
+        xlim([5 20])
+        h(end+1) = gcf;
+        ylim([-10 90])
+    end
+    
+    figure;
+    semilogx(fmod,100*FS/max(FS),'bo-'), grid on
+    xlim([0.5 25])
+    xlabel('Modulation frequency [Hz]')
+    ylabel('Relative fluctuation [%]')
+    legend(sprintf('max(FS) = %.2f [vacil]',max(FS)))
+    h(end+1) = gcf;
+    title('FS for AM tones')
+    % disp Fig 1: min and max Excitation patterns
+    % disp Fig 2: Relative fluctuation strength
+    ylim([0 110])
+end
+
+% 3.2 FM Tones
+if options.bDoFluct
+
+    option.bExtension = 0;
+    fc = 1500;
+    fluct_files =Get_filenames(dir_where_ref,['*_fluct_fc_' num2str(fc) '*.wav'],option);
+    lf = [];
+    le_min = [];
+    le_max = [];
+    fmod = [0.5 1 2 4 8 16 32];
+    for i=1:length(fluct_files)
+        [x fs] = Wavread([dir_where_ref fluct_files{i} '.wav']);
+        x = From_dB(-10)*x;
+        fprintf('RMS to be considered: %.2f dB SPL (0 dBFS = 110 dB SPL)\n',rmsdb(x)+110);
+        outstmp = Do_fluct(x,fs);
+        lf      = [lf; outstmp.lf];
+        le_min  = [le_min; outstmp.le_min];
+        le_max  = [le_max; outstmp.le_max];
+        FS(i)   = ( 0.008*sum(outstmp.le_diff) )/( fmod(i)/4 + 4/fmod(i) );
+    end
+    
+    if fmod(2)==1 & fmod(4)==4 & fmod(6)==16
+        
+        figure;
+        subplot(1,2,1)
+        plot(1:24, le_max([1 4],:),'o-','LineWidth',1), grid on, hold on
+        plot(1:24, le_min([1 4],:),'LineWidth',3) 
+        ylabel('L_E [dB]')
+        xlabel('Critical-band rate [Bark]')
+        ha = gca;
+        legend('fmod = 1 Hz','fmod = 4 Hz')
+        title(sprintf('FM Sine tones at %.0f [Hz]',fc))
+        
+        subplot(1,2,2)
+        plot(1:24, le_max([6 4],:),'o-','LineWidth',1), grid on, hold on
+        plot(1:24, le_min([6 4],:),'LineWidth',3) 
+        ylabel('L_E [dB]')
+        xlabel('Critical-band rate [Bark]')
+        ha(end+1) = gca;
+        legend('fmod = 16 Hz','fmod = 4 Hz')
+        linkaxes(ha,'xy');
+        xlim([5 20])
+        h(end+1) = gcf;
+        ylim([0 90])
+    end
+    
+    figure;
+    semilogx(fmod,100*FS/max(FS),'bo-'), grid on
+    xlim([0.5 25])
+    xlabel('Modulation frequency [Hz]')
+    ylabel('Relative fluctuation [%]')
+    legend(sprintf('max(FS) = %.2f [vacil]',max(FS)))
+    h(end+1) = gcf;
+    % disp Fig 3: min and max Excitation patterns
+    % disp Fig 4: Relative fluctuation strength
+    title('FS for FM tones')
+    ylim([0 110])
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 4. Roughness
 
-if bDoRough
+if options.bDoRough
     
     hRough = [];
     

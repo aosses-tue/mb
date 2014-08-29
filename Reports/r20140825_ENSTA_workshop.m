@@ -13,8 +13,8 @@ function r20140825_ENSTA_workshop
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 20/08/2014
-% Last update on: 20/08/2014 % Update this date manually
-% Last use on   : 20/08/2014 % Update this date manually
+% Last update on: 21/08/2014 % Update this date manually
+% Last use on   : 21/08/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 close all
@@ -34,11 +34,11 @@ lvl = 70; % dB SPL
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-options.bSave = 1;
-options.calmethod = 2; % 0 = AMT
-options.bPlot = 1;
+options.bSave       = 1;
+options.calmethod   = 2; % 0 = AMT; 1 = dB(A)
+options.bPlot       = 1;
 options.modes2check = [2 5];
-options.time2save = 5;
+options.time2save   = 5;
 bHPF = 1;
 % Add window
 [xx xx out] = VoD_read_aligned(bHPF,options);

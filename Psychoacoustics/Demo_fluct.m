@@ -19,7 +19,7 @@ function Demo_fluct
 % Downloaded on : 07/08/2014 (approx.)
 % Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Last update on: 07/08/2014 % Update this date manually
-% Last use on   : 07/08/2014 % Update this date manually
+% Last use on   : 21/08/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 amsigs = [];
@@ -30,6 +30,7 @@ catch
     sig = Create_test_noise(70,20,20000,1);
 end
 
+% freqfft(sig,44100,4096)
 % sig2 = Create_test_noise(70,800,1200,1);
 
 % [sig fs] = wavread('D:\MATLAB_git\tb_Psysound32\Documentation\Examples\RoughnessTest\sound.wav');

@@ -1,5 +1,5 @@
-function Generate_reference_sounds
-% function Generate_reference_sounds
+function Generate_reference_sounds(options)
+% function Generate_reference_sounds(options)
 %
 % 1. Description:
 %
@@ -10,17 +10,21 @@ function Generate_reference_sounds
 %       
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 14/08/2014
-% Last update on: 18/08/2014 % Update this date manually
-% Last use on   : 18/08/2014 % Update this date manually
+% Last update on: 22/08/2014 % Update this date manually
+% Last use on   : 22/08/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+if nargin == 0
+    options = [];
+end
 
 bZeroPad = 1;
 bSave = 1;
 
 bDoLoud = 0;
 bDoSharp = 0;
-bDoFluct = 0;
-bDoRough = 1;
+options = Ensure_field(options,'bDoFluct',1);
+bDoRough = 0;
 
 % Common params
 fc  = 1000;
@@ -84,25 +88,96 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 3. Fluctuation strength
-if bDoFluct
+% 3.1 AM tones
+if options.bDoFluct
+    tzero   = 0; % time to Zero-pad
     fmod    = 4;
     m       = 100;
-    option = 'm';
-    lvl     = 60;
-
+    option  = 'm';
+    lvlref  = 60;
+    lvl     = 70;
+    bForPsySound = 0;
+    
     start_phase = pi/2;
     y = ch_am(sig,fmod,m,option,fs,start_phase);
 
-    lvlAMT  = lvl + 10; % Zwicker's correction
-    y = setdbspl(y,lvlAMT);
+    lvlAMT  = lvlref + 10; % Zwicker's correction
+    
+    if bForPsySound
+        y = setdbspl(y,lvlAMT);
+    else
+        y = setdbspl(y,lvlref);
+    end
 
+    ramp2apply = cos_ramp(length(y),fs,75);
+    y       = ramp2apply'.*y;
+    
     if bZeroPad
-        yzero = Zero_padding(y,200e-3,fs);
+        y   = Zero_padding(y,tzero,fs);
     end
-
+    
     if bSave
-        Wavwrite(yzero,fs,[Get_TUe_paths('outputs') 'ref_fluct']);
+        Wavwrite(y,fs,[Get_TUe_paths('outputs') 'ref_fluct']);
     end
+    
+    % Modulated tones:
+    fi = 0.5; % 0,5 Hz to start
+    for k = 0:6
+        lvlAMT  = lvl + 10;
+        fmod = fi*2^k;
+        d       = 40;
+        option = 'd';
+        y = ch_am(sig,fmod,m,option,fs,start_phase);
+        % y125 = ch_am(sig125,fmod,m,option,fs,start_phase);
+        % y500 = ch_am(sig500,fmod,m,option,fs,start_phase);
+        
+        if bForPsySound
+            y = setdbspl(y,lvlAMT);
+        else
+            y = setdbspl(y,lvl);
+        end
+        %y125 = setdbspl(y125,lvlAMT);
+        %y500 = setdbspl(y500,lvlAMT);
+        
+        y    = ramp2apply'.*y;
+        %y125 = ramp2apply'.*y125;
+        %y500 = ramp2apply'.*y500;
+        
+        Wavwrite(y   ,fs,[Get_TUe_paths('outputs') 'test_fluct_fc_' Num2str(fc   ,4) '_AM_m_' Num2str(m,3) '_fmod_' Num2str(floor(fmod),3) 'Hz']);
+        %Wavwrite(y125,fs,[Get_TUe_paths('outputs') 'test_fluct_fc_' Num2str(fc125,4) '_AM_m_' Num2str(m,3) '_fmod_' Num2str(fmod,3) 'Hz']);
+        %Wavwrite(y500,fs,[Get_TUe_paths('outputs') 'test_fluct_fc_' Num2str(fc500,4) '_AM_m_' Num2str(m,3) '_fmod_' Num2str(fmod,3) 'Hz']);
+        
+    end
+    
+end
+% 3.2 FM tones
+if options.bDoFluct
+    fc      = 1500;
+    deltaf  = 700;
+    % tzero   = 0; % time to Zero-pad
+    lvl     = 70;
+    bForPsySound = 0;
+    
+    % Modulated tones:
+    fi = 0.5; % 0,5 Hz to start
+    for k = 0:6
+        lvlAMT  = lvl + 10;
+        fmod    = fi*2^k;
+        yfm     = fm(fc, dur, fs, fmod, deltaf);
+        
+        ramp2apply = cos_ramp(length(yfm),fs,75);
+        yfm     = ramp2apply'.*yfm;
+        
+        if bForPsySound
+            yfm = setdbspl(yfm,lvlAMT);
+        else
+            yfm = setdbspl(yfm,lvl);
+        end
+        
+        Wavwrite(yfm   ,fs,[Get_TUe_paths('outputs') 'test_fluct_fc_' Num2str(fc   ,4) '_FM_dev_' Num2str(deltaf,3) '_fmod_' Num2str(floor(fmod),3) 'Hz']);
+        
+    end
+        
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

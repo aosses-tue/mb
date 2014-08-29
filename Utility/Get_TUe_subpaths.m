@@ -19,8 +19,8 @@ function misc = Get_TUe_subpaths(type)
 %
 % Programmed by Alejandro Osses, TUe, 2014
 % Created on    : 24/06/2014
-% Last update on: 31/07/2014
-% Last use on   : 31/07/2014
+% Last update on: 29/08/2014
+% Last use on   : 29/08/2014
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 path = Get_TUe_paths(type);
@@ -33,10 +33,11 @@ if strcmp(type,'db_voice_of_dragon')
     misc.dir_predicted_txt = [path '03-Wav-files-predicted' delim '01-model' delim 'Data' delim];
     misc.dir_calibrated_p  = [path '03-Wav-files-predicted' delim '03-Wav-files-calibrated' delim]; 
     misc.dir_calibrated_ps = [path '03-Wav-files-predicted' delim '05-Wav-files-calibrated-synchro' delim]; 
-    misc.dir_f0_m          = [path '04-fn-extraction' delim 'measured_f0' delim];
-    misc.dir_f0_p          = [path '04-fn-extraction' delim 'modelled_f0' delim];
-    misc.dir_fn_m          = [path '04-fn-extraction' delim 'measured_fn' delim];
-    misc.dir_fn_p          = [path '04-fn-extraction' delim 'modelled_fn' delim];
+    misc.dir_wav_all       = [path '04-Wav-files-all' delim];
+    misc.dir_f0_m          = [path '05-fn-extraction' delim 'measured_f0' delim];
+    misc.dir_f0_p          = [path '05-fn-extraction' delim 'modelled_f0' delim];
+    misc.dir_fn_m          = [path '05-fn-extraction' delim 'measured_fn' delim];
+    misc.dir_fn_p          = [path '05-fn-extraction' delim 'modelled_fn' delim];
     
     misc.dir_measurements  ={[misc.dir_meas_wav '1 referentie'     delim], ...
                              [misc.dir_meas_wav '2 omgedraaid'     delim], ...
@@ -58,7 +59,14 @@ elseif strcmp(type,'tb_NMT')
     misc.Utility           = [path 'Matlab' delim 'Utility'    delim]; % From_dB; To_dB; Matlab_version.m
     
 elseif strcmp(type,'tb_Plot4papers_JU')
+    
     misc.Utility           = [path 'Utility'        delim];
+    
+elseif strcmp(type,'Reports_KUL')
+    
+    misc.Experiments = [path 'Experiments' delim];
+    misc.Proc_electrodograms = [path 'Proc_electrodograms' delim];
+        
 else
         misc = 4;
 end

@@ -21,8 +21,8 @@ function h = Mesh(t,f,z,info)
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 23/07/2014
-% Last update on: 28/07/2014 % Update this date manually
-% Last used on  : 28/07/2014 % Update this date manually
+% Last update on: 21/08/2014 % Update this date manually
+% Last used on  : 21/08/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 4

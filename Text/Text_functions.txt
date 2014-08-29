@@ -11,6 +11,8 @@
 % Last update on: $$dd$$/$$mm$$/$$yyyy$$ % Update this date manually
 % Last use on   : $$dd$$/$$mm$$/$$yyyy$$ % Update this date manually
 
+% Programmed by Alejandro Osses, ExpORL, KU Leuven, Belgium, 2014
+
 2. Adapted function (from third party):
 % 1. Description:
 %

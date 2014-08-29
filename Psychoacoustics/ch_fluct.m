@@ -1,7 +1,9 @@
-function lf=ch_fluct(main_N)
-% function lf=ch_fluct(main_N)
+function [lf le_diff outs] = ch_fluct(main_N)
+% function [lf le_diff outs] = ch_fluct(main_N)
 % 
-% calculates loudness fluctuation lf for normal and hearing-impaired listeners
+% 1. Description:
+%       Calculates loudness fluctuation lf for normal and hearing-impaired 
+%       listeners
 %
 % References:
 % [1] Chalupper, J. (2001) - in german - : Perzeptive Folgen von Innenohrschwerhörigkeit: 
@@ -31,10 +33,17 @@ HL_ihc  = zeros(1,24);
 y_k     = ch_korrel(main_N); %cross-channel correlation
 nmax    = ch_prctile(main_N,95);
 nmin    = ch_prctile(main_N,5);
+% figure; 
+% subplot(2,1,1)
+% plot([1:24], nmax, [1:24], nmin), legend('max main loudness','min main loudness')
 
 %maximale und minimale LE's berechnen (aus 5% und 95% Lautheits-Perzentil)
 le_max  = ch_kernl2lg(nmax,HL_ohc,HL_ihc); %inverse loundess transformation for normal hearing
 le_min  = ch_kernl2lg(nmin,HL_ohc,HL_ihc);
+
+% subplot(2,1,1)
+% plot([1:24], le_max, [1:24], le_min), legend('max excitation pattern','min excitation pattern')
+
 le_diff = le_max-le_min;
 le_diff(find(le_diff>30))=30;  %limit to 30 dB
 
@@ -60,6 +69,11 @@ lf=a+b.*(dlksum.^0.5);
 
 lf(find(lf<0))=0;
 lf(find(lf>6))=6;
+
+outs.le_max = le_max;
+outs.le_min = le_min;
+outs.le_diff = le_diff;
+outs.lf = lf;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end

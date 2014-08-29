@@ -1,21 +1,21 @@
 function [N, main_N, spec_N] = ch_dlm(sig, HL, k)
-% function out = ch_dlm(fs, flag)
+% function [N, main_N, spec_N] = ch_dlm(sig, HL, k)
 %
-% Dynamic Loudness Model (Chalupper 2001)
-% calculates loudness N, main loudness main_N and specific loudness spec_N
-% for a signal sig (fs=44.1 kHz, 107 dBSPL FS RMS(i.e. a sinusoid
-% with amplitudes ranging from -1 to 1 - "full scale" - has 107 dB
-% SPL) and a given hearing loss (HL) (optional parameter: default
-% 0dB)
-% Optionally, also a k-vector can be entered (default: k=0.8)
-% HL and k are 1x24 vectors according to Zwicker's critical bands
-% (regarding definition of center frequencies and bandwidth)
+% 1. Description:
+%       Dynamic Loudness Model (Chalupper 2001): calculates loudness N, 
+%       main loudness main_N and specific loudness spec_N for a signal sig 
+%       (fs=44.1 kHz, 107 dBSPL FS RMS(i.e. a sinusoid with amplitudes 
+%       ranging from -1 to 1 - "full scale" - has 107 dB SPL) and a given 
+%       hearing loss (HL) (optional parameter: default 0 dB)
+%       Optionally, also a k-vector can be entered (default: k=0.8) HL and k 
+%       are 1x24 vectors according to Zwicker's critical bands (regarding 
+%       definition of center frequencies and bandwidth)
 %
 % References:
 % [1]   Chalupper, J.,Fastl, H. (2002): Dynamic loudness model (DLM) for 
 %       normal and hearing-impaired listeners. Acustica, 88: 378-386
 % [2]   Chalupper, J. (2001) - in german - : Perzeptive Folgen von
-%       Innenohrschwerh?rigkeit: Modellierung, Simulation und 
+%       Innenohrschwerhoerigkeit: Modellierung, Simulation und 
 %       Rehabilitation. Dissertation at the Technical University of Munich, 
 %       Shaker Verlag.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -25,7 +25,7 @@ function [N, main_N, spec_N] = ch_dlm(sig, HL, k)
 % Downloaded on : 07/08/2014 (approx.)
 % Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Last update on: 07/08/2014 % Update this date manually
-% Last use on   : 07/08/2014 % Update this date manually
+% Last use on   : 21/08/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Altered by MFFM Matt Flax <flatmax> for the Psy-Sound project
@@ -39,8 +39,8 @@ function [N, main_N, spec_N] = ch_dlm(sig, HL, k)
 
 f_abt = 1/2e-3; % 2 ms sampling period
 if nargin == 2 % return the window size
-  [t_pa,w,t_sb,t_sa,t_pb] = staticParamDLM;
-  [h,t, erd] = tep_window(t_pb,t_pa,t_sb,t_sa,w,fs);
+  [t_pa,w,t_sb,t_sa,t_pb] = ch_staticParamDLM.m;
+  [h,t, erd] = ch_tep_window(t_pb,t_pa,t_sb,t_sa,w,fs);
   N = length(h);
   
   out = N;
@@ -63,8 +63,8 @@ fs = 44100;
 HL_ohc = k.*HL;
 HL_ihc = HL-HL_ohc;
 
-% Approximation of the transfer function through the human outer
-% and and middle ear
+% Approximation of the transfer function through the human outer and middle ear
+% HPF with cut-off at (around) 65 Hz
 [b, a] = ch_butter_hp(fs); % generate the butterworth filter coeffs
 
 % filter state vector.
@@ -82,22 +82,25 @@ smooth.Zfb = [];
 
 [N, main_N, spec_N] = run(sig);
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% RUN nested function
-  function [N, main_N, spec_N] = run(sig)
-  % Run the butterworth filter
-  [sig, Z] = filter(b, a, sig, Z);
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % RUN nested function
+    function [N, main_N, spec_N] = run(sig)
   
-  % Applying critical band filterbank
-  [fgrp, S] = ch_ftt_bank1(sig, S, f_abt,fs);
-  fgrp_d    = ch_damp_a0(fgrp, HL_ihc); % Attenuation due to outer & middle
-                                        % ear and inner hair cell hearing
-                                        % loss
+    % Run the butterworth filter, HPF, fc = 65 Hz
+    [sig, Z] = filter(b, a, sig, Z);
   
-  % Calculation of main loudness
-  kern_l = [kern_l; ch_kernlaut24_two(fgrp_d, HL_ohc)];
-
-  % Calculation of forward masking (aka "post masking")
+    % Applying critical band filterbank
+    [fgrp, S] = ch_ftt_bank1(sig, S, f_abt,fs);
+    fgrp_d    = ch_damp_a0(fgrp, HL_ihc); % Attenuation due to outer & middle
+                                          % ear and inner hair cell hearing
+                                          % loss
+  
+    % Calculation of main loudness
+    kern_l = [kern_l; ch_kernlaut24_two(fgrp_d, HL_ohc)];
+    
+    % ii = 10; figure; plot(kern_l(:,ii)); % to visualise post-masking 
+  
+    % Calculation of forward masking (aka "post masking")
   try
         kern_dyn = ch_post_maskn(kern_l, f_abt);
   catch

@@ -40,7 +40,7 @@ function [t F0] = Get_F0_AC_praat(inputfile,outputfile, type)
 % Programmed by Alejandro Osses, ExpORL, KU Leuven, Belgium 2013-2014
 % Created in    : 2013-2014
 % Last update on: 31/07/2014 % Update this date manually
-% Last use on   : 31/07/2014 % Update this date manually
+% Last use on   : 29/08/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 3

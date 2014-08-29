@@ -1,12 +1,15 @@
-function [output, S] = ftt_bank1(x, S, f_abt,fs)
-% [output, S] = ftt_bank1(x, S, f_abt,fs);
-% applies filterbank (as calculated in makefilterbank1.m) and envelope
-% extraction (with auditory temporal window)
-% requires rms_tep.m und tep_window.m
+function [output, S] = ch_ftt_bank1(x, S, f_abt,fs)
+% function [output, S] = ch_ftt_bank1(x, S, f_abt,fs)
+%
+% 1. Description
+%       applies filterbank (as calculated in makefilterbank1.m) and envelope
+%       extraction (with auditory temporal window)
+%       requires rms_tep.m und tep_window.m
 %
 % Author: Josef Chalupper (josef.chalupper@siemens.com)
 % original version: 12.12.2000
 % new version (with comments and examples): 6.1.2007
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Altered by Matt Flax is flatmax for the Psy-Sound project
 % Jan. 2007

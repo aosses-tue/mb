@@ -18,7 +18,7 @@ function y = Create_test_noise(l,fu,fo,t)
 
 fs  = 44100;
 fn  = fs/2;             % Nyquist freq
-noise=randn(t*fs,1);    % gaußverteiltes Rauschen mean=0, std=1 und Dauer t
+noise=randn(t*fs,1);    % gaussverteiltes Rauschen mean=0, std=1 und Dauer t
 
 % Bandbegrenzung
 fm = sqrt(fu*fo);
@@ -53,12 +53,12 @@ if Wsl < 0
     Wsl = 0+1e-4;
 end
 
-%Tiefpaßfilterung
+%Tiefpassfilterung
 [n,Wn]=cheb1ord(Wpl,Wsl,Rp,Rs);
 [b,a]=cheby1(n,Rp,Wn);
 noise=filter(b,a,noise);
 
-%Hochpaßfilterung
+%Hochpassfilterung
 [n,Wn]=cheb1ord(Wph,Wsh,Rp,Rs);
 [b,a]=cheby1(n,Rp,Wn,'high');
 noise=filter(b,a,noise);
@@ -70,7 +70,7 @@ catch
 end
 
 x=1;
-while (rms<l-0.5) | (rms>l+0.5)   % gewünschter Pegel wird eingestellt
+while (rms<l-0.5) | (rms>l+0.5)   % gewuenschter Pegel wird eingestellt
     % AO: maybe quicker if current 'calibration' function is used instead
    if rms<l-0.5
       x=x+x/2;
