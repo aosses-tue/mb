@@ -4,12 +4,17 @@ function [h ha stats] = PsySoundCL_Figures(param,res1, res2, option)
 % 1. Description:
 %       To plot PsySound results for 2 data series
 %       'param' can be:
-%           - 'sharpness'
-%           - 'loudness'
-%           - 'roughness'
+% 
+%       nAnalyser
+%       10          - 'one-third-OB'
+%       10          - 'specific-loudness'
+%       11          - 'one-third-OB'
+%       12          - 'sharpness'
+%       12          - 'loudness'
+%       15          - 'roughness'
 % 
 % 2. Additional info:
-%       Tested cross-platform: No
+%       Tested cross-platform: Yes
 %
 % 3. Stand-alone example:
 %       PsySoundCL_Figures;
@@ -22,9 +27,13 @@ function [h ha stats] = PsySoundCL_Figures(param,res1, res2, option)
 
 h = [];
 ha = [];
+stats = [];
 
 t   = res1.t; % assuming the same time vector
-z   = res1.z;
+
+try 
+    z   = res1.z;
+end
 
 try % not available for Roughness analyser yet...
     zspec = res1.zspec;
@@ -56,8 +65,7 @@ if strcmp(param,'sharpness')
     grid on;
     h(end+1) = gcf;
     ha(end+1) = gca;
-    stats = [];
-        
+
 elseif strcmp(param,'loudness')
     % Loudness
     
@@ -75,30 +83,97 @@ elseif strcmp(param,'loudness')
     grid on;
     h(end+1) = gcf;
     ha(end+1) = gca;
-    stats = [];
 
-elseif strcmp(param,'specific-loudness')
+elseif strcmp(param,'one-third-OB')
     
     bPlot_vs_time = 0;
-    DataLoud1 = res1.DataAvSpecLoud;
-    DataLoud2 = res2.DataAvSpecLoud;
+    option = Ensure_field(option,'nAnalyser',10);
     
-    figure;
-    idx = find(t>=option.tanalysis(1) & t<=option.tanalysis(2));
-    plot(zspec,DataLoud1,option.color{1},'LineWidth',option.LineWidth(1)); hold on
-    plot(zspec,DataLoud2,option.color{2},'LineWidth',option.LineWidth(2));
-    xlabel('Critical band rate (Bark)');
-    ylabel('Loudness (Sone/Bark)')
-    
-    if length(idx) == length(t)
-        title(sprintf('Average Specific Loudness - %s', option.title));
-    else
-        title(sprintf('Average Specific Loudness - %s (ti, tf) = (%.3f,%.3f) [s]', option.title,option.tanalysis(1),option.tanalysis(2)));
+    switch option.nAnalyser
+        case 10
+            
+            % nParam = 2;
+            f = res1.f;
+            freq_min = min(f);
+            freq_max = max(f);
+            DataSpecOneThirdAvg1 = res1.DataSpecOneThirdAvg;
+            DataSpecOneThirdAvg2 = res2.DataSpecOneThirdAvg;
+        
+            figure;
+            semilogx(f,DataSpecOneThirdAvg1,option.color{1},'LineWidth',option.LineWidth(1),'Marker','o'); hold on
+            semilogx(f,DataSpecOneThirdAvg2,option.color{2},'LineWidth',option.LineWidth(2),'Marker','<'); grid on;
+            ylabel('Magnitude (dB)')
+            xlabel('Frequency (Hz)');
+            title(sprintf('One-third octave band spectrum - %s', option.title));
+            h(end+1) = gcf;
+            ha(end+1) = gca;
+            
+        case 11
+            
+            f = res1.f;
+            freq_min = min(f);
+            freq_max = max(f);
+            DataSpecOneThirdAvg1 = res1.DataSpecOneThirdAvg;
+            DataSpecOneThirdAvg2 = res2.DataSpecOneThirdAvg;
+        
+            figure;
+            semilogx(f,DataSpecOneThirdAvg1,option.color{1},'LineWidth',option.LineWidth(1),'Marker','o'); hold on
+            semilogx(f,DataSpecOneThirdAvg2,option.color{2},'LineWidth',option.LineWidth(2),'Marker','<'); grid on;
+            ylabel('Magnitude (dB)')
+            xlabel('Frequency (Hz)');
+            title(sprintf('One-third octave band spectrum - %s', option.title));
+            h(end+1) = gcf;
+            ha(end+1) = gca; 
+            
     end
-    grid on;
-    h(end+1) = gcf;
-    ha(end+1) = gca;
-    stats = [];
+    
+elseif strcmp(param,'specific-loudness')
+    
+    option = Ensure_field(option,'nAnalyser',12);
+    bPlot_vs_time = 0;
+    
+    switch option.nAnalyser
+        case 10
+            
+            % nParam = 3;
+            zspec = res1.zspec;
+            freq_min = min(zspec);
+            freq_max = max(zspec);
+            
+            DataLoud1 = res1.DataLoud;
+            DataLoud2 = res2.DataLoud;
+        
+            figure;
+            plot(zspec,DataLoud1,option.color{1},'LineWidth',option.LineWidth(1)); hold on
+            plot(zspec,DataLoud2,option.color{2},'LineWidth',option.LineWidth(2));
+            xlabel('Critical band rate (Bark)')
+            ylabel('Loudness (Sones/Bark)');
+            title(sprintf('Specific Loudness (ISO532B) - %s', option.title));
+            grid on;
+            h(end+1) = gcf;
+            ha(end+1) = gca;
+            
+        otherwise
+            
+            DataLoud1 = res1.DataAvSpecLoud;
+            DataLoud2 = res2.DataAvSpecLoud;
+
+            figure;
+            idx = find(t>=option.tanalysis(1) & t<=option.tanalysis(2));
+            plot(zspec,DataLoud1,option.color{1},'LineWidth',option.LineWidth(1)); hold on
+            plot(zspec,DataLoud2,option.color{2},'LineWidth',option.LineWidth(2));
+            xlabel('Critical band rate (Bark)');
+            ylabel('Loudness (Sone/Bark)')
+
+            if length(idx) == length(t)
+                title(sprintf('Average Specific Loudness - %s', option.title));
+            else
+                title(sprintf('Average Specific Loudness - %s (ti, tf) = (%.3f,%.3f) [s]', option.title,option.tanalysis(1),option.tanalysis(2)));
+            end
+            grid on;
+            h(end+1) = gcf;
+            ha(end+1) = gca;
+    end
     
 elseif strcmp(param,'roughness')
     
@@ -117,11 +192,13 @@ elseif strcmp(param,'roughness')
 
     h(end+1) = gcf;
     ha(end+1) = gca;
-    stats = [];
         
 elseif strcmp(param,'specific-roughness')
     
     bPlot_vs_time = 0;
+    freq_min = min(z);
+    freq_max = max(z);
+    
     DataRough1 = res1.DataSpecRough;
     DataRough2 = res2.DataSpecRough;
     
@@ -140,13 +217,12 @@ elseif strcmp(param,'specific-roughness')
     grid on
     h(end+1) = gcf;
     ha(end+1) = gca;
-    stats = [];
     
 end
 
 try
     if bPlot_vs_time == 0
-        xlim([0 24]) % Bark
+        xlim([freq_min freq_max]) % Bark
     else
         xlim(option.tanalysis)
     end
