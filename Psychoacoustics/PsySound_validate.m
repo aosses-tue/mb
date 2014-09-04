@@ -7,7 +7,9 @@ function h = PsySound_validate(options)
 %       Tested cross-platform: No
 %
 % 3. Stand-alone example:
-%       
+%       options.bDoFluct = 1;
+%       PsySound_validate(options);
+% 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 17/08/2014
 % Last update on: 17/08/2014 % Update this date manually
@@ -131,6 +133,7 @@ end
 % 3.1 AM Tones
 if options.bDoFluct
 
+    dBFS = 100; 
     option.bExtension = 0;
     fc = 1000;
     fluct_files =Get_filenames(dir_where_ref,['*_fluct_fc_' num2str(fc) '*.wav'],option);
@@ -144,9 +147,7 @@ if options.bDoFluct
     fmod = [0.5 1 2 4 8 16 32];
     for i=1:length(fluct_files)
         [x fs] = Wavread([dir_where_ref fluct_files{i} '.wav']);
-        x = From_dB(-10)*x;
-        fprintf('RMS to be considered: %.2f dB SPL (0 dBFS = 110 dB SPL)\n',rmsdb(x)+110);
-        outstmp = Do_fluct(x,fs);
+        outstmp = Do_fluct(x,fs,dBFS);
         lf      = [lf; outstmp.lf];
         le_min  = [le_min; outstmp.le_min];
         le_max  = [le_max; outstmp.le_max];

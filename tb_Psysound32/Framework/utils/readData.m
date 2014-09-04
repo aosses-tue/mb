@@ -1,5 +1,6 @@
 function [fileHandle, done] = readData(varargin)
-% READDATA  Read Audio file data
+% function [fileHandle, done] = readData(varargin)
+%
 %    FILEHANDLE = READDATA with no arguments will prompt the user
 %    to select a file from the list of all supported types, converts
 %    it to a WAV file and writes to a temp location
@@ -272,6 +273,27 @@ fH.tPoint = (fH.loc - 1) / fH.sampleRate;
 % calibrate using the in-built calibration coefficient
 fH.data = fH.data * fH.calCoeff;
 
+try % comments by AO
+    
+    % bComment = (length(padInFront) ~= 0 | length(padAtRear) ~= 0);
+    bComment = 0; 
+    
+    if bComment
+        disp(sprintf('Processing to PsySound input signal (%s)',fH.realName))
+        disp(sprintf('  - Signal amplified in %.2f [dB]',To_dB(fH.calCoeff)))
+        disp(sprintf('  - Calibrated signal = %.2f [dB]',rmsdb(fH.data)-To_dB(20e-6)))
+        disp(sprintf('  - Calibrated signal = %.2f [dB(A)]',rmsdbA(fH.data)-To_dB(20e-6)))
+        disp(sprintf('  - 0 dB = 20e-6 Pa = %.2f [dBFS]',To_dB(20e-6)));
+       
+        if length(padInFront) ~= 0
+            disp(sprintf('  - Signal padded in front in %.0f [samples]',length(padInFront)))
+        end
+
+        if length(padAtRear) ~= 0
+            disp(sprintf('  - Signal padded at rear in %.0f [samples]',length(padAtRear)))
+        end
+    end
+end
 % Assign output
 fileHandle = fH;
 

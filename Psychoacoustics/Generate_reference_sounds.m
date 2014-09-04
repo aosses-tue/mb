@@ -100,16 +100,18 @@ if options.bDoFluct
     
     start_phase = pi/2;
     y = ch_am(sig,fmod,m,option,fs,start_phase);
-
+    y2 = ch_am(sig,fmod,0,option,fs,start_phase);
+    
     lvlAMT  = lvlref + 10; % Zwicker's correction
     
     if bForPsySound
         y = setdbspl(y,lvlAMT);
     else
         y = setdbspl(y,lvlref);
+        y2 = setdbspl(y2,lvlref);
     end
 
-    ramp2apply = cos_ramp(length(y),fs,75);
+    ramp2apply = cos_ramp(length(y),fs,50);
     y       = ramp2apply'.*y;
     
     if bZeroPad
@@ -117,6 +119,8 @@ if options.bDoFluct
     end
     
     if bSave
+        y = y/max(y);
+        y = y*max(y2);
         Wavwrite(y,fs,[Get_TUe_paths('outputs') 'ref_fluct']);
     end
     

@@ -1,8 +1,8 @@
-function y = prctile(x,p)
-% function y = prctile(x,p)
+function y = ch_prctile(x,p)
+% function y = ch_prctile(x,p)
 %
-%	PRCTILE gives the percentiles of the sample in X.
-%	Y = PRCTILE(X,P) returns a value that is greater than P percent
+%	CH_PRCTILE gives the percentiles of the sample in X.
+%	Y = CH_PRCTILE(X,P) returns a value that is greater than P percent
 %	of the values in X. For example, if P = 50  Y is the median of X. 
 %
 %	P may be either a scalar or a vector. For scalar P, Y is a row	

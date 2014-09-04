@@ -1,5 +1,8 @@
 function [fhOut, mLevels, adjs] = calibrate(fhIn, type, varargin)
-% CALIBRATE Adds calibration coeffecients to the the filehandles
+% function [fhOut, mLevels, adjs] = calibrate(fhIn, type, varargin)
+%
+% 1. Description: 
+%       CALIBRATE Adds calibration coeffecients to the the filehandles
 %
 % Input arguments
 %     fhIn     - array of filehandle structs
@@ -22,8 +25,10 @@ function [fhOut, mLevels, adjs] = calibrate(fhIn, type, varargin)
 %  fh = calibrate(fh, 'A', 'Median');
 %
 %  fh = calibrate(fh, 'C', 'SPL', 40)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Initialise output argument, in case of an error
+
 fhOut   = fhIn;
 mLevels = [];
 adjs    = [];

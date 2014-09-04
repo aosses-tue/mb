@@ -4,13 +4,15 @@ function [N, main_N, spec_N] = ch_dlm(sig, HL, k)
 % 1. Description:
 %       Dynamic Loudness Model (Chalupper 2001): calculates loudness N, 
 %       main loudness main_N and specific loudness spec_N for a signal sig 
-%       (fs=44.1 kHz, 107 dBSPL FS RMS(i.e. a sinusoid with amplitudes 
-%       ranging from -1 to 1 - "full scale" - has 107 dB SPL) and a given 
-%       hearing loss (HL) (optional parameter: default 0 dB)
+%       and a given hearing loss (HL) (optional parameter: 
+%       default 0 dB)
 %       Optionally, also a k-vector can be entered (default: k=0.8) HL and k 
 %       are 1x24 vectors according to Zwicker's critical bands (regarding 
 %       definition of center frequencies and bandwidth)
 %
+%       Calibration: (fs=44.1 kHz, 107 dB SPL FS RMS(i.e. a sinusoid with 
+%       amplitude of 1 has 107 dB SPL), easily 114 dB SPL = 0 dBFS
+% 
 % References:
 % [1]   Chalupper, J.,Fastl, H. (2002): Dynamic loudness model (DLM) for 
 %       normal and hearing-impaired listeners. Acustica, 88: 378-386

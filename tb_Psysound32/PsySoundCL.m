@@ -3,6 +3,12 @@ function [h ha output] = PsySoundCL(filename,option)
 % 
 % 1. Description:
 %       Executes PsySound3 from command line
+%       Analysers tested:
+%            8 - SLM(fh); 
+%           10 - ThirdOctaveBand(fh);   % NOT VALIDATED YET
+%           11 - CPBFFT(fh);            % NOT VALIDATED YET
+%           12 - LoudnessCF(fh);
+%           15 - RoughnessDW(fh);
 % 
 % 2. Additional info:
 %       Tested cross-platform: No
@@ -29,6 +35,8 @@ end
 
 if nargin == 0
     option.nAnalyser = input('Choose analyser to be used: \n - type 12 for DLM model or \n - type 15 for Roughness model :');
+    [f1 f2] = uigetfile(Get_TUe_paths('outputs'));
+    filename = [f2 f1];
 end
 
 option = Ensure_field(option,'nAnalyser'  ,15);
@@ -41,11 +49,6 @@ end
 nAnalyser = option.nAnalyser;
 % nAnalyser = 12; % Dynamic loudness
 % nAnalyser = 15; % Roughness
-
-if nargin == 0
-    [f1 f2] = uigetfile(Get_TUe_paths('outputs'));
-    filename = [f2 f1];
-end
 
 if ~isfield(option,'title')
     option = Ensure_field(option,'title',name2figname(filename));
@@ -60,9 +63,19 @@ else
 end
 
 if ~isfield(option,'calfile')
-    disp([mfilename '.m: calibration file not specified. 0 dBFS = 100 dB SPL is going to be used...'])
-    option.calfile = filename;
-    option.callevel = dbspl(x);
+    disp([mfilename '.m: calibration file not specified. Calibration respect to itself, 0 dBFS = 100 dB SPL is going to be used...'])
+    
+    bCal = input('Choose calibration method: (1-AMT for 0 dBFS = 100 dB / 2-Zwicker for 0 dBFS = 90 dB): ');
+    
+    switch bCal
+        case 1
+            option.calfile = filename;
+            option.calfile = [Get_TUe_paths('db_calfiles') 'track_03.wav']; %white noise, adjusted to AMT convention
+            option.callevel = 70;
+        case 2
+            option.calfile = [Get_TUe_paths('db_fastl2007') 'track_03.wav']; %white noise
+            option.callevel = 60;
+    end
 else
     if ~isfield(option,'callevel')
         option.callevel = input([mfilename '.m - Specify the level of the calibration tone [dB SPL] : ']);
@@ -88,8 +101,8 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Step 2: Calibation
-% % To calibrate your files by using a file 'CalFile.wav' that represents 91 dB:
-% fhs = calibrate(fhs, 'WithFiles', 'CalFile.wav', 91)
+disp(['Calibration file      : ' option.calfile])
+disp(['Calibration level [dB]: ' num2str(option.callevel)])
 fh = calibrate(fh, 'WithFiles', option.calfile, option.callevel); 
 % fh.calCoeff = 1; % To avoid calibration set this value to 1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -98,6 +111,10 @@ fh = calibrate(fh, 'WithFiles', option.calfile, option.callevel);
 switch nAnalyser
     case 8
         obj = SLM(fh); 
+    case 10
+        obj = ThirdOctaveBand(fh);
+    case 11
+        obj = CPBFFT(fh);
     case 12
         obj = LoudnessCF(fh);
     case 15
@@ -108,7 +125,25 @@ obj = process(obj,fh,[]);
 tmpObj  = get(obj,'output');
 
 t       = get(tmpObj{1,1},'Time');
-z       = get(tmpObj{1,2},'Freq'); % 1:24
+
+if nAnalyser == 12 | nAnalyser == 15
+    
+    z   = get(tmpObj{1,2},'Freq'); % 1:24
+    
+elseif nAnalyser == 10 | nAnalyser == 11
+    
+    f_cell = get(tmpObj{1,2},'Freq');
+    f = zeros(size(f_cell));
+    for i=1:length(f_cell)
+        f(i) = str2num(f_cell{i});
+    end
+    
+    f_cell = get(tmpObj{1,3},'Freq');
+    f_octv = zeros(size(f_cell));
+    for i=1:length(f_cell)
+        f_octv(i) = str2num(f_cell{i});
+    end
+end
 
 if isfield(option,'trange')
     % for i = 1:size(option.trange,1)
@@ -121,6 +156,41 @@ output.t = t;
 output.z = z;
 
 switch nAnalyser 
+    
+    case 10
+        % Out1
+        % Out2
+        % Out3: Loudness with percentiles
+        
+        
+    case 11
+        
+        % One-third Octave Band Spectrogram
+        % Size = Number of frames x 33 bands(for 1/3 OB)
+        DataSpecOneThird = get(tmpObj{1,1},'Data');
+        
+        % One-third Octave Band Spectrogram, global values
+        DataSpecOneThirdAvg = get(tmpObj{1,2},'Data');
+        
+        DataSpecOctv    = get(tmpObj{1,3},'Data');
+        DataSpecOctvAvg = get(tmpObj{1,4},'Data');
+        
+        figure;
+        semilogx(f,DataSpecOneThirdAvg,'o-');
+        ylabel('Magnitude (dB)')
+        xlabel('Frequency (Hz)');
+        title(sprintf('One-third octave band spectrum - %s', option.title));
+        grid on;
+        h(end+1) = gcf;
+        ha(end+1) = gca;
+        
+        output.f        = f;
+        output.f_octv   = f_octv;
+        output.DataSpecOneThird     = DataSpecOneThird;             
+        output.DataSpecOneThirdAvg  = DataSpecOneThirdAvg; 
+        output.DataSpecOctv         = DataSpecOctv;             
+        output.DataSpecOctvAvg      = DataSpecOctvAvg;  
+        
     case 12
         
         zspec = get(tmpObj{1,5},'Freq');

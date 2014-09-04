@@ -222,7 +222,7 @@ for acmode = info.modes2check
             ha(end+1) = gca;
             ylabel('Frequency [Hz]')
             title('Estimated fundamental frequency f0')
-            
+                        
             subplot(n,1,4)
             plot(   tf,(f0p-f0m)/misc.mf(mode_idx)*100   ,'k')
             grid on, hold on;
@@ -238,6 +238,38 @@ for acmode = info.modes2check
         
         misc.hFig(end+1) = gcf;
         misc.ha(end+1) = ha(end);
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Commented on 3/09/2014, the following lines were generating the 
+        % modified plot version normalised to JND, see figure 14, report on 29/08/2014
+        % try 
+            % figure;
+            % misc.hFig(end+1) = gcf;
+            % CloneFig(misc.hFig(end-1),misc.hFig(end));
+            % 
+            % subplot(n,1,4)
+            % JND = Get_JND_freq_tones(misc.mf(mode_idx));
+            % f_JND = misc.mf(mode_idx) + JND/2;
+            % xlim([0 3*misc.Tmodel(mode_idx)]);
+            % 
+            % plot(   [min(tf) max(tf)],[ 100  100],'g--'), hold on
+            % Diff_f = (f0p-f0m)/JND*100;
+            % plot(   tf, abs(Diff_f),'k')
+            % Diff_f = abs(Delete_NaN_columns(Diff_f));
+            % p05 = percentile(Diff_f,100- 5);
+            % p10 = percentile(Diff_f,100-10);
+            % p20 = percentile(Diff_f,100-20);
+            % p50 = percentile(Diff_f,100-50);
+            % p90 = percentile(Diff_f,100-90);
+            % p95 = percentile(Diff_f,100-95);
+            % 
+            % grid on;
+            % title(['\Delta f0, normalised to JND [%]. (Percentiles [%]: P_{5,10,90,95} =' sprintf(' %.0f, %.0f, %.1f, %.1f)',p05,p10,p90,p95)]);
+            % ha(end+1) = gca;
+            % xlabel('Time [s]')
+            % ylabel('norm( \Delta f ) [%]')
+        % end
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     end
     
 end

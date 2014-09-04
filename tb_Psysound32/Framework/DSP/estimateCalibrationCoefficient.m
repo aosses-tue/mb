@@ -1,10 +1,14 @@
 function [calCoeff, w] = estimateCalibrationCoefficient(calFileName, dBSPL)
+% function [calCoeff, w] = estimateCalibrationCoefficient(calFileName, dBSPL)
+%
+% 1. Description:
 % ESTIMATECALIBRATIONCOEFFICIENT Find the calibration coefficient
 %                                of a 'dBSPL' dB SPL calibration
 %                                signal
 %
 % w - returns the warning text, if asked otherwise it goes ahead
 %     and issues the warning
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 w = '';
 

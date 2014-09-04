@@ -38,7 +38,7 @@ if nargin < 3
 end
 
 if nargin < 4
-    window = 1;
+    window = 0;
 end
 
 t = 0: 1/fs : dur - 1/fs;

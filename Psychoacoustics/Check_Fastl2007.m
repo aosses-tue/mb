@@ -2,6 +2,16 @@ function info = Check_Fastl2007(chapter,fig_number)
 % function info = Check_Fastl2007(chapter,fig_number)
 %
 % 1. Description:
+%       Way to export separate files from Fastl's examples:
+%           Step 1: write down times separating each stimulus inside a 
+%                   specific track
+%           Step 2: run 'Generate_Fastl2007_textGrid(track_no)'; where 
+%                   track_no is the track number
+%           Step 3: copy created grid (see function's log) to 
+%                   'db_fastl2007_src' directory
+%           Step 4: Open wav file and textGrid from Praat (select file in 
+%                   'db_fastl2007_src') and export manually
+% 
 %       Tracks ready:
 %       38
 % 2. Additional info:
@@ -15,8 +25,8 @@ function info = Check_Fastl2007(chapter,fig_number)
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 13/08/2014
-% Last update on: 13/08/2014 % Update this date manually
-% Last use on   : 13/08/2014 % Update this date manually
+% Last update on: 02/09/2014 % Update this date manually
+% Last use on   : 02/09/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % track_35  -   Figure 10.1
@@ -29,7 +39,7 @@ if nargin < 2
     fig_number = 1;
 end
 
-paths = Get_TUe_paths('db_fastl2007');
+paths = Get_TUe_paths('db_fastl2007_src');
 
 switch chapter
     case 1
@@ -75,10 +85,19 @@ switch chapter
             case 1
                 filename = 'track_38';
                 timesep = [1:3:41];
+            case 3 % added on 2/09/2014
+                filename = 'track_39';
+                timesep = [ 1 4   6 9  11 14 ...
+                           18 21 23 26 28 31 ...
+                           35 38 40 43 45 48];
         end
 end
 
-[x fs] = Wavread([paths filename]);
+try
+    [x fs] = Wavread([paths filename]);
+catch
+    error('Make sure all Fastl''s files are available at your computer')
+end
 
 t = ( 1:length(x) )/fs;
 

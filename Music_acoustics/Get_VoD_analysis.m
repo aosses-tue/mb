@@ -20,18 +20,18 @@ function h = Get_VoD_analysis(filename1,filename2,options)
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 20/08/2014
-% Last update on: 20/08/2014 % Update this date manually
-% Last use on   : 20/08/2014 % Update this date manually
+% Last update on: 03/09/2014 % Update this date manually
+% Last use on   : 03/09/2014 % Update this date manually
 % 
 % Original file name: VoD_comparisons2.m
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 bDoChalupper    = 1;
 
-bHPF        = 1; % 1 = to load band-pass filtered audio files
-options.bSave  = 1;
+% bHPF        = 1; % 1 = to load band-pass filtered audio files
+options     = Ensure_field(options,'bSave',0);
 options.bPlot  = 1;
-options = Ensure_field(options,'label','');
+options     = Ensure_field(options,'label','');
 
 if options.bSave == 1
     options = Ensure_field(options,'dest_folder_fig',Get_TUe_paths('outputs'));
@@ -43,9 +43,6 @@ h = []; % handles figures
 
 disp([mfilename '.m: analysing ' filename1 ' and ' filename2]);
  
-% 4. Chalupper's model
-%       - Last used on: 01/08/2014
-
 if bDoChalupper
     ha1 = [];
     ha2 = [];    
@@ -59,6 +56,13 @@ if bDoChalupper
 
     options.bCosineRamp = 0; % Cos ramp not yet applied for Loudness calculations
     options.bCosineRampOnset = 0; %ms
+    
+    options.nAnalyser = 10;
+    [tmp_h tmp_ha out_summary1]   = PsySoundCL(filename1,options);
+    
+    options.nAnalyser = 11;
+    [tmp_h tmp_ha out_summary1]   = PsySoundCL(filename1,options);
+    
     options.nAnalyser = 12;
     [tmp_h tmp_ha out_summary1]   = PsySoundCL(filename1,options); % , times2zoom); % 6 figures
     [tmp_h tmp_ha out_summary2]   = PsySoundCL(filename2,options); % , times2zoom); % 6 figures
@@ -94,8 +98,8 @@ end
 
 if options.bSave
     
-    disp('Figures are going to be stored...press any button to continue. Press ctr+C to cancel')
-    pause()
+    disp('Figures are going to be stored... Press ctr+C to cancel')
+    pause(2)
     
     try
         paths.outputs = options.dst_folder_fig;
@@ -109,6 +113,11 @@ if options.bSave
         options.format = 'epsc';
         Saveas(h(j),[options.dest_folder_fig 'psycho-fig' Num2str(j,2) options.label],options);
     end
+    
+else
+    
+    disp('Figures are NOT going to be stored... Set options.bSave to 1 and re-run the scripts in case you want to save the figures')
+    pause(2)
     
 end
 
