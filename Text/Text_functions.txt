@@ -58,3 +58,20 @@
 % Last update on: $$dd$$/$$mm$$/$$yyyy$$ % Update this date manually
 % Last use on   : $$dd$$/$$mm$$/$$yyyy$$ % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+PSYSOUND:
+% function obj = RoughnessDW(varargin)
+%
+% 1. Description:
+%       ROUGHNESSDW Constructor
+%
+% 2. Additional info:
+%       Tested cross-platform: Yes
+%
+% Author        : PsySound Team
+% Downloaded in : 2014
+% Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Last update in: 2014 % Update this date manually
+% Last use on   : 10/09/2014 % Update this date manually
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+

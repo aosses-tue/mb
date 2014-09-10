@@ -29,10 +29,10 @@ function AMT_running_demos
 %   Start_TUe;
 %   AMT_running_demos
 %
-% Programmed by Alejandro Osses, HIT, TU/e, the Netherlands, 2014
-% Created on: March 2014
-% Last update: 14/05/2014 % Update this date manually
-% Last used: 14/05/2014 % Update this date manually
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Created on    : March 2014
+% Last update on: 14/05/2014 % Update this date manually
+% Last use on   : 08/09/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 info.bSave = 0;

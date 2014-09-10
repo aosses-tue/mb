@@ -36,10 +36,13 @@ end
     
 bDoChalupper    = 1;
 
-% bHPF        = 1; % 1 = to load band-pass filtered audio files
+options.label1 = ' meas';
+options.label2 = 'model';
+
 options     = Ensure_field(options,'bSave',0);
-options.bPlot  = 1;
+options     = Ensure_field(options,'bPlot',1);
 options     = Ensure_field(options,'label','');
+options     = Ensure_field(options,'SPLrange',[10 70]);
 
 if options.bSave == 1
     options = Ensure_field(options,'dest_folder_fig',Get_TUe_paths('outputs'));
@@ -85,6 +88,7 @@ if bDoChalupper
         grid on
         title('SPL for audio file 1');
     end
+    
     options.nAnalyser = 10;
     [tmp_h tmp_ha out_1_10]   = PsySoundCL(filename1,options);
     [tmp_h tmp_ha out_2_10]   = PsySoundCL(filename2,options);
@@ -111,56 +115,116 @@ if bDoChalupper
     % 8. Roughness [s]
   
     param = [];
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % options.nAnalyser   = 10;
+    % param{end+1}        = 'one-third-OB';
+    % [h(end+1) xx stats] = PsySoundCL_Figures(param{end},out_1_10,out_2_10,options);
+    % param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
+    % legend('meas','model');
+    % set(gca,'YLim',options.SPLrange);
     
-    options.nAnalyser   = 10;
-    param{end+1}        = 'one-third-OB';
-    [h(end+1) xx stats] = PsySoundCL_Figures(param{end},out_1_10,out_2_10,options);
-    param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
-    legend('meas','model');
-    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     options.nAnalyser   = 10;
     param{end+1}        = 'specific-loudness';
     [h(end+1) xx stats] = PsySoundCL_Figures(param{end},out_1_10,out_2_10,options);
     param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
-    % legend('meas','model');
-    legend( sprintf(' meas, tot = %.2f [sone]',out_1_10.stats.loud_tot), ... 
-            sprintf('model, tot = %.2f [sone]',out_2_10.stats.loud_tot) );
     
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     options.nAnalyser   = 11;
     param{end+1}        = 'one-third-OB';
     [h(end+1) xx stats] = PsySoundCL_Figures(param{end},out_1_11,out_2_11,options);
     param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
-    legend('meas','model');
+    legend( sprintf('tot = %.2f dB(Z)',dbsum( out_1_11.DataSpecOneThirdAvg )) ,...
+            sprintf('tot = %.2f dB(Z)',dbsum( out_2_11.DataSpecOneThirdAvg )) );
+    set(gca,'YLim',options.SPLrange);
     
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     options.nAnalyser   = 12;
     param{end+1}        = 'loudness';
     [h(end+1) xx stats] = PsySoundCL_Figures(param{end},out_1_12,out_2_12,options);
     param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
-    legend('meas','model');
+    % legend('meas','model');
     
     options.nAnalyser   = 12;
     param{end+1}        = 'sharpness';
     [h(end+1) xx stats] = PsySoundCL_Figures(param{end},out_1_12,out_2_12,options);
     param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
-    legend('meas','model');
-    
-    options.nAnalyser = 15;
-    param{end+1}        = 'roughness';
-    [h(end+1) xx stats] = PsySoundCL_Figures(param{end},out_1_15,out_2_15,options);
-    param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
-    legend('meas','model');
+    % legend('meas','model');
     
     options.nAnalyser   = 12;
     param{end+1}        = 'specific-loudness';
     [h(end+1) xx stats] = PsySoundCL_Figures(param{end},out_1_12,out_2_12,options);
     param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
-    legend('meas','model');
+    % legend('meas','model');
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    options.nAnalyser = 15;
+    param{end+1}        = 'roughness';
+    [h(end+1) xx stats] = PsySoundCL_Figures(param{end},out_1_15,out_2_15,options);
+    param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
+    % legend('meas','model');
     
     options.nAnalyser = 15;
     param{end+1} = 'specific-roughness';
     [h(end+1) xx stats] = PsySoundCL_Figures(param{end},out_1_15,out_2_15,options);
     param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
-    legend('meas','model');
+    % legend('meas','model');
+    
+    
+    %%%%
+    % Percentiles for Loudness
+    yy1 = buffer(out_1_12.DataLoud,dt,0);
+    yy2 = buffer(out_2_12.DataLoud,dt,0);
+    
+    NN = diff(options.tanalysis)/4;
+    dt = ceil( NN/min(diff(out_1_12.t)) );
+    N = floor(options.time2save / NN);
+    y = yy1(:,1:N);
+    p5 = percentile(y,5);
+    p50 = percentile(y,50);
+    p95 = percentile(y,95);
+    
+    N = floor(options.time2save / NN);
+    y = yy2(:,1:N);
+    p5_mod = percentile(y,5);
+    p50_mod = percentile(y,50);
+    p95_mod = percentile(y,95);
+    
+    disp('Loudness')
+    disp('Percentile 5')
+    fprintf('meas. = %.3f [sone] +/- %.3f | model = %.3f [sone] +/- %.3f \n',mean(p5),std(p5),mean(p5_mod),std(p5_mod));
+    
+    disp('Percentile 50')
+    fprintf('meas. = %.3f [sone] +/- %.3f | model = %.3f [sone] +/- %.3f \n',mean(p50),std(p50),mean(p50_mod),std(p50_mod));
+    
+    disp('Percentile 95')
+    fprintf('meas. = %.3f [sone] +/- %.3f | model = %.3f [sone] +/- %.3f \n',mean(p95),std(p95),mean(p95_mod),std(p95_mod));
+    
+    %%%%
+    % Percentiles for Sharpness
+    
+    yy1 = buffer(out_1_12.DataSharp,dt,0);
+    yy2 = buffer(out_2_12.DataSharp,dt,0);
+    
+    y = yy1(:,1:N);
+    p5 = percentile(y,5);
+    p50 = percentile(y,50);
+    p95 = percentile(y,95);
+    
+    p5_mod = percentile(y,5);
+    p50_mod = percentile(y,50);
+    p95_mod = percentile(y,95);
+    
+    disp('Sharpness')
+    disp('Percentile 5')
+    fprintf('meas. = %.3f [sone] +/- %.3f | model = %.3f [sone] +/- %.3f \n',mean(p5),std(p5),mean(p5_mod),std(p5_mod));
+    
+    disp('Percentile 50')
+    fprintf('meas. = %.3f [sone] +/- %.3f | model = %.3f [sone] +/- %.3f \n',mean(p50),std(p50),mean(p50_mod),std(p50_mod));
+    
+    disp('Percentile 95')
+    fprintf('meas. = %.3f [sone] +/- %.3f | model = %.3f [sone] +/- %.3f \n',mean(p95),std(p95),mean(p95_mod),std(p95_mod));
+    %%%%
 end
     
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -178,9 +242,9 @@ if options.bSave
     
     for i = 1:length(h)
         % options.format = 'emf';
-        % Saveas(h(i),[options.dest_folder_fig 'psycho-fig' param{i} options.label],options);
+        % Saveas(h(i),[options.dest_folder_fig 'psycho-fig-' param{i} options.label],options);
         options.format = 'epsc';
-        Saveas(h(i),[options.dest_folder_fig 'psycho-fig' param{i} options.label],options);
+        Saveas(h(i),[options.dest_folder_fig 'psycho-fig-' param{i} options.label],options);
     end
     
 else

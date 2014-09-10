@@ -41,8 +41,24 @@ options.bPlot       = 1;
 options.modes2check = [2 5];
 options.time2save   = 5;
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+spl2lu(20:10:90);
+h = gcf;
+
+if options.bSave == 1
+    Saveas(h, [options.dest_folder_fig 'fig-spl-LU']);
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 % Add window
-out = VoD_write_aligned(options);
+if options.bSave == 1 & bGenerate == 0;
+    options.bSave = ~options.bSave;
+    out = VoD_write_aligned(options); % We do not want to generate again wav-files
+    options.bSave = ~options.bSave;
+else
+    out = VoD_write_aligned(options);
+end
+
 ti2 = 3*out.Tmodel(1);
 tf2 = ti2+4*out.Tmodel(1);
 set( out.ha(1),'XLim',[ti2 tf2]);
@@ -54,16 +70,18 @@ tf5 = ti5+4*out.Tmodel(4);
 set( out.ha(2),'XLim',[ti5 tf5]);
 fprintf('ti = %.3f, tf = %.3f',ti5,tf5); % Use this to adapt Praat times
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if bGenerate
-    
+if options.bSave
     for i = 1:length(out.hFig)
         % options.format = 'emf'; % for PPT
         % Saveas(out.hFig(j)  ,[options.dest_folder_fig 'aligned-ac-mode-' num2str(options.modes2check(i))],options);
         options.format = 'epsc';
         Saveas(out.hFig(i)  ,[options.dest_folder_fig 'aligned-ac-mode-' num2str(options.modes2check(i))],options);
     end
+end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if bGenerate
+    
     for i = 1:length(options.modes2check)
 
         mode_idx = options.modes2check(i)-1;
@@ -114,9 +132,36 @@ t1 = ti2;
 t2 = tf2;
 fi1 = [options.dest_folder 'meas-ac-mode-2.wav']; % measured
 fi2 = [options.dest_folder 'model-ac-mode-2.wav']; % predicted
+
+[x1 fs] = Wavread(fi1);
+[x2 fs] = Wavread(fi2);
+% [flpc1 out1] = Get_LPC(x1(fs:2*fs),fs);
+% [flpc2 out2] = Get_LPC(x2(fs:2*fs),fs);
+
+Get_LPC_frames(x1(fs:2*fs),fs);
+if options.bSave
+    h = gcf;
+    Saveas(h,[options.dest_folder 'model-ac-meas-2-formants']);
+end
+
+Get_LPC_frames(x2(fs:2*fs),fs);
+if options.bSave
+    h = gcf;
+    Saveas(h,[options.dest_folder 'model-ac-model-2-formants']);
+end
+
+% figure;
+% plot(   out1.f,out1.h_dB, ...
+%         out2.f,out2.h_dB )
+% xlabel('Frequency [Hz]')
+% ylabel('Gain [dB]')
+% grid on, hold on
+
 options.tanalysis = [t1 t2];
 options.label = 'ac-2';
 options.LineWidth = [2 1];
+options.SPLrange = [10 70];
+
 Get_VoD_analysis(fi1,fi2,options)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -125,6 +170,19 @@ t1 = ti5;
 t2 = tf5;
 fi1 = [options.dest_folder 'meas-ac-mode-5.wav']; % measured
 fi2 = [options.dest_folder 'model-ac-mode-5.wav']; % predicted
+
+Get_LPC_frames(x1(fs:2*fs),fs);
+if options.bSave
+    h = gcf;
+    Saveas(h,[options.dest_folder 'model-ac-meas-5-formants']);
+end
+
+Get_LPC_frames(x2(fs:2*fs),fs);
+if options.bSave
+    h = gcf;
+    Saveas(h,[options.dest_folder 'model-ac-model-5-formants']);
+end
+
 options.tanalysis = [t1 t2];
 options.label = 'ac-5';
 Get_VoD_analysis(fi1,fi2,options);

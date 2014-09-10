@@ -22,8 +22,11 @@ catch
     [y,Fs,bits,opt_ck] = wavread(filename);
 end
 disp([mfilename '.m: ' filename ' read'])
-try
-    fprintf('%s.m: RMS of %.2f [dBFS]\n',mfilename,rmsdb(y))
+
+if nargout == 0
+    try
+        fprintf('%s.m: RMS of %.2f [dBFS]\n',mfilename,rmsdb(y))
+    end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end

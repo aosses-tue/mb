@@ -18,8 +18,8 @@ function [h ha output] = PsySoundCL(filename,option)
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 22/07/2014
-% Last update on: 29/08/2014 % Update this date manually
-% Last use on   : 29/08/2014 % Update this date manually
+% Last update on: 05/09/2014 % Update this date manually
+% Last use on   : 05/09/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 h = [];
@@ -190,11 +190,13 @@ switch nAnalyser
         Data_dBZF = get(tmpObj{1,nParam},'Data');
         nParam = 4;
         Data_dBZS = get(tmpObj{1,nParam},'Data');
+        output.description = {'dB(A) Fast','dB(A) Slow','dB(Z) Fast','dB(Z) Slow'};
         
         output.Data_dBAF = Data_dBAF;
         output.Data_dBAS = Data_dBAS;
         output.Data_dBZF = Data_dBZF;
         output.Data_dBZS = Data_dBZS;
+        
         
     case 10
         % Out1: 
@@ -260,6 +262,8 @@ switch nAnalyser
         
         nParam = 4;
         DataSpecOctvAvg = get(tmpObj{1,nParam},'Data');
+        
+        % output.description = {'','','',''};
         
         if option.bPlot
             figure;
@@ -428,6 +432,7 @@ switch nAnalyser
         
         output.DataRough = DataRough;
         output.DataSpecRough = DataSpecRough;
+        stats.rough_tot = 0.5*sum(  mean( DataRough )  );
         
 end
 

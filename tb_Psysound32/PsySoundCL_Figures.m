@@ -21,8 +21,8 @@ function [h ha stats] = PsySoundCL_Figures(param,res1, res2, option)
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 20/08/2014
-% Last update on: 20/08/2014 % Update this date manually
-% Last use on   : 29/08/2014 % Update this date manually
+% Last update on: 05/09/2014 % Update this date manually
+% Last use on   : 05/09/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 h = [];
@@ -43,11 +43,18 @@ if nargin < 4
     option = [];
 end
 
+option = Ensure_field(option,'label1','audio-1');
+option = Ensure_field(option,'label2','audio-2');
+option = Ensure_field(option,'label1suffix','');
+option = Ensure_field(option,'label2suffix','');
+
 option = Ensure_field(option,'tanalysis',[min(res1.t) max(res1.t)]);
 option = Ensure_field(option,'title',[]);
 option.color{1} = 'b-';
 option.color{2} = 'r-';
 option = Ensure_field(option,'LineWidth',[1 2]);
+
+idx = find(t>=option.tanalysis(1) & t<=option.tanalysis(2));
 
 if strcmp(param,'sharpness')
     
@@ -83,7 +90,7 @@ elseif strcmp(param,'loudness')
     grid on;
     h(end+1) = gcf;
     ha(end+1) = gca;
-
+    
 elseif strcmp(param,'one-third-OB')
     
     bPlot_vs_time = 0;
@@ -135,6 +142,9 @@ elseif strcmp(param,'specific-loudness')
     switch option.nAnalyser
         case 10
             
+            option.label1suffix = sprintf(', tot = %.2f [sone]',res1.stats.loud_tot);
+            option.label2suffix = sprintf(', tot = %.2f [sone]',res2.stats.loud_tot);
+
             % nParam = 3;
             zspec = res1.zspec;
             freq_min = min(zspec);
@@ -148,7 +158,9 @@ elseif strcmp(param,'specific-loudness')
             plot(zspec,DataLoud2,option.color{2},'LineWidth',option.LineWidth(2));
             xlabel('Critical band rate (Bark)')
             ylabel('Loudness (Sones/Bark)');
+            
             title(sprintf('Specific Loudness (ISO532B) - %s', option.title));
+            
             grid on;
             h(end+1) = gcf;
             ha(end+1) = gca;
@@ -167,8 +179,10 @@ elseif strcmp(param,'specific-loudness')
 
             if length(idx) == length(t)
                 title(sprintf('Average Specific Loudness - %s', option.title));
+                
             else
                 title(sprintf('Average Specific Loudness - %s (ti, tf) = (%.3f,%.3f) [s]', option.title,option.tanalysis(1),option.tanalysis(2)));
+                
             end
             grid on;
             h(end+1) = gcf;
@@ -202,8 +216,10 @@ elseif strcmp(param,'specific-roughness')
     DataRough1 = res1.DataSpecRough;
     DataRough2 = res2.DataSpecRough;
     
+    res1.stats.rough_segment = 0.5*sum(mean(DataRough1(idx,:)));
+    res2.stats.rough_segment = 0.5*sum(mean(DataRough2(idx,:)));
+    
     figure;
-    idx = find(t>=option.tanalysis(1) & t<=option.tanalysis(2));
     plot(z, mean(DataRough1(idx,:)),option.color{1},'LineWidth',option.LineWidth(1)); hold on
     plot(z, mean(DataRough2(idx,:)),option.color{2},'LineWidth',option.LineWidth(2));
     xlabel('Critical band rate (Bark)')
@@ -211,8 +227,12 @@ elseif strcmp(param,'specific-roughness')
     %title(sprintf('Average Roughness - %s', option.title));
     if length(idx) == length(t)
         title(sprintf('Average Roughness - %s', option.title));
+        option.label1suffix = sprintf(', tot = %.2f [asper]',res1.stats.rough_tot);
+        option.label2suffix = sprintf(', tot = %.2f [asper]',res2.stats.rough_tot);
     else
         title(sprintf('Average Roughness - %s (ti, tf) = (%.3f,%.3f) [s]', option.title,option.tanalysis(1),option.tanalysis(2)));
+        option.label1suffix = sprintf(', tot = %.2f [asper]',res1.stats.rough_segment);
+        option.label2suffix = sprintf(', tot = %.2f [asper]',res2.stats.rough_segment);
     end
     grid on
     h(end+1) = gcf;
@@ -220,6 +240,9 @@ elseif strcmp(param,'specific-roughness')
     
 end
 
+legend( sprintf('%s %s',option.label1,option.label1suffix), ... 
+        sprintf('%s %s',option.label2,option.label2suffix) );
+    
 try
     if bPlot_vs_time == 0
         xlim([freq_min freq_max]) % Bark
