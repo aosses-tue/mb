@@ -17,3 +17,5 @@ In case git pull failes, that means you have edited some of the late committed f
 	type: 'git checkout -- Psychoacoustics/hz2bark.m'
 	type: 'git pull'
 	Apply again the changes manually from the copy-pasted document into the just updated document from the repository
+VIM:
+	- To close window press ESC (make sure we are out of edition mode) then type in the command line :wq

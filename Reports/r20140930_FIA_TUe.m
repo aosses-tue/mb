@@ -27,9 +27,10 @@ bGenerate = 0;
 options.dest_folder      = [Get_TUe_paths('outputs') 'tmp-Audio'  delim];
 options.dest_folder_fig  = [Get_TUe_paths('outputs') 'tmp-Figure' delim];
 
-bDiary = 0;
+bDiary = 1;
 Diary(mfilename,bDiary);
 
+tic
 % outputfilename = {'vod_ac_2', 'vod_ac_5'};
 lvl = 60; % dB SPL, or dB(A) if options.calmethod is set to 2
 
@@ -40,7 +41,7 @@ options.calmethod   = 2; % 0 = AMT; 1 = dB(A)
 options.bPlot       = 1;
 options.modes2check = [2 5];
 options.time2save   = 5;
-
+options.N_periods2analyse = 3;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 spl2lu(20:10:90);
 h = gcf;
@@ -59,14 +60,14 @@ else
     out = VoD_write_aligned(options);
 end
 
-ti2 = 3*out.Tmodel(1);
-tf2 = ti2+4*out.Tmodel(1);
+ti2 = options.N_periods2analyse*out.Tmodel(1);
+tf2 = ti2+(1+options.N_periods2analyse)*out.Tmodel(1);
 set( out.ha(1),'XLim',[ti2 tf2]);
 fprintf('ti = %.3f, tf = %.3f',ti2,tf2); % Use this to adapt Praat times
 out.hFig(1)
 
-ti5 = 3*out.Tmodel(4);
-tf5 = ti5+4*out.Tmodel(4);
+ti5 = options.N_periods2analyse*out.Tmodel(4);
+tf5 = ti5+(1+options.N_periods2analyse)*out.Tmodel(4);
 set( out.ha(2),'XLim',[ti5 tf5]);
 fprintf('ti = %.3f, tf = %.3f',ti5,tf5); % Use this to adapt Praat times
 
@@ -126,12 +127,98 @@ end
 
 % fi1 = [dest_folder outputfilename{1} '.wav'];
 % fi2 = [dest_folder outputfilename{2} '.wav'];
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Acoustic mode 5, modelled with-without Doppler
+t1 = ti5;
+t2 = tf5;
+fi1 = [options.dest_folder 'model-ac-mode-5-no-doppler.wav']; % predicted
+fi2 = [options.dest_folder 'model-ac-mode-5.wav']; % predicted
+options.label1 = 'Model, no doppler,';
+options.label2 = 'Model';
+[x1 fs] = Wavread(fi1);
+[x2   ] = Wavread(fi2);
+
+if abs( rmsdb(x1) - rmsdb(x2) ) > 3
+    yxfi1 = setdbspl(x1,rmsdb(x2)+100);
+    Wavwrite(yxfi1,fs,fi2);
+end
+
+Get_LPC_frames(x1(fs:2*fs),fs);
+if options.bSave
+    h = gcf;
+    Saveas(h,[options.dest_folder_fig 'model-ac-meas-5-formants-no-doppler']);
+end
+
+options.tanalysis = [t1 t2];
+options.label = 'ac-5-doppler';
+options.LineWidth = [2 1];
+options.SPLrange = [10 70];
+
+Get_VoD_analysis(fi1,fi2,options)
+
+% Acoustic mode 5, measured and modelled
+fi1 = [options.dest_folder 'meas-ac-mode-5.wav']; % measured
+fi2 = [options.dest_folder 'model-ac-mode-5.wav']; % predicted
+options.label1 = ' meas';
+options.label2 = 'model';
+
+[x1 fs] = Wavread(fi1);
+[x2 fs] = Wavread(fi2);
+
+Get_LPC_frames(x1(fs:2*fs),fs);
+if options.bSave
+    h = gcf;
+    Saveas(h,[options.dest_folder_fig 'model-ac-meas-5-formants']);
+end
+
+Get_LPC_frames(x2(fs:2*fs),fs);
+if options.bSave
+    h = gcf;
+    Saveas(h,[options.dest_folder_fig 'model-ac-model-5-formants']);
+end
+
+options.tanalysis = [t1 t2];
+options.label = 'ac-5';
+Get_VoD_analysis(fi1,fi2,options);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Acoustic mode 2, modelled with-without Doppler
+t1 = ti2;
+t2 = tf2;
+fi1 = [options.dest_folder 'model-ac-mode-2-no-doppler.wav']; % predicted
+fi2 = [options.dest_folder 'model-ac-mode-2.wav']; % predicted
+options.label1 = 'Model, no doppler,';
+options.label2 = 'Model';
+[x1 fs] = Wavread(fi1);
+[x2   ] = Wavread(fi2);
+
+if abs( rmsdb(x1) - rmsdb(x2) ) > 3
+    yxfi1 = setdbspl(x1,rmsdb(x2)+100);
+    Wavwrite(yxfi1,fs,fi2);
+end
+
+Get_LPC_frames(x1(fs:2*fs),fs);
+if options.bSave
+    h = gcf;
+    Saveas(h,[options.dest_folder_fig 'model-ac-meas-2-formants-no-doppler']);
+end
+
+options.tanalysis = [t1 t2];
+options.label = 'ac-2-doppler';
+options.LineWidth = [2 1];
+options.SPLrange = [10 70];
+
+Get_VoD_analysis(fi1,fi2,options)% Acoustic mode 2
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Acoustic mode 2
 t1 = ti2;
 t2 = tf2;
 fi1 = [options.dest_folder 'meas-ac-mode-2.wav']; % measured
 fi2 = [options.dest_folder 'model-ac-mode-2.wav']; % predicted
+options.label1 = ' meas';
+options.label2 = 'model';
 
 [x1 fs] = Wavread(fi1);
 [x2 fs] = Wavread(fi2);
@@ -141,13 +228,13 @@ fi2 = [options.dest_folder 'model-ac-mode-2.wav']; % predicted
 Get_LPC_frames(x1(fs:2*fs),fs);
 if options.bSave
     h = gcf;
-    Saveas(h,[options.dest_folder 'model-ac-meas-2-formants']);
+    Saveas(h,[options.dest_folder_fig 'model-ac-meas-2-formants']);
 end
 
 Get_LPC_frames(x2(fs:2*fs),fs);
 if options.bSave
     h = gcf;
-    Saveas(h,[options.dest_folder 'model-ac-model-2-formants']);
+    Saveas(h,[options.dest_folder_fig 'model-ac-model-2-formants']);
 end
 
 % figure;
@@ -164,28 +251,7 @@ options.SPLrange = [10 70];
 
 Get_VoD_analysis(fi1,fi2,options)
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Acoustic mode 5
-t1 = ti5;
-t2 = tf5;
-fi1 = [options.dest_folder 'meas-ac-mode-5.wav']; % measured
-fi2 = [options.dest_folder 'model-ac-mode-5.wav']; % predicted
-
-Get_LPC_frames(x1(fs:2*fs),fs);
-if options.bSave
-    h = gcf;
-    Saveas(h,[options.dest_folder 'model-ac-meas-5-formants']);
-end
-
-Get_LPC_frames(x2(fs:2*fs),fs);
-if options.bSave
-    h = gcf;
-    Saveas(h,[options.dest_folder 'model-ac-model-5-formants']);
-end
-
-options.tanalysis = [t1 t2];
-options.label = 'ac-5';
-Get_VoD_analysis(fi1,fi2,options);
+toc
 
 if bDiary
 	diary off

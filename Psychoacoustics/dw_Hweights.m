@@ -169,5 +169,17 @@ f = (1:N)/N*(Fs/2);
 figure;
 semilogx(f,Hweight(2,:), f,Hweight(9,:)), grid on;
 
+for i = 1:3:size(Hweight,1)
+    try
+        figure;
+        plot(f,Hweight(i  ,:),'b'), hold on; grid on;
+        plot(f,Hweight(i+1,:),'r');
+        plot(f,Hweight(i+2,:),'g');
+        legend(num2str(i),num2str(i+1),num2str(i+2))
+        xlim([0 600])
+    end
+end
+
+
 end
 % end Hweights

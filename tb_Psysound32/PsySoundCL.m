@@ -1,9 +1,16 @@
-function [h ha output] = PsySoundCL(filename,option)
-% function [h ha output] = PsySoundCL(filename,option)
+function [output h ha] = PsySoundCL(filename,option)
+% function [output h ha] = PsySoundCL(filename,option)
+% 
+% PAS OP:
+%       before 17/09: [h ha output] = PsySoundCL(filename,option)
+%       after 17/09: [output h ha] = PsySoundCL(filename,option)
 % 
 % 1. Description:
 %       Executes PsySound3 from command line
-%       Analysers tested:
+% 
+%       filename (Include extension) - file to be analysed
+%       option.CalMethod - file calibration according to known references
+%       option.nAnalyser - analyser to be applied. Analysers tested:
 %            8 - SLM(fh); 
 %           10 - ThirdOctaveBand(fh);
 %           11 - CPBFFT(fh);
@@ -18,8 +25,8 @@ function [h ha output] = PsySoundCL(filename,option)
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 22/07/2014
-% Last update on: 05/09/2014 % Update this date manually
-% Last use on   : 05/09/2014 % Update this date manually
+% Last update on: 17/09/2014 % Update this date manually
+% Last use on   : 17/09/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 h = [];
@@ -34,7 +41,11 @@ if nargin < 2
 end
 
 if nargin == 0
-    option.nAnalyser = input('Choose analyser to be used: \n - type 12 for DLM model or \n - type 15 for Roughness model :');
+    str_analysers = ['\n - type 10 for one-third OB or ' ...
+                     '\n - type 12 for DLM model or ' ...
+                     '\n - type 15 for Roughness model'];
+                
+    option.nAnalyser = input(['Choose analyser to be used: ' str_analysers ' :']);
     [f1 f2] = uigetfile(Get_TUe_paths('outputs'));
     filename = [f2 f1];
 end
@@ -66,8 +77,12 @@ end
 if ~isfield(option,'calfile')
     disp([mfilename '.m: calibration file not specified. Calibration respect to itself, 0 dBFS = 100 dB SPL is going to be used...'])
     
-    bCal = input('Choose calibration method: (1-AMT for 0 dBFS = 100 dB / 2-Zwicker for 0 dBFS = 90 dB): ');
-    
+    if ~isfield(option,'CalMethod')
+        bCal = input('Choose calibration method: (1-AMT for 0 dBFS = 100 dB / 2-Zwicker for 0 dBFS = 90 dB): ');
+    else
+        bCal = option.CalMethod;
+    end
+        
     switch bCal
         case 1
             option.calfile = filename;
@@ -76,12 +91,27 @@ if ~isfield(option,'calfile')
         case 2
             option.calfile = [Get_TUe_paths('db_fastl2007') 'track_03.wav']; %white noise
             option.callevel = 60;
+        case 3
+            tmp = Get_TUe_subpaths('db_speechmaterials');
+            option.calfile = [tmp.allfiles_PB 'whitenoise-f.wav']; % white noise
+            option.callevel = 65;
+        case 4
+            tmp = Get_TUe_subpaths('db_speechmaterials');
+            option.calfile = [tmp.allfiles_PB 'whitenoise-m.wav']; % white noise
+            option.callevel = 65;
+        case 5
+            tmp = Get_TUe_subpaths('db_speechmaterials');
+            option.calfile = [tmp.allfiles_LISTf 'wivineruis.wav']; % SSN
+            option.callevel = 65;
     end
 else
     if ~isfield(option,'callevel')
         option.callevel = input([mfilename '.m - Specify the level of the calibration tone [dB SPL] : ']);
     end
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% TO DO: work on something similar to readData but using data 'not stored'
 
 if ~option.bCosineRamp 
     fh = readData(filename); % then no ramp is applied
@@ -119,7 +149,26 @@ switch nAnalyser
     case 12
         obj = LoudnessCF(fh);
     case 15
+        option = Ensure_field(option,'Author','DH');
+        
         obj = RoughnessDW(fh);
+        
+        if strcmp(option.Author,'DH') % Dik Hermes
+            
+            st.type = 'samples'; 
+            st.size = 4096; 
+            obj = set(obj,'overlap',st);
+            
+        end
+        fprintf('Roghness model by %s is being used. Default is DW\n',option.Author);
+        pause(2)
+    case 20
+        
+        obj = FluctuationStrength(fh);
+        st.type = 'samples'; 
+        st.size = 4096; 
+        obj = set(obj,'overlap',st);
+        
 end
 
 obj = process(obj,fh,[]);
@@ -127,7 +176,7 @@ tmpObj  = get(obj,'output');
 
 t       = get(tmpObj{1,1},'Time');
 
-if nAnalyser == 12 | nAnalyser == 15
+if nAnalyser == 12 | nAnalyser == 15 | nAnalyser == 20
     
     z   = get(tmpObj{1,2},'Freq'); % 1:24
     
@@ -399,8 +448,8 @@ switch nAnalyser
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % Step 4: PostProcessing
 
-        % Average Roughness -> Graph (Visualisation - Single Axis, line)
-        DataSpecRough = get(tmpObj{1,2},'Data');
+        DataRough       = get(tmpObj{1,1},'Data');
+        DataSpecRough   = get(tmpObj{1,2},'Data');
         
         if option.bPlot
             figure
@@ -416,7 +465,6 @@ switch nAnalyser
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % Roughness -> Graph (Visualisation - Single Axis, plot)
         
-        DataRough = get(tmpObj{1,1},'Data');
         if option.bPlot
             figure;
             plot(t, DataRough);
@@ -434,6 +482,42 @@ switch nAnalyser
         output.DataSpecRough = DataSpecRough;
         stats.rough_tot = 0.5*sum(  mean( DataRough )  );
         
+	case 20
+        
+        DataFluct       = get(tmpObj{1,1},'Data');
+        DataSpecFluct   = get(tmpObj{1,2},'Data');
+        
+        if option.bPlot
+            figure
+            plot(z, mean(DataSpecFluct) );
+            xlabel('Critical band rate (Bark)')
+            ylabel('Specific Fluctuation Strength (Vacils/Bark)')
+            title(sprintf('Average Fluctuation Strength - %s', option.title));
+            grid on
+            h(end+1) = gcf;
+            ha(end+1) = gca;
+        end
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Roughness -> Graph (Visualisation - Single Axis, plot)
+       
+        if option.bPlot
+            figure;
+            plot(t, DataFluct);
+            xlabel('Time (seconds)')
+            ylabel('Fluctuation Strength (vacils)')
+            title(sprintf('Fluctuation Strength - %s', option.title));
+            grid on
+        
+            h(end+1) = gcf;
+            ha(end+1) = gca;
+        end
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        
+        output.DataFluct = DataFluct;
+        output.DataSpecFluct = DataSpecFluct;
+        stats.fluct_tot = 0.5*sum(  mean( DataFluct )  );
+        disp('')
 end
 
 output.nAnalyser = nAnalyser;

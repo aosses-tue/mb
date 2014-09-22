@@ -22,6 +22,8 @@ function VoD_mathematica_model(ac_mode,info)
 % Last used on  : 25/07/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+close all
+
 if nargin < 2
     info = [];
 end
@@ -32,8 +34,8 @@ info = Ensure_field(info,'normalise_time_factor',1);
 paths.VoD = Get_TUe_paths('db_voice_of_dragon');
 
 % 1. Parameters:
-flg = 0;
 
+tanalysis = 5;
 if nargin == 0
     ac_mode = 2; % from 2 to 5
 end
@@ -62,7 +64,7 @@ fn          = params.mf;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Nakiboglu2012:
-n   = 2:5; % modes
+n   = [2 5]; % modes
 
 cf  = 1.78e-2; % resistant coeff, experimentally determined
 co = 340; % speed of sound [m/s]
@@ -74,7 +76,7 @@ L       = 70/100; % check if 75 cm is better
 Din     = 26.5e-3; % Inner diameter [m], page 751
 ceff    = co*sqrt(ratio_Vin_Vtot); % effective speed of sound [m/s], approx 310
 
-Leff = mean(n*ceff./(2*fn)); % approx. 0.7264 m, using Eq.10, pag 753
+% Leff = mean(n*ceff./(2*fn)); % approx. 0.7264 m, using Eq.10, pag 753
 
 Omegan = fn*(W+rup)/(Srwrup*params.R)*sqrt(1+4*cf*L/Din);
 2*pi./Omegan % Periods
@@ -85,19 +87,24 @@ Omegan = fn*(W+rup)/(Srwrup*params.R)*sqrt(1+4*cf*L/Din);
 Lp = 70/100;
 Sp = pi/4*(33/100)^2;
 Rp = params.R;
-Hs = 0;
 
-n = round(2*Lp*mf/ceff); 
-w = pi*n*ceff/Lp;
+n_exact = 2*Lp*mf/ceff;
+n   = round(n_exact); 
+
+wn  = pi*n_exact*ceff/Lp; % Mathematica model: wn
+%   - wn must be related with modal frequeny as: wn = 2*pi*mf
+%   - To fulfill this, n_exact has to be used. It is an additional step though,
+%     since mf is known...
+
 Omegao = 2*pi/Trot;
-
-t = 0:1e-4:Trot; % 0 to 1 rotation period
+fs  = 44100;
+t   = 0:1/fs:tanalysis; %Trot; % 0 to 1 rotation period
 Z1 = 220/100;
 
 S1r = [0 0  Z1]; % Real position, fixed source
 S1m = [0 0 -Z1]; % Im   position, fixed source
-S2r = [Rp*cos(Omegao*t); Rp*sin(Omegao*t);   Z1+Hs+0*t]; % Real position, rotating source
-S2m = [Rp*cos(Omegao*t); Rp*sin(Omegao*t);  -Z1-Hs+0*t]; % Im   position, rotating source
+S2r = [Rp*cos(Omegao*t); Rp*sin(Omegao*t);   Z1+0*t]; % Real position, rotating source
+S2m = [Rp*cos(Omegao*t); Rp*sin(Omegao*t);  -Z1+0*t]; % Im   position, rotating source
 
 figure;
 plot3(S2r(1,1), S2r(2,1),S2r(3,1),'x','LineWidth',12), hold on
@@ -118,55 +125,46 @@ grid on
 
 rhoo = 1;
 
-% 2. Equations
+% 3. Sound radiation without doppler:
 
-% % 3. Radiation
-% tfin = Trot;  
-% srate = 2^14;  
+Qn  = Sp/(ceff*rhoo) * cos(wn*t); % Mathematica model: Q1
+
+X   = [Xo*cos(Omegao*t); Xo*sin(Omegao*t);   Z1+0*t];
+X1  = repmat([0 0 Z1]',1,length(X));
+X2  = repmat([Rp 0 Z1]',1,length(X));
+XminX1 = sqrt(sum((X-X1).*(X-X1)));
+XminX2 = sqrt(sum((X-X2).*(X-X2)));
+
+p   = rhoo*wn*Qn/(4*pi);
+Amplitude = abs( exp(-j*wn*(XminX1)/co)./XminX1 + (-1)^n * exp(-j*wn*(XminX2)/co)./XminX2 );
+pTotal_no_doppler = p.*Amplitude;
+
+figure;
+plot(t,pTotal_no_doppler,'b',t,Amplitude,'r');
+
+figure;
+freqz(pTotal_no_doppler,1,4096*2)
+
+filename = sprintf('%smodel-ac-mode-%.0f-no-doppler',Get_TUe_paths('outputs'),n);
+Wavwrite(pTotal_no_doppler,fs,filename)
+
+% 4. Sound radiation with doppler:
+
+te  = t - XminX2/co;
+DSr2 = [-Rp*Omegao*sin(Omegao*t);Rp*Omegao*cos(Omegao*t);0*t];
+Ms2 = (X-X2)./ repmat(XminX2,3,1) .* DSr2/co;
+% pd  = -rhoo*wn*Qn/(4*pi)*( sin(t-XminX1/co)./XminX1 + (-1)^(n+1)*sin(wn*te))/(1-Ms2) ;
+% 
+% figure;
+% plot(t,pd )% ,'b',t,Amplitude,'r');
+% 
+% Wavwrite(pd,fs,[Get_TUe_paths('outputs') 'test-doppler'])
+
 % 
 % ti = 0;
 % % tf = 2* (2*pi)/w;
 % 
 % t = ti: 1/srate : tfin - 1/srate;
-% 
-% A00     = 2.718281828459045;
-% A11     = 0.2704;
-% A12     = 10.4329;
-% w12     = 18.2651;
-% 
-% exp11   = -20.459952155731845*i;
-% exp12   = A11+A12*(cos(w12*t)).^2      + A12*(sin(w12*t)).^2;
-% exp13   = A11+(-0.67+3.23*cos(w12)).^2 + A12*(sin(w12*t)).^2;
-% PAmp = (  A00.^( exp11*sqrt(exp12) )  )./sqrt(exp12) + ...
-%        (  A00.^( exp11*sqrt(exp13) )  )./sqrt(exp13);
-% 
-% PAmp = abs(PAmp)/max(abs(PAmp));
-% 
-% close all
-% plot(t, PAmp)
-% ylim([-1 1]), grid on, hold on
-% 
-% rootdir = [paths.VoD 'Model' delim 'Data' delim];
-% 
-% fs      = 10000; % known from Mathematica model
-% 
-% for k = 2:5
-%     
-%     filename = [rootdir 'mode-' num2str(k-1) '-v_' num2str(fieldtype) '.txt'];
-%     x = import_physical_measure(filename, 1,inf,1);
-% 
-%     tx      = (1:length(x))/fs;
-%     y       = setdbspl(x,65);
-% 
-%     plot(tx,y,'r')
-% 
-%     %wavfile = [paths.VoD delim '1 referentie' delim 'modus ' num2str(Modus-1) '_v3-' num2str(fieldtype) '.wav'];
-%     %[xx fss] = wavread(wavfile);
-% 
-%     if info.bSave
-%         Wavwrite(y,fs,[rootdir 'modus-' num2str(k-1) '-v_' num2str(fieldtype)])
-%     end
-% end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end

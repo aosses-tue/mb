@@ -97,6 +97,8 @@ idx2delete      = find(t < 0);
 t(idx2delete)   = [];
 F0(idx2delete)  = [];
 
+F0 = Delete_NaN_columns(F0);
+
 if max(t) > 500 % then I will assume time is in millisecons
     t = t/1000; % Conversion from ms to s
     txt_time = ' milliseconds';

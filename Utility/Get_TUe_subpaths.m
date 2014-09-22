@@ -19,13 +19,22 @@ function misc = Get_TUe_subpaths(type)
 %
 % Programmed by Alejandro Osses, TUe, 2014
 % Created on    : 24/06/2014
-% Last update on: 29/08/2014
-% Last use on   : 29/08/2014
+% Last update on: 17/09/2014
+% Last use on   : 17/09/2014
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 path = Get_TUe_paths(type);
 
-if strcmp(type,'db_voice_of_dragon')
+if strcmp(type,'db_speechmaterials')
+    
+    misc.LISTf  = [path 'dutch' delim 'list' delim]; 
+    misc.allfiles_PB = [path 'english' delim 'paul-bagshaw' delim 'wav'      delim];
+    misc.fda_eval_PB = [path 'english' delim 'paul-bagshaw' delim 'fda_eval' delim];
+    misc.allfiles_LISTf = [path 'dutch' delim 'list' delim 'alle-zinnen' delim];
+    misc.fda_eval_LISTf = [path 'dutch' delim 'list' delim 'fda_eval' delim];
+    misc.fda_eval_LISTf_wav_info = [misc.fda_eval_LISTf 'wav_info'];
+
+elseif strcmp(type,'db_voice_of_dragon')
     
     misc.dir_meas_wav      = [path '02-Wav-files' delim];
     misc.dir_calibrated_m  = [misc.dir_meas_wav '03-Wav-files-calibrated' delim]; 

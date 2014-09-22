@@ -196,8 +196,8 @@ elseif strcmp(param,'roughness')
     DataRough2 = res2.DataRough;
 
     figure;
-    plot(t,DataRough1,option.color{1},'LineWidth',option.LineWidth(1)); hold on
-    plot(t,DataRough2,option.color{2},'LineWidth',option.LineWidth(2));
+    plot(t,DataRough1,option.color{1},'LineWidth',option.LineWidth(1),'Marker','o'); hold on
+    plot(t,DataRough2,option.color{2},'LineWidth',option.LineWidth(2),'Marker','<');
 
     xlabel('Time (seconds)')
     ylabel('Roughness (aspers)')

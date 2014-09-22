@@ -13,9 +13,9 @@ function sbf0ErrSim = import_physical_measure(filename, startRow, endRow, numVar
 %   y = import_physical_measure('D:\Databases\dir01-Instruments\Voice-of-dragon\6 ledenmaat eraf\modus 2_v1.txt', 1);
 % 
 % Programmed by Alejandro Osses, ExpORL, 2014
-% Created on: January 2014
-% Last update: 26/05/2014
-% Last used: 26/05/2014
+% Created on    : January 2014
+% Last update on: 29/09/2014
+% Last use on   : 29/09/2014
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Initialize variables.
@@ -34,8 +34,10 @@ end
 %	column6: double (%f)
 %   column7: double (%f)
 if nargin < 4
-    numVariables = input('Enter number of columns: ');
+    numVariables = 10;
+    disp('If txt contains more than 10 columns, they are goiing to be ignored')
 end
+
 formatSpec = [];
 for i = 1:numVariables
     formatSpec = [formatSpec '%f'];

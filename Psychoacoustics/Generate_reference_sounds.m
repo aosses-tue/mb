@@ -7,11 +7,15 @@ function Generate_reference_sounds(options)
 %       Tested cross-platform: Yes
 %
 % 3. Stand-alone example:
-%       
+%       % To generate roughness files:
+%       options.bDoFluct = 0;
+%       options.bDoRough = 1;
+%       Generate_reference_sounds(options);
+% 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 14/08/2014
-% Last update on: 22/08/2014 % Update this date manually
-% Last use on   : 22/08/2014 % Update this date manually
+% Last update on: 20/09/2014 % Update this date manually
+% Last use on   : 20/09/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin == 0
@@ -24,7 +28,7 @@ bSave = 1;
 bDoLoud = 0;
 bDoSharp = 0;
 options = Ensure_field(options,'bDoFluct',1);
-bDoRough = 0;
+options = Ensure_field(options,'bDoRough',0);
 
 % Common params
 fc  = 1000;
@@ -187,7 +191,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 4. Roughness
 
-if bDoRough
+if options.bDoRough
     fmod    = 70;
     m       = 100;
     option = 'm';
@@ -204,6 +208,24 @@ if bDoRough
     
     if bSave
         Wavwrite([yzero] ,fs,[Get_TUe_paths('outputs') 'ref_rough']);
+    end
+    
+    % Modulated tones, variation of 'm'
+    for k = 1:20
+        m       = m*0.9;
+        y    = ch_am(sig   ,fmod,m,option,fs,start_phase);
+    
+        lvlAMT  = lvl + 10; % Zwicker's correction
+        y    = setdbspl(y   ,lvlAMT);
+
+        ramp2apply = cos_ramp(length(y),fs,75);
+        yzero    = ramp2apply'.*y;
+
+        if bSave
+            % Wavwrite([yzero] ,fs,[Get_TUe_paths('outputs') 'ref_rough']);
+            Wavwrite(y   ,fs,[Get_TUe_paths('outputs') 'test_rough_fc_' Num2str(fc   ,4) '_AM_m_' Num2str(m,3) '_fmod_' Num2str(fmod,3) 'Hz']);
+        end
+        
     end
     
     % Modulated tones:

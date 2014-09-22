@@ -1,4 +1,4 @@
-function obj = Analyser(varargin)
+ function obj = Analyser(varargin)
 % function obj = Analyser(varargin)
 %
 % 1. Description:
@@ -35,6 +35,7 @@ switch nargin
   obj.windowLength = -1;
   obj.windowFunc   = 'rect';
   obj.overlap      = struct('size', -1, 'type', 'samples');
+    % obj.overlap      = struct('size', 4096, 'type', 'samples');
   obj.output       = {};
   obj.SummaryOutput = {}; %Added New release
   obj.OptionStr = {}; %Added New release

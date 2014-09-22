@@ -90,8 +90,8 @@ else
     
     misc.CIs                =  [misc.MATLAB 'CIs' delim];
     
-    misc.db_speechmaterials_local = ['E:\orl-wrk-0089\Documenten\Speech_material_from_x-drive']; % needs my external hard drive connected (E-drive)
-    misc.db_speechmaterials = ['D:\Databases\dir03-Speech'];
+    misc.db_speechmaterials_local = ['E:\orl-wrk-0089\Documenten\Speech_material_from_x-drive' delim]; % needs my external hard drive connected (E-drive)
+    misc.db_speechmaterials = ['D:\Databases\dir03-Speech' delim];
     % misc.db_fastl2007       = ['D:\Documenten-TUe\10-Referenties\02-Mijn-boeken\Fastl2007-psychoacoustics' delim 'Sound' delim];
     misc.ex_APEX_results    = [misc.SVN_KUL 'Meas' delim 'Experiments' delim 'Results_XML' delim]; % work at KUL
     misc.lx_Presentations   = ['D:\Documenten-TUe\01-Text\70-Presentaties-TUe' delim];
@@ -136,15 +136,7 @@ misc.tb_APEX_AddOns     = [misc.MATLAB   'tb_APEX_AddOns'  delim];
 misc.tb_APEX_tools      = [misc.tb_APEX  'tools'           delim];
 misc.tb_Loudness_v12    = [misc.MATLAB   'tb_Loudness_v12' delim];
 
-%     addpath([misc.MATLAB 'Classes']); % Matthias' GUI
-% try
-%     addpath([misc.MATLAB_KUL 'Benchs_F0mod']);
-%     addpath([misc.MATLAB_KUL 'Benchs_F0mod_NMT']); 
-%     addpath([misc.MATLAB_KUL 'Meas' delim 'Experiments']);
-%     addpath(misc.Simulink);
-%     addpath(misc.SubjectMaps);
-%     addpath(misc.SubjectMapsClinical);
-% end
+misc.Utility_KUL        = [misc.MATLAB   'Utility_KUL'     delim];
      
 if (nargin==1)
     if (~isfield(misc,type))

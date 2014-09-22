@@ -2,7 +2,9 @@ function h = PsySound_validate(options)
 % function h = PsySound_validate(options)
 %
 % 1. Description:
-%
+%       Process audio files generated in Generate_reference_sounds.m to 
+%       plot results given by PsySound3
+% 
 % 2. Additional info:
 %       Tested cross-platform: No
 %
@@ -10,10 +12,13 @@ function h = PsySound_validate(options)
 %       options.bDoFluct = 1;
 %       PsySound_validate(options);
 % 
+%       options.bDoRough = 1;
+%       PsySound_validate(options);
+% 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 17/08/2014
 % Last update on: 17/08/2014 % Update this date manually
-% Last use on   : 17/08/2014 % Update this date manually
+% Last use on   : 20/09/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 h = [];
