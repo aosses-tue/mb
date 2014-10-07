@@ -11,11 +11,11 @@ function [output h ha] = PsySoundCL(filename,option)
 %       filename (Include extension) - file to be analysed
 %       option.CalMethod - file calibration according to known references
 %       option.nAnalyser - analyser to be applied. Analysers tested:
-%            8 - SLM(fh); 
-%           10 - ThirdOctaveBand(fh);
-%           11 - CPBFFT(fh);
-%           12 - LoudnessCF(fh);
-%           15 - RoughnessDW(fh);
+%           option.nAnalyser = 8;  % SLM(fh); 
+%           option.nAnalyser = 10; % ThirdOctaveBand(fh);
+%           option.nAnalyser = 11; % CPBFFT(fh);
+%           option.nAnalyser = 12; % LoudnessCF(fh);
+%           option.nAnalyser = 15; % RoughnessDW(fh);
 % 
 % 2. Additional info:
 %       Tested cross-platform: No
@@ -52,11 +52,6 @@ end
 
 option = Ensure_field(option,'bPlot'      , 1)
 option = Ensure_field(option,'nAnalyser'  ,15);
-option = Ensure_field(option,'bCosineRamp', 0);
-
-if option.bCosineRamp
-    option = Ensure_field(option,'bCosineRampOnset',25);
-end
 
 nAnalyser = option.nAnalyser;
 % nAnalyser = 12; % Dynamic loudness
@@ -113,22 +108,28 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % TO DO: work on something similar to readData but using data 'not stored'
 
-if ~option.bCosineRamp 
+if isfield(option,'tanalysis') 
+    
+    try
+        
+        [xx ffs] = Wavread(filename);
+        tt = (1:length(xx))/ffs;
+        idx = find(tt>=option.tanalysis(1) & tt>=option.tanalysis(2));
+        
+        filename_excerpt = [Delete_extension(filename,'wav') '-e.wav']; 
+        Wavwrite( xx(idx),ffs,filename_excerpt );
+        filename = filename_excerpt;
+        
+    catch
+        
+        warning('Excerpt not extracted. Analysis will be done using complete audio file');
+        
+    end
     fh = readData(filename); % then no ramp is applied
+    
 else
-    ramp2apply = cos_ramp(length(x),fs,option.bCosineRampOnset);
-    x = transpose(ramp2apply).*x;
-    
-    [xx filenametmp] = fileparts(filename); 
-    dirtmp = [Get_TUe_paths('outputs') delim 'tmp-PsySound' delim];
-    filenametmp = [dirtmp filenametmp '.wav'];
-    Mkdir(dirtmp);
-    Wavwrite(x,fs,filenametmp);
-    fh = readData(filenametmp);
-    fprintf('file calibrated to %.2f [dB SPL] if Zwicker''s tone were used\n',rmsdb(x)+90);
-    fprintf('file calibrated to %.2f [dB SPL] if Zwicker''s tone were used if AMT values are used\n',rmsdb(x)+100);
-end
-    
+    fh = readData(filename);
+end    
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Step 2: Calibation
@@ -146,6 +147,14 @@ switch nAnalyser
         obj = ThirdOctaveBand(fh);
     case 11
         obj = CPBFFT(fh);
+        
+        obj = set(obj,'windowLength',65536/16);
+        
+        st = [];
+        st.type = 'percent';
+        st.size = 75; % default = 75
+        obj = set(obj,'overlap',st);
+        
     case 12
         obj = LoudnessCF(fh);
     case 15
@@ -271,12 +280,12 @@ switch nAnalyser
         
         nParam = 3;
         zspec = transpose( get(tmpObj{1,nParam},'Freq') ); 
-        Data  = get(tmpObj{1,nParam},'Data');
+        DataAvMainLoud  = get(tmpObj{1,nParam},'Data');
         txt_title = sprintf('%s - %s',get(tmpObj{1,nParam},'Name'),option.title);
         
         if option.bPlot
             figure;
-            plot(zspec,Data);
+            plot(zspec,DataAvMainLoud);
             xlabel('Critical band rate (Bark)')
             ylabel('Loudness (Sones/Bark)');
             title(txt_title); % title(sprintf('Specific Loudness (ISO532B) - %s', option.title));
@@ -290,8 +299,8 @@ switch nAnalyser
         output.DataSpecOneThirdAvg  = DataSpecOneThirdAvg;
         
         output.zspec = zspec;
-        output.DataLoud = Data;
-        stats.loud_tot = sum(Data)*0.1;
+        output.DataLoud = DataAvMainLoud;
+        stats.loud_tot = sum(DataAvMainLoud)*0.1;
         
         % output.percentilesLoud
         
@@ -342,11 +351,11 @@ switch nAnalyser
         
         % Average main loudness:
         nParam = 4;
-        Data = get(tmpObj{1,nParam},'Data');
+        DataAvMainLoud = get(tmpObj{1,nParam},'Data');
         
         if option.bPlot
             figure;
-            plot(z,Data);
+            plot(z,DataAvMainLoud);
             xlabel('Critical band rate (Bark)')
             ylabel('Loudness (Sones/Bark)');
             title(sprintf('Average Main Loudness - %s', option.title));
@@ -435,11 +444,11 @@ switch nAnalyser
             ha(end+1) = gca;
         end
         
-        output.zspec = zspec;  
-        output.DataLoud = DataLoud;             % Param 1: Loudness
-                                                % Param 2: Main loudness - 3D
-                                                % Param 3: Specific loudness - 3D
-                                                % Param 4: Average Main loudness % not interesting by now
+        output.zspec = zspec;
+        output.DataLoud       = DataLoud;       % Param 1: Loudness
+        output.DataMainLoud   = DataMainLoud;   % Param 2: Main loudness - 3D
+        output.DataSpecLoud   = DataSpecLoud;   % Param 3: Specific loudness - 3D
+        output.DataAvMainLoud = DataAvMainLoud; % Param 4: Average Main loudness % not interesting by now
         output.DataAvSpecLoud = DataAvSpecLoud; % Param 5: Average specific loudness
         output.DataSharp      = DataSharp;      % Param 6: Sharpness
         

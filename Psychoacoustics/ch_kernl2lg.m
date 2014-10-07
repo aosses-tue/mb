@@ -1,8 +1,9 @@
 function lg = ch_kernl2lg(kernl,HL_ohc,HL_ihc,fg)
 % function lg = ch_kernl2lg(kernl,HL_ohc,HL_ihc,fg)
 % 
-% transforms critical band loudness into critical band level inverse loudness 
-% transformation assumes 24x1 vectors if less than 4 arguments  
+% 1. Description:
+%   Transforms critical band loudness into critical band level inverse 
+%   loudness transformation assumes 24x1 vectors if less than 4 arguments  
 %
 % required functions: korrel.m, kernl2lg.m
 %
@@ -13,7 +14,7 @@ function lg = ch_kernl2lg(kernl,HL_ohc,HL_ihc,fg)
 % Downloaded on : 07/08/2014 (approx.)
 % Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Last update on: 07/08/2014 % Update this date manually
-% Last use on   : 07/08/2014 % Update this date manually
+% Last use on   : 23/09/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if (nargin==1)
@@ -27,7 +28,7 @@ k=0.23;
 
 a0 = [ 0 0 0 0 0 0 0 0 0 0 -.2 -.5 -1.2 -2.1 -3.2 -4.6 -5.5 -5.6 -4.3 -2.5 -0.1 2.8 6.4 20.0];
 
-% Normal threshold;
+% Normal hearing threshold:
 thq=[42 18.5 11.5 8.3 6.7 5.5 4.8 4.3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3];
 
 if nargin==4

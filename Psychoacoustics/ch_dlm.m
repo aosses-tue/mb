@@ -60,7 +60,7 @@ end
 fs = 44100;
 
 % Splitting of hearing loss into:
-%       - HL_ihc
+%       - HL_ihc: inner ear hair cell hearing loss
 %       - HL_ohc: nonlinear component of hearing loss
 HL_ohc = k.*HL;
 HL_ihc = HL-HL_ohc;

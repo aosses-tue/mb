@@ -5,13 +5,15 @@ function [h ha stats] = PsySoundCL_Figures(param,res1, res2, option)
 %       To plot PsySound results for 2 data series
 %       'param' can be:
 % 
-%       nAnalyser
-%       10          - 'one-third-OB'
-%       10          - 'specific-loudness'
-%       11          - 'one-third-OB'
-%       12          - 'sharpness'
-%       12          - 'loudness'
-%       15          - 'roughness'
+%       nAnalyser                           excerpt     stats
+%       10          - 'one-third-OB'        NO          NO
+%       10          - 'specific-loudness'   NO          NO
+%       11          - 'one-third-OB'        YES         NO
+%       12          - 'sharpness'           NO          NO
+%       12          - 'loudness'            NO          NO
+%       12          - 'specific-loudness'   YES         NO
+%       15          - 'roughness'           NO          YES
+%       15          - 'specific-roughness'  YES         YES
 % 
 % 2. Additional info:
 %       Tested cross-platform: Yes
@@ -21,8 +23,8 @@ function [h ha stats] = PsySoundCL_Figures(param,res1, res2, option)
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 20/08/2014
-% Last update on: 05/09/2014 % Update this date manually
-% Last use on   : 05/09/2014 % Update this date manually
+% Last update on: 01/10/2014 % Update this date manually
+% Last use on   : 01/10/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 h = [];
@@ -49,10 +51,10 @@ option = Ensure_field(option,'label1suffix','');
 option = Ensure_field(option,'label2suffix','');
 
 option = Ensure_field(option,'tanalysis',[min(res1.t) max(res1.t)]);
+
 option = Ensure_field(option,'title',[]);
-option.color{1} = 'b-';
-option.color{2} = 'r-';
-option = Ensure_field(option,'LineWidth',[1 2]);
+option = Ensure_field(option,'color',{'b-','r--'});
+option = Ensure_field(option,'LineWidth',[2 1]);
 
 idx = find(t>=option.tanalysis(1) & t<=option.tanalysis(2));
 
@@ -90,7 +92,7 @@ elseif strcmp(param,'loudness')
     grid on;
     h(end+1) = gcf;
     ha(end+1) = gca;
-    
+ 
 elseif strcmp(param,'one-third-OB')
     
     bPlot_vs_time = 0;
@@ -111,7 +113,7 @@ elseif strcmp(param,'one-third-OB')
             semilogx(f,DataSpecOneThirdAvg2,option.color{2},'LineWidth',option.LineWidth(2),'Marker','<'); grid on;
             ylabel('Magnitude (dB)')
             xlabel('Frequency (Hz)');
-            title(sprintf('One-third octave band spectrum - %s', option.title));
+            title(sprintf('Average one-third octave band spectrum - %s', option.title));
             h(end+1) = gcf;
             ha(end+1) = gca;
             
@@ -124,13 +126,25 @@ elseif strcmp(param,'one-third-OB')
             DataSpecOneThirdAvg2 = res2.DataSpecOneThirdAvg;
         
             figure;
-            semilogx(f,DataSpecOneThirdAvg1,option.color{1},'LineWidth',option.LineWidth(1),'Marker','o'); hold on
-            semilogx(f,DataSpecOneThirdAvg2,option.color{2},'LineWidth',option.LineWidth(2),'Marker','<'); grid on;
+            
+            if length(idx) == length(t)
+                
+                semilogx(f,DataSpecOneThirdAvg1,option.color{1},'LineWidth',option.LineWidth(1),'Marker','o'); hold on
+                semilogx(f,DataSpecOneThirdAvg2,option.color{2},'LineWidth',option.LineWidth(2),'Marker','<'); grid on;
+                title(sprintf('Average one-third octave band spectrum - %s', option.title));
+                
+            else
+                
+                title(sprintf('Average one-third octave band spectrum - %s (ti, tf) = (%.3f,%.3f) [s]', option.title,option.tanalysis(1),option.tanalysis(2)));   
+                semilogx(f,dbmean( res1.DataSpecOneThird(idx,:) ),option.color{1},'LineWidth',option.LineWidth(1),'Marker','o'); hold on
+                semilogx(f,dbmean( res2.DataSpecOneThird(idx,:) ),option.color{2},'LineWidth',option.LineWidth(2),'Marker','<'); grid on;
+            
+            end
             ylabel('Magnitude (dB)')
             xlabel('Frequency (Hz)');
-            title(sprintf('One-third octave band spectrum - %s', option.title));
+                
             h(end+1) = gcf;
-            ha(end+1) = gca; 
+            ha(end+1) = gca;
             
     end
     
@@ -165,28 +179,44 @@ elseif strcmp(param,'specific-loudness')
             h(end+1) = gcf;
             ha(end+1) = gca;
             
-        otherwise
+        otherwise % analyser 12
             
             DataLoud1 = res1.DataAvSpecLoud;
             DataLoud2 = res2.DataAvSpecLoud;
-
+            DataSpecLoud1 = res1.DataSpecLoud;
+            DataSpecLoud2 = res2.DataSpecLoud;
+            
             figure;
-            idx = find(t>=option.tanalysis(1) & t<=option.tanalysis(2));
-            plot(zspec,DataLoud1,option.color{1},'LineWidth',option.LineWidth(1)); hold on
-            plot(zspec,DataLoud2,option.color{2},'LineWidth',option.LineWidth(2));
-            xlabel('Critical band rate (Bark)');
-            ylabel('Loudness (Sone/Bark)')
-
             if length(idx) == length(t)
+                
+                plot(zspec,DataLoud1,option.color{1},'LineWidth',option.LineWidth(1)); hold on
+                plot(zspec,DataLoud2,option.color{2},'LineWidth',option.LineWidth(2));
                 title(sprintf('Average Specific Loudness - %s', option.title));
+                data2show1 = sum(DataLoud1)*0.1;
+                data2show2 = sum(DataLoud2)*0.1;
                 
             else
+                % Excerpt
+                plot(zspec,mean(DataSpecLoud1(idx,:)),option.color{1},'LineWidth',option.LineWidth(1)); hold on
+                plot(zspec,mean(DataSpecLoud2(idx,:)),option.color{2},'LineWidth',option.LineWidth(2));
                 title(sprintf('Average Specific Loudness - %s (ti, tf) = (%.3f,%.3f) [s]', option.title,option.tanalysis(1),option.tanalysis(2)));
+                data2show1 = sum(DataSpecLoud1(idx,:))*0.1;
+                data2show2 = sum(DataSpecLoud2(idx,:))*0.1;
                 
             end
+            
+            xlabel('Critical band rate (Bark)');
+            ylabel('Loudness (Sone/Bark)')
             grid on;
             h(end+1) = gcf;
             ha(end+1) = gca;
+            
+            disp('sum(DataLoud1): ');
+            disp(['  : ' num2str(data2show1) ]);
+            disp('sum(DataLoud2): ');
+            disp(['  : ' num2str(data2show2) ]);
+            disp('sum(DataLoud1-DataLoud2): ');
+            disp(['  : ' num2str(data2show1 - data2show2) ]);
     end
     
 elseif strcmp(param,'roughness')
@@ -225,6 +255,7 @@ elseif strcmp(param,'specific-roughness')
     xlabel('Critical band rate (Bark)')
     ylabel('Specific Roughness (Aspers/Bark)')
     %title(sprintf('Average Roughness - %s', option.title));
+    
     if length(idx) == length(t)
         title(sprintf('Average Roughness - %s', option.title));
         option.label1suffix = sprintf(', tot = %.2f [asper]',res1.stats.rough_tot);
@@ -234,11 +265,22 @@ elseif strcmp(param,'specific-roughness')
         option.label1suffix = sprintf(', tot = %.2f [asper]',res1.stats.rough_segment);
         option.label2suffix = sprintf(', tot = %.2f [asper]',res2.stats.rough_segment);
     end
+    
     grid on
     h(end+1) = gcf;
     ha(end+1) = gca;
     
+    disp('sum(DataRough1): ');
+    disp(['  : ' num2str(sum(mean(DataRough1))*0.1) ]);
+    disp('sum(DataRough2): ');
+    disp(['  : ' num2str(sum(mean(DataRough2))*0.1) ]);
+    disp('sum(DataRough1-DataRough2): ');
+    disp(['  : ' num2str(sum(mean(DataRough1)-mean(DataRough2))*0.1) ]);
+    
 end
+
+stats.idx   = idx;
+stats.t     = t;
 
 legend( sprintf('%s %s',option.label1,option.label1suffix), ... 
         sprintf('%s %s',option.label2,option.label2suffix) );

@@ -21,7 +21,11 @@ option = Ensure_field(option,'bPrint',1);
 option = ef(option,'format','epsc');
 
 set(h,'PaperType', 'A4')
-Check_figure_size(h); % Constrains figure width to A4 Paper size
+
+try
+    Check_figure_size(h); % Constrains figure width to A4 Paper size
+end
+
 set(h,'PaperPositionMode', 'auto')
 if option.bPrint
 %     figure(h);

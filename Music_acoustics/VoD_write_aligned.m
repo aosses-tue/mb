@@ -1,5 +1,5 @@
-function [misc] = VoD_write_aligned(info)
-% function [misc] = VoD_write_aligned(info)
+function [misc] = VoD_write_aligned(info,stPlot)
+% function [misc] = VoD_write_aligned(info,stPlot)
 %
 % 1. Description:
 %       Similar to VoD_run
@@ -35,8 +35,8 @@ function [misc] = VoD_write_aligned(info)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Original file name: VoD_read_aligned
 % Created on    : 29/08/2014
-% Last update on: 29/08/2014 % Update this date manually
-% Last use on   : 29/08/2014 % Update this date manually
+% Last update on: 26/09/2014 % Update this date manually
+% Last use on   : 26/09/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Default inputs:
@@ -45,6 +45,10 @@ bHPF = 1;
 if nargin == 0
     info = [];
 end
+
+if nargin < 2
+    stPlot = [];
+end 
 
 info = Ensure_field(info,'dest_folder',Get_TUe_paths('outputs'));
 dest_folder = info.dest_folder;
@@ -85,6 +89,7 @@ dir_wav_all      = subdir_db_vod.dir_wav_all;
 
 % Assumes audio files were already generated:
 info = Ensure_field(info,'bPlot',0);
+info = Ensure_field(info,'T2plot',4);
 dir_predicted = dir_calibrated_p;
     
 for acmode = info.modes2check
@@ -195,46 +200,91 @@ for acmode = info.modes2check
             pause(2)
         end
         
+        stPlot = Ensure_field(stPlot,'color',{'b-','r--'});
+        stPlot = Ensure_field(stPlot,'LineWidth',[1 2]);
+        % stPlot = Ensure_field(stPlot,'Title1',sprintf('Aligned time signals, ac.mode = %.0f: measured (above), modelled (bottom)',acmode));
+        
+        switch acmode
+            case 2
+                stPlot.Title1 = sprintf('(a) ac-mode %.0f',acmode);
+                stPlot.Title2 = '(c) ';
+                stPlot.Title3 = '(e) ';
+                stPlot.Title4 = '(g) ';
+                stPlot.bYLabel = 1;
+            case 5
+                stPlot.Title1 = sprintf('(b) ac-mode %.0f',acmode);
+                stPlot.Title2 = '(d) ';
+                stPlot.Title3 = '(f) ';
+                stPlot.Title4 = '(h) ';
+                stPlot.bYLabel = 0;
+            otherwise
+                stPlot = Ensure_field(stPlot,'Title1',sprintf('(a) ac-mode %.0f',acmode));
+                stPlot = Ensure_field(stPlot,'Title2','(b) ');
+                % stPlot = Ensure_field(stPlot,'Title3','Estimated fundamental frequency f0');
+                stPlot = Ensure_field(stPlot,'Title3','(c) ');
+                stPlot = Ensure_field(stPlot,'Title4','(d) ');
+                stPlot = Ensure_field(stPlot,'bYLabel',1);
+        end
+           
         figure; 
         subplot(n,1,1)
-        plot(t,ynear)
+        plot(t,ynear,stPlot.color{1})
         ha = gca;
         
-        title(sprintf('Aligned time signals, ac.mode = %.0f: measured (above), modelled (bottom)',acmode))
-        ylabel('Amplitude')
+        title(stPlot.Title1)
+        stPlot = rmfield(stPlot,'Title1');
+        if stPlot.bYLabel == 1
+            ylabel('Amplitude')
+        end
         subplot(n,1,2)
-    
-        plot(t,ynearp,'r'), 
+        ylims = get(ha,'YLim');
+        set(ha(end),'YLim',1.2*ylims); % expand YLim in 20%
+        
+        % plot(t,ynearp,stPlot.color{2}); 
+        plot(t,ynearp,'r-');
         ha(end+1) = gca;
+        title(stPlot.Title2)
+        ylims = get(ha(end),'YLim');
+        set(ha,'YLim',1.2*ylims); % expand YLim in 20%
         
         if n == 2
             xlabel('Time [s]')
         end
         
-        ylabel('Amplitude')
+        if stPlot.bYLabel == 1
+            ylabel('Amplitude')
+        end
         
         if n==4
             
             subplot(n,1,3)
-            plot(   tf,f0m, 'b-','LineWidth',1), grid on, hold on
-            plot(   tf,f0p, 'r-','LineWidth',2)
+            plot(   tf,f0m, stPlot.color{1},'LineWidth',stPlot.LineWidth(1)), grid on, hold on
+            plot(   tf,f0p, stPlot.color{2},'LineWidth',stPlot.LineWidth(2))
             grid on, hold on;
             ha(end+1) = gca;
-            ylabel('Frequency [Hz]')
-            title('Estimated fundamental frequency f0')
-                        
+            if stPlot.bYLabel == 1
+                ylabel('Freq. [Hz]')
+            end
+            title(stPlot.Title3)
+            ylims = get(ha(end),'YLim');
+            set(ha(end),'YLim',[0.98*ylims(1) 1.02*ylims(2)]); % expand YLim in 20%            
+            
             subplot(n,1,4)
             plot(   tf,(f0p-f0m)/misc.mf(mode_idx)*100   ,'k')
             grid on, hold on;
-            title('\Delta f0')
+            title(stPlot.Title4)
             ha(end+1) = gca;
             xlabel('Time [s]')
-            ylabel('\Delta f / f_n [%]')
-            
+            if stPlot.bYLabel == 1
+                ylabel('\Delta f / f_n [%]')
+            end
+            ylims = get(ha(end),'YLim');
+            set(ha(end),'YLim',1.2*ylims); % expand YLim in 20%
+        
         end
         
         linkaxes(ha,'x')
-        xlim([0 3*misc.Tmodel(mode_idx)]);
+        xlim([0 (info.T2plot-1)*misc.Tmodel(mode_idx)]);
         
         misc.hFig(end+1) = gcf;
         misc.ha(end+1) = ha(end);

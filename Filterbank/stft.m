@@ -148,23 +148,35 @@ if nargout == 0
     set(gca,'YDir','normal')
     set(gca, 'FontName', 'Times New Roman', 'FontSize', 14)
     
+    
+    
     if info.normalise_time_factor == 1
-        xlabel(['Time [s], ' info_str])
+        info = Ensure_field(info,'XLabel',['Time [s], ' info_str]);
     else
-        xlabel([sprintf('Time normalised to %.3f [s], ',info.normalise_time_factor) info_str])
+        info = Ensure_field(info,'XLabel',[sprintf('Time normalised to %.3f [s], ',info.normalise_time_factor) info_str]);
     end
+    xlabel(info.XLabel)
     ylabel(sprintf('Frequency [Hz]'))
-    txtTitle = 'Amplitude spectrogram of the signal';
+    info = Ensure_field(info,'txtTitle', 'Amplitude spectrogram of the signal');
     
     if exist('stftR','var')
-        txtTitle = [txtTitle ' (only L-channel plotted)'];
+        info.txtTitle = [info.txtTitle ' (only L-channel plotted)'];
     end
     
-    title(txtTitle)
+    title(info.txtTitle)
     
     handl = colorbar;
     set(handl, 'FontName', 'Times New Roman', 'FontSize', 14)
     ylabel(handl, 'Magnitude [dB]')
+    
+    if isfield(info,'scale_dB')
+        YTick = get(handl,'YTick');
+        idx = find(YTick+info.scale_dB<0);
+        YTick(idx) = [];
+        YTickLabel = YTick + info.scale_dB;
+        set(handl,'YTick',YTick);
+        set(handl,'YTickLabel',YTickLabel);
+    end
 
 end
 

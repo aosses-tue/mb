@@ -3,16 +3,18 @@ function outs = Do_fluct(insig,fs,dBFS)
 %
 % 1. Description:
 %       Fluctuation implemented by Chalupper and provided to PsySound team.
+%       Audio files are calibrated to have 100 dB SPL for 0 dBFS rms. 
 %
 % 2. Additional info:
 %       Tested cross-platform: No
 %
 % 3. Stand-alone example:
-%       
+%       Do_fluct;
+% 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 22/08/2014
 % Last update on: 22/08/2014 % Update this date manually
-% Last use on   : 22/08/2014 % Update this date manually
+% Last use on   : 22/09/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 3

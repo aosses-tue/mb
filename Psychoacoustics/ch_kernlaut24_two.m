@@ -1,10 +1,12 @@
 function out = ch_kernlaut24_two(rms, HL_ohc)
 % function out = ch_kernlaut24_two(rms, HL_ohc)
 %
-% calculates main loudness for main excitation (rms) according to DIN45631
-% accounts for nonlinear component of hearing loss (HL_ohc)
+% 1. Description:
+%       Calculates main loudness for main excitation (rms) according to 
+%       DIN45631 accounts for nonlinear component of hearing loss (HL_ohc)
 %
-% Data for thq and a0 from [3].
+%       Loudness transformation according to Chalupper2002, Equation 2
+%       Data for thq and a0 from [3].
 % 
 % References:
 %   [3] Paulus; Zwicker. "Computer Programmes for Calculating Loudness from 
@@ -20,6 +22,7 @@ function out = ch_kernlaut24_two(rms, HL_ohc)
 % Last use on   : 08/08/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% Normal hearing threshold:
 thq = [42 18.5 11.5 8.3 6.7 5.5 4.8 4.3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3];
 
 thq = thq+HL_ohc;

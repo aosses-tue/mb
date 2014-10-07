@@ -28,7 +28,8 @@ if nargin == 0
 end
 
 if ~isunix
-    dir_where_ref = 'D:\MATLAB\Output\tmp-cal\';
+    % dir_where_ref = 'D:\MATLAB\Output\tmp-cal\';
+    dir_where_ref = Get_TUe_paths('outputs');
 else
     dir_where_ref = Get_TUe_paths('outputs'); % tested on 17/08/2014
 end
