@@ -1,12 +1,18 @@
+%% This might overwrite untracked files:
+%% 	Method 1:
 git pull 	= 	git fetch
 			git merge FETCH_HEAD
+%% 	Method 2 (source: http://ageekandhisblog.com/git-force-overwrite-of-untracked-working-tree-files/ on 15/10/2014):
+git fetch --all
+git reset --hard origin/master
+
 git status
 git add filename.filename
 git add -u % only adds edited
 ignoring files: http://git-scm.com/book/en/Git-Basics-Recording-Changes-to-the-Repository
 2.5 Showing your remotes
 
-If you forgot to commit files while working in other computer... 
+If you forgot to commit files while working in other computer. You were working at 'Ubuntu-pc' and you want to update 'Win7-pc':
 
 In 'Ubuntu-pc'
 	Commit the changes from 'ubuntu-PC'
