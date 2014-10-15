@@ -17,7 +17,7 @@ function [info output] = experiment_report_20140228_Physical_validation_LIST(inf
 % Programmed by Alejandro Osses, ExpORL, KU Leuven, Belgium, 2014
 % Created on    : 28/02/2014
 % Last update on: 18/09/2014 % Update this date manually
-% Last use on   : 18/09/2014 % Update this date manually
+% Last use on   : 09/10/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 bDiary = 0;
@@ -138,7 +138,8 @@ if info.bAnalyse
     speakers = {'wdz','rl'};
     gender   = {' (female)', ' (male)'};
     
-    N = 350;
+    info.nSentences = 350;
+    N = info.nSentences;
     disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
     disp(sprintf('%s.m: %.0f files to be analysed',mfilename,N))
     disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
@@ -169,11 +170,12 @@ if info.bAnalyse
         numSNR = size(vErrSim,2)-1;
         [m1  s1 ] = prepare_barplot(vErrSim(:,2:end));
         [m11 s11] = prepare_barplot(vErrSim(:,2:end).*repmat(t_voiced./t_total,1,numSNR));
-        figure
+        
         stPlot.yLim         = [0 100];
         stPlot.YLabel       = 'vErr [%]';
         m1label = stPlot.YLabel;
         if bPlot
+            figure
             h(end+1) = Plot_measure(m1,s1,[speakers{i} gender{i}], stPlot, Colors(i,:));
         end
         stPlot = [];
@@ -181,11 +183,11 @@ if info.bAnalyse
         [m2 s2] = prepare_barplot(uvErrSim(:,2:end));
         [m12 s12] = prepare_barplot(uvErrSim(:,2:end).*repmat(t_unvoiced./t_total,1,numSNR));
         
-        figure
         stPlot.yLim         = [0 25];
         stPlot.YLabel       = 'uvErr [%]';
         m2label = stPlot.YLabel;
         if bPlot
+            figure
             h(end+1) = Plot_measure(m2,s2,[speakers{i} gender{i}], stPlot, Colors(i,:));
         end
         stPlot = [];
@@ -196,11 +198,11 @@ if info.bAnalyse
         [m99 s99] = prepare_barplot(    vErrSim(:,2:end) .*repmat(t_voiced./t_total,1,numSNR) + ...
                                         uvErrSim(:,2:end).*repmat(t_unvoiced./t_total,1,numSNR) + ...
                                         gErrSim(:,2:end) .*repmat(t_voiced./t_total,1,numSNR));
-        figure
         stPlot.yLim         = [0 25];
         stPlot.YLabel       = 'gErr [%]';
         m3label = stPlot.YLabel;
         if bPlot
+            figure
             h(end+1) = Plot_measure(m3,s3,[speakers{i} gender{i}], stPlot, Colors(i,:));
         end
         stPlot = [];
@@ -240,9 +242,21 @@ if info.bAnalyse
         output.t_voiced = sum(t_voiced);
         output.t_unvoiced = sum(t_unvoiced);
         output.t_total = sum(t_total);
+        
+        output.vErrSim = vErrSim;
+        output.uvErrSim = uvErrSim;
+        output.gErrSim = gErrSim;
+        
+        output.snr = [99 20 10 5 0 -5];
+
+        
         if info.bSave & bPlot
             for k = 1:length(h)
-                Saveas(h(k),[info.output speakers{i} '-' num2str(k)]);
+                try
+                    Saveas(h(k),[info.figures_folder    speakers{i} '-' num2str(k)]);
+                catch
+                    Saveas(h(k),[speakers{i} '-' num2str(k)]);
+                end
             end
         end
     end

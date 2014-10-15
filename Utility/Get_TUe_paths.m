@@ -30,8 +30,8 @@ function misc = Get_TUe_paths(type)
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 15/03/2014
-% Last update on: 03/09/2014
-% Last use on   : 03/09/2014
+% Last update on: 07/10/2014
+% Last use on   : 07/10/2014
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Alejandro's paths
@@ -124,6 +124,7 @@ misc.Stats              = [misc.MATLAB   'Stats'           delim];
 misc.SubjectMaps        = [misc.Simulink 'Maps'            delim]; % work at KUL
 misc.SubjectMapsClinical= [misc.Simulink 'Maps_clinical'   delim]; % work at KUL
 misc.tb_AM              = [misc.MATLAB   'tb_AM'           delim];
+misc.tb_AM              = [misc.tb_AM    'my_examples'     delim]; % Added on 07/10/2014
 misc.tb_NMT             = [misc.MATLAB   'tb_NMT_4.31'     delim];
 misc.tb_NMTAddOns       = [misc.MATLAB   'tb_NMT_AddOns'   delim]; 
 misc.tb_Plot4papers_JU  = [misc.MATLAB   'tb_Plot4papers_JU' delim]; % Developed by Jaime Undurraga

@@ -45,12 +45,18 @@ Diary(mfilename,bDiary);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % This file in modules:
-bDoPDA = 0;     % Figure 4
-bDoPlotSNR = 0; % Figure 2, 3.a
-bDoSpeech = 0;  % Figure 5
-bDoPlotF0 = 1; % Figure 3.b
-bDoAdditionalAnalysis = 0; % analysis as sent to TF on 07/10/2014
+options = Ensure_field(options,'bDoPDA',1);     % Figure 4
+options = Ensure_field(options,'bDoPlotSNR',1); % Figure 2, 3.a
+options = Ensure_field(options,'bDoSpeech',1);  % Figure 5
+options = Ensure_field(options,'bDoPlotF0',1); % Figure 3.b
+options = Ensure_field(options,'bDoAdditionalAnalysis',0); % analysis as sent to TF on 07/10/2014
 % Figure 1 was done in LibreOffice during KUL times
+
+bDoPDA      = options.bDoPDA;
+bDoPlotSNR  = options.bDoPlotSNR;
+bDoSpeech   = options.bDoSpeech;
+bDoPlotF0   = options.bDoPlotF0;
+bDoAdditionalAnalysis = options.bDoAdditionalAnalysis;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 options = Ensure_field(options,'bSave',1);
@@ -60,7 +66,7 @@ options = Ensure_field(options,'bAssess',0);
 options = Ensure_field(options,'bCleanSpeech',0);   % bCleanSpeech = 0: CP810 in quiet is reference
                                                     % bCleanSpeech = 1: wdz from LIST in quiet is reference
 options = Ensure_field(options,'bDoNMT',0);
-options.dest_folder_fig  = [Get_TUe_paths('outputs') 'tmp-Figure-0417' delim];
+options = Ensure_field(options,'dest_folder_fig',[Get_TUe_paths('outputs') 'tmp-Figure-0417' delim]);
 options = Ensure_field(options,'t_silence',0);
 Mkdir(options.dest_folder_fig);
 

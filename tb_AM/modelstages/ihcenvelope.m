@@ -1,5 +1,9 @@
 function inoutsig = ihcenvelope(inoutsig,fs,varargin)
-%IHCENVELOPE   Inner hair cell envelope extration
+% function inoutsig = ihcenvelope(inoutsig,fs,varargin)
+%
+% 1. Description:
+%           Inner hair cell envelope extration
+% 
 %   Usage:  outsig=ihcenvelope(insig,fs,methodname);
 %
 %   IHCENVELOPE(insig,fs,methodname) extract the envelope of an input signal
@@ -72,23 +76,11 @@ function inoutsig = ihcenvelope(inoutsig,fs,varargin)
 %     
 %
 %   Url: http://amtoolbox.sourceforge.net/doc/modelstages/ihcenvelope.php
-
-% Copyright (C) 2009-2014 Peter L. SÃ¸ndergaard and Piotr Majdak.
+%
+% Copyright (C) 2009-2014 Peter L. Søndergaard and Piotr Majdak.
 % This file is part of AMToolbox version 0.9.5
 %
-% This program is free software: you can redistribute it and/or modify
-% it under the terms of the GNU General Public License as published by
-% the Free Software Foundation, either version 3 of the License, or
-% (at your option) any later version.
-%
-% This program is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU General Public License for more details.
-%
-% You should have received a copy of the GNU General Public License
-% along with this program.  If not, see <http://www.gnu.org/licenses/>.
-  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
 
 % ------ Checking of input parameters --------------------------------
 
@@ -131,6 +123,7 @@ if flags.do_ihc_bernstein
   inoutsig = filter(b,a, inoutsig);
 end;
 
+%%
 if flags.do_ihc_breebaart
   inoutsig = max( inoutsig, 0 );
   cutofffreq=2000;
@@ -140,6 +133,7 @@ if flags.do_ihc_breebaart
   end;
 end;
 
+%%
 if flags.do_ihc_dau
   inoutsig = max( inoutsig, 0 );
   cutofffreq=1000;
@@ -147,10 +141,12 @@ if flags.do_ihc_dau
   inoutsig = filter(b,a, inoutsig);
 end;
 
+%%
 if flags.do_hilbert
   inoutsig = abs(hilbert(inoutsig));
 end;
 
+%%
 if flags.do_ihc_lindemann
   inoutsig = max( inoutsig, 0 );
   cutofffreq=800;
@@ -158,10 +154,12 @@ if flags.do_ihc_lindemann
   inoutsig = filter(b,a, inoutsig);
 end;
 
+%%
 if flags.do_ihc_meddis
   inoutsig = comp_meddishaircell(inoutsig, fs);
 end;
 
+%%
 if ~isempty(keyvals.minlvl)
   inoutsig = max( inoutsig, keyvals.minlvl );
 end;

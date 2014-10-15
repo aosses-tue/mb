@@ -1,5 +1,8 @@
 function inoutsig = adaptloop(inoutsig,fs,varargin);
-%ADAPTLOOP   Adaptation loops
+% function inoutsig = adaptloop(inoutsig,fs,varargin);
+% 
+% 1. Description:
+%   Adaptation loops
 %   Usage: outsig = adaptloop(insig,fs,limit,minlvl,tau);
 %          outsig = adaptloop(insig,fs,limit,minlvl);
 %          outsig = adaptloop(insig,fs,limit);
@@ -121,3 +124,6 @@ inoutsig    = gaindb(inoutsig,dboffset-100);
 
 inoutsig    = comp_adaptloop(inoutsig,fs,limit,minlvl,tau);
 inoutsig    = assert_sigreshape_post(inoutsig,dim,permutedsize,order);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+end

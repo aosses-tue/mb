@@ -14,22 +14,19 @@ function paper_IJA_2014
 fprintf('Make sure analysis of PB and LIST-f databases are in the proper directory...\n');
 pause(2)
 
-bDoErr      = 1;
+bDoErr      = 1; % Figure 2
 bDoPR       = 0;
 bDoSpeech   = 0;
-options.bSave = 0;
+options.bSave = 1;
 
 % If bDoPR
 if isunix
     infodir.export_folder   = '~/Documenten/LaTeX_Docs/paper/data_new/'; % local folder Alejandro
-    infodir.figures_folder  = '~/Documenten/LaTeX_Docs/paper/figures_new/'; % local folder Alejandro
+    info.figures_folder  = '~/Documenten/LaTeX_Docs/paper/figures_new/'; % local folder Alejandro
 else
-    infodir.export_folder   = Get_TUe_paths('outputs'); % local folder Alejandro
-    infodir.figures_folder  = Get_TUe_paths('outputs'); % local folder Alejandro
+    infodir.export_folder   = [Get_TUe_paths('outputs') 'IJA_data' delim]; % local folder Alejandro
+    info.figures_folder  = [Get_TUe_paths('outputs') 'IJA_figures' delim]; % local folder Alejandro
 end
-
-% info = getpaths('',1); % Make sure Alejandro's Utility folder is added to path:
-%                        % addpath('~/Documenten/MATLAB/MATLAB_svn/Utility')
 
 try
     % cd('~/repo/alejandro/documenten/paper/'); % if Tom's computer
@@ -41,16 +38,19 @@ catch
 end
 
 % bDoSpeech
-options.dest_folder = [dirtree.paper_folder delim 'figures_new' delim]; 
+options.dest_folder = [dirtree.paper_folder 'IJA_figures_speech' delim]; 
 
 % bDoPR and bDoErr
-info.export_folder   = [dirtree.paper_folder delim 'data_new' delim]; % local folder Alejandro
-info.figures_folder  = options.dest_folder; % local folder Alejandro
+info.export_folder   = [dirtree.paper_folder 'data_new' delim]; % local folder Alejandro
+Mkdir(info.figures_folder); % Folder for F0 error plots
 info.bSave           = options.bSave;
 
 Mkdir(options.dest_folder);
 Mkdir(info.export_folder);
 
+
+
+%% Figure 2, 3
 if bDoErr
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -81,6 +81,7 @@ end
 
 dirtree.root_location   = [dirtree.paper_folder delim 'validation' delim];
 
+%%
 if bDoPR
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % PR Results (Figure 8):
@@ -89,6 +90,7 @@ if bDoPR
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
 
+%%
 if bDoSpeech
     options.dest_folder = [dirtree.paper_folder delim 'figures' delim];
 

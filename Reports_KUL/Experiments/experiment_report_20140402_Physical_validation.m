@@ -112,6 +112,13 @@ gender   = {' (female)', ' (male)'};
 
 for i = idx_to_do
     h = [];
+    
+    database_info = import_physical_measure([info.results_dir speakers{i} '-database-time-info.txt'  ], 2, 51); 
+    t_silence = 0;
+    t_voiced = database_info(:,3);
+    t_unvoiced = database_info(:,4)-t_silence;
+    t_total = database_info(:,2)-t_silence;
+        
      vErrSim    = import_physical_measure([info.results_dir speakers{i} '-vErrSim.txt'  ], 2, 51);
     uvErrSim    = import_physical_measure([info.results_dir speakers{i} '-uvErrSim.txt' ], 2, 51);
      gErrSim    = import_physical_measure([info.results_dir speakers{i} '-gErrSim.txt'  ], 2, 51);
@@ -158,6 +165,20 @@ for i = idx_to_do
     output.m4 = m4;
     output.s4 = s4;
 
+    output.t_voiced = sum(t_voiced);
+    output.t_unvoiced = sum(t_unvoiced);
+    output.t_total = sum(t_total);
+
+    output.vErrSim = vErrSim;
+    output.uvErrSim = uvErrSim;
+    output.gErrSim = gErrSim;
+    
+%     if size(vErrSim,2) == 8
+        output.snr = [99 20 10 5 0 -5 -10 -15];
+%     else
+%         output.snr = [99 20 10 5 0 -5];
+%     end
+    
     if info.bSave
         for k = 1:length(h)
             Saveas(h(k),[info.figures speakers{i} '-' num2str(k)]);

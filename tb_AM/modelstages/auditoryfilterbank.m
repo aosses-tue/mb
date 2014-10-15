@@ -4,18 +4,19 @@ function [outsig, fc] = auditoryfilterbank(insig, fs, varargin)
 %   1. Description:
 %     	Linear auditory filterbank
 % 
-%   Usage: [outsig, fc] = auditoryfilterbank(insig,fs);
-%          [outsig, fc] = auditoryfilterbank(insig,fs,...);
+%       Usage: [outsig, fc] = auditoryfilterbank(insig,fs);
+%              [outsig, fc] = auditoryfilterbank(insig,fs,...);
 %
-%   Input parameters:
-%     insig  : input acoustic signal.
-%     fs     : sampling rate.
-%   Output parameters:
-%     fc     : centre frequencies
-%     outsig : output filtered signal
+%       Input parameters:
+%           insig  : input acoustic signal.
+%           fs     : sampling rate.
+% 
+%       Output parameters:
+%           fc     : centre frequencies
+%       outsig : output filtered signal
 %  
 %   AUDITORYFILTERBANK(insig,fs) applies an auditory filterbank to the
-%   imput signal insig sampled with a frequency of fs Hz. The filterbank
+%   input signal insig sampled with a frequency of fs Hz. The filterbank
 %   is composed of gammatone filters with 1 ERB wide filters.
 %  
 %   [outsig,fc]=AUDITORYFILTERBANK(...) additionally returns the center
@@ -38,24 +39,12 @@ function [outsig, fc] = auditoryfilterbank(insig, fs, varargin)
 %
 %   Url: http://amtoolbox.sourceforge.net/doc/modelstages/auditoryfilterbank.php
 % 
-% Copyright (C) 2009-2014 Peter L. Sondergaard and Piotr Majdak.
-% This file is part of AMToolbox version 0.9.5
-%
-% This program is free software: you can redistribute it and/or modify
-% it under the terms of the GNU General Public License as published by
-% the Free Software Foundation, either version 3 of the License, or
-% (at your option) any later version.
-%
-% This program is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU General Public License for more details.
-%
-% You should have received a copy of the GNU General Public License
-% along with this program.  If not, see <http://www.gnu.org/licenses/>.
-%   
-%   AUTHOR : Peter L. Søndergaard
-%   Edited by Alejandro Osses, TU/e 2014
+% Author        : Peter L. Søndergaard
+% Downloaded on : 18/03/2014
+% Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Last update on: 18/03/2014 % Update this date manually
+% Last use on   : 08/10/2014 % Update this date manually
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % ------ Checking of input parameters ------------
 

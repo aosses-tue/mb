@@ -1,7 +1,12 @@
-function errorrate_tot = experiment_report_20140228_F0_as_Vandali(info)
-% function errorate_tot = experiment_report_20140228_F0_as_Vandali(info)
+function [errorrate_tot outs] = experiment_report_20140228_F0_as_Vandali(info)
+% function [errorate_tot outs] = experiment_report_20140228_F0_as_Vandali(info)
 %
+% Reads results inside info.results_dir:
+%   - [speakers{i} '-ErrRateSim.txt'  ]
+% 
 % Programmed by Alejandro Osses, ExpORL 2014
+% Last update on: 09/10/2014
+% Last use on   : 09/10/2014
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
 if nargin == 0
@@ -21,9 +26,13 @@ info        = Ensure_field(info, 'Fs'           , round(15659.375));
 info        = Ensure_field(info, 'speaker'      , 'sb');
  
 if strcmp(info.F0reference, 'laryngeal')
-    info.bCleanSpeech   = 1; 
+    info.bCleanSpeech   = 1;
+    info.nSentences = 50; % 50 sentences in PB database
 end
  
+info        = Ensure_field(info,'nSentences',350); % 350 sentences in LIST-f database
+N = info.nSentences;
+
 p.CFG.Fs        = info.Fs;
 p.F0mod.F0max   = info.F0max;
  
@@ -36,7 +45,12 @@ if strcmp(info.F0reference,'laryngeal')
     
 end
  
-info    = Ensure_field(info, 'results_dir', [info.root_dir info.results_dir_name delim]);
+try
+    info    = Ensure_field(info, 'results_dir', [info.root_dir info.results_dir_name delim]);
+catch
+    info    = Ensure_field(info, 'results_dir', info.output); % Since october 2014
+end
+
 info    = Ensure_field(info, 'figures'    , [info.root_dir info.figures_dir_name delim]);
 
 info    = Ensure_field(info,'bPlot',0);
@@ -46,8 +60,8 @@ if info.bAnalyse
     speakers = {'sb','rl'};
     gender   = {' (female)', ' (male)'};
     
-    if strcmp(info.speaker,'LIST-f')
-        speakers = {'LIST-f','rl'};
+    if strcmp(info.speaker,'LIST-f') | strcmp(info.speaker,'wdz') % both for LIST-f
+        speakers = {info.speaker,'rl'};
         idx2analyse = 1;
     else
         idx2analyse = 1:2;
@@ -55,30 +69,35 @@ if info.bAnalyse
     
     col_time    = 2;
     col_time_v  = 3;
+    col_time_uv = 4;
     
     errorrate_tot = [];
     
     for i = idx2analyse
         h = [];
-        % vErrSim = import_physical_measure([info.results_dir speakers{i} '-vErrSim.txt'  ], 2, 51);
-        errorrate   = import_physical_measure([info.results_dir speakers{i} '-ErrRateSim.txt'  ], 2, 51, 9);
-        database_info = import_physical_measure([info.results_dir speakers{i} '-database-time-info.txt'  ], 2, 51, 6);
+        % vErrSim = import_physical_measure([info.results_dir speakers{i} '-vErrSim.txt'  ], 2, N+1);
+        errorrate       = import_physical_measure([info.results_dir speakers{i} '-ErrRateSim.txt'  ], 2, N+1, 9);
+        database_info   = import_physical_measure([info.results_dir speakers{i} '-database-time-info.txt'  ], 2, N+1, 6);
+   
         
-        if strcmp(info.results_dir_name, 'results-praat-CP810') & ~strcmp(info.speaker,'LIST-f')
-            % We will consider total voiced time as without CP810 simulation
-            tmp_database = import_physical_measure([info.root_dir 'results-praat-clean' delim speakers{i} '-database-time-info.txt'  ], 2, 51, 6);
-            tot_time_v  = sum(tmp_database(:,col_time_v));
-        else
-            tot_time_v  = sum(database_info(:,col_time_v));
-        end
-                
+        tot_time_v  = sum(database_info(:,col_time_v));
+        tot_time_uv = sum(database_info(:,col_time_uv));
         tot_time    = sum(database_info(:,col_time  ));
-        
-        
-        errortmp = sum(  errorrate(:,2:end).*repmat( database_info(:,col_time_v),1,size(errorrate,2)-1)  )/(tot_time_v);
-        errorrate_tot = [errorrate_tot; errortmp]; 
+       
+        % Pooling Error rate:
+        error_data = errorrate(:,2:end);
+        vector_t_voiced = repmat( database_info(:,col_time_v),1,size(error_data,2));
+        errortmp = sum(  errorrate(:,2:end).* vector_t_voiced )/(tot_time_v);
+        errorrate_tot = [errorrate_tot; errortmp]; %  
         
     end
+    
+    outs.tot_time = tot_time;
+    outs.tot_time_v = tot_time_v;
+    outs.tot_time_uv = tot_time_uv;
+    
+    outs.snr = Get_snr(errorrate_tot);
+    outs.errorrate_tot = errorrate_tot;
     
     if info.bPlot
         h = Plot_errorrate(errorrate_tot);
@@ -96,9 +115,19 @@ disp('EOF')
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
-function h = Plot_errorrate(errorrate)
+function snr = Get_snr(errorrate)
 
-% The following files were taken from Vandali and van Hoesel 2011
+if size(errorrate,2) == 8
+    snr       = [99 20    10 5 0 -5 -10 -15];
+elseif size(errorrate,2) == 6
+    snr       = [99 20    10 5 0 -5];
+end
+
+function h = Plot_errorrate(errorrate,snr)
+
+% The following files were taken from Vandali2011, Figure 5
+%       - Panel (a): male
+%       - Panel (b): female
 snr_vandali         = [99    12  8    4    0    -4  -8  -12];
 error_vandali_f     = [2.38   3  4    5    7    13  30   56]; % Std criterion
 error_vandali_m     = [3.98   6  7    9   10.5  14  21   30]; % Std criterion
@@ -109,7 +138,9 @@ error_vandali_m_SRT = [1.36   2  2.2  2    2.3   3   5   12]; % SRT > 0.6
 
 errorrate_f     = errorrate(1,:);
 errorrate_m     = errorrate(2,:);
-snr             = [99 20 15 10 5 0 -5 -10 -15];
+if nargin < 2
+    snr         = [99 20 15 10 5 0 -5 -10 -15];
+end
 snr_i           = [99 20    10 5 0 -5 -10 -15];
 
 error_vandali_f     = interp1(snr_vandali, error_vandali_f    , snr, 'linear');

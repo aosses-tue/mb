@@ -2,14 +2,24 @@ function experiment_report_20140402_compare_F0ref(info)
 % function experiment_report_20140402_compare_F0ref(info)
 %
 % Programmed by Alejandro Osses, ExpORL, KULeuven, 2014
+% Last update on: 09/10/2014
+% Last use on   : 09/10/2014
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-bPB_male = 0;
-bPB_female = 0;
-bLISTf_white = 0;
-bLISTf_SSN = 0;
+if nargin == 0
+    info = [];
+end
 
-info.bAssess    = 0;
+info = Ensure_field(info,'bPB_male'  ,1);
+info = Ensure_field(info,'bPB_female',1);
+info = Ensure_field(info,'bLISTf_SSN',1);
+
+bPB_male = info.bPB_male;
+bPB_female = info.bPB_female;
+% bLISTf_white = 0;
+bLISTf_SSN = info.bLISTf_SSN;
+
+info = Ensure_field(info,'bAssess',0);
 info.bAnalyse   = 1;
 info.isPaper    = 1;
 info = Ensure_field(info,'bSave', 0);
@@ -26,14 +36,15 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-info.F0reference        = 'laryngeal';
-info.F0max              = 400;
+info_PB = info;
+info_PB.F0reference     = 'laryngeal';
+info_PB.F0max           = 400;
 
-info.bCleanSpeech       = 1; % if 0: CP810 simulations will be used
-info.bPlot              = 0;
-info.speaker            = 'sb'; % Female 
-info.results_dir_name   = 'results';
-info.figures_dir_name   = 'figures';
+info_PB.bCleanSpeech    = 1; % if 0: CP810 simulations will be used
+info_PB.bPlot           = 0;
+info_PB.speaker         = 'sb'; % Female 
+info_PB.results_dir_name = 'results';
+info_PB.figures_dir_name = 'figures';
 
 
 Colors = [0 0 0; 1 1 1];
@@ -42,51 +53,66 @@ h = [];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % PB database
 if bPB_female
-    [info tmp2] = experiment_report_20140402_Physical_validation(info);
+    [info_PB tmpPBf] = experiment_report_20140402_Physical_validation(info_PB);
     close all
 end
 
 if bPB_male
-    info.speaker            = 'rl'; % Male
+    info_PB_male = info_PB;
+    info_PB_male.speaker = 'rl'; % Male
 
-    [info tmp1] = experiment_report_20140402_Physical_validation(info);
+    [info_PB_male tmpPBm] = experiment_report_20140402_Physical_validation(info_PB_male);
     close all
 end
 
 if bPB_male & bPB_female
     % Analysis as in Vandali 2011 for female and male speakers
     % Error rate, PB:
-    error_rate_PB = experiment_report_20140228_F0_as_Vandali(info);
+    [error_rate_PB parPB] = experiment_report_20140228_F0_as_Vandali(info_PB);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % LIST-f Evaluation
 
-info.F0reference        = 'praat';
-info.F0max              = 400;
-info.bCleanSpeech       = 0;
+info_LIST = info;
+info_LIST = Ensure_field(info_LIST,'F0reference','praat');
+info_LIST = Ensure_field(info_LIST,'F0max',400);
+info_LIST = Ensure_field(info_LIST,'bCleanSpeech',1); % corrected plots on 9/10/2014
+
 
 if bLISTf_SSN
     
-    info.speaker            = 'sb'; % Female 
-    info.results_dir_name   = 'results-praat-CP810';
-    info.figures_dir_name   = 'figures-praat-CP810';
+    info_LIST.speaker = 'wdz'; % Female 
+    %info.results_dir_name   = 'results-praat-CP810';
+    info_LIST.figures_dir_name   = 'figures-praat-CP810';
 
     info = Ensure_field(info, 'figures_folder', '~/Documenten/LaTeX_Docs/paper/figures/');
-
-    info_LIST = info;
+    
+    %info_LIST.results_dir_name   = 'output-SSN';
+    %info_LIST.results_dir = [info_LIST.root_dir info.results_dir_name delim];
+    
+    % if info_LIST.bCleanSpeech == 1;
+    %     info_LIST.praat       = [info_LIST.root_dir 'praat' delim];
+    % else
+    %     info_LIST.praat       = [info_LIST.root_dir 'praat-CP810' delim];
+    % end
+    
     info_LIST.bAssess = 0;
     info_LIST.bAnalyse = 1;
     info_LIST.F0max = 300;
-    [info_LIST tmp3] = experiment_report_20140228_Physical_validation_LIST(info_LIST);
+    [info_LIST outLIST] = experiment_report_20140228_Physical_validation_LIST(info_LIST);
 
     % End of LIST-f evaluation
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Plots added to paper (on 2014 04 02)
 
-    error_rate_LISTf = experiment_report_20140228_F0_as_Vandali(info_LIST);
+    [error_rate_LISTf parLIST] = experiment_report_20140228_F0_as_Vandali(info_LIST);
 
-    error_rate_tot = [error_rate_PB; error_rate_LISTf];
+    snrf = [99 20 15 10 5 0 -5];
+    error_rate_PB_1 = interp1(parPB.snr,error_rate_PB(1,:),snrf,'linear');
+    error_rate_PB_2 = interp1(parPB.snr,error_rate_PB(2,:),snrf,'linear');
+    error_rate_LISTf = interp1(parLIST.snr,error_rate_LISTf,snrf,'linear');
+    error_rate_tot = [error_rate_PB_1; error_rate_PB_2; error_rate_LISTf];
 
     h(end+1) = Plot_errorrate_F0mod(error_rate_tot);
     filename = [info.figures_folder 'ac-error-rate'];
@@ -100,32 +126,80 @@ end
 h = [];
 close all
 
+n = min([size(tmpPBm.m1,1) size(outLIST.m1,1)]);
+
+%% Figure 2
 figure
 stPlot.YLabel   = 'vErr [%]';
 stPlot.yLim     = [0 100];
-h(end+1) = Plot_measure([tmp1.m1 tmp2.m1 tmp3.m1],[tmp1.s1 tmp2.s1 tmp3.s1], '', stPlot);
+h(end+1) = Plot_measure([tmpPBm.m1(1:n) tmpPBf.m1(1:n) outLIST.m1(1:n)],[tmpPBm.s1(1:n) tmpPBf.s1(1:n) outLIST.s1(1:n)], '', stPlot);
 stPlot = [];
 
 figure
 stPlot.YLabel   = 'uvErr [%]';
-h(end+1) = Plot_measure([tmp1.m2 tmp2.m2 tmp3.m2],[tmp1.s2 tmp2.s2 tmp3.s2], '', stPlot);
+stPlot.yLim     = [0 30];
+h(end+1) = Plot_measure([tmpPBm.m2(1:n) tmpPBf.m2(1:n) outLIST.m2(1:n)],[tmpPBm.s2(1:n) tmpPBf.s2(1:n) outLIST.s2(1:n)], '', stPlot);
 stPlot = [];
 
 figure
-stPlot.YLabel    = 'gErr [%]';
-h(end+1) = Plot_measure([tmp1.m3 tmp2.m3 tmp3.m3],[tmp1.s3 tmp2.s3 tmp3.s3], '', stPlot);
+stPlot.YLabel   = 'gErr [%]';
+stPlot.yLim     = [0 30];
+h(end+1) = Plot_measure([tmpPBm.m3(1:n) tmpPBf.m3(1:n) outLIST.m3(1:n)],[tmpPBm.s3(1:n) tmpPBf.s3(1:n) outLIST.s3(1:n)], '', stPlot);
 stPlot = [];
 
 figure
 stPlot.YLabel    = 'f0Dev [\Delta Hz]';
-h(end+1) = Plot_measure([tmp1.m4 tmp2.m4 tmp3.m4],[tmp1.s4 tmp2.s4 tmp3.s4], '', stPlot);
+h(end+1) = Plot_measure([tmpPBm.m4(1:n) tmpPBf.m4(1:n) outLIST.m4(1:n)],[tmpPBm.s4(1:n) tmpPBf.s4(1:n) outLIST.s4(1:n)], '', stPlot);
 stPlot = [];
 
 speakers = 'Speech-materials';
 
+%%
+% Written values:
+% snr = [99 20 10 5 0 -5];
+
+nDecimals = 2;
+
+disp('LIST-f, vErr, uvErr, gErr')
+Round([outLIST.snr'   outLIST.m1*outLIST.t_voiced/outLIST.t_total ...
+                outLIST.m2*outLIST.t_unvoiced/outLIST.t_total ...
+                outLIST.m3*outLIST.t_voiced/outLIST.t_total],nDecimals)
+
+% snrPB = [99 20 10 5 0 -5 -10 -15];
+disp(' ')
+disp('PB-f, vErr, uvErr, gErr')
+Round([tmpPBf.snr'    tmpPBf.m1*tmpPBf.t_voiced/tmpPBf.t_total ...
+                tmpPBf.m2*tmpPBf.t_unvoiced/tmpPBf.t_total ...
+                tmpPBf.m3*tmpPBf.t_voiced/tmpPBf.t_total], nDecimals)
+
+% snrPB = [99 20 10 5 0 -5 -10 -15];
+disp(' ')
+disp('PB-m, vErr, uvErr, gErr')
+Round([tmpPBm.snr' tmpPBf.m1*tmpPBm.t_voiced/tmpPBm.t_total ...
+                   tmpPBf.m2*tmpPBm.t_unvoiced/tmpPBm.t_total ...
+                   tmpPBf.m3*tmpPBm.t_voiced/tmpPBm.t_total],nDecimals)
+
+Avg1 = mean([tmpPBf.m1*tmpPBf.t_voiced/tmpPBf.t_total tmpPBm.m1*tmpPBm.t_voiced/tmpPBm.t_total]');
+Avg2 = mean([tmpPBf.m2*tmpPBf.t_unvoiced/tmpPBf.t_total tmpPBm.m2*tmpPBm.t_unvoiced/tmpPBm.t_total]');
+Avg3 = mean([tmpPBf.m3*tmpPBf.t_voiced/tmpPBf.t_total tmpPBm.m1*tmpPBm.t_voiced/tmpPBm.t_total]');
+
+disp('Error rate PB female and male')
+Round([tmpPBm.snr' error_rate_PB'],nDecimals)
+
+disp(' ')
+disp('PB-f+m, vErr, uvErr, gErr, total')
+Round([tmpPBf.snr'  Avg1' ...
+                    Avg2' ...
+                    Avg3' ...
+                    (Avg1+Avg2+Avg3)'], nDecimals)
+
 if info.bSave
     for k = 1:length(h)
-        Saveas(h(k),[info.figures speakers '-' num2str(k)]);
+        try
+            Saveas(h(k),[info.figures_folder speakers '-' num2str(k)]);
+        catch
+            Saveas(h(k),[speakers '-' num2str(k)]);
+        end
     end
 end
 
