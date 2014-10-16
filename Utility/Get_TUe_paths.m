@@ -30,8 +30,8 @@ function misc = Get_TUe_paths(type)
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 15/03/2014
-% Last update on: 07/10/2014
-% Last use on   : 07/10/2014
+% Last update on: 16/10/2014
+% Last use on   : 16/10/2014
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Alejandro's paths
@@ -99,7 +99,6 @@ else
     misc.lx_Text            = ['D:\Documenten-TUe\01-Text\05-Doc-TUe'   delim];
     misc.outputs            = ['D:\Output' delim];
     misc.praat              = ['C:\praat5376_win32\praatcon.exe'];
-    misc.Text               = [misc.MATLAB 'Text' delim];
     
 end
 
@@ -123,8 +122,9 @@ misc.Simulink           = [misc.MATLAB_KUL 'Simulink_XPC'  delim];
 misc.Stats              = [misc.MATLAB   'Stats'           delim];
 misc.SubjectMaps        = [misc.Simulink 'Maps'            delim]; % work at KUL
 misc.SubjectMapsClinical= [misc.Simulink 'Maps_clinical'   delim]; % work at KUL
+misc.Text               = [misc.MATLAB  'Text'             delim];
 misc.tb_AM              = [misc.MATLAB   'tb_AM'           delim];
-misc.tb_AM              = [misc.tb_AM    'my_examples'     delim]; % Added on 07/10/2014
+misc.tb_AM_my_examples  = [misc.tb_AM    'my_examples'     delim]; % Added on 07/10/2014
 misc.tb_NMT             = [misc.MATLAB   'tb_NMT_4.31'     delim];
 misc.tb_NMTAddOns       = [misc.MATLAB   'tb_NMT_AddOns'   delim]; 
 misc.tb_Plot4papers_JU  = [misc.MATLAB   'tb_Plot4papers_JU' delim]; % Developed by Jaime Undurraga

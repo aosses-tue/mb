@@ -13,12 +13,13 @@ function outs = demo_dau1996b(options)
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 07/10/2014
-% Last update on: 15/10/2014 % Update this date manually
-% Last use on   : 15/10/2014 % Update this date manually
+% Last update on: 16/10/2014 % Update this date manually
+% Last use on   : 16/10/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin == 0
     close all
+    options = [];
 end
 
 options = Ensure_field(options, 'bSave', 0);
@@ -26,9 +27,9 @@ options = Ensure_field(options, 'bPlot', 1);
 options = Ensure_field(options, 'dB_SPL', 85);
 
 infilename         = 'dau1996b_expII3_noisemasker';
-infilename1        = ['dau1996a_expII3_stim01-' num2str(options.dB_SPL)];
-infilename2        = ['dau1996a_expII3_stim02-' num2str(options.dB_SPL)];
-infilename3        = ['dau1996a_expII3_stim03-' num2str(options.dB_SPL)];
+infilename1        = ['dau1996b_expII3_stim01-' num2str(options.dB_SPL)];
+infilename2        = ['dau1996b_expII3_stim02-' num2str(options.dB_SPL)];
+infilename3        = ['dau1996b_expII3_stim03-' num2str(options.dB_SPL)];
 
 h = []; % we initialise handle for Figures
 paths.outputs   = Get_TUe_paths('outputs');
@@ -169,6 +170,31 @@ if options.bPlot
     axis([0 max(out_stim1.t) AmpMax*[-0.25 1]])
 
     h(end) = Figure2paperfigure(h(end),3,1); % replaces handle
+    
+    % figure;
+    % subplot(3,1,1)
+    % plot(out_stim1.t,out_stim1.template_no_norm(:,idx)), grid on
+    % ha(end+1) = gca;
+    % title('(a) signal duration: 10 ms')
+    % 
+    % subplot(3,1,2)
+    % plot(out_stim2.t,out_stim2.template_no_norm(:,idx)), grid on
+    % ha(end+1) = gca;
+    % ylabel('normalised amplitude')
+    % title('(b) signal duration: 20 ms')
+    % 
+    % subplot(3,1,3)
+    % plot(out_stim3.t,out_stim3.template_no_norm(:,idx)), grid on
+    % ha(end+1) = gca;
+    % xlabel('Time relative to masker onset [s]')
+    % title('(c) signal duration: 40 ms')
+
+    % AmpMax = 0.03;
+    % linkaxes(ha,'xy');
+    % axis([0 max(out_stim1.t) AmpMax*[-0.25 1]])
+    tp1 = out_stim1.template(:,idx);
+    tp2 = out_stim2.template(:,idx);
+    tp3 = out_stim3.template(:,idx);
 end
 
 outs.out_stim1 = out_stim1;

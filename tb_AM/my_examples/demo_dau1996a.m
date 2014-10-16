@@ -1,5 +1,5 @@
-function demo_dau1996a
-% function demo_dau1996a
+function demo_dau1996a(options)
+% function demo_dau1996a(options)
 %
 % 1. Description:
 %
@@ -7,17 +7,26 @@ function demo_dau1996a
 %       Tested cross-platform: No
 %
 % 3. Stand-alone example:
-%       
+%       demo_dau1996a;
+% 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 07/10/2014
 % Last update on: 07/10/2014 % Update this date manually
 % Last use on   : 07/10/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-close all
-options.bSave      = 1;
-infilename         = 'dau1996a_noisemasker';
-infilename2        = 'dau1996a_testsignal';
+if nargin == 0
+    close all
+    options = [];
+end
+
+options = Ensure_field(options, 'bSave', 0);
+options = Ensure_field(options, 'bPlot', 1);
+options = Ensure_field(options, 'dB_SPL', 77);
+options = Ensure_field(options, 'dB_SPL_test', 85);
+
+infilename         = ['dau1996a_noisemasker-' num2str(options.dB_SPL)     ];
+infilename2        = ['dau1996a_testsignal-'  num2str(options.dB_SPL_test)];
 
 h = []; % we initialise handle for Figures
 paths.outputs   = Get_TUe_paths('outputs');
@@ -31,8 +40,8 @@ catch
     fs                  = 48000;
 end
 
-dB_SPL  = 65; % reference: Left audio file
-dB_SPL2 = 60;
+dB_SPL  = options.dB_SPL; % reference: Left audio file
+dB_SPL2 = options.dB_SPL_test;
 
 N   = 4096*2; % N-FFT points
 K   = N/2;
@@ -109,7 +118,16 @@ xlabel('Time [s]')
 ylabel('Amplitude')
 h(end+1)=gcf;
 
+ti = 100e-3;
+tf = 300e-3;
+stats1 = Get_stats_from_audio(insig       ,ti,tf,fs);
+stats2 = Get_stats_from_audio(insig+insig2,ti,tf,fs);
+stats3 = Get_stats_from_audio(insig2      ,ti,tf,fs);
 
+figure;
+plot(   stats1.pdf_centres,stats1.pdf, ...
+        stats2.pdf_centres,stats2.pdf);
+legend('noise alone','noise + signal')
 %% Processing 
 
 [outsig , fc ,allouts ] = dau1996preproc(insig         ,fs);
@@ -141,8 +159,9 @@ for i = idx
     subplot(3,1,2)
     plot(   t, allouts2.out04_LPF(:,idx) ); hold on
     
+    D = allouts2.out04_LPF(:,idx)-allouts.out04_LPF(:,idx);
     subplot(3,1,3)
-    plot(   t, allouts2.out04_LPF(:,idx)-allouts.out04_LPF(:,idx) ); hold on
+    plot(   t,  25e-4*D); hold on
     
     h(end+1)=gcf;
     haxis = gca;

@@ -41,6 +41,7 @@ haxis = [];
 
 % outs.template = outsig2.out04_LPF(:,idx)-outsig1.out04_LPF(:,idx);
 outs.template_no_norm   = outsig2.out04_LPF-outsig1.out04_LPF;
+% outs.template           = outs.template_no_norm ./ repmat( abs(sum(outs.template_no_norm)), size(outs.template_no_norm,1),1) ;
 outs.template           = outs.template_no_norm ./ repmat( abs(sum(outs.template_no_norm)), size(outs.template_no_norm,1),1) ;
 outs.idx                = idx; % plotted/to be plotted idx
 

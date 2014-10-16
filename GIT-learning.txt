@@ -1,3 +1,6 @@
+%% Get an existing repository:
+git clone https://github.com/MTG/sms-tools
+
 %% This might overwrite untracked files:
 %% 	Method 1:
 git pull 	= 	git fetch

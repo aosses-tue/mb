@@ -62,7 +62,7 @@ function [outsig, fc, extra] = dau1996preproc(insig, fs, varargin);
 %
 %   Url: http://amtoolbox.sourceforge.net/doc/monaural/dau1996preproc.php
 %
-% Author        : Torsten Dau, Morten L. Jepsen, Peter L. Søndergaard
+% Author        : Torsten Dau, Morten L. Jepsen, Peter L. Sï¿½ndergaard
 % Downloaded on : 18/03/2014
 % Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Last update on: 15/10/2014 % Update this date manually
@@ -97,7 +97,7 @@ definput.keyvals.subfs=[];
 
 [flags,keyvals]  = ltfatarghelper({'flow','fhigh'},definput,varargin);
 
-keyvals.limit = 0;
+% keyvals.limit = 0;
 
 % ------ do the computation -------------------------
 
