@@ -66,7 +66,7 @@ function [ei_map, fc] = breebaart2001preproc(insig, fs, tau, ild, varargin);
 %
 %   Url: http://amtoolbox.sourceforge.net/doc/binaural/breebaart2001preproc.php
 
-% Copyright (C) 2009-2014 Peter L. SÃ¸ndergaard and Piotr Majdak.
+% Copyright (C) 2009-2014 Peter L. Søndergaard and Piotr Majdak.
 % This file is part of AMToolbox version 0.9.5
 %
 % This program is free software: you can redistribute it and/or modify
@@ -84,7 +84,7 @@ function [ei_map, fc] = breebaart2001preproc(insig, fs, tau, ild, varargin);
 
 %   References: breebaart2001binaural
 
-%   AUTHOR : Peter L. SÃ¸ndergaard
+%   AUTHOR : Peter L. Søndergaard
   
 % ------ Checking of input parameters ------------
 

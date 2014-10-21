@@ -123,7 +123,7 @@ if flags.do_ihc_bernstein
   inoutsig = filter(b,a, inoutsig);
 end;
 
-%%
+%% Breebaart2001a
 if flags.do_ihc_breebaart
   inoutsig = max( inoutsig, 0 );
   cutofffreq=2000;
@@ -133,12 +133,12 @@ if flags.do_ihc_breebaart
   end;
 end;
 
-%%
+%% Dau1996a,b Dau1997b,c
 if flags.do_ihc_dau
-  inoutsig = max( inoutsig, 0 );
+  inoutsig = max( inoutsig, 0 ); % Half wave rectification
   cutofffreq=1000;
   [b, a] = butter(2, cutofffreq*2/fs);
-  inoutsig = filter(b,a, inoutsig);
+  inoutsig = filter(b,a, inoutsig); % LPF
 end;
 
 %%

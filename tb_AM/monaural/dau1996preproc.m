@@ -66,14 +66,13 @@ function [outsig, fc, extra] = dau1996preproc(insig, fs, varargin);
 % Downloaded on : 18/03/2014
 % Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Last update on: 15/10/2014 % Update this date manually
-% Last use on   : 15/10/2014 % Update this date manually
+% Last use on   : 20/10/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % ------ Warning, Strube model not used ----------
 time_pause = 0.1;
-warning(['This code of this function is incorrect. Please see the description ' ...
-         'in the help text.'])
-disp(sprintf('Paused for %.1f seconds...',time_pause))
+disp([mfilename '.m: the code of this function is incorrect, because it uses a GM filterbank instead of the Strube one, be aware of this...'])
+% disp(sprintf('Paused for %.1f seconds...',time_pause))
 disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
 pause(time_pause)
 

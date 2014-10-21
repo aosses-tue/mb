@@ -2,7 +2,10 @@ function Create_latex_empty(filename)
 % function Create_latex_empty(filename)
 %
 % 1. Description:
-%       Creates a simple empty LaTeX file using 'doc_plain.tex' template 
+%       Creates a simple empty LaTeX file using 'doc_plain.tex' template. 
+%       This template uses the format defined in:
+%           - 'style_doc_plain.tex'     if it is not a weekly update
+%           - 'style_doc_plain_wu.tex'  if it is a weekly update
 % 
 % 2. Additional info:
 %       Tested cross-platform: No
@@ -12,13 +15,12 @@ function Create_latex_empty(filename)
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 16/05/2014
-% Last update on: 29/07/2014 % Update this date manually
-% Last use on   : 29/07/2014 % Update this date manually
+% Last update on: 17/07/2014 % Update this date manually
+% Last use on   : 17/10/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 misc.lx_Templates = Get_TUe_paths('lx_Templates');
 misc.lx_Text      = Get_TUe_paths('lx_Text'     );
-templatefile      = 'doc_plain.tex';
 
 type_doc = input('Which kind of document do you want to create? (1 = weekly update): ');
 
@@ -27,8 +29,12 @@ if nargin == 0
     switch type_doc
         case 1 % weekly update
             filename = 'update';
+            templatefile = 'doc_plain.tex';
+            style        = 'doc_plain_wu.tex';
         otherwise
             filename = input('Type a name for your new LaTeX document (between brackets, no spaces): ');
+            templatefile = 'doc_plain.tex';
+            style        = templatefile;
     end
         
     lx_title = input('Type the title of the document (otherwise type enter): ');
@@ -38,8 +44,15 @@ p = Get_date;
 % p.dd = '12';
 % p.mm = '05';
 % p.yyyy = '2014'; 
+switch type_doc
+    case 1
+        p.subject = 'Weekly update';
+    otherwise
+        p.subject = '';
+end
+
 p.template  = templatefile;
-p.style     = templatefile; % style file
+p.style     = style; % style file
 p.filename  = filename;
 p.title     = lx_title;
 

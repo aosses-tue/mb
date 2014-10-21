@@ -17,6 +17,18 @@ function Saveas(h, filename, option)
 if nargin < 3
     option = [];
 end
+
+str = fileparts(filename);
+
+if strcmp(str,'')
+    try
+        str = Get_TUe_paths('outputs');
+    catch
+        str = [pwd delim];
+    end
+    filename = [str filename];
+end
+
 option = Ensure_field(option,'bPrint',1);
 option = ef(option,'format','epsc');
 
