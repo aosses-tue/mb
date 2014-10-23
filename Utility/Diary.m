@@ -10,8 +10,8 @@ function Diary(name, bDoDiary, directory)
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 01/07/2014
-% Last update on: 31/07/2014 % Update this date manually
-% Last use on   : 31/07/2014 % Update this date manually
+% Last update on: 21/10/2014 % Update this date manually
+% Last use on   : 22/10/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 2
@@ -24,7 +24,8 @@ if bDoDiary == 0
 end
 
 if nargin < 3
-    directory = [Get_TUe_paths('outputs') name 'delim'];
+    directory = [Get_TUe_paths('outputs') name delim];
+    Mkdir(directory);
 end
 
 p = Get_date;

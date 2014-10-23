@@ -30,12 +30,15 @@ if strcmp(str,'')
 end
 
 option = Ensure_field(option,'bPrint',1);
+option = Ensure_field(option,'bScale',1);
 option = ef(option,'format','epsc');
 
 set(h,'PaperType', 'A4')
 
-try
-    Check_figure_size(h); % Constrains figure width to A4 Paper size
+if option.bScale == 1
+    try
+        Check_figure_size(h); % Constrains figure width to A4 Paper size
+    end
 end
 
 set(h,'PaperPositionMode', 'auto')

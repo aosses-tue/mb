@@ -13,7 +13,7 @@ function outs = Dau1996compare(insig1,insig2,fs,opts)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 08/10/2014
 % Last update on: 15/10/2014 % Update this date manually
-% Last use on   : 20/10/2014 % Update this date manually
+% Last use on   : 22/10/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 h = [];
@@ -87,20 +87,6 @@ if bPlot
         haxis = gca;
     end
     linkaxes(haxis,'x');
-    % xlim([0 0.5])
-
-    % figure; 
-    % mesh(outsig1.out03_adaptloop)
-    % xlabel('Band number'); 
-    % ylabel('Sample number'); 
-    % zlabel('Amplitude [MU]'); 
-    % h(end+1)=gcf;
-    % ha = gca;
-
-    % zlim([yminMU ymaxMU])
-    % set(ha,'CameraPosition',[79.9938 138832 22702.7]);
-    % colorbar('vert')
-    % 	CameraPosition = [79.9938 138832 22702.7]
 end
 
 outs.t = t;

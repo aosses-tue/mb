@@ -13,7 +13,7 @@ function [y centres] = Probability_density_function(x,N)
 %   y = Probability_density_function(x,N);
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
-% Created on    : 21/5/2014
+% Created on    : 21/05/2014
 % Last update on: 16/10/2014 % Update this date manually
 % Last use on   : 16/10/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

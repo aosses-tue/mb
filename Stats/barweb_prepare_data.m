@@ -11,7 +11,8 @@ function [mean2plot, std2plot] = barweb_prepare_data(x,y)
 %   Tested cross-platform: No
 %
 % 3. Stand-alone example:
-%
+%       [m s] = barweb_prepare_data(x,y);
+% 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on: 2/6/2014
 % Last update: 2/6/2014 % Update this date manually
@@ -19,16 +20,24 @@ function [mean2plot, std2plot] = barweb_prepare_data(x,y)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 x = transpose(x);
-y = transpose(y);
+if nargin == 2
+    y = transpose(y);
+end
 
 mx = mean(x);
 sx = std(x);
-my = mean(y);
-sy = std(y);
+if nargin == 2
+    my = mean(y);
+    sy = std(y);
+end
 
-mean2plot   = [mx; my];
-std2plot    = [sx; sy];
-
+if nargin == 2
+    mean2plot   = [mx; my];
+    std2plot    = [sx; sy];
+else
+    mean2plot   = [mx];
+    std2plot    = [sx];
+end
 mean2plot   = transpose(mean2plot);
 std2plot    = transpose(std2plot);
 

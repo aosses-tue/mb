@@ -26,7 +26,7 @@ function Create_latex_figures(p)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 16/05/2014
 % Last update on: 30/06/2014 % Update this date manually
-% Last used on  : 17/10/2014 % Update this date manually
+% Last used on  : 22/10/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin == 0

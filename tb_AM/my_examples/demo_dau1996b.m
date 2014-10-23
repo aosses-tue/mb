@@ -18,8 +18,8 @@ function outs = demo_dau1996b(options)
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 07/10/2014
-% Last update on: 20/10/2014 % Update this date manually
-% Last use on   : 20/10/2014 % Update this date manually
+% Last update on: 22/10/2014 % Update this date manually
+% Last use on   : 22/10/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % TO DO: 4. Signal frequency
@@ -86,11 +86,10 @@ switch nExperiment
         
         if options.bGenerate
         
-            [t_silence_bef, t_duration, t_silence_aft, t_total_duration] = Create_noise_default(tagNoise);
+            [t_silence_bef, t_duration, t_silence_aft, t_total_duration] = Create_noise_dau1996_default(nExperiment);
             
             if options.bSave_noise == 1
-                tagNoise = 1;
-                Create_noise(tagNoise,filename,options);
+                Create_noise_dau1996(nExperiment,filename,options);
             end
             
             %% Generating the test tones
@@ -183,33 +182,13 @@ switch nExperiment
         end
         if options.bGenerate
             
-            [t_silence_bef, t_duration, t_silence_aft, t_total_duration] = Create_noise_default(tagNoise);
+            nExperiment = 2;
+            [t_silence_bef, t_duration, t_silence_aft, t_total_duration] = Create_noise_dau1996_default(nExperiment);
             
             if options.bSave_noise == 1
-                tagNoise = 2;
-                Create_noise(tagNoise,filename,options);
+                Create_noise_dau1996(nExperiment,filename,options);
             end
             
-            % Nsil_bef    = round(options.fs*t_silence_bef);
-            % Nnoise      = round(options.fs*t_duration);
-            % Nsil_aft    = round(options.fs*t_silence_aft);
-
-            % if options.bSave_noise == 1
-            %     % Gen1: white noise, band-pass filtered
-            %     y = wgn(Nnoise,1,1);
-            % 
-            %     y   =  y(:); % ensures it is a column vector
-            % 
-            %     Wn = [20 5000]/(options.fs/2); % Normalised cutoff frequency        
-            %     [b,a] = butter(4,Wn); % 8th-order
-            %     y = filtfilt(b,a,y); % Linear-phase implementation
-            % 
-            %     y   = setdbspl(y,dB_SPL_noise);
-            %     innoise = [Gen_silence(t_silence_bef,fs); y; Gen_silence(t_silence_aft,fs)]; % silence at the beginning and at the end
-            % 
-            %     Wavwrite(innoise,fs,filename);
-            % end
-
             % Generating the test tones
 
             % Common stim params:
@@ -333,40 +312,17 @@ switch nExperiment
         end
 
         if options.bGenerate
-            t_silence_bef   = 0e-3;
-            t_duration      = 600e-3;
-            t_silence_aft   = 0e-3;
-            t_total_duration = t_silence_bef + t_duration + t_silence_aft;
-
-            Nsil_bef    = round(options.fs*t_silence_bef);
-            Nnoise      = round(options.fs*t_duration);
-            Nsil_aft    = round(options.fs*t_silence_aft);
-
-            %% Generating the noise
-
+            
+            nExperiment = 3;
+            [noise_onset, t_duration, t_silence_aft, t_total_duration] = Create_noise_dau1996_default(nExperiment);
+            
             if options.bSave_noise == 1
-                title1 = 'White noise';
-                % ymin = -0.15; ymax =  0.15;  yminMU = -100; ymaxMU = 1500;
-
-                % Gen1: white noise, band-pass filtered
-                y = wgn(Nnoise,1,1);
-
-                y   =  y(:); % ensures it is a column vector
-
-                Wn = [20 5000]/(options.fs/2); % Normalised cutoff frequency        
-                [b,a] = butter(4,Wn); % 8th-order
-                y = filtfilt(b,a,y); % Linear-phase implementation
-
-                y   = setdbspl(y,dB_SPL_noise);
-                innoise = [Gen_silence(t_silence_bef,fs); y; Gen_silence(t_silence_aft,fs)]; % silence at the beginning and at the end
-
-                Wavwrite(innoise,fs,filename);
+                Create_noise_dau1996(nExperiment,filename,options);
             end
             
             % Generating the test tones
-
             % Common stim params
-            onset   = 100e-3;
+            onset   = noise_onset + 100e-3; % noise_onset is 0 by default
             f       = 3000;
             win     = 1; % 1 = Hanning window
 
@@ -528,8 +484,207 @@ switch nExperiment
                 end
             end
         end
-    case 11
+    case 10
+    %% 0. Forward masking in frozen-noise maskers
         
+        % test stim - 10 ms
+        options     = Ensure_field(options, 'stim_durations',10);
+        
+        % opts.fc_idx   = 1000;
+        nExperiment   = 10;
+        [noise_onset, noise_dur, t_silence_aft, t_total_duration] = Create_noise_dau1996_default(nExperiment);
+        
+        noise_offset        = noise_onset + noise_dur;
+        test_dur            = 10e-3;
+        options             = Ensure_field(options,'test_onsets',noise_offset-test_dur+[-10:10:40]*1e-3);
+        test_onsets         = options.test_onsets;
+        opts.fc_idx         = 1000;
+        
+        stim_durations      = options.stim_durations;
+        N_stim              = length(stim_durations);
+                
+        infilename          = 'dau1996b_expIIB0_noisemasker'; % used in Exp 1 and 2, 10
+        infilename0        = ['dau1996b_expIIB0_stim-10ms-' num2str(options.dB_SPL)];
+        
+        try 
+            [innoise fs] = Wavread([paths.outputs infilename  '.wav']);
+            options.bSave_noise = 0;
+            
+            try
+                [instim0 fs] = Wavread([paths.outputs infilename0 '.wav']);
+                options.bGenerate   = 0;
+            catch
+                options.bGenerate   = 1;
+                fs = 48000;
+            end
+            
+        catch
+            options.bGenerate   = 1;
+            options.bSave_noise = 1;
+            fs      = 48000;
+        end
+        options     = Ensure_field(options,'bSave_noise',0);
+        
+        options.fs = fs;
+        
+        filename    = [paths.outputs infilename];
+        filename0   = [paths.outputs infilename0];
+        
+        if options.bGenerate
+        
+            [t_silence_bef, t_duration, t_silence_aft, t_total_duration] = Create_noise_dau1996_default(nExperiment);
+            
+            if options.bSave_noise == 1
+                innoise = Create_noise_dau1996(nExperiment,filename,options);
+            end
+            
+            %% Generating the test tones
+
+            onset   = t_silence_bef; % temporarily onset equal to the one of the noise
+            f       = 1000;
+            win     = 1; % 1 = Hanning window
+
+            % Stim 1
+            [instim0, t0] = Create_sin4this_exp(f,0,test_dur,fs,win,onset,dB_SPL,t_total_duration);
+            Wavwrite(instim0,fs,filename0);
+            
+        end
+
+        opts.bPlot      = bPlot;
+        
+        N_conditions = length(test_onsets);
+        
+        for i = 1:N_conditions
+            
+            tmp_insig = Gen_silence(test_onsets(i),fs);
+            N_added = length(tmp_insig); 
+            
+            exp1 = sprintf('instim%.0f = [tmp_insig; instim0(1:end-N_added)];',i);
+            exp2 = sprintf('out_stim%.0f = Dau1996compare(innoise,instim%.0f,fs,opts);',i,i);
+            
+            % idx = out_stim1.idx;
+            
+            eval(exp1);
+            eval(exp2);
+            
+            if N_conditions > 3 % remove fields to avoid 'out of memory'
+                
+                exp3 = sprintf('out_stim%.0f = Remove_field(out_stim%.0f,''outsig1'');',i,i);
+                exp4 = sprintf('out_stim%.0f = Remove_field(out_stim%.0f,''outsig2'');',i,i);
+                eval(exp3);
+                eval(exp4);
+                
+            end
+            
+            exp5 = sprintf('outs.out_stim%.0f = out_stim%.0f;',i,i);
+            eval(exp5);
+            
+        end
+        
+	case 20
+    %% 0. Backward masking in frozen-noise maskers
+        
+        % test stim - 10 ms, same stimuli than Forward masking (experiment IIB0)
+        options     = Ensure_field(options, 'stim_durations',10);
+        
+        [noise_onset, noise_dur, t_silence_aft, t_total_duration] = Create_noise_dau1996_default(nExperiment);
+        
+        % noise_offset        = noise_onset + noise_dur;
+        test_dur            = 10e-3;
+        options             = Ensure_field(options,'test_onsets',noise_onset+[-100:30:-40,-20:4:20]*1e-3);
+        test_onsets         = options.test_onsets;
+        opts.fc_idx         = 1000;
+        
+        stim_durations      = options.stim_durations;
+        N_stim              = length(stim_durations);
+                
+        infilename          = 'dau1996b_expIIB0_noisemasker';
+        infilename0        = ['dau1996b_expIIB0_stim-10ms-' num2str(options.dB_SPL)];
+        
+        try 
+            [innoise fs] = Wavread([paths.outputs infilename  '.wav']);
+            options.bSave_noise = 0;
+            
+            try
+                [instim0 fs] = Wavread([paths.outputs infilename0 '.wav']);
+                options.bGenerate   = 0;
+            catch
+                options.bGenerate   = 1;
+                fs = 48000;
+            end
+            
+        catch
+            options.bGenerate   = 1;
+            options.bSave_noise = 1;
+            fs      = 48000;
+        end
+        options     = Ensure_field(options,'bSave_noise',0);
+        
+        options.fs = fs;
+        
+        filename    = [paths.outputs infilename];
+        filename0   = [paths.outputs infilename0];
+        
+        if options.bGenerate
+        
+            [t_silence_bef, t_duration, t_silence_aft, t_total_duration] = Create_noise_dau1996_default(nExperiment);
+            
+            if options.bSave_noise == 1
+                innoise = Create_noise_dau1996(nExperiment,filename,options);
+            end
+            
+            %% Generating the test tones
+
+            onset   = t_silence_bef; % temporarily onset equal to the one of the noise
+            f       = 1000;
+            win     = 1; % 1 = Hanning window
+
+            % Stim 1
+            [instim0, t0] = Create_sin4this_exp(f,0,test_dur,fs,win,onset,dB_SPL,t_total_duration);
+            Wavwrite(instim0,fs,filename0);
+            
+        end
+
+        opts.bPlot      = bPlot;
+        
+        N_conditions = length(test_onsets);
+        
+        for i = 1:N_conditions
+            
+            time_offset = max( 50e-3, abs(min(test_onsets(i))) ); % samples to be added to both noise and stim
+            tmp_noise = Gen_silence(               time_offset,fs);
+            tmp_insig = Gen_silence(test_onsets(i)+time_offset,fs);
+            N_added         = length(tmp_insig); 
+            N_added_noise   = length(tmp_noise);
+            
+            tmp_innoise = [tmp_noise; innoise(1:end-N_added_noise)];
+            exp0 = sprintf('instim%.0f = [tmp_insig; instim0(1:end-N_added)];',i);
+            exp1 = sprintf('instim%.0f = [tmp_insig; instim0(1:end-N_added)];',i);
+            exp2 = sprintf('out_stim%.0f = Dau1996compare(tmp_innoise,instim%.0f,fs,opts);',i,i);
+            
+            eval(exp0);
+            eval(exp1);
+            eval(exp2);
+            
+            % % To plot stimuli uncomment the following lines (y-offset 
+            % % introduced to better visualise the signals):
+            %
+            % t = ( 1:length(instim1) )/fs; figure; plot(t,tmp_innoise+0.2,t,instim1-0.2)
+            % t = ( 1:length(instim2) )/fs; figure; plot(t,tmp_innoise+0.2,t,instim2-0.2)
+            
+            if N_conditions > 3 % remove fields to avoid 'out of memory'
+                
+                exp3 = sprintf('out_stim%.0f = Remove_field(out_stim%.0f,''outsig1'');',i,i);
+                exp4 = sprintf('out_stim%.0f = Remove_field(out_stim%.0f,''outsig2'');',i,i);
+                eval(exp3);
+                eval(exp4);
+                
+            end
+            
+            exp5 = sprintf('outs.out_stim%.0f = out_stim%.0f;',i,i);
+            eval(exp5);
+            
+        end
         
 end
 
@@ -549,48 +704,5 @@ function [y,t] = Create_sin4this_exp(f,start_phase,dur,fs,win,onset,SPL,total_du
     end
 
     t = (1:length(y))/fs; % redefine t
-    
-end
-
-function t_total_duration = Create_noise(nTag,filename,options)
-    
-switch nTag
-    case 1 | 2 | 10
-        
-        dB_SPL_noise    = options.dB_SPL_noise;
-        fs              = options.fs;
-        [t_silence_bef, t_duration, t_silence_after, t_total_duration] = Create_noise_default(nTag);
-        
-        Nnoise      = round(fs*t_duration);
-        
-        y = wgn(Nnoise,1,1);
-
-        y   =  y(:); % ensures it is a column vector
-
-        Wn = [20 5000]/(fs/2); % Normalised cutoff frequency        
-        [b,a] = butter(4,Wn); % 8th-order
-        y = filtfilt(b,a,y); % Linear-phase implementation
-
-        y   = setdbspl(y,dB_SPL_noise);
-        innoise = [Gen_silence(t_silence_bef,fs); y; Gen_silence(t_silence_aft,fs)]; % silence at the beginning and at the end
-
-        Wavwrite(innoise,fs,filename);
-end
-    
-end
-
-function [onset, dur, t_silence_aft, t_total_duration] = Create_noise_default(nTag)
-    
-switch nTag
-    case 1 | 2 | 10
-        
-        onset   = 100e-3;
-        dur     = 300e-3;
-        t_silence_aft = 200e-3;
-
-        t_total_duration = onset + dur + t_silence_aft;
-
-        Wn = [20 5000]/(fs/2); % Normalised cutoff frequency        
-end
     
 end

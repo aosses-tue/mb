@@ -1,5 +1,5 @@
-function [outsig, fc, extra] = dau1996preproc(insig, fs, varargin);
-% function [outsig, fc, extra] = dau1996preproc(insig, fs, varargin);
+function [outsig, fc, extra] = dau1996apreproc(insig, fs, varargin);
+% function [outsig, fc, extra] = dau1996apreproc(insig, fs, varargin);
 %
 % 1. Description:
 %       Auditory model from Dau et. al. 1996
@@ -37,14 +37,10 @@ function [outsig, fc, extra] = dau1996preproc(insig, fs, varargin);
 %   Any of the optinal parameters for AUDITORYFILTERBANK, IHCENVELOPE
 %   and ADAPTLOOP may be specified for this function. They will be passed
 %   to the corresponding functions.
+%   
+%   No overshoot limit is considered.
 %
-%   The model implemented in this file is not identical to the model
-%   published in Dau et. al. (1996a). An overshoot limit has been added to
-%   the adaptation stage to fix a problem where abrupt changes in the
-%   input signal would cause unnaturally big responses. This is described
-%   in Dau et. al. (1997a).
-%
-%   See also: auditoryfilterbank, ihcenvelope, adaptloop, dau1997preproc
+%   See also: auditoryfilterbank, ihcenvelope, adaptloop, dau1996preproc, dau1997preproc
 %
 %   References:
 %     T. Dau, D. Pueschel, and A. Kohlrausch. A quantitative model of the
@@ -91,7 +87,7 @@ end;
 
 definput.import={'auditoryfilterbank','ihcenvelope','adaptloop'};
 
-definput.importdefaults={'ihc_dau','adt_dau'};
+definput.importdefaults={'ihc_dau','adt_dau1996'};
 definput.keyvals.subfs=[];
 
 [flags,keyvals]  = ltfatarghelper({'flow','fhigh'},definput,varargin);
