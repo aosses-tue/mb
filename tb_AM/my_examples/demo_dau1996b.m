@@ -22,8 +22,6 @@ function outs = demo_dau1996b(options)
 % Last use on   : 22/10/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% TO DO: 4. Signal frequency
-
 if nargin == 0
     close all
     options = [];
@@ -32,7 +30,8 @@ end
 options = Ensure_field(options, 'nExperiment',3); % Exp. 3 - signal integration
 options = Ensure_field(options, 'bSave', 0);
 options = Ensure_field(options, 'bPlot', 1); % just main plot
-
+options = Ensure_field(options, 'method','dau1996'); % dau1996  uses dau1996preproc
+                                                     % dau1996a uses dau1996apreproc
 nExperiment = options.nExperiment;
 bPlot = 0; % This is for getting a lot of plots
 
@@ -48,6 +47,8 @@ paths.outputs   = Get_TUe_paths('outputs');
 dB_SPL_noise    = options.dB_SPL_noise; % reference: Left audio file
 dB_SPL          = options.dB_SPL;
 
+opts.method = options.method;
+
 switch nExperiment
        
     case 1
@@ -60,24 +61,27 @@ switch nExperiment
         stim_durations      = options.stim_durations;
         N_stim              = length(stim_durations);
                 
-        infilename          = 'dau1996b_expII1_noisemasker'; % used in Exp 1 and 2, 10
-        infilename0        = ['dau1996b_expII1_stim-5ms-' num2str(options.dB_SPL)];
+        infilename          = 'dau1996b_expI1_noisemasker'; % used in Exp 1 and 2, 10
+        infilename0        = ['dau1996b_expI1_stim-5ms-' num2str(options.dB_SPL)];
         
         try 
             [innoise fs] = Wavread([paths.outputs infilename  '.wav']);
+            options.bSave_noise = 0;
+            try
+                [instim0 fs] = Wavread([paths.outputs infilename0 '.wav']);
+                options.bGenerate   = 0;
+            catch
+                options.bGenerate   = 1;
+                fs = 48000;
+            end
+            
         catch
             options.bGenerate   = 1;
             options.bSave_noise = 1;
+            fs = 48000;
         end
-        
-        try
-            [instim0 fs] = Wavread([paths.outputs infilename0 '.wav']);
-            options.bGenerate   = 0;
-        catch
-            options.bGenerate   = 1;
-            fs          = 48000;
-            options     = Ensure_field(options,'bSave_noise',0);
-        end
+
+        options     = Ensure_field(options,'bSave_noise',0);
         
         options.fs = fs;
         
@@ -89,7 +93,7 @@ switch nExperiment
             [t_silence_bef, t_duration, t_silence_aft, t_total_duration] = Create_noise_dau1996_default(nExperiment);
             
             if options.bSave_noise == 1
-                Create_noise_dau1996(nExperiment,filename,options);
+                innoise = Create_noise_dau1996(nExperiment,filename,options);
             end
             
             %% Generating the test tones
@@ -139,39 +143,41 @@ switch nExperiment
     case 2
     %% 2. Relative phase
         % 1kHz tone, onset = 115 ms, phase_i between 0 and 2*pi
-        infilename          = 'dau1996b_expII1_noisemasker'; % used in Exp 1 and 2
-        infilename1        = ['dau1996b_expII2_stim-5ms-' num2str(options.dB_SPL) '-phase-0-pi'];
+        infilename          = 'dau1996b_expI1_noisemasker'; % used in Exp 1 and 2
+        infilename1        = ['dau1996b_expI2_stim-5ms-' num2str(options.dB_SPL) '-phase-0-pi'];
         opts.fc_idx         = 1000;
         
         options = Ensure_field(options,'test_phases',[0:2/8:2]);
         test_phases = options.test_phases;
         
         N_conditions = length(test_phases);
+        
         for i = 2:N_conditions
-            exp1 = sprintf('infilename%.0f = [''dau1996b_expII2_stim-5ms-'' num2str(options.dB_SPL) ''-phase-%.0f_10-pi''];',i,test_phases(i)*10);
+            exp1 = sprintf('infilename%.0f = [''dau1996b_expI2_stim-5ms-'' num2str(options.dB_SPL) ''-phase-%.0f_10-pi''];',i,test_phases(i)*10);
             eval(exp1);
         end
-           
+        
         try 
             [innoise fs] = Wavread([paths.outputs infilename  '.wav']);
+            options.bSave_noise = 0;
+            try
+                [instim1 fs] = Wavread([paths.outputs infilename1 '.wav']);
+                for i = 2:N_conditions
+                    exp1 = sprintf('[instim%.0f,fs] = Wavread([paths.outputs infilename%0.f ''.wav'']);',i,i);
+                    eval(exp1);
+                end
+                options.bGenerate   = 0;
+            catch
+                options.bGenerate   = 1;
+                options     = Ensure_field(options,'bSave_noise',0);
+                fs          = 48000;
+            end
         catch
             options.bGenerate   = 1;
             options.bSave_noise = 1;
+            fs = 48000;
         end
-        
-        try
-            [instim1 fs] = Wavread([paths.outputs infilename1 '.wav']);
-            for i = 2:N_conditions
-                exp1 = sprintf('[instim%.0f,fs] = Wavread([paths.outputs infilename%0.f ''.wav'']);',i,i);
-                eval(exp1);
-            end
-            options.bGenerate   = 0;
-        catch
-            options.bGenerate   = 1;
-            options     = Ensure_field(options,'bSave_noise',0);
-            fs          = 48000;
-        end
-        
+                
         options.fs = fs;
         
         filename    = [paths.outputs infilename];
@@ -186,7 +192,7 @@ switch nExperiment
             [t_silence_bef, t_duration, t_silence_aft, t_total_duration] = Create_noise_dau1996_default(nExperiment);
             
             if options.bSave_noise == 1
-                Create_noise_dau1996(nExperiment,filename,options);
+                innoise = Create_noise_dau1996(nExperiment,filename,options);
             end
             
             % Generating the test tones
@@ -262,43 +268,45 @@ switch nExperiment
         stim_durations      = options.stim_durations;
         N_stim              = length(stim_durations);
         
-        infilename      = 'dau1996b_expII3_noisemasker'; % used in Exp 3
-        infilename1        = ['dau1996b_expII3_stim01-' num2str(options.dB_SPL)];
-        infilename2        = ['dau1996b_expII3_stim02-' num2str(options.dB_SPL)];
-        infilename3        = ['dau1996b_expII3_stim03-' num2str(options.dB_SPL)];
+        infilename      = 'dau1996b_expI3_noisemasker'; % used in Exp 3
+        infilename1        = ['dau1996b_expI3_stim01-' num2str(options.dB_SPL)];
+        infilename2        = ['dau1996b_expI3_stim02-' num2str(options.dB_SPL)];
+        infilename3        = ['dau1996b_expI3_stim03-' num2str(options.dB_SPL)];
 
         if N_stim > 3
-            infilename4        = ['dau1996b_expII3_stim04-' num2str(options.dB_SPL)];
-            infilename5        = ['dau1996b_expII3_stim05-' num2str(options.dB_SPL)];
-            infilename6        = ['dau1996b_expII3_stim06-' num2str(options.dB_SPL)];
+            infilename4        = ['dau1996b_expI3_stim04-' num2str(options.dB_SPL)];
+            infilename5        = ['dau1996b_expI3_stim05-' num2str(options.dB_SPL)];
+            infilename6        = ['dau1996b_expI3_stim06-' num2str(options.dB_SPL)];
         end
 
         try 
             [innoise fs] = Wavread([paths.outputs infilename  '.wav']);
+            options.bSave_noise = 0;
+            try
+                [instim1 fs] = Wavread([paths.outputs infilename1 '.wav']);
+                [instim2 fs] = Wavread([paths.outputs infilename2 '.wav']);
+                [instim3 fs] = Wavread([paths.outputs infilename3 '.wav']);
+
+                if N_stim > 3
+                    [instim4 fs] = Wavread([paths.outputs infilename4 '.wav']);
+                    [instim5 fs] = Wavread([paths.outputs infilename5 '.wav']);
+                    [instim6 fs] = Wavread([paths.outputs infilename6 '.wav']);
+                end
+                options.bGenerate   = 0;
+            catch
+                options.bGenerate   = 1;
+                fs = 48000;
+            end
+            
         catch
             options.bGenerate   = 1;
             options.bSave_noise = 1;
+            fs = 48000;
         end
-        
-        try
-            [instim1 fs] = Wavread([paths.outputs infilename1 '.wav']);
-            [instim2 fs] = Wavread([paths.outputs infilename2 '.wav']);
-            [instim3 fs] = Wavread([paths.outputs infilename3 '.wav']);
 
-            if N_stim > 3
-                [instim4 fs] = Wavread([paths.outputs infilename4 '.wav']);
-                [instim5 fs] = Wavread([paths.outputs infilename5 '.wav']);
-                [instim6 fs] = Wavread([paths.outputs infilename6 '.wav']);
-            end
-            options.bGenerate   = 0;
-        catch
-            options.bGenerate   = 1;
-            fs          = 48000;
-            options     = Ensure_field(options,'bSave_noise',0);
-        end
+        options     = Ensure_field(options,'bSave_noise',0);
 
         options.fs = fs;
-        options.typeplot = 2; % Linear scaled
 
         filename    = [paths.outputs infilename];
         filename1   = [paths.outputs infilename1];
@@ -317,7 +325,7 @@ switch nExperiment
             [noise_onset, t_duration, t_silence_aft, t_total_duration] = Create_noise_dau1996_default(nExperiment);
             
             if options.bSave_noise == 1
-                Create_noise_dau1996(nExperiment,filename,options);
+                innoise = Create_noise_dau1996(nExperiment,filename,options);
             end
             
             % Generating the test tones
@@ -503,8 +511,8 @@ switch nExperiment
         stim_durations      = options.stim_durations;
         N_stim              = length(stim_durations);
                 
-        infilename          = 'dau1996b_expIIB0_noisemasker'; % used in Exp 1 and 2, 10
-        infilename0        = ['dau1996b_expIIB0_stim-10ms-' num2str(options.dB_SPL)];
+        infilename          = 'dau1996b_expIB0_noisemasker'; % used in Exp 1 and 2, 10
+        infilename0        = ['dau1996b_expIB0_stim-10ms-' num2str(options.dB_SPL)];
         
         try 
             [innoise fs] = Wavread([paths.outputs infilename  '.wav']);
@@ -598,8 +606,8 @@ switch nExperiment
         stim_durations      = options.stim_durations;
         N_stim              = length(stim_durations);
                 
-        infilename          = 'dau1996b_expIIB0_noisemasker';
-        infilename0        = ['dau1996b_expIIB0_stim-10ms-' num2str(options.dB_SPL)];
+        infilename          = 'dau1996b_expIB0_noisemasker';
+        infilename0        = ['dau1996b_expIB0_stim-10ms-' num2str(options.dB_SPL)];
         
         try 
             [innoise fs] = Wavread([paths.outputs infilename  '.wav']);

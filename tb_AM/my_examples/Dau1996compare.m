@@ -3,17 +3,17 @@ function outs = Dau1996compare(insig1,insig2,fs,opts)
 %
 % 1. Description:
 %
-% 2. Additional info:
-%       Tested cross-platform: No
-%
-% 3. Stand-alone example:
+% 2. Stand-alone example:
 %       options.bSave = 0;
 %       demo_dau1996b(options);
 % 
+% 3. Additional info:
+%       Tested cross-platform: Yes
+%
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 08/10/2014
-% Last update on: 15/10/2014 % Update this date manually
-% Last use on   : 22/10/2014 % Update this date manually
+% Last update on: 24/10/2014 % Update this date manually
+% Last use on   : 24/10/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 h = [];
@@ -31,6 +31,8 @@ if nargin < 4
 end
 
 opts = Ensure_field(opts,'fc_idx',3000);
+opts = Ensure_field(opts,'method','dau1996'); % dau1996  uses dau1996preproc
+                                              % dau1996a uses dau1996apreproc
 bPlot = opts.bPlot;
  
 
@@ -38,8 +40,10 @@ bPlot = opts.bPlot;
 
 insig2 = insig1 + insig2;
 
-[out1, fc , outsig1] = dau1996preproc(insig1,fs);
-[out2, fc2, outsig2] = dau1996preproc(insig2,fs);
+exp1 = sprintf('[out1, fc , outsig1] = %spreproc(insig1,fs);',opts.method);
+exp2 = sprintf('[out2, fc , outsig2] = %spreproc(insig2,fs);',opts.method);
+eval(exp1);
+eval(exp2);
 
 idx     = max(find(fc<opts.fc_idx));
 fcentre = fc(idx);

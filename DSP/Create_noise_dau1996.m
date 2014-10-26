@@ -36,9 +36,9 @@ y = filtfilt(b,a,y); % Linear-phase implementation
 y   = setdbspl(y,dB_SPL_noise);
 innoise = [Gen_silence(t_silence_bef,fs); y; Gen_silence(t_silence_aft,fs)]; % silence at the beginning and at the end
 
-options = ef(options,'bSaveNoise',0);
+options = Ensure_field(options,'bSave_noise',0);
 
-if nargout == 0 | options.bSaveNoise 
+if nargout == 0 | options.bSave_noise 
     Wavwrite(innoise,fs,filename);
 end
     

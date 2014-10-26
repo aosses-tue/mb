@@ -3,18 +3,18 @@ function [m s statsT] = r20141024_running_noise(nStimuli, method)
 %
 % 1. Description:
 %
-% 2. Additional info:
-%       Tested cross-platform: No
-%
-% 3. Stand-alone example:
+% 2. Stand-alone example:
 %       nStimuli = 1; % determine thresholds for 10 ms test stimuli
 %       nStimuli = 2; % determine thresholds for  5 ms test stimuli
 %       r20141024_running_noise(nStimuli);
 % 
+% 3. Additional info:
+%       Tested cross-platform: No
+% 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 23/10/2014
-% Last update on: 23/10/2014 % Update this date manually
-% Last use on   : 23/10/2014 % Update this date manually
+% Last update on: 24/10/2014 % Update this date manually
+% Last use on   : 24/10/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 bDiary = 0;
@@ -27,7 +27,7 @@ end
 
 %% Reading and adjusting onset of test stimuli
 
-lvl_ref = 85; 
+% lvl_ref = 85; 
 idx = 13; 
     
 pathaudio = [Get_TUe_paths('outputs') 'white-run' delim];

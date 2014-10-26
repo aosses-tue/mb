@@ -11,28 +11,29 @@ function r20141024_update_dau_et_al
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 20/10/2014
-% Last update on: 22/10/2014 % Update this date manually
-% Last use on   : 22/10/2014 % Update this date manually
+% Last update on: 24/10/2014 % Update this date manually
+% Last use on   : 24/10/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-bDiary = 0;
+bDiary = 1;
 Diary(mfilename,bDiary);
 
 close all
 
 % Common parameters:
-options.dB_SPL_noise    = 77;
+options.dB_SPL_noise = 77;
 criterion_corr = 6.5;
 
-bRunningNoise   = 1;
+bRunningNoise   = 0;
 bDeterThres     = 0;
 bIntRepr        = 0;
 
-bExpIIA1 = 0;
-bExpIIA2 = 0;
-bExpIIA3 = 0;
-bExpIIB0 = 0; % Forward masking
-bExpIIC0 = 1; % Backward masking
+options.method = 'dau1996a';
+bExpIA1 = 1; % Temporal position
+bExpIA2 = 1; % Relative phase
+bExpIA3 = 1; % Signal integration
+bExpIB0 = 1; % Forward masking
+bExpIC0 = 1; % Backward masking
 
 h = [];
 
@@ -77,7 +78,7 @@ end
 if bIntRepr == 1
     
     idx = 13; % approx fc = 1000;
-    pathaudio = 'D:\Output\';
+    pathaudio = Get_TUe_paths('outputs'); % 'D:\Output\';
     
     lvl_dB = [56 76 85];
     
@@ -315,21 +316,16 @@ if bIntRepr == 1
         
     end
     
-    % [mean(ir_N(:,idx)) mean(ir_Sref(:,idx)) mean(ir_NpSsup(:,idx))]
-    % 
-    % difMean = [mean(ir_NpSinf(:,idx)) mean(ir_NpSthr(:,idx)) mean(ir_NpSsup(:,idx))] - repmat(mean(ir_N(:,idx)),1,3);
-    % difStd  = [std(ir_NpSinf(:,idx))  std(ir_NpSthr(:,idx))  std(ir_NpSsup(:,idx))] - repmat(std(ir_N(:,idx)),1,3);
-    % [std(ir_N(:,idx)) std(ir_Sref(:,idx)) std(ir_NpSsup(:,idx))]
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if bExpIIA1 == 1
+if bExpIA1 == 1
 
 Threshold = [];
-label_experiment    = 'Dau1996b-ExpIIA1'; disp(label_experiment);
+label_experiment    = 'Dau1996b-ExpIA1'; disp(label_experiment);
 label_figure        = 'Temporal position';
 
-%% ExpII.A.1
+%% ExpI.A.1
 
 % SPL_test = 74;
 SPL_test = 66:4:86;
@@ -374,7 +370,7 @@ end
 
 % Saving figures
 figure;
-plot(test_onsets,Threshold,'o--'), grid on
+plot(test_onsets*1000,Threshold,'o--'), grid on
 xlabel('Signal onset relative to masker onset [ms]')
 ylabel('Masked threshold [dB]')
 title(sprintf('%s. Criterion = %.1f',label_figure,criterion_corr))
@@ -396,10 +392,11 @@ disp(['Variable saved as: ' filename_Sref '.mat']);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
 
-if bExpIIA2 == 1
+if bExpIA2 == 1
 
-Threshold = [];
-label_experiment    = 'Dau1996b-ExpIIA2'; disp(label_experiment);
+Threshold = []; 
+mue = [];
+label_experiment    = 'Dau1996b-ExpIA2'; disp(label_experiment);
 label_figure        = 'Relative phase';
 %% ExpII.A.2
 % SPL_test = 74;
@@ -441,7 +438,7 @@ end
 
 for j = 1:N_conditions
     exp1 = sprintf('mue%.0f = mue(%.0f,:);',j,j);
-    exp2 = sprintf('Threshold(%.0f) = interp1(mue%.0f,SPL_test,criterion_corr);',j,j);
+    exp2 = sprintf('Threshold(%.0f) = interp1(mue%.0f,SPL_test,criterion_corr,''linear'',''extrap'');',j,j);
     eval(exp1);
     eval(exp2);    
 end
@@ -469,10 +466,11 @@ disp(['Variable saved as: ' filename_Sref '.mat']);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
 
-if bExpIIA3 == 1
+if bExpIA3 == 1
    
 Threshold3 = [];
-label_experiment    = 'Dau1996b-ExpIIA3'; disp(label_experiment);
+mue = [];
+label_experiment    = 'Dau1996b-ExpIA3'; disp(label_experiment);
 label_figure        = 'Signal integration experiment';
 
 %% ExpII.A.3
@@ -553,10 +551,11 @@ disp(['Variable saved as: ' filename_Sref '.mat']);
 end
 
 %%
-if bExpIIB0 == 1;
+if bExpIB0 == 1;
 
 Threshold = [];
-label_experiment    = 'Dau1996b-ExpIIB0'; disp(label_experiment);
+mue = [];
+label_experiment    = 'Dau1996b-ExpIB0'; disp(label_experiment);
 label_figure        = 'Forward masking experiment';
 
 % SPL_test = 74;
@@ -602,7 +601,7 @@ end
 
 for j = 1:N_conditions
     exp1 = sprintf('mue%.0f = mue(%.0f,:);',j,j);
-    exp2 = sprintf('Threshold(%.0f) = interp1(mue%.0f,SPL_test,criterion_corr);',j,j);
+    exp2 = sprintf('Threshold(%.0f) = interp1(mue%.0f,SPL_test,criterion_corr,''linear'',''extrap'');',j,j);
     eval(exp1);
     eval(exp2);    
 end
@@ -632,10 +631,11 @@ disp(['Variable saved as: ' filename_Sref '.mat']);
 end
 
 %%
-if bExpIIC0 == 1;
+if bExpIC0 == 1;
 
 Threshold = [];
-label_experiment    = 'Dau1996b-ExpIIC0'; disp(label_experiment);
+mue = [];
+label_experiment    = 'Dau1996b-ExpIC0'; disp(label_experiment);
 label_figure        = 'Backward masking experiment';
 
 options.nExperiment = 20;
@@ -683,7 +683,7 @@ end
 
 for j = 1:N_conditions
     exp1 = sprintf('mue%.0f = mue(%.0f,:);',j,j);
-    exp2 = sprintf('Threshold(%.0f) = interp1(mue%.0f,SPL_test,criterion_corr);',j,j);
+    exp2 = sprintf('Threshold(%.0f) = interp1(mue%.0f,SPL_test,criterion_corr,''linear'',''extrap'');',j,j);
     eval(exp1);
     eval(exp2);    
 end
