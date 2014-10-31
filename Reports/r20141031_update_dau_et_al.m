@@ -1,17 +1,17 @@
-function r20141024_update_dau_et_al
-% function r20141024_update_dau_et_al
+function r20141031_update_dau_et_al
+% function r20141031_update_dau_et_al
 %
 % 1. Description:
 %
-% 2. Additional info:
+% 2. Stand-alone example:
+%       r20141031_update_dau_et_al;
+%
+% 3. Additional info:
 %       Tested cross-platform: Yes
-%
-% 3. Stand-alone example:
-%       r20141024_update_dau_et_al;
-%
+% 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
-% Created on    : 20/10/2014
-% Last update on: 24/10/2014 % Update this date manually
+% Created on    : 27/10/2014
+% Last update on: 27/10/2014 % Update this date manually
 % Last use on   : 27/10/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -24,13 +24,10 @@ close all
 options.dB_SPL_noise = 77;
 criterion_corr = 6.5;
 
-bRunningNoise   = 0;
 bDeterThres     = 1;
 bIntRepr        = 0;
 
-options.method = 'dau1996a'; % without overshoot limitation
-% options.method = 'dau1996'; % with overshoot limitation
-
+options.method = 'dau1996a';
 bExpIA1 = 1; % Temporal position
 bExpIA2 = 0; % Relative phase
 bExpIA3 = 0; % Signal integration
@@ -38,38 +35,6 @@ bExpIB0 = 0; % Forward masking
 bExpIC0 = 0; % Backward masking
 
 h = [];
-
-if bRunningNoise
-    nStim = 100;
-    method = 'dau1996';
-    [m_no, s_no, tstats] = r20141024_running_noise(nStim,method);
-    method = 'dau1996a';
-    [m_ol, s_ol]         = r20141024_running_noise(nStim,method);
-    
-    figure;
-    plot(   tstats*1000,s_no,'o-'), hold on
-	plot(   tstats*1000,s_ol,'rx-','LineWidth',2), grid on
-    xlabel('time [ms]')
-    ylabel('std [MU]')
-    title(sprintf('Standard deviation of BP white noise (Int. representation). N = %.0f',nStim))
-    xlim([-15 600])
-    legend('overshoot limit','no limitation')
-    h(end+1) = gcf;
-    Saveas(h(end),'noise-int-repr-std');
-    
-    
-    figure;
-    plot(   tstats*1000,m_no,'o-'), hold on
-    plot(   tstats*1000,m_ol,'rx-','LineWidth',2), grid on
-    xlabel('time [ms]')
-    ylabel('mean [MU]')
-    title(sprintf('Mean of BP white noise (Int. representation). N = %.0f',nStim))
-    xlim([-15 600])
-    legend('overshoot limit','no limitation')
-    h(end+1) = gcf;
-    Saveas(h(end),'noise-int-repr-mean');
-    
-end
 
 if bDeterThres == 1
     nStimuli = 1;

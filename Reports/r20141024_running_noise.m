@@ -9,12 +9,12 @@ function [m s statsT] = r20141024_running_noise(nStimuli, method)
 %       r20141024_running_noise(nStimuli);
 % 
 % 3. Additional info:
-%       Tested cross-platform: No
+%       Tested cross-platform: Yes
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 23/10/2014
 % Last update on: 24/10/2014 % Update this date manually
-% Last use on   : 24/10/2014 % Update this date manually
+% Last use on   : 27/10/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 bDiary = 0;

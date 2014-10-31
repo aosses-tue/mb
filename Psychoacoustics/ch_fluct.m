@@ -24,7 +24,7 @@ function [lf le_diff outs] = ch_fluct(main_N)
 % Downloaded on : 07/08/2014 (approx.)
 % Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Last update on: 07/08/2014 % Update this date manually
-% Last use on   : 07/08/2014 % Update this date manually
+% Last use on   : 29/10/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 HL_ohc  = zeros(1,24);

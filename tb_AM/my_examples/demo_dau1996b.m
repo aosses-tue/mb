@@ -4,10 +4,7 @@ function outs = demo_dau1996b(options)
 % 1. Description:
 %       Recreates simulations as presented in Dau1996b
 % 
-% 2. Additional info:
-%       Tested cross-platform: No
-%
-% 3. Stand-alone example:
+% 2. Stand-alone example:
 %       options.bSave = 1;
 %       options.stim_durations = [10 20 40]; % ms
 %       demo_dau1996b(options);
@@ -15,6 +12,9 @@ function outs = demo_dau1996b(options)
 %       options.bSave = 1;
 %       options.stim_durations = [10 20 40 80 160 320]; % ms
 %       demo_dau1996b(options);
+% 
+% 3. Additional info:
+%       Tested cross-platform: No
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 07/10/2014

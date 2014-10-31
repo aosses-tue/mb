@@ -16,7 +16,7 @@ function [y, returnData] = ch_rms_tep(fout, f_abt, fs)
 % Downloaded on : 07/08/2014 (approx.)
 % Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Last update on: 07/08/2014 % Update this date manually
-% Last use on   : 07/08/2014 % Update this date manually
+% Last use on   : 29/10/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Altered by flatmax is Matt Flax for the Psy-Sound project
@@ -50,3 +50,6 @@ returnData = fout(n_steps*step:end);
 y=sqrt(rms);
 j=find(y==0);  
 y(j) = realmin;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+end

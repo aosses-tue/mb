@@ -223,6 +223,10 @@ if options.bDoAnalyser15 == 1
     [h(end+1) xx stats] = PsySoundCL_Figures(param{end},out_1_15,out_2_15,options);
     param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
 
+    if isfield(options,'ylim_roughness')
+        ylim(options.ylim_roughness);
+    end
+    
     options.nAnalyser = 15;
     param{end+1} = 'specific-roughness';
     [h(end+1) xx stats] = PsySoundCL_Figures(param{end},out_1_15,out_2_15,options);

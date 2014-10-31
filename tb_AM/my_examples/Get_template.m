@@ -4,11 +4,11 @@ function out = Get_template(ir1,ir2,param,idx)
 % 1. Description:
 %       ir - internal representations
 % 
-% 2. Additional info:
+% 2. Stand-alone example:
+% 
+% 3. Additional info:
 %       Tested cross-platform: No
 %
-% 3. Stand-alone example:
-%       
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 23/10/2014
 % Last update on: 23/10/2014 % Update this date manually

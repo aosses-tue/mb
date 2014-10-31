@@ -26,7 +26,7 @@ function [output h ha] = PsySoundCL(filename,option)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 22/07/2014
 % Last update on: 17/09/2014 % Update this date manually
-% Last use on   : 17/09/2014 % Update this date manually
+% Last use on   : 29/10/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 h = [];
@@ -50,7 +50,7 @@ if nargin == 0
     filename = [f2 f1];
 end
 
-option = Ensure_field(option,'bPlot'      , 1)
+option = Ensure_field(option,'bPlot'      , 1);
 option = Ensure_field(option,'nAnalyser'  ,15);
 
 nAnalyser = option.nAnalyser;
@@ -110,21 +110,25 @@ end
 
 if isfield(option,'tanalysis') 
     
+    option = Ensure_field(option,'bGenerateExcerpt',1);
     try
-        
-        [xx ffs] = Wavread(filename);
-        tt = (1:length(xx))/ffs;
-        idx = find(tt>=option.tanalysis(1) & tt>=option.tanalysis(2));
-        
-        filename_excerpt = [Delete_extension(filename,'wav') '-e.wav']; 
-        Wavwrite( xx(idx),ffs,filename_excerpt );
-        filename = filename_excerpt;
-        
+        if option.bGenerateExcerpt == 1
+            [xx ffs] = Wavread(filename);
+            tt = (1:length(xx))/ffs;
+            idx = find(tt>=option.tanalysis(1) & tt>=option.tanalysis(2));
+
+            filename_excerpt = [Delete_extension(filename,'wav') '-e.wav']; 
+            Wavwrite( xx(idx),ffs,filename_excerpt );
+            filename = filename_excerpt;
+        end
     catch
-        
-        warning('Excerpt not extracted. Analysis will be done using complete audio file');
-        
+        option.bGenerateExcerpt = 0;
     end
+    
+    if option.bGenerateExcerpt == 0
+        warning('Excerpt not extracted. Analysis will be done using complete audio file');
+    end
+    
     fh = readData(filename); % then no ramp is applied
     
 else
@@ -214,10 +218,7 @@ elseif nAnalyser == 11
 end
     
 
-if isfield(option,'trange')
-    % for i = 1:size(option.trange,1)
-    %     tmp = Convert2nan_if_outofrange(t,option.trange);
-    % end
+if isfield(option,'trange')  
     t = option.trange;
 end
     

@@ -3,15 +3,16 @@ function misc = Get_TUe_data_paths(type)
 %
 % 1. Description:
 %
-% 2. Additional info:
+% 2. Stand-alone example:
+%       dir_audacity = [Get_TUe_data_paths('db_audacity') delim];
+% 
+% 3. Additional info:
 %       Tested cross-platform: No
-%
-% 3. Stand-alone example:
-%       
+% 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 25/08/2014
-% Last update on: 25/08/2014 % Update this date manually
-% Last use on   : 25/08/2014 % Update this date manually
+% Last update on: 28/10/2014 % Update this date manually
+% Last use on   : 28/10/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Alejandro's paths
@@ -62,6 +63,8 @@ else
     misc.praat              = ['C:\praat5376_win32\praatcon.exe'];
     
 end
+
+misc.db_audacity        = ['C:\Users\aosses\Documents\db_audacity' delim];
 
 misc.db_voice_of_dragon = [misc.Databases 'dir01-Instruments' delim 'Voice-of-dragon' delim];
 misc.db_HRIR_Oldenburg  = [misc.Databases 'dir02-HRTFs'       delim 'Oldenburg'       delim];

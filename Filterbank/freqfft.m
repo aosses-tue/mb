@@ -45,7 +45,7 @@ f = f(:);
 disp([mfilename '.m: type help freqfft to see additional plot options'])
 
 y   = fft(x,K*2);
-y   = y(1:K);
+y   = y(1:K,:);
 
 ydB = 20*log10(abs(y));
 
@@ -56,7 +56,8 @@ if nargout == 0
     end
     switch info.typeplot
         case 1
-            semilogx(f,ydB), grid on
+            
+            semilogx(f(:,1),ydB), grid on
             xlim([20 info.fs/2])
             xlabel(['Frequency [Hz], (fs = ' num2str(info.fs) ' [Hz])'])
         case 2

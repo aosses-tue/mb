@@ -28,8 +28,8 @@ close all
 bGenerate   = 0;
 bDoFluct    = 0; % Figure 5
 bDoAcMode5  = 1;
-bDoAcMode2  = 1;
-bDoAcMode2_filt = 1;
+bDoAcMode2  = 0;
+bDoAcMode2_filt = 0;
 
 bDoDoppler  = 0;
 
@@ -38,6 +38,7 @@ bPlotOnly4paper = 1;
 options.dest_folder      = [Get_TUe_paths('outputs') 'tmp-Audio'  delim];
 options.dest_folder_fig  = [Get_TUe_paths('outputs') 'tmp-Figure' delim];
 options = Ensure_field(options,'bSave',1);
+options.bGenerateExcerpt = 0; % If 1, an excerpt is going to be generated
 
 options.bDoAnalyser08 = 0; % SLM
 options.bDoAnalyser10 = 0; %
