@@ -1,28 +1,19 @@
-function [output h] = Get_VoD_analysis(filename1,filename2,options)
-% function [output h] = Get_VoD_analysis(filename1,filename2,options)
+function [output h] = Get_PsySound_analysis(filename1,filename2,options,stPlot)
+% function [output h] = Get_PsySound_analysis(filename1,filename2,options,stPlot)
 %
 % 1. Description:
-%       Same than VoD_comparisons, but here analysis is done over aligned/
-%       truncated data.
 % 
-%       Make sure you have run previously the script VoD_run.m (without 
-%       output parameters) in order to generate up-to-date calibrated 
-%       wav-files
-% 
-% 2. Additional info:
-%       Tested cross-platform: No
-%       near-field: YES, OK
-%       far-field : NO,  OK 
+% 2. Stand-alone example:
+%       Get_PsySound_analysis;
 %
-% 3. Stand-alone example:
-%       Get_VoD_analysis;
-% 
+% 3. Additional info:
+%       Tested cross-platform: Yes
+%
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
-% Created on    : 20/08/2014
-% Last update on: 01/10/2014 % Update this date manually
-% Last use on   : 01/10/2014 % Update this date manually
-% 
-% Original file name: VoD_comparisons2.m
+% Original file : Get_VoD_analysis.m
+% Created on    : 31/10/2014
+% Last update on: 31/10/2014 % Update this date manually
+% Last use on   : 31/10/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin == 0
@@ -30,10 +21,15 @@ if nargin == 0
     filename1 = [Get_TUe_paths('outputs') 'ref_loud.wav'];
     filename2 = [Get_TUe_paths('outputs') 'ref_rough.wav'];
     options.calfile = [Get_TUe_paths('db_calfiles') 'track_03.wav'];
-    options.callevel = 60; % rms 90 dB SPL = 0 dBFS 
-    
+    options.callevel = 60; % rms 90 dB SPL = 0 dBFS     
 end
     
+if nargin < 4
+    stPlot = [];
+end
+
+stPlot = Ensure_field(stPlot,'Title','PsySound Analysis');
+
 options     = Ensure_field(options,'label1',' meas');
 options     = Ensure_field(options,'label2','model');
 
@@ -42,12 +38,16 @@ options     = Ensure_field(options,'bPlot',1);
 options     = Ensure_field(options,'label','');
 options     = Ensure_field(options,'SPLrange',[10 70]);
 options     = Ensure_field(options,'frange',[50 5000]);
+options     = Ensure_field(options,'frange_FFT',[50 5000]);
 
+options     = Ensure_field(options,'bDoAnalyser01',0);
 options     = Ensure_field(options,'bDoAnalyser08',0);
 options     = Ensure_field(options,'bDoAnalyser10',0);
 options     = Ensure_field(options,'bDoAnalyser11',0);
 options     = Ensure_field(options,'bDoAnalyser12',1);
 options     = Ensure_field(options,'bDoAnalyser15',0);
+
+stPlot      = Ensure_field(stPlot,'bPlotHorLine',0);
 
 if options.bSave == 1
     options = Ensure_field(options,'dest_folder_fig',Get_TUe_paths('outputs'));
@@ -69,15 +69,18 @@ options = Ensure_field(options,'callevel',70); % 'AMT' reference
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-options.bCosineRamp = 0; % Cos ramp not yet applied for Loudness calculations
-options.bCosineRampOnset = 0; %ms
-
 options.bPlot = 0;
+
+if options.bDoAnalyser01 == 1
+    options.nAnalyser = 1;
+    [out_1_01 tmp_h tmp_ha]   = PsySoundCL(filename1,options);
+    [out_2_01 tmp_h tmp_ha]   = PsySoundCL(filename2,options);
+end
 
 if options.bDoAnalyser08 == 1
     options.nAnalyser = 8;
-    [tmp_h tmp_ha out_1_08]   = PsySoundCL(filename1,options);
-    [tmp_h tmp_ha out_2_08]   = PsySoundCL(filename2,options);
+    [out_1_08 tmp_h tmp_ha]   = PsySoundCL(filename1,options);
+    [out_2_08 tmp_h tmp_ha]   = PsySoundCL(filename2,options);
 end
 
 if options.bDoAnalyser10 == 1
@@ -96,22 +99,35 @@ if options.bDoAnalyser12 == 1
     options.nAnalyser = 12;
     [out_1_12 tmp_h tmp_ha]   = PsySoundCL(filename1,options); 
     [out_2_12 tmp_h tmp_ha]   = PsySoundCL(filename2,options); 
+end
 
+if options.bDoAnalyser15 == 1
     options.nAnalyser = 15;
     [out_1_15 tmp_h tmp_ha] = PsySoundCL(filename1,options); % 2 figures
     [out_2_15 tmp_h tmp_ha] = PsySoundCL(filename2,options); % 2 figures
 end
 
-% % nAnalyser = 12
-% 1. Average main loudness (Bark)       4. Main loudness (s)
-% 2. Average specific loudness (Bark)   5. Specific loudness (s)
-% 3. Loudness (s)                       6. Sharpness (s)
-%
-% % nAnalyser = 15
-% 7. Specific roughness [Bark]
-% 8. Roughness [s]
-
 param = [];
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if options.bDoAnalyser01 == 1
+    options.nAnalyser   = 1;
+    param{end+1}        = 'FFT';
+    [h(end+1) ha stats] = PsySoundCL_Figures(param{end},out_1_01,out_2_01,options,stPlot);
+    param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
+    
+    strTitle = sprintf('Spectrum %s', stPlot.Title);
+    title(strTitle);
+    
+    grid on
+    xlim(options.frange_FFT);
+    
+    freqrange = options.frange_FFT(2)-options.frange_FFT(1);
+    XTicks = round(options.frange_FFT(1):freqrange/4:options.frange_FFT(2));
+    
+    set(ha(end),'XTick',XTicks);
+    set(ha(end),'YLim',options.SPLrange);
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if options.bDoAnalyser10 == 1
@@ -139,6 +155,7 @@ if options.bDoAnalyser11 == 1
     
     if isfield(options,'SPLrange')
         set(gca,'YLim',options.SPLrange);
+        
         plot(options.frange,[65 65],'k'); % horizontal line
     end
     
@@ -155,20 +172,25 @@ if options.bDoAnalyser12 == 1
     % Loudness
     options.nAnalyser   = 12;
     param{end+1}        = 'loudness';
-    [h(end+1) xx stats] = PsySoundCL_Figures(param{end},out_1_12,out_2_12,options);
+    [h(end+1) xx stats] = PsySoundCL_Figures(param{end},out_1_12,out_2_12,options,stPlot);
     param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
     
-    if isfield(options,'ylim_loudness')
-        ylim(options.ylim_loudness);
+    strTitle = sprintf('Loudness %s', stPlot.Title);
+    title(strTitle);
+    
+    if isfield(stPlot,'ylim_loudness')
+        ylim(stPlot.ylim_loudness);
     end
     
-    if isfield(options,'ylim_bExtend')
+    if isfield(stPlot,'ylim_bExtend')
         
-        if options.ylim_bExtend == 1
+        if stPlot.ylim_bExtend == 1
             y_old = get(gca,'YLim');
             x_old = get(gca,'XLim');
             ylim_extend(gca,1.25);
-            plot([x_old],[y_old(2) y_old(2)],'k'); % horizontal line
+            if stPlot.bPlotHorLine == 1
+                plot([x_old],[y_old(2) y_old(2)],'k'); % horizontal line
+            end
         end
         
     end
@@ -176,20 +198,25 @@ if options.bDoAnalyser12 == 1
     % Specific loudness
     options.nAnalyser   = 12;
     param{end+1}        = 'specific-loudness';
-    [h(end+1) xx stats] = PsySoundCL_Figures(param{end},out_1_12,out_2_12,options);
+    [h(end+1) xx stats] = PsySoundCL_Figures(param{end},out_1_12,out_2_12,options,stPlot);
     param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
     
-    if isfield(options,'ylim_specific_loudness')
-        ylim(options.ylim_specific_loudness);
+    strTitle = sprintf('Specific loudness %s', stPlot.Title);
+    title(strTitle);
+    
+    if isfield(stPlot,'ylim_specific_loudness')
+        ylim(stPlot.ylim_specific_loudness);
     end
     
-    if isfield(options,'ylim_bExtend')
+    if isfield(stPlot,'ylim_bExtend')
         
-        if options.ylim_bExtend == 1
+        if stPlot.ylim_bExtend == 1
             y_old = get(gca,'YLim');
             x_old = get(gca,'XLim');
             ylim_extend(gca,1.25);
-            plot([x_old],[y_old(2) y_old(2)],'k'); % horizontal line
+            if stPlot.bPlotHorLine == 1 
+                plot([x_old],[y_old(2) y_old(2)],'k'); % horizontal line
+            end
         end
         
     end
@@ -197,7 +224,7 @@ if options.bDoAnalyser12 == 1
     % Sharpness
     options.nAnalyser   = 12;
     param{end+1}        = 'sharpness';
-    [h(end+1) xx stats] = PsySoundCL_Figures(param{end},out_1_12,out_2_12,options);
+    [h(end+1) xx stats] = PsySoundCL_Figures(param{end},out_1_12,out_2_12,options,stPlot);
     param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
 
 end
@@ -206,7 +233,7 @@ end
 if options.bDoAnalyser15 == 1
     options.nAnalyser = 15;
     param{end+1}        = 'roughness';
-    [h(end+1) xx stats] = PsySoundCL_Figures(param{end},out_1_15,out_2_15,options);
+    [h(end+1) xx stats] = PsySoundCL_Figures(param{end},out_1_15,out_2_15,options,stPlot);
     param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
 
     if isfield(options,'ylim_roughness')
@@ -215,16 +242,16 @@ if options.bDoAnalyser15 == 1
     
     options.nAnalyser = 15;
     param{end+1} = 'specific-roughness';
-    [h(end+1) xx stats] = PsySoundCL_Figures(param{end},out_1_15,out_2_15,options);
+    [h(end+1) xx stats] = PsySoundCL_Figures(param{end},out_1_15,out_2_15,options,stPlot);
     param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
     
-    if isfield(options,'ylim_specific_roughness')
-        ylim(options.ylim_specific_roughness);
+    if isfield(stPlot,'ylim_specific_roughness')
+        ylim(stPlot.ylim_specific_roughness);
     end
         
-    if isfield(options,'ylim_bExtend')
+    if isfield(stPlot,'ylim_bExtend')
         
-        if options.ylim_bExtend == 1
+        if stPlot.ylim_bExtend == 1
             y_old = get(gca,'YLim');
             x_old = get(gca,'XLim');
             ylim_extend(gca,1.25);
@@ -235,86 +262,13 @@ if options.bDoAnalyser15 == 1
     
 end
 
-try
-%%%%
-% Percentiles for Loudness
-one_period_s        = diff(options.tanalysis) / (options.N_periods2analyse+1);
-one_period_in_samples = ceil( one_period_s/min(diff(out_1_12.t)) );
-% N_periods           = floor(options.time2save / one_period_s); % To analyse whole file
-N_periods = options.N_periods2analyse+1;
-
-pLmeas  = Get_percentiles_per_period(out_1_12.DataLoud,one_period_in_samples);
-pLmodel = Get_percentiles_per_period(out_2_12.DataLoud,one_period_in_samples);
-
-output.pL_in1   = pLmeas;
-output.pL_in2   = pLmodel;
-output.L_in1    = out_1_12.DataLoud;
-output.L_in2    = out_2_12.DataLoud;
-output.Lt       = out_1_12.t;
-
-%%%%
-% Percentiles for Roughness
-
-one_period_s        = diff(options.tanalysis) / (options.N_periods2analyse+1);
-one_period_in_samples = ceil( one_period_s/min(diff(out_1_15.t)) );
-% N_periods           = floor(options.time2save / one_period_s);
-
-
-pRmeas  = Get_percentiles_per_period(out_1_15.DataRough,one_period_in_samples);
-pRmodel = Get_percentiles_per_period(out_2_15.DataRough,one_period_in_samples);
-
-output.R_in1    = out_1_15.DataRough;
-output.R_in2    = out_2_15.DataRough;
-output.pR_in1   = pRmeas;
-output.pR_in2   = pRmodel;
-output.Rt       = out_1_15.t;
-
-%%%%
-% Percentiles for Sharpness
-one_period_in_samples = ceil( one_period_s/min(diff(out_1_12.t)) );
-yy1 = buffer(out_1_12.DataSharp,one_period_in_samples,0);
-yy2 = buffer(out_2_12.DataSharp,one_period_in_samples,0);
-
-y = yy1(:,1:N_periods);
-p5 = percentile(y,5);
-p50 = percentile(y,50);
-p95 = percentile(y,95);
-
-p5_mod = percentile(y,5);
-p50_mod = percentile(y,50);
-p95_mod = percentile(y,95);
-
-catch
-    warning('Percentile calculation not succeeded, maybe not every Analyser is enabled')
-end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-output.h = h; % figure handles
-
-if options.bSave
-    
-    disp('Figures are going to be stored... Press ctr+C to cancel')
-    pause(2)
-    
-    try
-        paths.outputs = options.dst_folder_fig;
-    catch
-        paths.outputs   = Get_TUe_paths('outputs');
-    end
-    
-    for i = 1:length(h)
-        % options.format = 'emf';
-        % Saveas(h(i),[options.dest_folder_fig 'psycho-fig-' param{i} options.label],options);
-        options.format = 'epsc';
-        Saveas(h(i),[options.dest_folder_fig 'psycho-fig-' param{i} options.label],options);
-    end
-    
-else
-    
-    disp('Figures are NOT going to be stored... Set options.bSave to 1 and re-run the scripts in case you want to save the figures')
-    pause(2)
-    
+for i = 1:length(h)
+    hname{i} = ['psycho-fig-' param{i} options.label];
 end
-
+    
+output.h = h; % figure handles
+output.hname = hname;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
