@@ -12,7 +12,7 @@ function dw_Hweights(N)
 % weights for freq. bins < N/2
 
 if nargin == 0
-    N = 4096;
+    N = 8192;
 end
 
 Fs = 44100;
@@ -20,33 +20,33 @@ Fs = 44100;
 DCbins	= 2;
 
 H2 = [	0	0
-        17    0.8
+        17  0.8
         23	0.95
         25	0.975
         32	1
         37	0.975
         48	0.9
-        67    0.8
+        67  0.8
         90	0.7
-        114   0.6
-        171   0.4
+        114 0.6
+        171 0.4
         206	0.3
-        247   0.2
+        247 0.2
         294	0.1
         358	0 ];
 
 H5 = [	0	0
-        32    0.8
+        32  0.8
         43	0.95
         56	1
         69	0.975
         92	0.9
-        120   0.8
+        120 0.8
         142	0.7
-        165   0.6
-        231   0.4
+        165 0.6
+        231 0.4
         277	0.3
-        331   0.2
+        331 0.2
         397	0.1
         502	0 ];
 
@@ -71,24 +71,24 @@ H16 = [	0	0
         500	0.1
         645	0	];
 
-H21 = [	0	0
-        19	0.4
-        44	0.8
+H21 = [	0       0
+        19      0.4
+        44      0.8
         52.5	0.9
-        58	0.95
-        75	1
+        58      0.95
+        75      1
         101.5	0.95
         114.5	0.9
         132.5	0.85
         143.5	0.8
         165.5	0.7
         197.5	0.6
-        241	0.5
-        290	0.4
-        348	0.3
-        415	0.2
-        500	0.1
-        645	0	];
+        241     0.5
+        290     0.4
+        348     0.3
+        415     0.2
+        500     0.1
+        645     0	];
 
 
 H42 = [ 0	0
@@ -115,20 +115,20 @@ Hweight	= zeros(47,N);
 
 % weighting function H2
 last	= floor((358/Fs)*N) ;
-k	= DCbins+1:1:last;
-f	= (k-1)*Fs/N;
+k       = DCbins+1:1:last;
+f       = (k-1)*Fs/N;
 Hweight(2,k) = interp1(H2(:,1),H2(:,2),f(k-DCbins));
 
 % weighting function H5
-last	=	floor((502/Fs)*N);
-k	=	DCbins+1:1:last;
-f	=	(k-1)*Fs/N;
+last	= floor((502/Fs)*N);
+k       = DCbins+1:1:last;
+f       = (k-1)*Fs/N;
 Hweight(5,k)	= interp1(H5(:,1),H5(:,2),f(k-DCbins));
 
 % weighting function H16
-last	=	floor((645/Fs)*N);
-k	=	DCbins+1:1:last;
-f	=	(k-1)*Fs/N;
+last	= floor((645/Fs)*N);
+k       = DCbins+1:1:last;
+f       = (k-1)*Fs/N;
 Hweight(16,k)	= interp1(H16(:,1),H16(:,2),f(k-DCbins));
 
 % weighting function H21
@@ -169,17 +169,17 @@ f = (1:N)/N*(Fs/2);
 figure;
 semilogx(f,Hweight(2,:), f,Hweight(9,:)), grid on;
 
-for i = 1:3:size(Hweight,1)
+close all
+idx = [2 5 16 21 42];
+txtLegend = {};
+for i = idx
     try
-        figure;
         plot(f,Hweight(i  ,:),'b'), hold on; grid on;
-        plot(f,Hweight(i+1,:),'r');
-        plot(f,Hweight(i+2,:),'g');
-        legend(num2str(i),num2str(i+1),num2str(i+2))
-        xlim([0 600])
+        txtLegend{end+1} = num2str(i);
     end
 end
-
+legend(txtLegend)
+xlim([0 600])
 
 end
 % end Hweights

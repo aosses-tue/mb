@@ -16,17 +16,18 @@ function [output h ha] = PsySoundCL(filename,option)
 %           option.nAnalyser = 11; % CPBFFT(fh);
 %           option.nAnalyser = 12; % LoudnessCF(fh);
 %           option.nAnalyser = 15; % RoughnessDW(fh);
+%           option.nAnalyser = 20; % FluctuationStrength(fh);
 % 
-% 2. Additional info:
+% 2. Stand-alone example:
+%       PsySoundCL;
+%
+% 3. Additional info:
 %       Tested cross-platform: No
 %
-% 3. Stand-alone example:
-%       PsySoundCL;
-% 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 22/07/2014
 % Last update on: 17/09/2014 % Update this date manually
-% Last use on   : 29/10/2014 % Update this date manually
+% Last use on   : 06/11/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 h = [];
@@ -41,13 +42,16 @@ if nargin < 2
 end
 
 if nargin == 0
+    [f1 f2] = uigetfile(Get_TUe_paths('outputs'));
+    filename = [f2 f1];
+end
+
+if nargin < 2
     str_analysers = ['\n - type 10 for one-third OB or ' ...
                      '\n - type 12 for DLM model or ' ...
                      '\n - type 15 for Roughness model'];
                 
     option.nAnalyser = input(['Choose analyser to be used: ' str_analysers ' :']);
-    [f1 f2] = uigetfile(Get_TUe_paths('outputs'));
-    filename = [f2 f1];
 end
 
 option = Ensure_field(option,'bPlot'      , 1);
@@ -178,9 +182,9 @@ switch nAnalyser
     case 20
         
         obj = FluctuationStrength(fh);
-        st.type = 'samples'; 
-        st.size = 4096; 
-        obj = set(obj,'overlap',st);
+        % st.type = 'samples'; % commented temporarily on 06/11/2014
+        % st.size = 4096; 
+        % obj = set(obj,'overlap',st);
         
 end
 

@@ -3,10 +3,10 @@ function my_latex_info = Get_my_latex_info
 %
 % 1. Description:
 %
-% 2. Additional info:
-%   Tested cross-platform: No
+% 2. Stand-alone example:
 %
-% 3. Stand-alone example:
+% 3. Additional info:
+%   Tested cross-platform: No
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 30/06/2014
