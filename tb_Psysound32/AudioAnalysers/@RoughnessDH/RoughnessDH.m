@@ -23,19 +23,19 @@ switch nargin
   % Inherit from the Analyser base class
   base = AnalyserOverlap();
 
-  obj = class(obj, 'RoughnessDW', base);
+  obj = class(obj, 'RoughnessDH', base);
 
  case 1
   % Copy Constructor
   % if single argument of class RoughnessDW, return it
   arg1 = varargin{1};
-  if isa(arg1, 'RoughnessDW')
+  if isa(arg1, 'RoughnessDH')
     obj = arg1;
   elseif isstruct(arg1)
     % This should be a file handle
-    base = Analyser(arg1);
+    base = AnalyserOverlap(arg1); % base1 = Analyser(arg1);
     
-    obj = class(obj, 'RoughnessDW', base);
+    obj = class(obj, 'RoughnessDH', base);  % obj1 = class(obj, 'RoughnessDH', base1);
   
     % Set window length
     fs  = get(obj, 'fs');
@@ -43,15 +43,15 @@ switch nargin
     obj = set(obj, 'windowLength', wl);
     
   else
-    error('RoughnessDW: Invalid Argument type');
+    error('RoughnessDH: Invalid Argument type');
   end
   
  otherwise
-  error('RoughnessDW: Invalid number of input arguments')
+  error('RoughnessDH: Invalid number of input arguments')
 end
 
 % Set name
-obj = set(obj, 'Name', 'Roughness (D & W)');
+obj = set(obj, 'Name', 'Roughness (DH)');
 
 % Set window function
 obj = set(obj, 'windowFunc', 'Blackman');
@@ -60,4 +60,4 @@ obj = set(obj, 'windowFunc', 'Blackman');
 obj = set(obj, 'type', 'Psychoacoustic');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% end RoughnessDW constructor
+% end RoughnessDH constructor

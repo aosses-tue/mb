@@ -127,7 +127,7 @@ end
 % 3. Fluctuation strength
 % 3.1 AM tones
 if bDoFluct
-    tzero   = dur_zero_samples/fs; % time to Zero-pad
+    
     fmod    = 4;
     m       = 100;
     option  = 'm';
@@ -153,7 +153,7 @@ if bDoFluct
     end
     
     if bDoZeroPadding
-        y   = Zero_padding(y,tzero,fs);
+        y   = Zero_padding(y,dur_zero_samples/fs,fs);
     end
     
     if bSave
@@ -183,41 +183,41 @@ if bDoFluct
             end
             %y125 = setdbspl(y125,lvlAMT);
             %y500 = setdbspl(y500,lvlAMT);
-
-            y    = ramp2apply'.*y;
-            %y125 = ramp2apply'.*y125;
-            %y500 = ramp2apply'.*y500;
+            
+            if bDoRamp
+                ramp2apply = cos_ramp(length(y),fs,dur_ramp_ms);
+                y    = ramp2apply'.*y;
+            end
+            
+            if bDoZeroPadding
+                y   = Zero_padding(y,dur_zero_samples/fs,fs);
+            end
             
             filename = [Get_TUe_paths('outputs') 'test_fluct_fc_' Num2str(fc   ,4) '_AM_m_' Num2str(m,3) '_fmod_' Num2str(floor(fmod),3) 'Hz'];
             Wavwrite(y   ,fs,filename);
             outs.filename{end+1} = filename;
             %Wavwrite(y125,fs,[Get_TUe_paths('outputs') 'test_fluct_fc_' Num2str(fc125,4) '_AM_m_' Num2str(m,3) '_fmod_' Num2str(fmod,3) 'Hz']);
             %Wavwrite(y500,fs,[Get_TUe_paths('outputs') 'test_fluct_fc_' Num2str(fc500,4) '_AM_m_' Num2str(m,3) '_fmod_' Num2str(fmod,3) 'Hz']);
-
         end
-    else
-        disp('Test tones for ''Fluctuation Strength'', AM, not generated')
-    end
-    
-end
-% 3.2 FM tones
-if options.bDoFluct
-    fc      = 1500;
-    deltaf  = 700;
-    % tzero   = 0; % time to Zero-pad
-    lvl     = 70;
-    bForPsySound = 0;
-    
-    if bGen_test_tones
-        % Modulated tones:
+        
+        % 3.2 FM tones
+        fc      = 1500;
+        deltaf  = 700;
+        % tzero   = 0; % time to Zero-pad
+        lvl     = 70;
+        bForPsySound = 0;
+
+        %% Modulated tones:
         fi = 0.5; % 0,5 Hz to start
         for k = 0:6
             lvlAMT  = lvl + 10;
             fmod    = fi*2^k;
             yfm     = fm(fc, dur, fs, fmod, deltaf);
-
-            ramp2apply = cos_ramp(length(yfm),fs,75);
-            yfm     = ramp2apply'.*yfm;
+            
+            if bDoRamp
+                ramp2apply = cos_ramp(length(yfm),fs,dur_ramp_ms);
+                yfm     = ramp2apply'.*yfm;
+            end
 
             if bForPsySound
                 yfm = setdbspl(yfm,lvlAMT);
