@@ -28,7 +28,7 @@ catch % if reference does not exist, then it is created...
     
     opts.bDoRough = 1;
     opts.dur = (8192/44100); %  approx. 200e-3;
-    opts.bGen_test_tones = 0;
+    opts.bGen_test_tones = 1;
     
     opts.bDoRamp = 1;
     opts.dur_ramp_ms = 25;

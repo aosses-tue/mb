@@ -25,6 +25,7 @@ function out = fluctuation(Fs, flag)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 N = 8192;
+
 if ~(Fs == 44100 | Fs == 40960 | Fs == 48000)
   error(['Incorrect sample rate for this roughness algorithm. Please ' ...
          're-sample original file to be Fs=44100,40960 or 48000 ' ...
@@ -181,7 +182,7 @@ function dataOut = FluctBody(dataIn)
                                     % figure(2), plot(  conv( 2*real(ifft(Fei(k,:))),Hann),'g')
         
         % figure(10); freqz(hBPi(k,:),1,4096)
-        % figure(11); freqz(hBPr,1,4096)
+        % figure(11); freqz(hBPi_red(k,:),1,4096)
                 
         %hBPrms(k)	= rms(hBPi(k,:));
         hBPrms(k)	= rms(hBPi_red(k,:));
@@ -231,7 +232,7 @@ function dataOut = FluctBody(dataIn)
     dataOut{1} = FS;
     dataOut{2} = fi;
     dataOut{3} = SPL;
-  end % RoughBody
+  end % FluctBody
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%
@@ -394,5 +395,35 @@ end
 %%%%%%%%%%%%%%%
 % END InitAll %
 %%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%
+% BEGIN Hweights %
+%%%%%%%%%%%%%%%%%%
+% weights for freq. bins < N/2
+
+DCbins	= 2;
+
+H2 = [	0   0
+        1   0
+        3	0.45
+        7	0.82
+        8   0.9
+        13	1
+        53  1
+        59  0.91
+        63	0.55
+        65  0.25];
+
+Hweight	= zeros(1,N);
+
+% weighting function H2
+last	= floor((358/Fs)*N) ;
+k	= DCbins+1:1:last;
+f	= (k-1)*Fs/N;
+Hweight(2,k) = interp1(H2(:,1),H2(:,2),f(k-DCbins));
+
+%%%%%%%%%%%%%%%%
+% END Hweights %
+%%%%%%%%%%%%%%%%
 
 end % end fluctuation strength

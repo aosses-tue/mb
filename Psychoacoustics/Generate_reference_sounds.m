@@ -132,9 +132,9 @@ if bDoFluct
     m       = 100;
     option  = 'm';
     lvlref  = 60;
-    lvl     = 70;
+    lvl     = 60;
     
-    start_phase = pi/2;
+    start_phase = -pi/2; % pi/2;
     y = ch_am(sig,fmod,m,option,fs,start_phase);
     y2 = ch_am(sig,fmod,0,option,fs,start_phase);
     
@@ -157,8 +157,6 @@ if bDoFluct
     end
     
     if bSave
-        y = y/max(y);
-        y = y*max(y2);
         filename = [Get_TUe_paths('outputs') 'ref_fluct'];
         Wavwrite(y,fs,filename);
         outs.filename{end+1} = filename;
@@ -271,9 +269,9 @@ if bDoRough
             y    = ch_am(sig   ,fmod,m,option,fs,start_phase);
 
             lvlAMT  = lvl + 10; % Zwicker's correction
-            if bDoZeroPadding & dur_zero_samples > 0
-                error('Be careful with this piece of code...validate the zero padded values...')
-            end
+            % if bDoZeroPadding & dur_zero_samples > 0
+            %     error('Be careful with this piece of code...validate the zero padded values...')
+            % end
             y    = setdbspl(y   ,lvlAMT);
             
             if bDoRamp

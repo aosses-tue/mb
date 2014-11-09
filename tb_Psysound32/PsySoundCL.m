@@ -182,9 +182,18 @@ switch nAnalyser
     case 20
         
         obj = FluctuationStrength(fh);
-        % st.type = 'samples'; % commented temporarily on 06/11/2014
-        % st.size = 4096; 
-        % obj = set(obj,'overlap',st);
+        st.type = 'samples'; % commented temporarily on 06/11/2014
+        
+        tmp = get(obj,'samples');
+%         if tmp > 8192*10 % approx. 2 seconds
+%             %obj = set(obj,'windowLength',8192*10);
+%             %warning('Using analysis window size of approx. 2 seconds')
+%         else
+%             warning('Using default analysis window size of 8192 samples')
+%         end
+        st.type = 'samples'; 
+        st.size = 4096; 
+        obj = set(obj,'overlap',st);
         
 end
 
