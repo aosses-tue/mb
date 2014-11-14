@@ -1,12 +1,15 @@
-function y = r20141107_fluctuation
-% function y = r20141107_fluctuation
+function [FSAM, FSFM, h, afiles] = r20141107_fluctuation(N_blocks)
+% function [FSAM, FSFM, h, afiles] = r20141107_fluctuation(N_blocks)
 %
 % 1. Description:
-%
+%       Implements the Fluctuation Strength model as reported in the update 
+%       on 14/11/2014.
+% 
 % 2. Stand-alone example:
-%
+%       r20141107_fluctuation;
+% 
 % 3. Additional info:
-%       Tested cross-platform: No
+%       Tested cross-platform: Yes
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 05/11/2014
@@ -16,98 +19,139 @@ function y = r20141107_fluctuation
 
 % TODO:
 %
-% Increase FrameLength to 2 seconds
 % Correct displayed values at the end (see 'output').
 
-close all
+if nargin == 0
+    N_blocks = 1;
+end
 
-pathaudio = Get_TUe_paths('outputs');
+pathaudio   = Get_TUe_paths('outputs');
+pathfigures = [Get_TUe_paths('outputs') 'Figures-20141114' delim];
+Mkdir(pathfigures);
 
-filename = [pathaudio 'ref_fluct'];
+filename    = [pathaudio 'ref_fluct'];
 
-% filename = [pathaudio 'ref_rough'];
-
-N = 8192;
-bDebug = 1;
+N           = 8192*6;
+bDebug      = 1;
+count_afiles = 1;
 
 try
     
-    [x Fs] = Wavread(filename);
+    Wavread(filename);
     
 catch % if reference does not exist, then it is created...
     
-    N_window = N; % 8192;
-    dur = N_window*2;
-    
     opts.bDoFluct = 1;
-    opts.bDoRough = 0;
-    opts.dur = (dur/44100); %  approx. 200e-3;
+    opts.dur = (20*N/44100); %  approx. 20 times 200e-3 ms;
     opts.bGen_test_tones = 1;
-    opts.bForPsySound = 1;
     
-    opts.bDoRamp = 0;
-    opts.dur_ramp_ms = 10;
-    opts.bDoZeroPadding = 1;
-    opts.dur_zero_samples = round(N_window/2); % 4096 + 4096
+    opts.bPsySound = 1;
+    opts.bDoRamp = 0; 
+    opts.bDoZeroPadding = 0;
     
-    outs = Generate_reference_sounds(opts);
+    outs = Generate_reference_sounds_Zwicker2007(opts);
 end
 
-% filename = [pathaudio 'test_fluct_fc_1000_AM_m_100_fmod_002Hz_60_dBSPL'];
-filename = [pathaudio 'test_fluct_fc_1000_AM_m_100_fmod_004Hz_60_dBSPL'];
-% filename = [pathaudio 'test_fluct_fc_1000_AM_m_100_fmod_008Hz_60_dBSPL'];
-% filename = [pathaudio 'test_fluct_fc_1000_AM_m_100_fmod_016Hz_60_dBSPL'];
-% filename = [pathaudio 'test_rough_fc_0500_AM_m_100_fmod_130Hz_60_dBSPL.wav']; % it should be 0
-% filename = [pathaudio 'test_fluct_fc_1000_FM_dev_700_fmod_002Hz_70_dBSPL']
-% filename = [pathaudio 'test_fluct_fc_1000_FM_dev_700_fmod_004Hz_70_dBSPL']
-% filename = [pathaudio 'test_fluct_fc_1000_FM_dev_700_fmod_008Hz_70_dBSPL']
-% filename = [pathaudio 'test_fluct_fc_1000_FM_dev_700_fmod_016Hz_70_dBSPL']
+filenamesAM = { 'test_fluct_fc_1000_AM_m_100_fmod_001Hz_70_dBSPL', ...
+                'test_fluct_fc_1000_AM_m_100_fmod_002Hz_70_dBSPL', ...
+                'test_fluct_fc_1000_AM_m_100_fmod_004Hz_70_dBSPL', ...
+                'test_fluct_fc_1000_AM_m_100_fmod_008Hz_70_dBSPL', ...
+                'test_fluct_fc_1000_AM_m_100_fmod_016Hz_70_dBSPL', ...
+                'test_fluct_fc_1000_AM_m_100_fmod_032Hz_70_dBSPL'};
 
-[x Fs] = Wavread(filename);
+% filenamesFM = { 'test_fluct_fc_1000_FM_dev_700_fmod_001Hz_60_dBSPL', ...
+%                 'test_fluct_fc_1000_FM_dev_700_fmod_002Hz_60_dBSPL', ...
+%                 'test_fluct_fc_1000_FM_dev_700_fmod_004Hz_60_dBSPL', ...
+%                 'test_fluct_fc_1000_FM_dev_700_fmod_008Hz_60_dBSPL', ...
+%                 'test_fluct_fc_1000_FM_dev_700_fmod_016Hz_60_dBSPL', ...
+%                 'test_fluct_fc_1000_FM_dev_700_fmod_032Hz_60_dBSPL'};
 
-t = (1:length(x))/Fs;
-% figure;
-% plot(t,x)
-opts = []; % we clear opts
+filenamesFM = { 'test_fluct_fc_1500_FM_dev_700_fmod_001Hz_70_dBSPL', ...
+                'test_fluct_fc_1500_FM_dev_700_fmod_002Hz_70_dBSPL', ...
+                'test_fluct_fc_1500_FM_dev_700_fmod_004Hz_70_dBSPL', ...
+                'test_fluct_fc_1500_FM_dev_700_fmod_008Hz_70_dBSPL', ...
+                'test_fluct_fc_1500_FM_dev_700_fmod_016Hz_70_dBSPL', ...
+                'test_fluct_fc_1500_FM_dev_700_fmod_032Hz_70_dBSPL'};
+            
+for k = 1:length(filenamesAM)
+    
+    filename = [pathaudio filenamesAM{k} '.wav'];
+    
+    [x Fs] = Wavread(filename);
+    
+    afiles{count_afiles} = filenamesAM{k};
+    count_afiles = count_afiles + 1;
+    
+    %%%%
+    Fsnew = 44100;
+    x = resample(x,Fsnew,Fs);
+    Fs = Fsnew;
+    %%%%
+    
+    starti  = 1;
+    endi    = starti + N-1 + 2048*(N_blocks-1); % 5 additional analysis blocks
+    
+    insig = x(starti:endi);
+    t = ( 1:length(insig) )/Fs;     
 
-% opts.nAnalyser = 15; % Roughness
-opts.nAnalyser = 20; % Fluctuation strength
-opts.CalMethod = 1; % 0 dBFS = 100 dB
+    if bDebug % Similar to Fig. 7.2
+        h(1) = figure(1);
+        subplot(6,1,k)
+        plot(t,insig);
+        xlabel('Time [s]')
+        ylabel('Amplitude')
+        title(sprintf('Sig: %s, %.1f [dB]',name2figname(filenamesAM{k}(12:end)),rmsdb(insig)+90))
+        grid on
+        
+        optsfig.format = 'epsc';
+        Saveas(gcf,[pathfigures 'AM-test-' num2str(k)],optsfig);
+    end
 
-starti = N+1;
-% insig = x(starti:starti + N-1);
-insig = x(starti:starti + N-1);
-t = ( 1:length(insig) )/Fs;
-
-if bDebug
-    figure(1)
-    plot(t,insig);
-    xlabel('Time [s]')
-    ylabel('Amplitude')
-    title(sprintf('Test signal, level = %.2f [dB]',rmsdb(insig)+90))
+    out = FluctuationStrength_offline_debug(insig,Fs,N); %, bDebug); %No padding needed for off-line version
+    FSAM(:,k) = out{1}; 
+    % disp(sprintf('FS=%.3f [vacils]\t test signal: %s\n',out{1},name2figname(filenamesAM{k})))
 end
 
-out = FluctuationStrength_offline(insig,Fs,N,bDebug);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% filename = [filename '.wav'];
-% PsySoundCL(filename,opts);
+for k = 1:length(filenamesFM)
+    
+    filename = [pathaudio filenamesFM{k} '.wav'];
+    
+    [x Fs] = Wavread(filename);
+    
+    afiles{count_afiles} = filenamesAM{k};
+    count_afiles = count_afiles + 1;
+    
+    %%%%
+    Fsnew = 44100;
+    x = resample(x,Fsnew,Fs);
+    Fs = Fsnew;
+    %%%%
+    
+    starti = 1;
+    endi    = starti + N-1 + 2048*(N_blocks-1); % 6 additional analysis blocks
+    
+    insig = x(starti:endi);
+    t = ( 1:length(insig) )/Fs;     
 
-x =  [];
-y =  x;
+    if bDebug % Similar to Fig. 7.2
+        h(2) = figure(101);
+        subplot(6,1,k)
+        plot(t,insig);
+        xlabel('Time [s]')
+        ylabel('Amplitude')
+        title(sprintf('Sig: %s, %.1f [dB]',name2figname( filenamesFM{k}(12:end) ),rmsdb(insig)+90))
+        grid on
+        ylim(1.5*[minmax(insig')])
+        % optsfig.format = 'epsc';
+        % Saveas(gcf,[pathfigures 'FM-test-' num2str(k)],optsfig);
+    end
 
-% Output:
-% Analyser Number: 20
-% Param 1 out of 3: Roughness
-% 	 [average] = [NaN]
-% 	 [min max] = [0.000 1.249]
-% Analyser Number: 20
-% Param 2 out of 3: Specific Roughness
-% 	 [average] = [NaN]
-% 	 [min max] = [NaN NaN]
-% Analyser Number: 20
-% Param 3 out of 3: Average Roughness
-% 	 [average] = [NaN]
-% 	 [min max] = [-0.024 0.149]
+    out = FluctuationStrength_offline_debug(insig,Fs,N);%, bDebug); %No padding needed for off-line version
+    FSFM(:,k) = out{1}; 
+    % disp(sprintf('FS=%.3f [vacils]\t test signal: %s\n',out{1},filenamesFM{k}))
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end

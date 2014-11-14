@@ -1,5 +1,5 @@
-function outs = Generate_reference_sounds(options)
-% function outs = Generate_reference_sounds(options)
+function outs = Generate_reference_sounds_Zwicker2007(options)
+% function outs = Generate_reference_sounds_Zwicker2007(options)
 %
 % 1. Description:
 %       Generates reference and/or test tones for psychoacoustic metrics
@@ -11,7 +11,7 @@ function outs = Generate_reference_sounds(options)
 %       % To generate roughness files:
 %       options.bDoFluct = 0;
 %       options.bDoRough = 1;
-%       Generate_reference_sounds(options);
+%       Generate_reference_sounds_Zwicker2007(options);
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 14/08/2014
@@ -94,36 +94,6 @@ if bDoLoud
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 2. Sharpness % 
-if bDoSharp
-    fmod    = 70;
-    m       = 100;
-    option  = 'm';
-    lvl     = 70;
-
-    if isunix
-        sigbp = Wavread('~/Documenten/MATLAB/outputs/track_04_t09_bp.wav'); % temporal location on 17/08/2014
-    end
-
-    start_phase = pi/2; % begin in maximum. Use -pi/2 to begin in minimum
-    % ch_am(sig,fmod,m,option,fs,start_phase); % uncomment this to plot
-    y = ch_am(sigbp,fmod,m,option,fs,start_phase);
-
-    lvlAMT  = lvl + 10; % Zwicker's correction
-    y = setdbspl(y,lvlAMT);
-
-    if bDoZeroPadding
-        y = Zero_padding(y,dur_zero_samples/fs,fs);
-    end
-
-    if bSave
-        filename = [Get_TUe_paths('outputs') 'ref_sharp'];
-        Wavwrite(y,fs,filename);
-        outs.filename{end+1} = filename;
-    end
-end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 3. Fluctuation strength
 % 3.1 AM tones
 if bDoFluct
@@ -132,11 +102,10 @@ if bDoFluct
     m       = 100;
     option  = 'm';
     lvlref  = 60;
-    lvl     = 60;
+    lvl     = 70;
     
     start_phase = -pi/2; % pi/2;
     y = ch_am(sig,fmod,m,option,fs,start_phase);
-    y2 = ch_am(sig,fmod,0,option,fs,start_phase);
     
     lvlAMT  = lvlref + 10; % Zwicker's correction
     
@@ -193,10 +162,10 @@ if bDoFluct
         end
         
         % 3.2 FM tones
-        fc      = 1000;
+        fc      = 1500;
         deltaf  = 700;
         % tzero   = 0; % time to Zero-pad
-        lvl     = 60;
+        lvl     = 70;
 
         %% Modulated tones:
         fi = 0.5; % 0,5 Hz to start

@@ -29,7 +29,7 @@ hM.I_Matrix      = [numRows,numCols];
 hM.I_FontSize    = 12; 
 hM.I_FontName    = 'Arial'; 
 hM.I_Width       = 8;
-hM.I_High        = 8;
+hM.I_Height      = 8;
 hM.I_TitleInAxis = 1;
 hM.I_Space       = [0.01,0.01];
 
