@@ -15,8 +15,8 @@ function outs = Generate_reference_sounds(options)
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 14/08/2014
-% Last update on: 05/11/2014 % Update this date manually
-% Last use on   : 05/11/2014 % Update this date manually
+% Last update on: 14/11/2014 % Update this date manually
+% Last use on   : 14/11/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin == 0
@@ -30,7 +30,7 @@ options = Ensure_field(options,'bDoSharp',0);
 options = Ensure_field(options,'bDoFluct',0);
 options = Ensure_field(options,'bDoRough',1);
 
-options = Ensure_field(options,'bForPsySound',0); % important if fluctuation strength is to be determined
+options = Ensure_field(options,'bPsySound',0); % important if fluctuation strength is to be determined
 
 options = Ensure_field(options,'dur',4); % Test tone duration, 4 seconds by default
 options = Ensure_field(options,'bDoRamp',0);
@@ -50,10 +50,10 @@ bDoSharp    = options.bDoSharp;
 bDoFluct    = options.bDoFluct;
 bDoRough    = options.bDoRough;
 
-bForPsySound = options.bForPsySound;
+bPsySound       = options.bPsySound;
 bGen_test_tones = options.bGen_test_tones;
-bDoRamp = options.bDoRamp;
-bDoZeroPadding = options.bDoZeroPadding;
+bDoRamp         = options.bDoRamp;
+bDoZeroPadding  = options.bDoZeroPadding;
 
 if bDoRamp;         dur_ramp_ms = options.dur_ramp_ms;              end;
 if bDoZeroPadding;  dur_zero_samples = options.dur_zero_samples;    end;
@@ -140,7 +140,7 @@ if bDoFluct
     
     lvlAMT  = lvlref + 10; % Zwicker's correction
     
-    if bForPsySound
+    if bPsySound
         y = setdbspl(y,lvlAMT);
     else
         y = setdbspl(y,lvlref);
@@ -171,17 +171,13 @@ if bDoFluct
             d       = 40;
             option = 'd';
             y = ch_am(sig,fmod,m,option,fs,start_phase);
-            % y125 = ch_am(sig125,fmod,m,option,fs,start_phase);
-            % y500 = ch_am(sig500,fmod,m,option,fs,start_phase);
 
-            if bForPsySound
+            if bPsySound
                 y = setdbspl(y,lvlAMT);
             else
                 y = setdbspl(y,lvl);
             end
-            %y125 = setdbspl(y125,lvlAMT);
-            %y500 = setdbspl(y500,lvlAMT);
-            
+           
             if bDoRamp
                 ramp2apply = cos_ramp(length(y),fs,dur_ramp_ms);
                 y    = ramp2apply'.*y;
@@ -191,19 +187,17 @@ if bDoFluct
                 y   = Zero_padding(y,dur_zero_samples/fs,fs);
             end
             
-            filename = [Get_TUe_paths('outputs') 'test_fluct_fc_' Num2str(fc   ,4) '_AM_m_' Num2str(m,3) '_fmod_' Num2str(floor(fmod),3) 'Hz'];
+            filename = [Get_TUe_paths('outputs') 'test_fluct_fc_' Num2str(fc   ,4) '_AM_m_' Num2str(m,3) '_fmod_' Num2str(floor(fmod),3) 'Hz_' num2str(lvl) '_dBSPL'];
             Wavwrite(y   ,fs,filename);
             outs.filename{end+1} = filename;
-            %Wavwrite(y125,fs,[Get_TUe_paths('outputs') 'test_fluct_fc_' Num2str(fc125,4) '_AM_m_' Num2str(m,3) '_fmod_' Num2str(fmod,3) 'Hz']);
-            %Wavwrite(y500,fs,[Get_TUe_paths('outputs') 'test_fluct_fc_' Num2str(fc500,4) '_AM_m_' Num2str(m,3) '_fmod_' Num2str(fmod,3) 'Hz']);
+
         end
         
         % 3.2 FM tones
-        fc      = 1500;
+        fc      = 1000;
         deltaf  = 700;
         % tzero   = 0; % time to Zero-pad
         lvl     = 70;
-        bForPsySound = 0;
 
         %% Modulated tones:
         fi = 0.5; % 0,5 Hz to start
@@ -217,12 +211,12 @@ if bDoFluct
                 yfm     = ramp2apply'.*yfm;
             end
 
-            if bForPsySound
+            if bPsySound
                 yfm = setdbspl(yfm,lvlAMT);
             else
                 yfm = setdbspl(yfm,lvl);
             end
-            filename = [Get_TUe_paths('outputs') 'test_fluct_fc_' Num2str(fc   ,4) '_FM_dev_' Num2str(deltaf,3) '_fmod_' Num2str(floor(fmod),3) 'Hz'];
+            filename = [Get_TUe_paths('outputs') 'test_fluct_fc_' Num2str(fc   ,4) '_FM_dev_' Num2str(deltaf,3) '_fmod_' Num2str(floor(fmod),3) 'Hz_' num2str(lvl) '_dBSPL'];
             Wavwrite(yfm   ,fs,filename);
             outs.filename{end+1} = filename;
         end
@@ -244,7 +238,11 @@ if bDoRough
     y    = ch_am(sig   ,fmod,m,option,fs,start_phase);
     
     lvlAMT  = lvl + 10; % Zwicker's correction
-    y    = setdbspl(y   ,lvlAMT);
+    if bPsySound
+        y    = setdbspl(y   ,lvlAMT);
+    else
+        y    = setdbspl(y   ,lvl);
+    end
     
     if bDoZeroPadding
         y = Zero_padding(y,dur_zero_samples/fs,fs);
@@ -263,62 +261,101 @@ if bDoRough
     end
     
     if bGen_test_tones
-        % Modulated tones, variation of 'm'
-        for k = 1:20
-            m       = m*0.9;
-            y    = ch_am(sig   ,fmod,m,option,fs,start_phase);
+        
+        fmod_test = [30 50 70 100 150];
+        for k = 1:length(fmod_test)
+            y    = ch_am(sig   ,fmod_test(k),m,option,fs,start_phase);
 
             lvlAMT  = lvl + 10; % Zwicker's correction
-            % if bDoZeroPadding & dur_zero_samples > 0
-            %     error('Be careful with this piece of code...validate the zero padded values...')
-            % end
-            y    = setdbspl(y   ,lvlAMT);
+           
+            if bPsySound
+                y    = setdbspl(y   ,lvlAMT);
+            else
+                y    = setdbspl(y   ,lvl);
+            end
             
             if bDoRamp
                 ramp2apply = cos_ramp(length(y),fs,dur_ramp_ms);
                 y = ramp2apply'.*y;
                 disp('Ramp applied')
             end
-
+            
+            if bDoZeroPadding
+                y = Zero_padding(y,dur_zero_samples/fs,fs);
+            end
+            
             if bSave
-                filename = [Get_TUe_paths('outputs') 'test_rough_fc_' Num2str(fc   ,4) '_AM_m_' Num2str(m,3) '_fmod_' Num2str(fmod,3) 'Hz'];
+                filename = [Get_TUe_paths('outputs') 'test_rough_fc_' Num2str(fc   ,4) '_AM_m_' Num2str(m,3) '_fmod_' Num2str(fmod_test(k),3) 'Hz'];
                 Wavwrite(y   ,fs, filename);
                 outs.filename{end+1} = filename;
             end
 
         end
-
+   
         % Modulated tones:
         for k = 10:20:170
             fmod = k;
-            y = ch_am(sig,fmod,m,option,fs,start_phase);
-            y125 = ch_am(sig125,fmod,m,option,fs,start_phase);
-            y500 = ch_am(sig500,fmod,m,option,fs,start_phase);
+            y       = ch_am(sig,fmod,m,option,fs,start_phase);
+            y125    = ch_am(sig125,fmod,m,option,fs,start_phase);
+            y500    = ch_am(sig500,fmod,m,option,fs,start_phase);
 
             lvlAMT  = lvl + 10; % Zwicker's correction
-            y = setdbspl(y,lvlAMT);
-            y125 = setdbspl(y125,lvlAMT);
-            y500 = setdbspl(y500,lvlAMT);
-
+            if bPsySound
+                y    = setdbspl(y   ,lvlAMT);
+                y125 = setdbspl(y125,lvlAMT);
+                y500 = setdbspl(y500,lvlAMT);
+            else
+                y    = setdbspl(y   ,lvl);
+                y125 = setdbspl(y125,lvl);
+                y500 = setdbspl(y500,lvl);
+            end
+            
             if bDoRamp
                 y    = ramp2apply'.*y;
                 y125 = ramp2apply'.*y125;
                 y500 = ramp2apply'.*y500;
             end
 
-            filename = [Get_TUe_paths('outputs') 'test_rough_fc_' Num2str(fc   ,4) '_AM_m_' Num2str(m,3) '_fmod_' Num2str(fmod,3) 'Hz'];
+            filename = [Get_TUe_paths('outputs') 'test_rough_fc_' Num2str(fc   ,4) '_AM_m_' Num2str(m,3) '_fmod_' Num2str(fmod,3) 'Hz_' num2str(lvl) '_dBSPL'];
             Wavwrite(y   ,fs,filename);
             outs.filename{end+1} = filename;
             
-            filename = [Get_TUe_paths('outputs') 'test_rough_fc_' Num2str(fc125,4) '_AM_m_' Num2str(m,3) '_fmod_' Num2str(fmod,3) 'Hz'];
+            filename = [Get_TUe_paths('outputs') 'test_rough_fc_' Num2str(fc125,4) '_AM_m_' Num2str(m,3) '_fmod_' Num2str(fmod,3) 'Hz_' num2str(lvl) '_dBSPL'];
             Wavwrite(y125,fs,filename);
             outs.filename{end+1} = filename;
             
-            filename = [Get_TUe_paths('outputs') 'test_rough_fc_' Num2str(fc500,4) '_AM_m_' Num2str(m,3) '_fmod_' Num2str(fmod,3) 'Hz'];
+            filename = [Get_TUe_paths('outputs') 'test_rough_fc_' Num2str(fc500,4) '_AM_m_' Num2str(m,3) '_fmod_' Num2str(fmod,3) 'Hz_' num2str(lvl) '_dBSPL'];
             Wavwrite(y500,fs,filename);
             outs.filename{end+1} = filename;
 
         end
+        
+        % 4.3 FM tones
+        fc      = 1000;
+        deltaf  = 800;
+        lvl     = 60;
+
+        %% Modulated tones:
+        fmod = [20 40 60 70 90 110 150 200]; % 0,5 Hz to start
+        for k = 1:length(fmod)
+            lvlAMT  = lvl + 10;
+            yfm     = fm(fc, dur, fs, fmod(k), deltaf);
+            
+            if bDoRamp
+                ramp2apply = cos_ramp(length(yfm),fs,dur_ramp_ms);
+                yfm     = ramp2apply'.*yfm;
+            end
+
+            if bPsySound
+                yfm = setdbspl(yfm,lvlAMT);
+            else
+                yfm = setdbspl(yfm,lvl);
+            end
+            filename = [Get_TUe_paths('outputs') 'test_rough_fc_' Num2str(fc   ,4) '_FM_dev_' Num2str(deltaf,3) '_fmod_' Num2str(floor(fmod(k)),3) 'Hz_' num2str(lvl) '_dBSPL'];
+            Wavwrite(yfm   ,fs,filename);
+            outs.filename{end+1} = filename;
+        end
+        
     else
         disp('Test tones for ''Roughness'' not generated')
     end

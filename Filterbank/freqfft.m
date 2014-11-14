@@ -15,24 +15,27 @@ function [y ydB f] = freqfft(x,K,info)
 % Programmed by Alejandro Osses, TUe
 % Created on    : 08/05/2014
 % Last update on: 05/06/2014
-% Last used on  : 17/06/2014
+% Last used on  : 12/11/2014
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 3 % info does not exist
     info = [];
 end
 
-info = Ensure_field(info,'bNewFigure',1);
-info = Ensure_field(info,'typeplot',1);     % 1 = semilogx
-                                            % 2 = linear scale, normalised scale
+if nargout == 0
+    info = Ensure_field(info,'bNewFigure',1);
+    info = Ensure_field(info,'typeplot',1); % 1 = semilogx
+end                                         % 2 = linear scale, normalised scale
                                             % 2 = linear scale, 0 to fs/2 (if info.fs is defined)
                                             % 4 = FFT bins
 % info = Ensure_field(info,'wtype',0);      % Rectangular window
 
 if isfield(info,'fs')
     f = (1:K)/K*info.fs/2;
-    if info.typeplot == 2
-        info.typeplot = 3;
+    if nargout == 0
+        if info.typeplot == 2
+            info.typeplot = 3;
+        end
     end
 else
     info = Ensure_field(info,'fs',44100);
@@ -41,8 +44,6 @@ else
     pause(1)
 end
 f = f(:);
-
-disp([mfilename '.m: type help freqfft to see additional plot options'])
 
 y   = fft(x,K*2);
 y   = y(1:K,:);

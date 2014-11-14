@@ -11,7 +11,7 @@ function y = r20141107_fluctuation
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 05/11/2014
 % Last update on: 05/11/2014 % Update this date manually
-% Last use on   : 05/11/2014 % Update this date manually
+% Last use on   : 14/11/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % TODO:
@@ -27,14 +27,17 @@ filename = [pathaudio 'ref_fluct'];
 
 % filename = [pathaudio 'ref_rough'];
 
+N = 8192;
+bDebug = 1;
+
 try
     
     [x Fs] = Wavread(filename);
     
 catch % if reference does not exist, then it is created...
     
-    N_window = 8192; % 8192;
-    dur = N_window*10;
+    N_window = N; % 8192;
+    dur = N_window*2;
     
     opts.bDoFluct = 1;
     opts.bDoRough = 0;
@@ -50,41 +53,44 @@ catch % if reference does not exist, then it is created...
     outs = Generate_reference_sounds(opts);
 end
 
-% filename = [pathaudio 'test_fluct_fc_1000_AM_m_100_fmod_002Hz'];
-filename = [pathaudio 'test_fluct_fc_1000_AM_m_100_fmod_004Hz'];
-% filename = [pathaudio 'test_fluct_fc_1000_AM_m_100_fmod_008Hz'];
-% filename = [pathaudio 'test_fluct_fc_1000_AM_m_100_fmod_016Hz'];
+% filename = [pathaudio 'test_fluct_fc_1000_AM_m_100_fmod_002Hz_60_dBSPL'];
+filename = [pathaudio 'test_fluct_fc_1000_AM_m_100_fmod_004Hz_60_dBSPL'];
+% filename = [pathaudio 'test_fluct_fc_1000_AM_m_100_fmod_008Hz_60_dBSPL'];
+% filename = [pathaudio 'test_fluct_fc_1000_AM_m_100_fmod_016Hz_60_dBSPL'];
+% filename = [pathaudio 'test_rough_fc_0500_AM_m_100_fmod_130Hz_60_dBSPL.wav']; % it should be 0
+% filename = [pathaudio 'test_fluct_fc_1000_FM_dev_700_fmod_002Hz_70_dBSPL']
+% filename = [pathaudio 'test_fluct_fc_1000_FM_dev_700_fmod_004Hz_70_dBSPL']
+% filename = [pathaudio 'test_fluct_fc_1000_FM_dev_700_fmod_008Hz_70_dBSPL']
+% filename = [pathaudio 'test_fluct_fc_1000_FM_dev_700_fmod_016Hz_70_dBSPL']
 
 [x Fs] = Wavread(filename);
-%
-% 200e-3            vacil       SPLout
-% -------------------------------------
-% ref_fluct         1.4295      82.4621
-% ..fmod_002Hz      0.2547      73.6141
-% ..fmod_004Hz      0.8201      68.2238
-% ..fmod_008Hz      0.8704      73.4461
-% ..fmod_016Hz      0.0271      73.3777
-
-% 2                 vacil       SPLout
-% -------------------------------------
-% ref_fluct          
-% ..fmod_002Hz       
-% ..fmod_004Hz       
-% ..fmod_008Hz       
-% ..fmod_016Hz       
 
 t = (1:length(x))/Fs;
-figure;
-plot(t,x)
+% figure;
+% plot(t,x)
 opts = []; % we clear opts
 
 % opts.nAnalyser = 15; % Roughness
 opts.nAnalyser = 20; % Fluctuation strength
 opts.CalMethod = 1; % 0 dBFS = 100 dB
-% opts.Author = 'DW';
 
-filename = [filename '.wav'];
-PsySoundCL(filename,opts);
+starti = N+1;
+% insig = x(starti:starti + N-1);
+insig = x(starti:starti + N-1);
+t = ( 1:length(insig) )/Fs;
+
+if bDebug
+    figure(1)
+    plot(t,insig);
+    xlabel('Time [s]')
+    ylabel('Amplitude')
+    title(sprintf('Test signal, level = %.2f [dB]',rmsdb(insig)+90))
+end
+
+out = FluctuationStrength_offline(insig,Fs,N,bDebug);
+
+% filename = [filename '.wav'];
+% PsySoundCL(filename,opts);
 
 x =  [];
 y =  x;

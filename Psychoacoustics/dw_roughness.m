@@ -1,6 +1,14 @@
-function out = dw_roughness(dataIn, Fs, flag)
-% function out = dw_roughness(dataIn, Fs, flag)
+function dataOut = dw_roughness(dataIn, Fs, N)
+% function dataOut = dw_roughness(dataIn, Fs, N)
 %
+% 1. Description:µ
+%       Off-line implementation of the roughness algorithm.
+% 
+%       Changes:
+%           db2amp replaced by To_dB
+%           amp2db replaced by From_dB
+%           private rms renamed to dw_rms
+% 
 % author : Matt Flax <flatmax @ http://www.flatmax.org> : Matt Flax is flatmax
 % March 2006 : For the psySoundPro project
 %
@@ -10,165 +18,19 @@ function out = dw_roughness(dataIn, Fs, flag)
 %           and Hweights into the function space below.  This
 %           allows us to use nested functions effeciently.
 %
-%
 % contact for the original source code :
 % http://home.tm.tue.nl/dhermes/
-%
-% the following files are support files for this code :
-%                InitFs44100N8192.mat
-%                InitFs40960N8192.mat
-%                InitFs48000N8192.mat
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-N = 8192;
+if nargin < 3
+    N = 8192;
+end
+
 if ~(Fs == 44100 | Fs == 40960 | Fs == 48000)
   error(['Incorrect sample rate for this roughness algorithm. Please ' ...
          're-sample original file to be Fs=44100,40960 or 48000 ' ...
          'Hz']);
 end
-if nargin == 2
-  out = N;
-  return
-end
-
-% Create and return a function handle to the roughness routine
-out = @RoughBody;
-
-  %
-  % Execute the roughness algorithm
-  %
-  function dataOut = RoughBody(dataIn)
-    % xxx - maybe the call to the blackman window should be a method
-    AmpCal = db2amp(80)*2/(N*mean(blackman(N, 'periodic')));
-    % Calibration between wav-level and loudness-level (assuming
-    % blackman window and FFT will follow)
-    
-    Chno	=	47;
-    Cal	 	=	0.25;
-    N2		=	N/2;
-    q		=	1:1:N;
-    qb		=	N0:1:Ntop;
-    freqs	=	(qb+1)*Fs/N;
-    hBPi	=	zeros(Chno,N);
-    hBPrms	=	zeros(1,Chno);
-    mdept	=	zeros(1,Chno);
-    ki		=	zeros(1,Chno-2);
-    ri		=	zeros(1,Chno);
-
-    % Calculate Excitation Patterns
-    TempIn =  dataIn*AmpCal;
-    [rt,ct]=size(TempIn);
-    [r,c]=size(a0);
-    if rt~=r; TempIn=TempIn'; end
-    %maxAbsW=max(abs(fileHandle.windows.Blackman.wnd*AmpCal))
-    %maxAbs=max(abs(TempIn))
-    %TempIn=TempIn*10;
-    TempIn	=	a0.*fft(TempIn);
-    Lg		=	abs(TempIn(qb));
-    LdB		=	amp2db(Lg);
-    whichL	=	find(LdB>MinExcdB);
-    sizL	=	length(whichL);
-
-    % steepness of slopes (Terhardt)
-    S1 = -27;
-    S2 = zeros(1,sizL);
-
-    for w = 1:1:sizL;
-      % Steepness of upper slope [dB/Bark] in accordance with Terhardt
-      steep = -24-(230/freqs(w))+(0.2*LdB(whichL(w)));
-      if steep < 0
-        S2(w) = steep;
-      end
-    end
-    whichZ	= zeros(2,sizL);
-    qd		= 1:1:sizL;
-    whichZ(1,:)	= floor(2*Barkno(whichL(qd)+N01));
-    whichZ(2,:)	= ceil(2*Barkno(whichL(qd)+N01));
-
-    ExcAmp = zeros(sizL,47);
-    Slopes = zeros(sizL,47);
-    for k=1:1:sizL
-      Ltmp = LdB(whichL(k));
-      Btmp = Barkno(whichL(k)+N01);
-
-      for l = 1:1:whichZ(1,k)
-        Stemp = (S1*(Btmp-(l*0.5)))+Ltmp;
-        if Stemp>MinBf(l)
-          Slopes(k,l)=db2amp(Stemp);
-        end
-      end
-      for l = whichZ(2,k):1:47
-        Stemp =	(S2(k)*((l*0.5)-Btmp))+Ltmp;
-        if Stemp>MinBf(l)
-          Slopes(k,l)=db2amp(Stemp);
-        end
-      end
-    end
-    for k=1:1:47
-      etmp = zeros(1,N);
-      for l=1:1:sizL
-        N1tmp = whichL(l);
-        N2tmp = N1tmp + N01;
-        if (whichZ(1,l) == k)
-          ExcAmp(N1tmp, k) = 1;
-        elseif (whichZ(2,l) == k)
-          ExcAmp(N1tmp, k) = 1;
-        elseif (whichZ(2,l) > k)
-          ExcAmp(N1tmp,k) = Slopes(l,k+1)/Lg(N1tmp);
-        else
-          ExcAmp(N1tmp,k) = Slopes(l,k-1)/Lg(N1tmp);
-        end
-        etmp(N2tmp) = ExcAmp(N1tmp,k)*TempIn(N2tmp);
-      end
-      ei(k,:)	= N*real(ifft(etmp));
-      etmp	= abs(ei(k,:));
-      h0(k)	= mean(etmp);
-      Fei(k,:)	= fft(etmp-h0(k));
-      hBPi(k,:)	= 2*real(ifft(Fei(k,:).*Hweight(k,:)));
-      hBPrms(k)	= rms(hBPi(k,:));
-      if h0(k)>0
-        mdept(k) = hBPrms(k)/h0(k);
-        if mdept(k)>1
-          mdept(k)=1;
-        end
-      else
-        mdept(k)=0;
-      end
-    end
-    % find cross-correlation coefficients
-    for k=1:1:45
-      cfac	=	cov(hBPi(k,:),hBPi(k+2,:));
-      den	=	diag(cfac);
-      den	=	sqrt(den*den');
-      if den(2,1)>0
-        ki(k)	=	cfac(2,1)/den(2,1);
-      else
-        ki(k)	=	0;
-      end
-    end
-
-    % Calculate specific roughness ri and total roughness R
-    ri(1)	=	(gzi(1)*mdept(1)*ki(1))^2;
-    ri(2)	=	(gzi(2)*mdept(2)*ki(2))^2;
-    for k = 3:1:45
-      ri(k)	=	(gzi(k)*mdept(k)*ki(k-2)*ki(k))^2;
-    end
-    ri(46)	=	(gzi(46)*mdept(46)*ki(44))^2;
-    ri(47)	=	(gzi(47)*mdept(47)*ki(45))^2;
-    R		=	Cal*sum(ri);
-    
-    SPL = mean(rms(dataIn));
-    if SPL > 0
-      SPL = amp2db(SPL)+83; % -20 dBFS <--> 60 dB SPL
-    else
-      SPL = -400;
-    end
-    
-    % Create a cell array to return
-    dataOut{1} = R;
-    dataOut{2} = ri;
-    dataOut{3} = SPL;
-  end % RoughBody
 
 %%%%%%%%%%%%%%%%%
 % BEGIN InitAll %
@@ -302,7 +164,7 @@ a0tab =	[ 0	 0
 
 a0    = ones(1,N);
 k     = (N0:1:Ntop);
-a0(k) = db2amp(interp1(a0tab(:,1),a0tab(:,2),Barkno(k)));
+a0(k) = From_dB(interp1(a0tab(:,1),a0tab(:,2),Barkno(k)));
 
 %%%%%%%%%%%%%%%
 % END InitAll %
@@ -460,5 +322,146 @@ end
 %%%%%%%%%%%%%%%%
 % END Hweights %
 %%%%%%%%%%%%%%%%
+
+Window = blackman(N, 'periodic') .* 1.8119;
+dataIn = dataIn .*Window;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% BEGIN: RoughBody
+
+dBcorr = 80+10.72; % originally = 80
+AmpCal = From_dB(dBcorr)*2/(N*mean(blackman(N, 'periodic'))); 
+    
+% Calibration between wav-level and loudness-level (assuming
+% blackman window and FFT will follow)
+    
+Chno	=	47;
+Cal	 	=	0.25;
+N2		=	N/2;
+q		=	1:1:N;
+qb		=	N0:1:Ntop;
+freqs	=	(qb+1)*Fs/N;
+hBPi	=	zeros(Chno,N);
+hBPrms	=	zeros(1,Chno);
+mdept	=	zeros(1,Chno);
+ki		=	zeros(1,Chno-2);
+ri		=	zeros(1,Chno);
+
+% Calculate Excitation Patterns
+TempIn =  dataIn*AmpCal;
+[rt,ct]=size(TempIn);
+[r,c]=size(a0);
+if rt~=r; TempIn=TempIn'; end
+    
+TempIn	=	a0.*fft(TempIn);
+Lg		=	abs(TempIn(qb));
+LdB		=	To_dB(Lg);
+whichL	=	find(LdB>MinExcdB);
+sizL	=	length(whichL);
+
+% steepness of slopes (Terhardt)
+S1 = -27;
+S2 = zeros(1,sizL);
+
+for w = 1:1:sizL;
+    % Steepness of upper slope [dB/Bark] in accordance with Terhardt
+    steep = -24-(230/freqs(w))+(0.2*LdB(whichL(w)));
+    if steep < 0
+        S2(w) = steep;
+    end
+end
+
+whichZ	= zeros(2,sizL);
+qd		= 1:1:sizL;
+whichZ(1,:)	= floor(2*Barkno(whichL(qd)+N01));
+whichZ(2,:)	= ceil(2*Barkno(whichL(qd)+N01));
+
+ExcAmp = zeros(sizL,47);
+Slopes = zeros(sizL,47);
+
+for k=1:1:sizL
+    Ltmp = LdB(whichL(k));
+    Btmp = Barkno(whichL(k)+N01);
+
+    for l = 1:1:whichZ(1,k)
+        Stemp = (S1*(Btmp-(l*0.5)))+Ltmp;
+        if Stemp>MinBf(l)
+          Slopes(k,l)=From_dB(Stemp);
+        end
+      end
+      for l = whichZ(2,k):1:47
+        Stemp =	(S2(k)*((l*0.5)-Btmp))+Ltmp;
+        if Stemp>MinBf(l)
+          Slopes(k,l)=From_dB(Stemp);
+        end
+      end
+    end
+    for k=1:1:47
+      etmp = zeros(1,N);
+      for l=1:1:sizL
+        N1tmp = whichL(l);
+        N2tmp = N1tmp + N01;
+        if (whichZ(1,l) == k)
+          ExcAmp(N1tmp, k) = 1;
+        elseif (whichZ(2,l) == k)
+          ExcAmp(N1tmp, k) = 1;
+        elseif (whichZ(2,l) > k)
+          ExcAmp(N1tmp,k) = Slopes(l,k+1)/Lg(N1tmp);
+        else
+          ExcAmp(N1tmp,k) = Slopes(l,k-1)/Lg(N1tmp);
+        end
+        etmp(N2tmp) = ExcAmp(N1tmp,k)*TempIn(N2tmp);
+      end
+      ei(k,:)	= N*real(ifft(etmp));
+      etmp	= abs(ei(k,:));
+      h0(k)	= mean(etmp);
+      Fei(k,:)	= fft(etmp-h0(k));
+      hBPi(k,:)	= 2*real(ifft(Fei(k,:).*Hweight(k,:)));
+      hBPrms(k)	= dw_rms(hBPi(k,:));
+      if h0(k)>0
+        mdept(k) = hBPrms(k)/h0(k);
+        if mdept(k)>1
+          mdept(k)=1;
+        end
+      else
+        mdept(k)=0;
+      end
+    end
+    % find cross-correlation coefficients
+    for k=1:1:45
+      cfac	=	cov(hBPi(k,:),hBPi(k+2,:));
+      den	=	diag(cfac);
+      den	=	sqrt(den*den');
+      if den(2,1)>0
+        ki(k)	=	cfac(2,1)/den(2,1);
+      else
+        ki(k)	=	0;
+      end
+    end
+
+    % Calculate specific roughness ri and total roughness R
+    ri(1)	=	(gzi(1)*mdept(1)*ki(1))^2;
+    ri(2)	=	(gzi(2)*mdept(2)*ki(2))^2;
+    for k = 3:1:45
+      ri(k)	=	(gzi(k)*mdept(k)*ki(k-2)*ki(k))^2;
+    end
+    ri(46)	=	(gzi(46)*mdept(46)*ki(44))^2;
+    ri(47)	=	(gzi(47)*mdept(47)*ki(45))^2;
+    R		=	Cal*sum(ri);
+    
+    SPL = mean(rms(dataIn));
+    if SPL > 0
+      SPL = To_dB(SPL)+dBcorr+3; % -20 dBFS <--> 60 dB SPL
+    else
+      SPL = -400;
+    end
+    
+    % Create a cell array to return
+    dataOut{1} = R;
+    dataOut{2} = ri;
+    dataOut{3} = SPL;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+% END: RoughBody
 
 end % end roughness
