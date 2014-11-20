@@ -16,8 +16,6 @@ function r20141107_roughness
 % Last use on   : 14/11/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-close all
-
 pathaudio   = Get_TUe_paths('outputs');
 pathfigures = [Get_TUe_paths('outputs') 'Figures-20141113' delim];
 Mkdir(pathfigures);
@@ -66,6 +64,8 @@ filenamesFM = { 'test_rough_fc_1000_FM_dev_800_fmod_020Hz_60_dBSPL',...
              
 for k = 1:length(filenamesAM)
     
+    close all
+    
     filename = [pathaudio filenamesAM{k} '.wav'];
     
     [x Fs] = Wavread(filename);
@@ -89,13 +89,26 @@ for k = 1:length(filenamesAM)
         grid on
         
         optsfig.format = 'epsc';
-        Saveas(gcf,[pathfigures 'AM-test-' num2str(k)],optsfig);
+        Saveas(gcf,[pathfigures 'AM-test-' num2str(k) '-1-time-series'],optsfig);
     end
 
-    bDebug = 0;
     out = Roughness_offline_debug(insig,Fs,N, bDebug); %No padding needed for off-line version
     % out = FluctuationStrength_offline_debug(insig,Fs,N, bDebug); %No padding needed for off-line version
-    RAM(k) = out{1}; 
+    RAM(k)  = out{1};
+    h       = out{4};
+    
+    for i = 1:length(h)
+        try 
+            Maximise_figure(h(i));
+        catch
+            warning('No maximisation of the figure');
+        end
+        
+        optsfig.format = 'epsc';
+        optsfig.bScale = 0;
+        Saveas(h(i),[pathfigures 'AM-test-' num2str(k) '-' num2str(i+1)],optsfig);
+        
+    end
     disp(sprintf('R=%.3f [aspers]\t test signal: %s\n',out{1},name2figname(filenamesAM{k})))
 end
 
@@ -103,6 +116,7 @@ end
 
 for k = 1:length(filenamesFM)
     
+    close all
     filename = [pathaudio filenamesFM{k} '.wav'];
     
     [x Fs] = Wavread(filename);
@@ -122,26 +136,32 @@ for k = 1:length(filenamesFM)
         plot(t,insig);
         xlabel('Time [s]')
         ylabel('Amplitude')
-        title(sprintf('Test signal %s.wav, level = %.2f [dB]',filenamesFM{k},rmsdb(insig)+90))
+        title(sprintf('Test signal %s.wav, level = %.2f [dB]',name2figname(filenamesFM{k}),rmsdb(insig)+90))
         grid on
         
         optsfig.format = 'epsc';
+        optsfig.bScale = 0;
         Saveas(gcf,[pathfigures 'FM-test-' num2str(k)],optsfig);
     end
 
     out = Roughness_offline_debug(insig,Fs,N, bDebug); %No padding needed for off-line version
     % out = FluctuationStrength_offline_debug(insig,Fs,N, bDebug); %No padding needed for off-line version
     RFM(k) = out{1}; 
+    h       = out{4};
+    
+    for i = 1:length(h)
+        try 
+            Maximise_figure(h(i));
+        catch
+            warning('No maximisation of the figure');
+        end
+        
+        optsfig.format = 'epsc';
+        Saveas(h(i),[pathfigures 'FM-test-' num2str(k) '-' num2str(i+1)],optsfig);
+        
+    end
     disp(sprintf('R=%.3f [aspers]\t test signal: %s\n',out{1},filenamesFM{k}))
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% opts = []; % we clear opts
-% opts.nAnalyser = 15; % Roughness
-% opts.CalMethod = 1; % 0 dBFS = 100 dB
-% opts.Author = 'DW';
-% filename = [filename '.wav'];
-% PsySoundCL(filename,opts);
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end

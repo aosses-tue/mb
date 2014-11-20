@@ -14,7 +14,7 @@ function Check_figure_size(h)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 02/06/2014
 % Last update on: 02/06/2014 % Update this date manually
-% Last use on   : 30/07/2014 % Update this date manually
+% Last use on   : 18/11/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin == 0

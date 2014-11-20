@@ -1,8 +1,10 @@
-function y = r20141114_FS_model(x)
-% function y = r20141114_FS_model(x)
+function r20141114_FS_model
+% function r20141114_FS_model
 %
 % 1. Description:
-%
+%       Code use to generate and to analyse the first version of the 
+%       Fluctuation Strength model (see update on 14/11/2014.
+% 
 % 2. Stand-alone example:
 %
 % 3. Additional info:
@@ -10,8 +12,8 @@ function y = r20141114_FS_model(x)
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 14/11/2014
-% Last update on: 14/11/2014 % Update this date manually
-% Last use on   : 14/11/2014 % Update this date manually
+% Last update on: 18/11/2014 % Update this date manually
+% Last use on   : 18/11/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 bDiary = 0;
@@ -23,7 +25,7 @@ Mkdir(pathfigures);
 close all
 
 %%
-N_blocks = 15;
+N_blocks = 1;
 [FSAM FSFM hFS afilesFS] = r20141107_fluctuation(N_blocks);
 
 % h = Figure2paperfigure(hFS(1),6,1);
@@ -39,6 +41,7 @@ f_idx   = 1:length(f);
 stdFSAM = std(FSAM);
 meanFSAM = mean(FSAM)
 plot(f_idx,meanFSAM,'b.-'), hold on, grid on
+% plot(f_idx,FSAM,'b.-'), hold on, grid on
 errorbar(f_idx,meanFSAM,stdFSAM)
 
 set(gca,'XTickLabel',f);

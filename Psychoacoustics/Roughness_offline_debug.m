@@ -3,6 +3,11 @@ function dataOut = Roughness_offline_debug(dataIn, Fs, N, bDebug)
 %
 % 1. Description:
 %       Off-line implementation of the roughness algorithm.
+%       Corrections by AO:
+% 
+%           ExcAmp(N1tmp, k) changed by ExcAmp(l, k) - this optimises the 
+%           memory allocation reserved for ExpAmp
+% 
 %       Changes:
 %           amp2db replaced by To_dB
 %           db2amp replaced by From_dB
@@ -45,12 +50,9 @@ if ~(Fs == 44100 | Fs == 40960 | Fs == 48000)
          'Hz']);
 end
 
-%%%%%%%%%%%%%%%%%
-% BEGIN InitAll %
-%%%%%%%%%%%%%%%%%
+%% BEGIN InitAll %
 
 Bark = Get_psyparams('Bark');
-    
 Bark2   = [sort([Bark(:,2);Bark(:,3)]),sort([Bark(:,1);Bark(:,4)])];
 
 N0      = round(20*N/Fs)+1;
@@ -69,15 +71,15 @@ Barkno(f)   = interp1(Bark2(:,1),Bark2(:,2),(f-1)*dFs);
 % Make list of frequency bins closest to Cf's
 Cf = ones(2,24);
 for a=1:1:24
-  Cf(1,a)=round(Bark((a+1),2)*N/Fs)+1-N0;
-  Cf(2,a)=Bark(a+1,2);
+    Cf(1,a)=round(Bark((a+1),2)*N/Fs)+1-N0;
+    Cf(2,a)=Bark(a+1,2);
 end
 %Make list of frequency bins closest to Critical Band Border frequencies
 Bf = ones(2,24);
 Bf(1,1)=round(Bark(1,3)*N/Fs);
 for a=1:1:24
-  Bf(1,a+1)=round(Bark((a+1),3)*N/Fs)+1-N0;
-  Bf(2,a)=Bf(1,a)-1;
+    Bf(1,a+1)=round(Bark((a+1),3)*N/Fs)+1-N0;
+    Bf(2,a)=Bf(1,a)-1;
 end
 Bf(2,25)=round(Bark((25),3)*N/Fs)+1-N0;
 
@@ -119,20 +121,13 @@ Hweight = Get_Hweight_roughness(N,Fs);
 % END Hweights 
 %%%%%%%%%%%%%%%%
 
-% BEGIN: RoughBody
-
-bBlackman = 1;
+%% Stage 1, BEGIN: RoughBody
 
 Window = blackman(N, 'periodic') .* 1.8119;
 dBcorr = 80+10.72; % originally = 80
 
-if bBlackman
-    dataIn = dataIn .*Window;
-    AmpCal = From_dB(dBcorr)*2/(N*mean(blackman(N, 'periodic'))); 
-else
-    warning('Blackman by-passed')
-    AmpCal = From_dB(dBcorr);
-end
+dataIn = dataIn .*Window;
+AmpCal = From_dB(dBcorr)*2/(N*mean(blackman(N, 'periodic'))); 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -155,15 +150,32 @@ ri		=	zeros(1,Chno);
 TempIn =  dataIn*AmpCal;
 [rt,ct]=size(TempIn);
 [r,c]=size(a0);
-if rt~=r; TempIn=TempIn'; end
+if rt~=r; TempIn=TempIn'; end   % converts input TempIn to a column vector 1 x 8192
     
-TempIn	=	a0.*fft(TempIn);
-Lg		=	abs(TempIn(qb));
+% From the time domain to the frequency domain:
+TempIn	=	a0.*fft(TempIn);    % plot((1:N)*Fs/N,a0.*fft(TempIn)), xlim([0 Fs/2])
+Lg		=	abs(TempIn(qb));    % It takes only the frequencies of interest
+                                % semilogx(freqs,Lg), xlabel('Frequency [Hz]'), ylabel('Magnitude')
 LdB		=	To_dB(Lg);
-whichL	=	find(LdB>MinExcdB);
+whichL	=	find(LdB>MinExcdB); % Frequency components above hearing thresholds
 sizL	=	length(whichL);
 
-% steepness of slopes (Terhardt)
+if bDebug
+    
+    hFig = figure(2);
+    
+    subplot(2,1,1)
+    semilogx(freqs,MinExcdB), hold on
+    plot(freqs(whichL),LdB(whichL),'r')
+    
+    xlabel('Frequency [Hz]')
+    ylabel('Magnitude')
+    
+    legend('Hearing threshold','components above threshold')
+    
+end
+
+% Assessment of slopes (Terhardt) for freq components above thres.
 S1 = -27;
 S2 = zeros(1,sizL);
 
@@ -174,34 +186,60 @@ for w = 1:1:sizL;
         S2(w) = steep;
     end
 end
+% END: Assessment of slopes
 
-whichZ	= zeros(2,sizL);
-qd		= 1:1:sizL;
-whichZ(1,:)	= floor(2*Barkno(whichL(qd)+N01));
-whichZ(2,:)	= ceil(2*Barkno(whichL(qd)+N01));
+whichZ      = zeros(2,sizL);
+qd          = 1:1:sizL;
+whichZ(1,:)	= floor(2*Barkno(whichL(qd)+N01));  % idxs up to which S1 is going to be used
+whichZ(2,:)	= ceil(2*Barkno(whichL(qd)+N01));   % idxs from which S2 is going to be used
 
 ExcAmp = zeros(sizL,47);
 Slopes = zeros(sizL,47);
 
+% One masking pattern (as a function of freq) per each level LdB above 
+% threshold. Therefore sizL patterns will be obtained.
+% The masking patterns are going to be in the critical bands between
+% whichZ(1,:) and whichZ(2,:)
 for k=1:1:sizL
-    Ltmp = LdB(whichL(k));
-    Btmp = Barkno(whichL(k)+N01);
+    Ltmp = LdB(whichL(k));          % Level [dB]
+    Btmp = Barkno(whichL(k)+N01);   % Frequency [Bark]
 
     for l = 1:1:whichZ(1,k)
         Stemp = (S1*(Btmp-(l*0.5)))+Ltmp;
         if Stemp>MinBf(l)
           Slopes(k,l)=From_dB(Stemp);
         end
-      end
-      for l = whichZ(2,k):1:47
+    end
+    
+    for l = whichZ(2,k):1:47
         Stemp =	(S2(k)*((l*0.5)-Btmp))+Ltmp;
         if Stemp>MinBf(l)
           Slopes(k,l)=From_dB(Stemp);
         end
-      end
+    end
+end
+% End: assessment of slopes (Terhardt)
+
+if bDebug
+    
+    figure(2);
+    subplot(2,1,2)
+    
+    idxq = whichL;
+    L = length(idxq);
+    
+    idx2plot = 14:22;
+    BandNumber = repmat( ((idx2plot)'),1,L);
+    freqsm = repmat(freqs(whichL),length(idx2plot),1);
+    mesh(freqsm',BandNumber',Slopes(:,idx2plot)), hold on
+    
+    xlabel('Frequency [Hz]')
+    ylabel('CB number')
+    title('Determined masking patterns')
+    
 end
 
-for k=1:1:47
+for k=1:1:47 % each critical band number
     
     etmp = zeros(1,N);
     
@@ -209,29 +247,38 @@ for k=1:1:47
         
         N1tmp = whichL(l);
         N2tmp = N1tmp + N01;
-        if (whichZ(1,l) == k)
-            ExcAmp(N1tmp, k) = 1;
-        elseif (whichZ(2,l) == k)
-            ExcAmp(N1tmp, k) = 1;
-        elseif (whichZ(2,l) > k)
-            ExcAmp(N1tmp,k) = Slopes(l,k+1)/Lg(N1tmp);
-        else
-            ExcAmp(N1tmp,k) = Slopes(l,k-1)/Lg(N1tmp);
+        
+        if (whichZ(1,l) == k)  % Second enters here
+            ExcAmp(l, k) = 1;
+        elseif (whichZ(2,l) == k) % Third enters here
+            ExcAmp(l, k) = 1;
+        elseif (whichZ(2,l) > k) % First enters here
+            ExcAmp(l,k) = Slopes(l,k+1)/Lg(N1tmp);
+        else % Fourth enters here
+            ExcAmp(l,k) = Slopes(l,k-1)/Lg(N1tmp);
         end
-        etmp(N2tmp) = ExcAmp(N1tmp,k)*TempIn(N2tmp); 
+        etmp(N2tmp) = ExcAmp(l,k)*TempIn(N2tmp); 
+        
+        % figure; ktmp = 13; plot(Slopes(:,ktmp)./transpose(Lg(whichL)));
+        % figure; plot(freqs, abs(etmp(qb)) ), hold on; plot(freqs(whichL),ExcAmp(:,k)/max(ExcAmp(:,k))*max(abs(etmp)),'r'), xlim(minmax(freqs(whichL)).*[0.8 1.2]), pause(2), close
+        
     end
     
     if k == 17
         if bDebug
-            figure(2); 
-            plot(freqs,20*log10(abs(etmp(qb))))
+            hFig(end+1) = figure(3); 
+            plot(freqs,20*log10(abs(etmp(qb))),'LineWidth',2), hold on
+            plot(freqs,20*log10(abs(TempIn(qb))),'r--')
             hold on; grid on
             xlabel('Frequency [Hz]')
             ylabel('Level [dB]')
             title('Spectral components: Terhardt''s model')
-            xlim([900 1100])
+            legend('only excitation','M + all freq components')
+            xlim([900-200 1100+200])
         end
     end
+    
+    %% Stage 2
     
     % etmp_fd  - excitation pattern in frequency domain
     % etmp  - excitation patterns in time domain (after L242)
@@ -239,153 +286,154 @@ for k=1:1:47
     % Fei   - envelope in frequency domain, as function of fmod
     % h0    - DC component, average of half-wave rectified signal
     
-    etmp_fd(k,:)   = etmp;
+    etmp_fd(k,:)= etmp;
     ei(k,:)     = N*real(ifft(etmp));
     etmp_td(k,:)= abs(ei(k,:));
     h0(k)       = mean(etmp_td(k,:));
     Fei(k,:)	= fft( etmp_td(k,:)-h0(k) ); % changes the phase but not the amplitude
     
-    if bDebug
-        Fsnew       = Fs/2;
-        Nnew        = N/2;
-        eir         = resample(ei(k,:),Fsnew,Fs); % eir at Fs = 22050
-        etmpr       = abs(eir);
-        h0r(k)      = mean(etmpr);
-        
-        % Feir(k,:)	= fft( etmpr-h0r(k) ,Nnew); % TEST
-        Feir(k,:)	= fft( etmpr-h0r(k) ,N); 
-        Hweightr(k,:) = Hweight(k,:); % resample( Hweight(k,:),Fsnew,Fs );
-    
-        % hBPi  - band-pass filtered envelopes in time domain
-    
-        [b,a] = butter(8,1000/Fs,'low');
-        [bred,ared] = butter(8,(Fsnew/2)/Fsnew,'low');
-        eirFS = filter(bred,ared,eir);
-        h0rFS(k) = mean(abs(eirFS));
-    end
-    
     hBPi(k,:)	= 2*real(  ifft( Fei(k,:).*Hweight(k,:) )  );
     hBPrms(k)	= dw_rms(hBPi(k,:));
     
-    if bDebug
-        hBPi2 = filter(b,a,hBPi(k,:));
-        hBPrms2(k)	= dw_rms(hBPi2);
-        
-        hBPi3(k,:)	= 2*real(  ifft( Feir(k,:).*Hweightr(k,:) ,N)  );
-        hBPi3(k,:)  = filter(bred,ared,hBPi3(k,:));
-        hBPrms3(k)	= dw_rms(hBPi3(k,:));
-    end
-    
-    if k == 17
-        if bDebug
-            
-            fidx_min = min(qb);
-            figure(3); 
-            
-            Fei_dB = 20*log10(abs(Fei(k,:)));
-            plot(freqs, Fei_dB(qb),'LineWidth',1), hold on
-            
-            opts.fs = Fs;
-            [ytmp tmpYdB,ftmp] = freqfft(hBPi(k,:)',N/2,opts);
-            
-            plot(ftmp(fidx_min:end),tmpYdB(fidx_min:end),'r')
-            grid on
-            xlabel('Frequency [Hz]')
-            ylabel('Level [dB]')
-            
-            opts.fs = Fs;
-            [ytmp tmpYdB2,ftmp] = freqfft(hBPi2',N/2,opts);
-            plot(ftmp(fidx_min:end),tmpYdB2(fidx_min:end),'m--')
-            
-            opts.fs = Fsnew;
-            [ytmp tmpYdB3,ftmp3] = freqfft(hBPi3(k,:)',N/2,opts);
-            plot(ftmp3,tmpYdB3,'k--','LineWidth',1)
-            
-            legend('Fei','hBPi','hBPi with LPF','hBPi with Fs_r_e_d + LPF')
-        end
-    end
-    
     if h0(k)>0
         mdept(k) = hBPrms(k)/h0(k);
-        if bDebug
-            mdept3(k) = hBPrms3(k)/h0r(k);
-        end
         if mdept(k)>1
             mdept(k)=1;
-        end
-        if bDebug
-            mdept3(k) = 1;
         end
     else
         mdept(k)=0;
     end
     
+    if bDebug
+        
+        figM = 3;
+        figN = 2;
+        plot_x = 1:size(etmp_td,2);
+        plot_f = ( 1:size(etmp_fd,2) )/N*Fs;
+        
+        if k == 15
+            
+            hFig(end+1) = figure(4);
+            subplot(figM,figN,1)
+            hp(1) = plot(plot_f,abs(etmp_fd(k,:)));
+            ha = gca;
+            grid on, hold on
+            title(sprintf('Excitation patterns in freq. domain\nNum band = %.0f',k))
+            xlabel('Frequency [Hz]')
+            
+            subplot(figM,figN,2)
+            hp(1) = plot(plot_x,abs(etmp_td(k,:))); grid on, hold on
+            hp(2) = plot(minmax(plot_x),[h0(k) h0(k)],'r');
+            hp(3) = plot(plot_x,hBPi(k,:),'k','LineWidth',2);
+            
+            legend(hp(2:3),   {sprintf( 'h0=%.1f',h0(k)),...
+                               sprintf( 'hBPrms = %.1f',hBPrms(k))});
+            ha1 = gca;
+            
+            title( sprintf('Excitation patterns in time domain (half rectified)\nNum band = %.0f, mdepth = %.2f',k,mdept(k)) )
+            xlabel('Samples')
+            
+        end
+        
+        if k == 17
+            figure(4)
+            subplot(figM,figN,3)
+            plot(plot_f,abs(etmp_fd(k,:)))
+            ha(end+1) = gca;
+            grid on 
+            title(sprintf('Num band = %.0f',k))
+            xlabel('Frequency [Hz]')
+            
+            subplot(figM,figN,4)
+            hp(1) = plot(plot_x,abs(etmp_td(k,:))); grid on, hold on
+            hp(2) = plot(minmax(plot_x),[h0(k) h0(k)],'r');
+            hp(3) = plot(plot_x,hBPi(k,:),'k','LineWidth',2);
+            
+            legend(hp(2:3),   {sprintf( 'h0=%.1f',h0(k)),...
+                               sprintf( 'hBPrms = %.1f',hBPrms(k))});
+            ha1(end+1) = gca;
+            
+            title(sprintf('Num band = %.0f, mdepth = %.2f',k,mdept(k)))
+            xlabel('Samples')
+        end
+        
+        if k == 18
+            figure(4)
+            subplot(figM,figN,5)
+            plot(plot_f,abs(etmp_fd(k,:)))
+            ha(end+1) = gca;
+            linkaxes(ha,'xy');
+            ylim([0 2500])
+            xlim([150/N*Fs 250/N*Fs]) % plotted from bin 150 to 250
+            grid on
+            title(sprintf('Num band = %.0f',k))
+            xlabel('Frequency [Hz]')
+            
+            subplot(figM,figN,6)
+            hp(1) = plot(plot_x,abs(etmp_td(k,:))); grid on, hold on
+            hp(2) = plot(minmax(plot_x),[h0(k) h0(k)],'r');
+            hp(3) = plot(plot_x,hBPi(k,:),'k','LineWidth',2);
+            
+            legend(hp(2:3),   {sprintf( 'h0=%.1f',h0(k)),...
+                               sprintf( 'hBPrms = %.1f',hBPrms(k))});
+            ha1(end+1) = gca;
+            
+            linkaxes(ha1,'xy')
+            ylim([-2000 12000])
+            xlim(minmax(plot_x))
+            grid on, hold on
+            plot(minmax(plot_x),[h0(k) h0(k)],'r')
+            plot(plot_x,hBPi(k,:),'k','LineWidth',2)
+            title(sprintf('Num band = %.0f, mdepth = %.2f',k,mdept(k)))
+            xlabel('Samples')
+            
+            disp('')
+        end
+        
+    end
+    
 end
 
-if bDebug
-    
-    % params for figures 4 and 5
-    idx2plot = 14:22; 
-        
-    % params just for figure 4
-    idxq = find(freqs<1200 & freqs>800);
-    L = length(idxq);
-    freqsm = repmat(freqs(idxq),length(idx2plot),1);
-    BandNumber = repmat( ((idx2plot)'), 1, L);
-    
-    figure(4);
-    mesh( freqsm,BandNumber,20*log10(abs(etmp_fd(idx2plot,idxq))) )
-    xlabel('Frequency [Hz]')
-    ylabel('Band number')
-    zlabel('Level [dB]')
-    title('Excitation patterns')
-    
-    % params just for figure 5
-    BandNumber = repmat( ((idx2plot)'), 1, N);
-    t = repmat( (1:N)/Fs ,length(idx2plot),1);
-    
-    figure(5); 
-    mesh( t,BandNumber,hBPi(idx2plot,:) )
-    xlabel('Time [s]')
-    ylabel('Band number')
-    title('Band-pass signals')
-    zlim([-4000 4000])
-    
-end
+%% Stage 3
 
 % find cross-correlation coefficients
-    for k=1:1:45
-      cfac	=	cov(hBPi(k,:),hBPi(k+2,:));
-      den	=	diag(cfac);
-      den	=	sqrt(den*den');
-      if den(2,1)>0
-        ki(k)	=	cfac(2,1)/den(2,1);
-      else
-        ki(k)	=	0;
-      end
-    end
+for k=1:1:45
+  cfac	=	cov(hBPi(k,:),hBPi(k+2,:));
+  den	=	diag(cfac);
+  den	=	sqrt(den*den');
+  if den(2,1)>0
+    ki(k)	=	cfac(2,1)/den(2,1);
+  else
+    ki(k)	=	0;
+  end
+end
 
-    % Calculate specific roughness ri and total roughness R
-    ri(1)	=	(gzi(1)*mdept(1)*ki(1))^2;
-    ri(2)	=	(gzi(2)*mdept(2)*ki(2))^2;
-    for k = 3:1:45
-      ri(k)	=	(gzi(k)*mdept(k)*ki(k-2)*ki(k))^2;
-    end
-    ri(46)	=	(gzi(46)*mdept(46)*ki(44))^2;
-    ri(47)	=	(gzi(47)*mdept(47)*ki(45))^2;
-    R		=	Cal*sum(ri);
-    
-    SPL = mean(rms(dataIn));
-    if SPL > 0
-      SPL = To_dB(SPL)+dBcorr+3; % -20 dBFS <--> 60 dB SPL
-    else
-      SPL = -400;
-    end
-    
-    % Create a cell array to return
-    dataOut{1} = R;
-    dataOut{2} = ri;
-    dataOut{3} = SPL;
+% Calculate specific roughness ri and total roughness R
+ri(1)	=	(gzi(1)*mdept(1)*ki(1))^2;
+ri(2)	=	(gzi(2)*mdept(2)*ki(2))^2;
+for k = 3:1:45
+  ri(k)	=	(gzi(k)*mdept(k)*ki(k-2)*ki(k))^2;
+end
+ri(46)	=	(gzi(46)*mdept(46)*ki(44))^2;
+ri(47)	=	(gzi(47)*mdept(47)*ki(45))^2;
+R		=	Cal*sum(ri);
+
+SPL = mean(rms(dataIn));
+if SPL > 0
+    SPL = To_dB(SPL)+dBcorr+3; % -20 dBFS <--> 60 dB SPL
+else
+    SPL = -400;
+end
+
+% Create a cell array to return
+dataOut{1} = R;
+dataOut{2} = ri;
+dataOut{3} = SPL;
+
+if bDebug
+    dataOut{4} = hFig;
+    disp('Total Roughness: %.2f [aspers]')
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
 % END: RoughBody
 

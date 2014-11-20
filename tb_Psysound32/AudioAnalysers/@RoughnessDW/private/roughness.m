@@ -58,12 +58,11 @@ function dataOut = RoughBody(dataIn)
     TempIn =  dataIn*AmpCal;
     [rt,ct]=size(TempIn);
     [r,c]=size(a0);                 % plot((1:N)*Fs/N,a0), xlim([0 Fs/2])
-    if rt~=r; TempIn=TempIn'; end % converts input TempIn to a column vector 1 x 8192
+    if rt~=r; TempIn=TempIn'; end   % converts input TempIn to a column vector 1 x 8192
     
     % From the time domain to the frequency domain:
-    TempIn	=	a0.*fft(TempIn);    % plot((1:N)*Fs/N,a0.*fft(TempIn)), xlim([0 Fs/2])
+    TempIn	=	a0.*fft(TempIn);    
     Lg		=	abs(TempIn(qb));    % It takes only the frequencies of interest
-                                    % semilogx(freqs,Lg), xlabel('Frequency [Hz]'), ylabel('Magnitude')
     LdB		=	amp2db(Lg);
     whichL	=	find(LdB>MinExcdB); % semilogx(freqs,MinExcdB), xlabel('Frequency [Hz]'), ylabel('Magnitude'), title('Hearing threshold')
     sizL	=	length(whichL);

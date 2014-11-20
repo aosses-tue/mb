@@ -14,7 +14,7 @@ function [FSAM, FSFM, h, afiles] = r20141107_fluctuation(N_blocks)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 05/11/2014
 % Last update on: 05/11/2014 % Update this date manually
-% Last use on   : 14/11/2014 % Update this date manually
+% Last use on   : 18/11/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % TODO:
@@ -42,6 +42,7 @@ try
 catch % if reference does not exist, then it is created...
     
     opts.bDoFluct = 1;
+    opts.bDoRough = 0;
     opts.dur = (20*N/44100); %  approx. 20 times 200e-3 ms;
     opts.bGen_test_tones = 1;
     
@@ -107,7 +108,7 @@ for k = 1:length(filenamesAM)
         Saveas(gcf,[pathfigures 'AM-test-' num2str(k)],optsfig);
     end
 
-    out = FluctuationStrength_offline_debug(insig,Fs,N); %, bDebug); %No padding needed for off-line version
+    out = FluctuationStrength_offline_debug(insig,Fs,N, bDebug); %No padding needed for off-line version
     FSAM(:,k) = out{1}; 
     % disp(sprintf('FS=%.3f [vacils]\t test signal: %s\n',out{1},name2figname(filenamesAM{k})))
 end
