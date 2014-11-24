@@ -32,8 +32,8 @@ function dataOut = Roughness_offline_debug(dataIn, Fs, N, bDebug)
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 10/11/2014
-% Last update on: 14/11/2014 % Update this date manually
-% Last use on   : 14/11/2014 % Update this date manually
+% Last update on: 21/11/2014 % Update this date manually
+% Last use on   : 21/11/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 4
@@ -61,7 +61,7 @@ N50     = round(50*N/Fs)-N0+1;
 N2      = N/2+1;
 Ntop	= round(20000*N/Fs)+1;
 Ntop2	= Ntop-N0+1;
-dFs	= Fs/N;
+dFs     = Fs/N;
 
 % Make list with Barknumber of each frequency bin
 Barkno      = zeros(1,N2);
@@ -138,8 +138,8 @@ Chno	=	47;
 Cal	 	=	0.25;
 N2		=	N/2;
 q		=	1:1:N;
-qb		=	N0:1:Ntop;
-freqs	=	(qb+1)*Fs/N;
+qb		=	N0:1:Ntop; % N0:1:Ntop;
+freqs	=	qb*Fs/N; % freqs	=	(qb+1)*Fs/N;
 hBPi	=	zeros(Chno,N);
 hBPrms	=	zeros(1,Chno);
 mdept	=	zeros(1,Chno);
@@ -147,13 +147,23 @@ ki		=	zeros(1,Chno-2);
 ri		=	zeros(1,Chno);
 
 % Calculate Excitation Patterns
-TempIn =  dataIn*AmpCal;
-[rt,ct]=size(TempIn);
-[r,c]=size(a0);
+TempIn  =   dataIn*AmpCal;
+[rt,ct] =   size(TempIn);
+[r,c]   =   size(a0);
 if rt~=r; TempIn=TempIn'; end   % converts input TempIn to a column vector 1 x 8192
     
 % From the time domain to the frequency domain:
-TempIn	=	a0.*fft(TempIn);    % plot((1:N)*Fs/N,a0.*fft(TempIn)), xlim([0 Fs/2])
+TempIn	=	a0.*fft(TempIn);    
+
+if bDebug
+    figure;
+    plot((1:N)*Fs/N,20*log10(abs( TempIn )) )
+    xlim([0 Fs/2])
+    xlabel('Frequency [Hz]')
+    ylabel('Level [dB]')
+    close 
+end
+
 Lg		=	abs(TempIn(qb));    % It takes only the frequencies of interest
                                 % semilogx(freqs,Lg), xlabel('Frequency [Hz]'), ylabel('Magnitude')
 LdB		=	To_dB(Lg);
@@ -165,9 +175,11 @@ if bDebug
     hFig = figure(2);
     
     subplot(2,1,1)
-    semilogx(freqs,MinExcdB), hold on
+    semilogx(freqs,MinExcdB), hold on, grid on
     plot(freqs(whichL),LdB(whichL),'r')
     
+    xlim([minmax(freqs(whichL))].*[0.5 2]) % One octave below and above the frequencies above Thres.
+    ylim([min(MinExcdB) max(max(LdB),max(MinExcdB))*2])
     xlabel('Frequency [Hz]')
     ylabel('Magnitude')
     
@@ -190,6 +202,8 @@ end
 
 whichZ      = zeros(2,sizL);
 qd          = 1:1:sizL;
+
+% In which critical band number are the levels above threshold located:
 whichZ(1,:)	= floor(2*Barkno(whichL(qd)+N01));  % idxs up to which S1 is going to be used
 whichZ(2,:)	= ceil(2*Barkno(whichL(qd)+N01));   % idxs from which S2 is going to be used
 
@@ -230,38 +244,62 @@ if bDebug
     
     idx2plot = 14:22;
     BandNumber = repmat( ((idx2plot)'),1,L);
-    freqsm = repmat(freqs(whichL),length(idx2plot),1);
-    mesh(freqsm',BandNumber',Slopes(:,idx2plot)), hold on
     
-    xlabel('Frequency [Hz]')
+    lvl_idx = 1:length(freqs(whichL));
+    
+    level_sm = repmat(lvl_idx,length(idx2plot),1);
+    mesh(level_sm',BandNumber',To_dB( Slopes(:,idx2plot) )), hold on
+    
+    xlim(minmax(lvl_idx))
+    
+    xlabel(sprintf('Level_{idx}\nnumber of levels above threshold = %.0f',max(lvl_idx)))
     ylabel('CB number')
     title('Determined masking patterns')
     
 end
 
+if bDebug
+    etmp_array   = zeros(47,N);
+end
+
 for k=1:1:47 % each critical band number
     
-    etmp = zeros(1,N);
+    etmp    = zeros(1,N);
     
     for l=1:1:sizL % each level above threshold
         
         N1tmp = whichL(l);
-        N2tmp = N1tmp + N01;
+        N2tmp = N1tmp + N01; % N1tmp 'corrected' to match Lg idxs with TempIn idxs
         
-        if (whichZ(1,l) == k)  % Second enters here
+        if (whichZ(1,l) == k)  % If lower limit is equal to k (Second enters here)
             ExcAmp(l, k) = 1;
-        elseif (whichZ(2,l) == k) % Third enters here
+            if bDebug; idxExcAmp(l,k)=1; end
+            
+        elseif (whichZ(2,l) == k) % If upper limit is equal to k (Third enters here)
             ExcAmp(l, k) = 1;
+            if bDebug; idxExcAmp(l,k)=2; end
+            
         elseif (whichZ(2,l) > k) % First enters here
-            ExcAmp(l,k) = Slopes(l,k+1)/Lg(N1tmp);
+            ExcAmp(l,k) = Slopes(l,k+1)/Lg(N1tmp);  % Increasing slopes, increasing Lg as k increases:
+                                                    % So: ExpAmp increases with values from 0 to 1
+            if bDebug; idxExcAmp(l,k)=3; end
+            
         else % Fourth enters here
-            ExcAmp(l,k) = Slopes(l,k-1)/Lg(N1tmp);
+            ExcAmp(l,k) = Slopes(l,k-1)/Lg(N1tmp);  % Decreasing slopes, decreasing Lg as k decreases
+                                                    % So: ExpAmp decreases with values from 1 to 0
+            if bDebug; idxExcAmp(l,k)=4; end
+            
         end
-        etmp(N2tmp) = ExcAmp(l,k)*TempIn(N2tmp); 
+        
+        if bDebug; disp(sprintf('CB number k = %.0f, ExcAmp=%.2f, entered ''if'' %.0f',k,ExcAmp(l, k),idxExcAmp(l,k))); end
         
         % figure; ktmp = 13; plot(Slopes(:,ktmp)./transpose(Lg(whichL)));
-        % figure; plot(freqs, abs(etmp(qb)) ), hold on; plot(freqs(whichL),ExcAmp(:,k)/max(ExcAmp(:,k))*max(abs(etmp)),'r'), xlim(minmax(freqs(whichL)).*[0.8 1.2]), pause(2), close
+        % figure; plot(freqs, abs(etmp(qb)) ), hold on; plot(freqs(whichL),ExcAmp(:,ktmp)/max(ExcAmp(:,ktmp))*max(abs(etmp)),'r'), xlim(minmax(freqs(whichL)).*[0.8 1.2]), pause(2), close
         
+    end
+    etmp( whichL+N01 ) = ExcAmp(:,k)'.*TempIn( whichL+N01 );
+    if bDebug
+        etmp_array(k, whichL+N01 ) = ExcAmp(:,k)'.*TempIn( whichL+N01 ); 
     end
     
     if k == 17
@@ -273,7 +311,7 @@ for k=1:1:47 % each critical band number
             xlabel('Frequency [Hz]')
             ylabel('Level [dB]')
             title('Spectral components: Terhardt''s model')
-            legend('only excitation','M + all freq components')
+            legend('Excitation, etmp (to be used for calculation)','M + all freq components')
             xlim([900-200 1100+200])
         end
     end
@@ -315,7 +353,7 @@ for k=1:1:47 % each critical band number
             
             hFig(end+1) = figure(4);
             subplot(figM,figN,1)
-            hp(1) = plot(plot_f,abs(etmp_fd(k,:)));
+            hp(1) = plot(plot_f,20*log10(abs(etmp_fd(k,:))));
             ha = gca;
             grid on, hold on
             title(sprintf('Excitation patterns in freq. domain\nNum band = %.0f',k))
@@ -338,7 +376,7 @@ for k=1:1:47 % each critical band number
         if k == 17
             figure(4)
             subplot(figM,figN,3)
-            plot(plot_f,abs(etmp_fd(k,:)))
+            plot(plot_f,20*log10(abs(etmp_fd(k,:))));
             ha(end+1) = gca;
             grid on 
             title(sprintf('Num band = %.0f',k))
@@ -360,7 +398,7 @@ for k=1:1:47 % each critical band number
         if k == 18
             figure(4)
             subplot(figM,figN,5)
-            plot(plot_f,abs(etmp_fd(k,:)))
+            plot(plot_f,20*log10(abs(etmp_fd(k,:))));
             ha(end+1) = gca;
             linkaxes(ha,'xy');
             ylim([0 2500])

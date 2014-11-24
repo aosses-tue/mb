@@ -158,11 +158,10 @@ end
 
 % BEGIN Hweights:
 
-Htmp = Get_Hweight_fluctuation(N,Fs);
-Hweight = repmat( Htmp(1,:),Chno,1);
+Htmp        = Get_Hweight_fluctuation(N,Fs);
+Hweight     = repmat( Htmp(1,:),Chno,1);
 
-Hhann = Hanning_half(8192);
-
+Hhann       = Hanning_half(8192);
 % END Hweights 
 %%%%%%%%%%%%%%%%
 
@@ -333,63 +332,75 @@ for idx_j = 1:m_blocks
 
         etmp_fd(k,:)= etmp;
         ei(k,:)     = N*real(ifft(etmp));
+        eiconv(k,:) = conv(ei(k,:),Hhann);
+        
         etmp_td(k,:)= abs(ei(k,:));
+        etmp_td_test(k,:)= abs(eiconv(k,:));
+        
+        h0test(k)   = mean(etmp_td_test(k,:));
+        
         h0(k)       = mean(etmp_td(k,:));
         Fei(k,:)	= fft( etmp_td(k,:)-h0(k) ); % changes the phase but not the amplitude
         
         hBPi(k,:)	= 2*real(  ifft( Fei(k,:).*Hweight(k,:) ,N)  );
         hBPrms(k)	= dw_rms(hBPi(k,:));
         
+        etmp_tdc(k,:)= abs(eiconv(k,:));
+        h0c(k)      = mean(etmp_tdc(k,:));
+        Feic(k,:)	= fft( etmp_tdc(k,:)-h0c(k) ,N);
+        hBPic(k,:)	= 2*real(  ifft( Feic(k,:).*Hweight(k,:) ,N)  );
+        hBPrmsc(k)	= dw_rms(hBPic(k,:));
+        
         downsamplefactor = round(N/8192);
         Fsnew       = Fs/downsamplefactor;
         Hhweight    = Get_Hweight_fluctuation(8192,Fsnew);
         
-        error('Problem is the window...')
-        Hhann = Hanning_half(8192);
-        optstm.fs = Fs;
-        [tmy1 tmydB1 ff1] = freqfft(Hhann,8192*10,optstm);
-        
-        figure;
-        plot(ff1,tmy1)
-        xlim([0 30]);
+        % optstm.fs = Fs;
+        % [tmy1 tmydB1 ff1] = freqfft(Hhann,8192*10,optstm);
+        % 
+        % figure;
+        % plot(ff1,tmydB1), grid on
+        % xlim([0 1000]);
         
         Feir        = fft( etmp_td(k,:)-h0(k) ,8192);
-        tBPi        = (1/(length(Hhann)*mean(Hhann))) * conv(Fei(k,:),Hhann);
+        tBPi        = conv(Fei(k,:),Hhann);
         tBPir       = downsample( tBPi,downsamplefactor );
+        h0r(k)      = mean(abs(tBPir));
         
         tBPffti     = fft(tBPir,8192);
         hBPir       = 2*real(  ifft( tBPffti.*Hhweight ,8192)  );
         hBPrmsr(k)	= dw_rms(hBPir);
         
         if k == 17
-            bBool = 0;
-            if bBool
-                %optstm.fs = 44100;
-                %[tmy tmydB ff1] = freqfft(1/N*tBPi',N/2,optstm);
 
-                optstm.fs = Fsnew;
-                [tmy1 tmydB1 ff1] = freqfft(1/8192*hBPir',8192/2,optstm);
-                
-                optstm.fs = Fsnew;
-                [tmy2 tmydB2 ff2] = freqfft(1/8192*tBPir',8192/2,optstm);
-                
+            if bDebug
                 optstm.fs = 44100;
-                [tmy3 tmydB3 ff3] = freqfft(1/N*hBPi(k,:)',N,optstm);
-                
+                [tmy tmydB1 ff1] = freqfft(ei(k,:)',N/2,optstm);
+
+                optstm.fs = 44100;
+                [tmy2 tmydB2 ff2] = freqfft(eiconv(k,:)',N/2,optstm);
+
+                optstm.fs = 44100;
+                [tmy3 tmydB3 ff3] = freqfft(Hhann,N/2,optstm);
+
                 figure;
-                plot(ff1,tmydB1, ff2,tmydB2, ff3, tmydB3)
-                legend('Fs-down, BP','Fs-down no BP','ref')
+                plot(ff1,tmydB1, ff2,tmydB2,ff3,tmydB3)
+                legend('ei','ei+LPF','win')
                 xlim([0 150])
             end
+
         end
         
         if h0(k)>0
             
             mdept(k) = hBPrms(k)/h0(k);
-            mdeptr(k) = hBPrmsr(k)/h0(k);
+            mdeptr(k) = hBPrmsc(k)/h0c(k);
             
             if mdept(k)>1
                 mdept(k)=1;
+            end
+            if mdeptr(k)>1
+                mdeptr(k)=1;
             end
             
         else
@@ -500,6 +511,17 @@ for idx_j = 1:m_blocks
         end
     end
 
+    for k=1:1:Chno-2
+        cfacc	=	cov(hBPic(k,:),hBPic(k+2,:));
+        denc	=	diag(cfacc);
+        denc	=	sqrt(denc*denc');
+        if denc(2,1)>0
+            kic(k)	=	cfacc(2,1)/denc(2,1);
+        else
+            kic(k)	=	0;
+        end
+    end
+    
     % Calculate specific roughness ri and total roughness R
     fi(idx_j,1)         =	(h0(1)^qg)*(mdept(1)^p)*(ki(1)^kg);
     fi(idx_j,2)         =	(h0(2)^qg)*(mdept(2)^p)*(ki(2)^kg);
@@ -513,15 +535,15 @@ for idx_j = 1:m_blocks
     FS(idx_j)           =	Cal*( sum(fi(idx_j,:)) )^(1/s);
 
     % TMP
-    fir(idx_j,1)         =	(h0(1)^qg)*(mdeptr(1)^p)*(ki(1)^kg);
-    fir(idx_j,2)         =	(h0(2)^qg)*(mdeptr(2)^p)*(ki(2)^kg);
+    fir(idx_j,1)         =	(h0c(1)^qg)*(mdeptr(1)^p)*(kic(1)^kg);
+    fir(idx_j,2)         =	(h0c(2)^qg)*(mdeptr(2)^p)*(kic(2)^kg);
 
     for k = 3:1:Chno-2
-        fir(idx_j,k)     =	(h0(k)^qg)*(mdeptr(k)^p)*( ki(k-2)*ki(k) )^kg;
+        fir(idx_j,k)     =	(h0c(k)^qg)*(mdeptr(k)^p)*( kic(k-2)*kic(k) )^kg;
     end
 
-    fir(idx_j,Chno-1)	=	(h0(Chno-1)^qg)*(mdeptr(Chno-1)^p)*(ki(Chno-3)^kg);
-    fir(idx_j,Chno  )	=	(h0(Chno  )^qg)*(mdeptr(Chno  )^p)*(ki(Chno-2)^kg);
+    fir(idx_j,Chno-1)	=	(h0c(Chno-1)^qg)*(mdeptr(Chno-1)^p)*(kic(Chno-3)^kg);
+    fir(idx_j,Chno  )	=	(h0c(Chno  )^qg)*(mdeptr(Chno  )^p)*(kic(Chno-2)^kg);
     FSr(idx_j)           =	Cal*( sum(fir(idx_j,:)) )^(1/s);
     % END: TMP
     
@@ -541,6 +563,7 @@ end
 dataOut{1} = FS;
 dataOut{2} = fi;
 dataOut{3} = SPL;
+dataOut{4} = FSr;
 
 if bDebug
     dataOut{4} = hFig;

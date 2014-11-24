@@ -25,8 +25,8 @@ Mkdir(pathfigures);
 close all
 
 %%
-N_blocks = 1;
-[FSAM FSFM hFS afilesFS] = r20141107_fluctuation(N_blocks);
+N_blocks = 2;
+[FSAM FSFM out afilesFS] = r20141107_fluctuation(N_blocks);
 
 % h = Figure2paperfigure(hFS(1),6,1);
 % Saveas(h,[pathfigures 'stim-FS-AM-new']);
@@ -50,6 +50,20 @@ xlabel('Modulation Frequency [Hz]')
 ylabel('Fluctuation strength [vacil]')
 title('Amplitude Modulated test stimuli')
 Saveas(gcf,[pathfigures 'FS-AM-new']);
+
+figure;
+
+FSAMr = out.FSAMr;
+FSFMr = out.FSFMr;
+
+stdFSAMr = std(FSAMr);
+meanFSAMr = mean(FSAMr)
+stdFSFMr = std(FSFMr);
+meanFSFMr = mean(FSFMr)
+
+plot(f_idx,meanFSAMr,'b.-'), hold on, grid on
+% plot(f_idx,FSAM,'b.-'), hold on, grid on
+errorbar(f_idx,meanFSAMr,stdFSAMr)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 figure;

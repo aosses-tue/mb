@@ -173,7 +173,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % BEGIN: FluctuationStrengthBody
 
-Hann_tmp = hanning(N, 'periodic'); 
+Hann_tmp = hanning(N, 'symmetric'); 
 Hann = Hann_tmp;
 Hann(N/2+1:end) = 0; 
 

@@ -4,17 +4,21 @@ function Hweight = Get_Hweight_fluctuation(N,Fs)
 % 1. Description:
 %
 % 2. Stand-alone example:
-%
+%       N   = 8192*16;
+%       Fs  = 44100;
+%       Get_Hweight_fluctuation(N,Fs);
+% 
 % 3. Additional info:
 %       Tested cross-platform: No
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 12/11/2014
-% Last update on: 12/11/2014 % Update this date manually
-% Last use on   : 12/11/2014 % Update this date manually
+% Last update on: 20/11/2014 % Update this date manually
+% Last use on   : 20/11/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Hweight	= zeros(1,N);
+Hweight_bef	= zeros(1,N);
 
 DCbins	= 0;
 
@@ -38,7 +42,28 @@ last	= floor((16/Fs)*N) ;
 k       = DCbins+1:1:last;
 f       = (k-1)*Fs/N;
 
-Hweight(1,k) = interp1(fH2, H2(:,2),f(k - DCbins));
+Hhann = zeros(size(Hweight));
+Hhann(1:8192) = Hanning_half(8192);
+
+opts.fs = Fs;
+[yhan ydB fhan] = freqfft(Hhann',N/2,opts);
+
+fref = 4;
+y4Hz = interp1(fhan,abs(yhan),fref);
+
+idx = 1:length(fhan);
+
+Hweight_bef(1,k) = interp1(fH2, H2(:,2),f(k - DCbins));
+
+Hweight(1,k) = Hweight_bef(1,k);
+Hweight(idx) = Hweight(idx).*abs(yhan')/y4Hz;
+
+if nargout == 0
+    figure;
+    plot(fhan,Hweight(idx), fhan,Hweight_bef(idx));
+    legend('Hweight','Hweight before')
+    xlim([0 30])
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end

@@ -22,15 +22,20 @@ function [win,wtype] = Get_window(nwtype,N,M)
 %       8           'gaussian(alpha=3.5)'   No
 %       9           'gaussian(alpha=4.5)'   No
 % 
-% 2. Additional info:
+% 2. Stand-alone example:
+%       N = 4096;
+%       [win,wtype] = Get_window('hanning',N);
+%       
+%       % Other way of obtaining the same Hanning window:
+%       [win,wtype] = Get_window(1,N);
+% 
+% 3. Additional info:
 %   Tested cross-platform: No
 %
-% 3. Stand-alone example:
-%
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
-% Created on: 16/6/2014
-% Last update: 24/6/2014 % Update this date manually
-% Last used: 26/6/2014 % Update this date manually
+% Created on   : 16/06/2014
+% Last updateon: 20/11/2014 % Update this date manually
+% Last used on : 20/11/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 3
@@ -42,35 +47,35 @@ if length(N) ~= 1 % then N is assumed to be a 'y'-vector
 end
 
 switch nwtype
-    case 0
+    case {0, 'rectangular'}
         win = ones(N,1); % 'rectangular window'
         wtype = 'rectangular';
-    case 1
+    case {1, 'hanning'}
         win = hanning(N,'periodic'); % periodic for analysis purposes, symmetric for filtering purposes
         wtype = 'hanning';
-    case 2 
+    case {2, 'triangular'} 
         win = triang(N);
         wtype = 'triangular';
-    case 3
+    case {3, 'bartlett'}
         win = bartlett(N);
         wtype = 'bartlett';
-    case 4
+    case {4, 'hamming'}
         win = hamming(N,'periodic');
         wtype = 'hamming';
-    case 5
+    case {5, 'blackman'}
         win = blackman(N);
         wtype = 'blackman';
-    case 6
+    case {6, 'blackman-harris'}
         H     = sigwin.blackmanharris(N);
         win   = generate(H);
         wtype = 'blackman-harris';
-    case 7
+    case {7, 'gaussian(alpha=2.5)'}
         win   = gausswin(N,2.5);
         wtype = 'gaussian(alpha=2.5)';
-    case 8
+    case {8, 'gaussian(alpha=3.5)'}
         win   = gausswin(N,3.5);
         wtype = 'gaussian(alpha=3.5)';
-    case 9
+    case {9, 'gaussian(alpha=4.5)'}
         win   = gausswin(N,4.5);
         wtype = 'gaussian(alpha=4.5)';
     otherwise
