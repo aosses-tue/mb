@@ -51,19 +51,19 @@ ylabel('Fluctuation strength [vacil]')
 title('Amplitude Modulated test stimuli')
 Saveas(gcf,[pathfigures 'FS-AM-new']);
 
-figure;
+% figure;
 
-FSAMr = out.FSAMr;
-FSFMr = out.FSFMr;
-
-stdFSAMr = std(FSAMr);
-meanFSAMr = mean(FSAMr)
-stdFSFMr = std(FSFMr);
-meanFSFMr = mean(FSFMr)
-
-plot(f_idx,meanFSAMr,'b.-'), hold on, grid on
-% plot(f_idx,FSAM,'b.-'), hold on, grid on
-errorbar(f_idx,meanFSAMr,stdFSAMr)
+% FSAMr = out.FSAMr;
+% FSFMr = out.FSFMr;
+% 
+% stdFSAMr = std(FSAMr);
+% meanFSAMr = mean(FSAMr)
+% stdFSFMr = std(FSFMr);
+% meanFSFMr = mean(FSFMr)
+% 
+% plot(f_idx,meanFSAMr,'b.-'), hold on, grid on
+% % plot(f_idx,FSAM,'b.-'), hold on, grid on
+% errorbar(f_idx,meanFSAMr,stdFSAMr)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 figure;

@@ -14,6 +14,9 @@ function y = r20141121_DSP_and_FS(x)
 % Last use on   : 20/11/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+bPart1 = 0;
+
+if bPart1
 N = 8192;
 % w = Get_window('hanning',N);
 w = hanning(N,'symmetric'); % I HAVE to use a symmetric window
@@ -44,5 +47,13 @@ plot(f,abs(y2),'r');
 legend('half hanning','half hanning, script')
 xlim([0 30])
 grid on
+end
+
+%%
+filename = 'D:\Output\ref_rough.wav';
+% filename = 'D:\Output\Audacity-1kHz-amp-08.wav';
+[x Fs] = Wavread(filename);
+
+From_dB(rmsdb(x)) / sqrt(2) * 2
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end

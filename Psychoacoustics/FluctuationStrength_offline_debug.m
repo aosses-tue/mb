@@ -335,9 +335,9 @@ for idx_j = 1:m_blocks
         eiconv(k,:) = conv(ei(k,:),Hhann);
         
         etmp_td(k,:)= abs(ei(k,:));
-        etmp_td_test(k,:)= abs(eiconv(k,:));
+        % etmp_td_test(k,:)= abs(eiconv(k,:));
         
-        h0test(k)   = mean(etmp_td_test(k,:));
+        % h0test(k)   = mean(etmp_td_test(k,:));
         
         h0(k)       = mean(etmp_td(k,:));
         Fei(k,:)	= fft( etmp_td(k,:)-h0(k) ); % changes the phase but not the amplitude
@@ -345,15 +345,15 @@ for idx_j = 1:m_blocks
         hBPi(k,:)	= 2*real(  ifft( Fei(k,:).*Hweight(k,:) ,N)  );
         hBPrms(k)	= dw_rms(hBPi(k,:));
         
-        etmp_tdc(k,:)= abs(eiconv(k,:));
-        h0c(k)      = mean(etmp_tdc(k,:));
-        Feic(k,:)	= fft( etmp_tdc(k,:)-h0c(k) ,N);
-        hBPic(k,:)	= 2*real(  ifft( Feic(k,:).*Hweight(k,:) ,N)  );
-        hBPrmsc(k)	= dw_rms(hBPic(k,:));
-        
-        downsamplefactor = round(N/8192);
-        Fsnew       = Fs/downsamplefactor;
-        Hhweight    = Get_Hweight_fluctuation(8192,Fsnew);
+        % etmp_tdc(k,:)= abs(eiconv(k,:));
+        % h0c(k)      = mean(etmp_tdc(k,:));
+        % Feic(k,:)	= fft( etmp_tdc(k,:)-h0c(k) ,N);
+        % hBPic(k,:)	= 2*real(  ifft( Feic(k,:).*Hweight(k,:) ,N)  );
+        % hBPrmsc(k)	= dw_rms(hBPic(k,:));
+        % 
+        % downsamplefactor = round(N/8192);
+        % Fsnew       = Fs/downsamplefactor;
+        % Hhweight    = Get_Hweight_fluctuation(8192,Fsnew);
         
         % optstm.fs = Fs;
         % [tmy1 tmydB1 ff1] = freqfft(Hhann,8192*10,optstm);
@@ -362,14 +362,14 @@ for idx_j = 1:m_blocks
         % plot(ff1,tmydB1), grid on
         % xlim([0 1000]);
         
-        Feir        = fft( etmp_td(k,:)-h0(k) ,8192);
-        tBPi        = conv(Fei(k,:),Hhann);
-        tBPir       = downsample( tBPi,downsamplefactor );
-        h0r(k)      = mean(abs(tBPir));
+        % Feir        = fft( etmp_td(k,:)-h0(k) ,8192);
+        % tBPi        = conv(Fei(k,:),Hhann);
+        % tBPir       = downsample( tBPi,downsamplefactor );
+        % h0r(k)      = mean(abs(tBPir));
         
-        tBPffti     = fft(tBPir,8192);
-        hBPir       = 2*real(  ifft( tBPffti.*Hhweight ,8192)  );
-        hBPrmsr(k)	= dw_rms(hBPir);
+        % tBPffti     = fft(tBPir,8192);
+        % hBPir       = 2*real(  ifft( tBPffti.*Hhweight ,8192)  );
+        % hBPrmsr(k)	= dw_rms(hBPir);
         
         if k == 17
 
@@ -394,18 +394,18 @@ for idx_j = 1:m_blocks
         if h0(k)>0
             
             mdept(k) = hBPrms(k)/h0(k);
-            mdeptr(k) = hBPrmsc(k)/h0c(k);
+            % mdeptr(k) = hBPrmsc(k)/h0c(k);
             
             if mdept(k)>1
                 mdept(k)=1;
             end
-            if mdeptr(k)>1
-                mdeptr(k)=1;
-            end
-            
+            % if mdeptr(k)>1
+            %     mdeptr(k)=1;
+            % end
+
         else
             mdept(k)=0;
-            mdeptr(k) = 0;
+            % mdeptr(k) = 0;
         end
 
         if bDebug
@@ -511,16 +511,16 @@ for idx_j = 1:m_blocks
         end
     end
 
-    for k=1:1:Chno-2
-        cfacc	=	cov(hBPic(k,:),hBPic(k+2,:));
-        denc	=	diag(cfacc);
-        denc	=	sqrt(denc*denc');
-        if denc(2,1)>0
-            kic(k)	=	cfacc(2,1)/denc(2,1);
-        else
-            kic(k)	=	0;
-        end
-    end
+    % for k=1:1:Chno-2
+    %     cfacc	=	cov(hBPic(k,:),hBPic(k+2,:));
+    %     denc	=	diag(cfacc);
+    %     denc	=	sqrt(denc*denc');
+    %     if denc(2,1)>0
+    %         kic(k)	=	cfacc(2,1)/denc(2,1);
+    %     else
+    %         kic(k)	=	0;
+    %     end
+    % end
     
     % Calculate specific roughness ri and total roughness R
     fi(idx_j,1)         =	(h0(1)^qg)*(mdept(1)^p)*(ki(1)^kg);
@@ -535,16 +535,16 @@ for idx_j = 1:m_blocks
     FS(idx_j)           =	Cal*( sum(fi(idx_j,:)) )^(1/s);
 
     % TMP
-    fir(idx_j,1)         =	(h0c(1)^qg)*(mdeptr(1)^p)*(kic(1)^kg);
-    fir(idx_j,2)         =	(h0c(2)^qg)*(mdeptr(2)^p)*(kic(2)^kg);
-
-    for k = 3:1:Chno-2
-        fir(idx_j,k)     =	(h0c(k)^qg)*(mdeptr(k)^p)*( kic(k-2)*kic(k) )^kg;
-    end
-
-    fir(idx_j,Chno-1)	=	(h0c(Chno-1)^qg)*(mdeptr(Chno-1)^p)*(kic(Chno-3)^kg);
-    fir(idx_j,Chno  )	=	(h0c(Chno  )^qg)*(mdeptr(Chno  )^p)*(kic(Chno-2)^kg);
-    FSr(idx_j)           =	Cal*( sum(fir(idx_j,:)) )^(1/s);
+    % fir(idx_j,1)         =	(h0c(1)^qg)*(mdeptr(1)^p)*(kic(1)^kg);
+    % fir(idx_j,2)         =	(h0c(2)^qg)*(mdeptr(2)^p)*(kic(2)^kg);
+    % 
+    % for k = 3:1:Chno-2
+    %     fir(idx_j,k)     =	(h0c(k)^qg)*(mdeptr(k)^p)*( kic(k-2)*kic(k) )^kg;
+    % end
+    % 
+    % fir(idx_j,Chno-1)	=	(h0c(Chno-1)^qg)*(mdeptr(Chno-1)^p)*(kic(Chno-3)^kg);
+    % fir(idx_j,Chno  )	=	(h0c(Chno  )^qg)*(mdeptr(Chno  )^p)*(kic(Chno-2)^kg);
+    % FSr(idx_j)           =	Cal*( sum(fir(idx_j,:)) )^(1/s);
     % END: TMP
     
     SPL(idx_j) = mean(rms(dataIn));
@@ -563,10 +563,10 @@ end
 dataOut{1} = FS;
 dataOut{2} = fi;
 dataOut{3} = SPL;
-dataOut{4} = FSr;
+% dataOut{4} = FSr;
 
-if bDebug
-    dataOut{4} = hFig;
-end
+% if bDebug
+%     dataOut{4} = hFig;
+% end
 
 end

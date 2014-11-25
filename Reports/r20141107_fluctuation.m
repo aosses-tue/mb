@@ -56,7 +56,8 @@ end
 bDoAM = 1;
 bDoFM = 1;
 
-filenamesAM = { 'test_fluct_fc_1000_AM_m_100_fmod_001Hz_70_dBSPL', ...
+filenamesAM = { 'ref_fluct',...
+                'test_fluct_fc_1000_AM_m_100_fmod_001Hz_70_dBSPL', ...
                 'test_fluct_fc_1000_AM_m_100_fmod_002Hz_70_dBSPL', ...
                 'test_fluct_fc_1000_AM_m_100_fmod_004Hz_70_dBSPL', ...
                 'test_fluct_fc_1000_AM_m_100_fmod_008Hz_70_dBSPL', ...
@@ -115,7 +116,7 @@ if bDoAM
         out = FluctuationStrength_offline_debug(insig,Fs,N, bDebug); %No padding needed for off-line version
         FSAM(:,k) = out{1}; 
         
-        outs.FSAMr(:,k) = out{4}; 
+        % outs.FSAMr(:,k) = out{4}; 
         % disp(sprintf('FS=%.3f [vacils]\t test signal: %s\n',out{1},name2figname(filenamesAM{k})))
     end
 end
@@ -159,9 +160,11 @@ if bDoFM
         out = FluctuationStrength_offline_debug(insig,Fs,N);%, bDebug); %No padding needed for off-line version
         FSFM(:,k) = out{1}; 
         
-        outs.FSFMr(:,k) = out{4}; 
+        % outs.FSFMr(:,k) = out{4}; 
         % disp(sprintf('FS=%.3f [vacils]\t test signal: %s\n',out{1},filenamesFM{k}))
     end
 end
+
+outs = [];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
