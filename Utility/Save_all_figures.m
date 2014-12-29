@@ -1,5 +1,5 @@
-function Save_all_figures(Handles)
-% function Save_all_figures(Handles)
+function Save_all_figures(Handles, outputdir)
+% function Save_all_figures(Handles, outputdir)
 %
 % 1. Description:
 %
@@ -14,16 +14,20 @@ function Save_all_figures(Handles)
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 12/08/2014
-% Last update on: 12/08/2014 % Update this date manually
-% Last use on   : 12/08/2014 % Update this date manually
+% Last update on: 26/11/2014 % Update this date manually
+% Last use on   : 26/11/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin == 0
     Handles = findobj('Type','figure');
 end
 
+if nargin < 2
+    outputdir = Get_TUe_paths('outputs');
+end
+
 for i = 1:length(Handles)
-    Saveas(Handles, [Get_TUe_paths('outputs') 'fig-' num2str(i)]);
+    Saveas(Handles(i), [outputdir 'fig-' num2str(i)]);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

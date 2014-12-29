@@ -1,5 +1,5 @@
-function dataOut = FluctuationStrength_offline_debug(insig, Fs, N, bDebug)
-% function dataOut = FluctuationStrength_offline_debug(insig, Fs, N, bDebug)
+function dataOut = FluctuationStrength_debug(insig, Fs, bDebug)
+% function dataOut = FluctuationStrength_debug(insig, Fs, bDebug)
 %
 % 1. Description:
 %       Off-line implementation of the Fluctuation Strength algorithm based 
@@ -32,16 +32,15 @@ function dataOut = FluctuationStrength_offline_debug(insig, Fs, N, bDebug)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 10/11/2014
 % Last update on: 18/11/2014 % Update this date manually
-% Last use on   : 26/11/2014 % Update this date manually
+% Last use on   : 18/11/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if nargin < 4
+if nargin < 3
     bDebug = 0;
 end
 
-if nargin < 3
-    N = 8192;
-end
+N_insig = length(insig);
+N = 8192;
 
 if ~(Fs == 44100 | Fs == 40960 | Fs == 48000)
   warning(['Incorrect sample rate for this roughness algorithm. Please ' ...
@@ -111,7 +110,6 @@ MinBf = MinExcdB(zb);
 
 Chno    = min(idx*2-1,47);
 ei      = zeros(Chno,N);
-Fei     = zeros(Chno,N);
 
 h0     = zeros(1,Chno);
 k      = 1:1:Chno;
@@ -152,13 +150,17 @@ switch method
         kg = 2;     s = 1;      p = 2;      qg = 0.07;
 end
 
+hFig = [];
+kref = 25;
+
 %%%%%%%%%%%%%%%
 % END InitAll %
 %%%%%%%%%%%%%%%
 
 % BEGIN Hweights:
 
-Htmp        = Get_Hweight_fluctuation_mod(N,Fs);
+N_hop       =   2048*2;
+Htmp        = Get_Hweight_fluctuation_mod(N,Fs/N_hop); % correct other half
 Hweight     = repmat( Htmp(1,:),Chno,1);
 
 Hhann       = Hanning_half(8192);
@@ -168,12 +170,13 @@ Hhann       = Hanning_half(8192);
 %% Stage 1, BEGIN: FluctBody
 
 Window      =   blackman(N, 'periodic') .* 1.8119;
-dBcorr      =   80+2.72; % originally = 80, last change of this value on 26/11/2014
-N_hop       =   2048;
+dBcorr      =   80+10.72; % originally = 80
 
 insig_buf   =   buffer(insig, N, N-N_hop,'nodelay');
 m_blocks    =   size(insig_buf,2);
-fi          =   zeros(m_blocks,Chno);
+fi          =   zeros(1,Chno);
+eim         =   zeros(Chno,m_blocks*2);
+Fei         =   zeros(Chno,N);
 
 if bDebug 
     if m_blocks > 1
@@ -185,6 +188,8 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for idx_j = 1:m_blocks
 
+    fprintf('Processing block %.0f out of %.0f\n',idx_j,m_blocks);
+    
     dataIn = insig_buf(:,idx_j);
     
     dataIn = dataIn .*Window;
@@ -193,12 +198,12 @@ for idx_j = 1:m_blocks
     % Calibration between wav-level and loudness-level (assuming
     % blackman window and FFT will follow)
 
-    Cal	 	=	0.25; % 0.138;
+    Cal	 	=	0.138; % 0.25;
     N2		=	N/2;
     q		=	1:1:N;
     qb		=	N0:1:Ntop;
     freqs	=	(qb+1)*Fs/N;
-    hBPi	=	zeros(Chno,N);
+    hBPi	=	zeros(Chno,m_blocks*2);
     hBPrms	=	zeros(1,Chno);
     mdept	=	zeros(1,Chno);
     ki		=	zeros(1,Chno-2);
@@ -308,7 +313,7 @@ for idx_j = 1:m_blocks
             etmp(N2tmp) = ExcAmp(l,k)*TempIn(N2tmp); 
         end
 
-        if k == 17
+        if k == kref
             if bDebug
                 hFig(end+1) = figure(3); 
                 plot(freqs,20*log10(abs(etmp(qb))),'LineWidth',2), hold on
@@ -331,182 +336,91 @@ for idx_j = 1:m_blocks
         % h0    - DC component, average of half-wave rectified signal
 
         etmp_fd(k,:)= etmp;
-        ei(k,:)     = N*real(ifft(etmp));
+        % ei(k,:)     = N*real(ifft(etmp .* fft(Hhann)'.*Hweight(k,:) ));
+        ei(k,:)     = N*real(ifft(etmp .*fft(Hhann)'));
         % eiconv(k,:) = conv(ei(k,:),Hhann);
         
-        etmp_td(k,:)= abs(ei(k,:));
-        % etmp_td_test(k,:)= abs(eiconv(k,:));
+        % etmp_td(k,:)= abs(ei(k,:));
         
-        % h0test(k)   = mean(etmp_td_test(k,:));
+        eim_idx1 = 2*idx_j - 1;
+        eim_idx2 = 2*idx_j;
         
-        h0(k)       = mean(etmp_td(k,:));
-        Fei(k,:)	= fft( etmp_td(k,:)-h0(k) ); % changes the phase but not the amplitude
+        % eim(k,eim_idx1)     = 1/(N/4) * sum(abs(etmp(1:N2-1)));
+        % eim(k,eim_idx2)     = 1/(N/4) * sum(abs(etmp(N2:end)));
+        eim(k,eim_idx1)     = 1/(N/4) * sum(abs(ei(k,1:N2-1)));
+        eim(k,eim_idx2)     = 1/(N/4) * sum(abs(ei(k,N2:end)));
         
-        hBPi(k,:)	= 2*real(  ifft( Fei(k,:).*Hweight(k,:) ,N)  );
-        hBPrms(k)	= dw_rms(hBPi(k,:));
-        
-       
-        if k == 17
-
-            if bDebug
-                optstm.fs = 44100;
-                [tmy tmydB1 ff1] = freqfft(ei(k,:)',N/2,optstm);
-
-                optstm.fs = 44100;
-                [tmy2 tmydB2 ff2] = freqfft(eiconv(k,:)',N/2,optstm);
-
-                optstm.fs = 44100;
-                [tmy3 tmydB3 ff3] = freqfft(Hhann,N/2,optstm);
-
-                figure;
-                plot(ff1,tmydB1, ff2,tmydB2,ff3,tmydB3)
-                legend('ei','ei+LPF','win')
-                xlim([0 150])
-            end
-
+        if k == kref
+            disp('')
         end
         
-        if h0(k)>0
-            
-            mdept(k) = hBPrms(k)/h0(k);
-            % mdeptr(k) = hBPrmsc(k)/h0c(k);
-            
-            if mdept(k)>1
-                % mdept(k)=1;
-            end
-            % if mdeptr(k)>1
-            %     mdeptr(k)=1;
-            % end
-
-        else
-            mdept(k)=0;
-            % mdeptr(k) = 0;
-        end
-
-        if bDebug
-
-            figM = 3;
-            figN = 2;
-            plot_x = 1:size(etmp_td,2);
-            plot_f = ( 1:size(etmp_fd,2) )/N*Fs;
-
-            if k == 15
-
-                hFig(end+1) = figure(4);
-                subplot(figM,figN,1)
-                hp(1) = plot(plot_f,abs(etmp_fd(k,:)));
-                ha = gca;
-                grid on, hold on
-                title(sprintf('Excitation patterns in freq. domain\nNum band = %.0f',k))
-                xlabel('Frequency [Hz]')
-
-                subplot(figM,figN,2)
-                hp(1) = plot(plot_x,abs(etmp_td(k,:))); grid on, hold on
-                hp(2) = plot(minmax(plot_x),[h0(k) h0(k)],'r');
-                hp(3) = plot(plot_x,hBPi(k,:),'k','LineWidth',2);
-
-                legend(hp(2:3),   {sprintf( 'h0=%.1f',h0(k)),...
-                                   sprintf( 'hBPrms = %.1f',hBPrms(k))});
-                ha1 = gca;
-
-                title( sprintf('Excitation patterns in time domain (half rectified)\nNum band = %.0f, mdepth = %.2f',k,mdept(k)) )
-                xlabel('Samples')
-
-            end
-
-            if k == 17
-                figure(4)
-                subplot(figM,figN,3)
-                plot(plot_f,abs(etmp_fd(k,:)))
-                ha(end+1) = gca;
-                grid on 
-                title(sprintf('Num band = %.0f',k))
-                xlabel('Frequency [Hz]')
-
-                subplot(figM,figN,4)
-                hp(1) = plot(plot_x,abs(etmp_td(k,:))); grid on, hold on
-                hp(2) = plot(minmax(plot_x),[h0(k) h0(k)],'r');
-                hp(3) = plot(plot_x,hBPi(k,:),'k','LineWidth',2);
-
-                legend(hp(2:3),   {sprintf( 'h0=%.1f',h0(k)),...
-                                   sprintf( 'hBPrms = %.1f',hBPrms(k))});
-                ha1(end+1) = gca;
-
-                title(sprintf('Num band = %.0f, mdepth = %.2f',k,mdept(k)))
-                xlabel('Samples')
-            end
-
-            if k == 18
-                figure(4)
-                subplot(figM,figN,5)
-                plot(plot_f,abs(etmp_fd(k,:)))
-                ha(end+1) = gca;
-                linkaxes(ha,'xy');
-                ylim([0 8000])
-                xlim([850 1300]) 
-                grid on
-                title(sprintf('Num band = %.0f',k))
-                xlabel('Frequency [Hz]')
-
-                subplot(figM,figN,6)
-                hp(1) = plot(plot_x,abs(etmp_td(k,:))); grid on, hold on
-                hp(2) = plot(minmax(plot_x),[h0(k) h0(k)],'r');
-                hp(3) = plot(plot_x,hBPi(k,:),'k','LineWidth',2);
-
-                legend(hp(2:3),   {sprintf( 'h0=%.1f',h0(k)),...
-                                   sprintf( 'hBPrms = %.1f',hBPrms(k))});
-                ha1(end+1) = gca;
-
-                linkaxes(ha1,'xy')
-                ylim([-2000 40000])
-                xlim(minmax(plot_x))
-                grid on, hold on
-                plot(minmax(plot_x),[h0(k) h0(k)],'r')
-                plot(plot_x,hBPi(k,:),'k','LineWidth',2)
-                title(sprintf('Num band = %.0f, mdepth = %.2f',k,mdept(k)))
-                xlabel('Samples')
-
-                disp('')
-            end
-
-        end
     end
+end
+    
+for k=1:1:Chno
+        
+    % DC component calculation for FS:
+    h0(k)       = mean(eim(k,:));
+    Fei(k,:)	= fft( eim(k,:)-h0(k) ,N); % changes the phase but not the amplitude
+        
+    hBPitmp     = 2*real(  ifft( Fei(k,:).*Hweight(k,:) ,N)  );
+    hBPi(k,:)   = hBPitmp(1:size(eim,2));
+    %hBPi(k,:)   = eim(k,:)-h0(k);
+    hBPrms(k)	= dw_rms(hBPi(k,:));
+         
+    if k == kref
+        % ktmp = 25; figure; plot(hBPi(ktmp,:)), hold on, plot(hBPi(ktmp+10,:),'r');
+        disp('')
+    end
+
+    if h0(k)>0
+        
+        mdept(k) = hBPrms(k)/h0(k);
+        if mdept(k)>1
+            mdept(k)=1;
+        end
+        
+    else
+        
+        mdept(k)=0;
+        
+    end
+        
+end
     
     %% Stage 3
     
     % find cross-correlation coefficients
     for k=1:1:Chno-2
-        cfac	=	cov(hBPi(k,:),hBPi(k+2,:));
-        den	=	diag(cfac);
-        den	=	sqrt(den*den');
-        if den(2,1)>0
+    	cfac	=	cov(hBPi(k,:),hBPi(k+2,:));
+    	den	=	diag(cfac);
+    	den	=	sqrt(den*den');
+    	if den(2,1)>0
             ki(k)	=	cfac(2,1)/den(2,1);
         else
             ki(k)	=	0;
-        end
-    end
-
-    % Calculate specific roughness ri and total roughness R
-    fi(idx_j,1)         =	(h0(1)^qg)*(mdept(1)^p)*(ki(1)^kg);
-    fi(idx_j,2)         =	(h0(2)^qg)*(mdept(2)^p)*(ki(2)^kg);
-
-    for k = 3:1:Chno-2
-        fi(idx_j,k)     =	(h0(k)^qg)*(mdept(k)^p)*( ki(k-2)*ki(k) )^kg;
-    end
-
-    fi(idx_j,Chno-1)	=	(h0(Chno-1)^qg)*(mdept(Chno-1)^p)*(ki(Chno-3)^kg);
-    fi(idx_j,Chno  )	=	(h0(Chno  )^qg)*(mdept(Chno  )^p)*(ki(Chno-2)^kg);
-    FS(idx_j)           =	Cal*( sum(fi(idx_j,:)) )^(1/s);
-
-    SPL(idx_j) = mean(rms(dataIn));
-    if SPL(idx_j) > 0
-        SPL(idx_j) = To_dB(SPL(idx_j))+90; 
-    else
-        SPL(idx_j) = -400;
+    	end
     end
     
-    bDebug = 0;
-end
+    % Calculate specific roughness ri and total roughness R
+    fi(1)         =	(h0(1)^qg)*(mdept(1)^p)*(ki(1)^kg);
+    fi(2)         =	(h0(2)^qg)*(mdept(2)^p)*(ki(2)^kg);
+     
+    for k = 3:1:Chno-2
+        fi(k)     =	(h0(k)^qg)*(mdept(k)^p)*( ki(k-2)*ki(k) )^kg;
+    end
+     
+    fi(Chno-1)	=	(h0(Chno-1)^qg)*(mdept(Chno-1)^p)*(ki(Chno-3)^kg);
+    fi(Chno  )	=	(h0(Chno  )^qg)*(mdept(Chno  )^p)*(ki(Chno-2)^kg);
+    FS           =	Cal*( sum(fi) )^(1/s);
+     
+    SPL = mean(rms(insig));
+    if SPL > 0
+        SPL = To_dB(SPL)+dBcorr+3; % -20 dBFS <--> 60 dB SPL
+    else
+        SPL = -400;
+    end
+    
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
 % END: FluctBody
 

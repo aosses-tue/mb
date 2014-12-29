@@ -124,7 +124,7 @@ Hweight = Get_Hweight_roughness(N,Fs);
 %% Stage 1, BEGIN: RoughBody
 
 Window = blackman(N, 'periodic') .* 1.8119;
-dBcorr = 80+10.72; % originally = 80
+dBcorr = 80+2.72; % correction assuming that (90 dB = 0 dBFS, rms)
 
 dataIn = dataIn .*Window;
 AmpCal = From_dB(dBcorr)*2/(N*mean(blackman(N, 'periodic'))); 
@@ -458,7 +458,7 @@ R		=	Cal*sum(ri);
 
 SPL = mean(rms(dataIn));
 if SPL > 0
-    SPL = To_dB(SPL)+dBcorr+3; % -20 dBFS <--> 60 dB SPL
+    SPL = To_dB(SPL)+90; % -20 dBFS <--> 70 dB SPL
 else
     SPL = -400;
 end

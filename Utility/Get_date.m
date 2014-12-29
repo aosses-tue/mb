@@ -13,8 +13,8 @@ function [p numeric_y] = Get_date
 % 
 % Programmed by Alejandro Osses, ExpORL, KU Leuven, Belgium 2013
 % Created in    : 2013
-% Last update on: 02/08/2014 % Update this date manually
-% Last use on   : 02/08/2014 % Update this date manually
+% Last update on: 26/11/2014 % Update this date manually
+% Last use on   : 26/11/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 1
@@ -34,6 +34,7 @@ end
 p.time          = [num2str(DateNum(4)),':',num2str(DateNum(5)),':',num2str(DateNum(6)),' (hh:mm:ss)'];
 p.date2print    = [p.yyyy,'-',p.mm,'-',p.dd,'-at-' Num2str(DateNum(4)),'h-',Num2str(DateNum(5)),'m-',Num2str(DateNum(6)),'s'];
 p.date4plots    = [p.yyyy,'-',p.mm,'-',p.dd,',' Num2str(DateNum(4)),':',Num2str(DateNum(5)),''];
+p.date4files    = [p.yyyy p.mm p.dd];
 numeric_y = DateNum;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -25,8 +25,8 @@ function info = Check_Fastl2007(chapter,fig_number)
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 13/08/2014
-% Last update on: 02/09/2014 % Update this date manually
-% Last use on   : 02/09/2014 % Update this date manually
+% Last update on: 25/11/2014 % Update this date manually
+% Last use on   : 25/11/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % track_35  -   Figure 10.1
@@ -77,8 +77,10 @@ switch chapter
                             47 52 54 59 61 66];
             case 6
                 filename = 'track_36';
+                timesep = [  1  5  7 11 13 17];
             case 7
                 filename = 'track_37';
+                timesep = [  1  1+5  7 7+5 13 13+5 19 19+5 25 25+5];
         end
     case 11 % Roughness 
         switch fig_number

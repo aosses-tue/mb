@@ -159,7 +159,7 @@ Hweight(1,k) = interp1(fH2, H2(:,2),f(k - DCbins));
 bBlackman = 1;
 
 Window = blackman(N, 'periodic') .* 1.8119;
-dBcorr = 80+10.72; % originally = 80
+dBcorr = 80+2.72; % originally = 80, last change to this calibration value on 26/11/2014
 
 if bBlackman
     dataIn = dataIn .*Window;
@@ -469,7 +469,7 @@ FS		=	Cal*( sum(fi.^s) )^(1/s);
 
 SPL = mean(rms(dataIn));
 if SPL > 0
-  SPL = To_dB(SPL)+dBcorr+3; % -20 dBFS <--> 60 dB SPL
+  SPL = To_dB(SPL)+90; 
 else
   SPL = -400;
 end

@@ -32,7 +32,7 @@ function dataOut = FluctuationStrength_offline_debug(insig, Fs, N, bDebug)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 10/11/2014
 % Last update on: 18/11/2014 % Update this date manually
-% Last use on   : 26/11/2014 % Update this date manually
+% Last use on   : 18/11/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 4
@@ -158,17 +158,17 @@ end
 
 % BEGIN Hweights:
 
-Htmp        = Get_Hweight_fluctuation_mod(N,Fs);
-Hweight     = repmat( Htmp(1,:),Chno,1);
+Htmp = Get_Hweight_fluctuation(N,Fs);
+Hweight = repmat( Htmp(1,:),Chno,1);
 
-Hhann       = Hanning_half(8192);
+Hhann = Hanning_half(8192);
 % END Hweights 
 %%%%%%%%%%%%%%%%
 
 %% Stage 1, BEGIN: FluctBody
 
 Window      =   blackman(N, 'periodic') .* 1.8119;
-dBcorr      =   80+2.72; % originally = 80, last change of this value on 26/11/2014
+dBcorr      =   80+10.72; % originally = 80
 N_hop       =   2048;
 
 insig_buf   =   buffer(insig, N, N-N_hop,'nodelay');
@@ -193,7 +193,7 @@ for idx_j = 1:m_blocks
     % Calibration between wav-level and loudness-level (assuming
     % blackman window and FFT will follow)
 
-    Cal	 	=	0.25; % 0.138;
+    Cal	 	=	0.138; % 0.25;
     N2		=	N/2;
     q		=	1:1:N;
     qb		=	N0:1:Ntop;
@@ -332,55 +332,38 @@ for idx_j = 1:m_blocks
 
         etmp_fd(k,:)= etmp;
         ei(k,:)     = N*real(ifft(etmp));
-        % eiconv(k,:) = conv(ei(k,:),Hhann);
-        
         etmp_td(k,:)= abs(ei(k,:));
-        % etmp_td_test(k,:)= abs(eiconv(k,:));
-        
-        % h0test(k)   = mean(etmp_td_test(k,:));
-        
         h0(k)       = mean(etmp_td(k,:));
         Fei(k,:)	= fft( etmp_td(k,:)-h0(k) ); % changes the phase but not the amplitude
         
         hBPi(k,:)	= 2*real(  ifft( Fei(k,:).*Hweight(k,:) ,N)  );
         hBPrms(k)	= dw_rms(hBPi(k,:));
         
-       
-        if k == 17
-
-            if bDebug
-                optstm.fs = 44100;
-                [tmy tmydB1 ff1] = freqfft(ei(k,:)',N/2,optstm);
-
-                optstm.fs = 44100;
-                [tmy2 tmydB2 ff2] = freqfft(eiconv(k,:)',N/2,optstm);
-
-                optstm.fs = 44100;
-                [tmy3 tmydB3 ff3] = freqfft(Hhann,N/2,optstm);
-
-                figure;
-                plot(ff1,tmydB1, ff2,tmydB2,ff3,tmydB3)
-                legend('ei','ei+LPF','win')
-                xlim([0 150])
-            end
-
-        end
+        downsamplefactor = round(N/8192);
+        Fsnew       = Fs/downsamplefactor;
+        Hhweight    = Get_Hweight_fluctuation(8192,Fsnew);
+        
+        Feir        = fft( etmp_td(k,:)-h0(k) ,8192);
+        tBPi        = conv(Fei(k,:),Hhann);
+        tBPir       = downsample( tBPi,downsamplefactor );
+        h0r(k)      = mean(abs(tBPir));
+        
+        tBPffti     = fft(tBPir,8192);
+        hBPir       = 2*real(  ifft( tBPffti.*Hhweight ,8192)  );
+        hBPrmsr(k)	= dw_rms(hBPir);
         
         if h0(k)>0
             
             mdept(k) = hBPrms(k)/h0(k);
-            % mdeptr(k) = hBPrmsc(k)/h0c(k);
+            mdeptr(k) = hBPrmsr(k)/h0r(k);
             
             if mdept(k)>1
-                % mdept(k)=1;
+                mdept(k)=1;
             end
-            % if mdeptr(k)>1
-            %     mdeptr(k)=1;
-            % end
-
+            
         else
             mdept(k)=0;
-            % mdeptr(k) = 0;
+            mdeptr(k) = 0;
         end
 
         if bDebug
@@ -498,9 +481,22 @@ for idx_j = 1:m_blocks
     fi(idx_j,Chno  )	=	(h0(Chno  )^qg)*(mdept(Chno  )^p)*(ki(Chno-2)^kg);
     FS(idx_j)           =	Cal*( sum(fi(idx_j,:)) )^(1/s);
 
+    % TMP
+    fir(idx_j,1)         =	(h0(1)^qg)*(mdeptr(1)^p)*(ki(1)^kg);
+    fir(idx_j,2)         =	(h0(2)^qg)*(mdeptr(2)^p)*(ki(2)^kg);
+
+    for k = 3:1:Chno-2
+        fir(idx_j,k)     =	(h0(k)^qg)*(mdeptr(k)^p)*( ki(k-2)*ki(k) )^kg;
+    end
+
+    fir(idx_j,Chno-1)	=	(h0(Chno-1)^qg)*(mdeptr(Chno-1)^p)*(ki(Chno-3)^kg);
+    fir(idx_j,Chno  )	=	(h0(Chno  )^qg)*(mdeptr(Chno  )^p)*(ki(Chno-2)^kg);
+    FSr(idx_j)           =	Cal*( sum(fir(idx_j,:)) )^(1/s);
+    % END: TMP
+    
     SPL(idx_j) = mean(rms(dataIn));
     if SPL(idx_j) > 0
-        SPL(idx_j) = To_dB(SPL(idx_j))+90; 
+        SPL(idx_j) = To_dB(SPL(idx_j))+dBcorr+3; % -20 dBFS <--> 60 dB SPL
     else
         SPL(idx_j) = -400;
     end
@@ -514,5 +510,9 @@ end
 dataOut{1} = FS;
 dataOut{2} = fi;
 dataOut{3} = SPL;
+
+if bDebug
+    dataOut{4} = hFig;
+end
 
 end

@@ -77,12 +77,15 @@ end
 t = (0:1/fs:((len-1)/fs))';   % Zeitvektor
 t = t(:,ones(1,size(sig,2))); % scalar expansion, falls sig Matrix ist
 
-disp([mfilename '.m: Check Envelope correction according to Schone1979...'])
-pause(0.2);
+warning([mfilename '.m: Check Envelope correction according to Schone1979...'])
 % env=amp((1 + m * sin(2*pi*fmod*t+start_phase)),-korr);
 env = (1 + m * sin(2*pi*fmod*t+start_phase)       );
 env = env/max(abs(env));
-y = sig .* env; % Modulation beginnt in Minimum
+try
+    y = sig .* env; % Modulation beginnt in Minimum
+catch
+    y = sig .* env'; % Modulation beginnt in Minimum
+end
 
 % Anhang: einige Formeln zur Amplitudenmodulation
 % Pegelabstand zwischen Tr�ger und Seitenlinien
