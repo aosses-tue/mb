@@ -12,7 +12,7 @@ function misc = Get_TUe_data_paths(type)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 25/08/2014
 % Last update on: 28/10/2014 % Update this date manually
-% Last use on   : 28/10/2014 % Update this date manually
+% Last use on   : 04/01/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Alejandro's paths
@@ -36,7 +36,8 @@ if isunix
     misc.outputs            = ['~/Documenten/MATLAB/outputs' delim];
     misc.praat              =  '/usr/bin/praat'; % whereis praat
     misc.praat_scripts      = ['~/Documenten/Praat_svn/'];
-    misc.SVN_KUL            = misc.MATLAB_KUL;
+    % misc.SVN_KUL            = misc.MATLAB_KUL;
+    
     % % Other KU Leuven paths (add them if necessary):
     % misc.svn.Meas           = ['/home/' misc.username '/Documenten/Meas/Meas/'];
     % misc.result_folder      = [misc.svn.Meas 'Experiments/Results_XML/'];

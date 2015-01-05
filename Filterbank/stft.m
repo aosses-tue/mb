@@ -1,5 +1,5 @@
-function [stft, f, t] = stft(x, fs, nfft, wlen, overlap, nwtype,info)
-% function: [stft, t, f] = stft(x, fs, nfft, wlen, overlap, nwtype,info)
+function [stft, f, t, info] = stft(x, fs, nfft, wlen, overlap, nwtype,info)
+% function: [stft, t, f, info] = stft(x, fs, nfft, wlen, overlap, nwtype,info)
 % 
 % Short-Time Fourier Transform with MATLAB Implementation.
 % Temporal window used: Hamming.
@@ -124,6 +124,16 @@ end
 % calculate the time and frequency vectors
 t = (wlen/2:h:xlen-wlen/2-1)/fs;
 f = (0:rown-1)*fs/nfft;
+
+if nargout >= 4
+    info.nfft = nfft;
+    info.wlen = wlen;
+    info.wtype = wtype;
+    info.overlap = overlap;
+    info.hope = h;
+    info.framedur = framedur;
+    info.hopdur = hopdur;
+end
 
 if nargout == 0
     

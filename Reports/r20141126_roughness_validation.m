@@ -55,7 +55,7 @@ if bCreate
     
 end
 
-bDoExp0 = 1; % Fastl2007, Fig. 11.1. Daniel1997, Fig.5
+bDoExp0 = 0; % Fastl2007, Fig. 11.1. Daniel1997, Fig.5
 bDoExp1 = 1;
 bDoExp2 = 1;
 bDoExp3 = 1;

@@ -342,6 +342,10 @@ for k=1:1:47 % each critical band number
         mdept(k)=0;
     end
     
+    if k==17
+        disp('')
+    end
+    
     if bDebug
         
         figM = 3;

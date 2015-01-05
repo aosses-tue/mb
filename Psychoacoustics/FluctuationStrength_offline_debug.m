@@ -10,7 +10,7 @@ function dataOut = FluctuationStrength_offline_debug(insig, Fs, N, bDebug)
 %           - db2amp replaced by From_dB
 %           - private rms renamed to dw_rms
 %           - Compatible with any Fs. If you use Fs smaller than 44.100 Hz, 
-%             then the calculation will assume no contribution for all the µ
+%             then the calculation will assume no contribution for all the ï¿½
 %             bands above Fs/2. 
 %
 % author : Matt Flax <flatmax @ http://www.flatmax.org> : Matt Flax is flatmax
@@ -32,7 +32,7 @@ function dataOut = FluctuationStrength_offline_debug(insig, Fs, N, bDebug)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 10/11/2014
 % Last update on: 18/11/2014 % Update this date manually
-% Last use on   : 26/11/2014 % Update this date manually
+% Last use on   : 04/01/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 4
@@ -352,15 +352,15 @@ for idx_j = 1:m_blocks
                 optstm.fs = 44100;
                 [tmy tmydB1 ff1] = freqfft(ei(k,:)',N/2,optstm);
 
-                optstm.fs = 44100;
-                [tmy2 tmydB2 ff2] = freqfft(eiconv(k,:)',N/2,optstm);
+                % optstm.fs = 44100;
+                % [tmy2 tmydB2 ff2] = freqfft(eiconv(k,:)',N/2,optstm);
 
                 optstm.fs = 44100;
                 [tmy3 tmydB3 ff3] = freqfft(Hhann,N/2,optstm);
 
                 figure;
-                plot(ff1,tmydB1, ff2,tmydB2,ff3,tmydB3)
-                legend('ei','ei+LPF','win')
+                plot(ff1,tmydB1,ff3,tmydB3)
+                legend('ei','win')
                 xlim([0 150])
             end
 
