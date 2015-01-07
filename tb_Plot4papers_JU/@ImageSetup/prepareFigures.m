@@ -1,4 +1,12 @@
 function obj = prepareFigures(obj,varargin);
+% function obj = prepareFigures(obj,varargin);
+%
+% Programmed by: Jaime Undurraga
+% Created in: 2012-2013
+% Edited by: Alejandro Osses
+% Last edited on: 07/01/2015
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 s = parseparameters(varargin{:});
 s = ef(s,'FigHandle',[]);
 hgcf = s.FigHandle;
@@ -6,8 +14,8 @@ hgcf = s.FigHandle;
 % set(hgcf, 'PaperUnit', obj.I_Unit);
 % papersize = get(hgcf, 'PaperSize');
 % left = (papersize(1)- obj.I_Width)/4;
-% bottom = (papersize(2)- obj.I_High)/4;
-% myfiguresize = [left, bottom, obj.I_Width, obj.I_High];
+% bottom = (papersize(2)- obj.I_Height)/4;
+% myfiguresize = [left, bottom, obj.I_Width, obj.I_Height];
 % set(hgcf, 'PaperPosition', myfiguresize);
 % set(hgcf,'units',obj.I_Unit,'position',myfiguresize);
 
@@ -182,12 +190,12 @@ end
 
 set(hgcf, 'Units', obj.I_Unit);
 fpos = get(hgcf, 'Position');
-fpos(3:4) = [obj.I_Width obj.I_High];
+fpos(3:4) = [obj.I_Width obj.I_Height];
 % set(hgcf, 'Position', fpos);
 set(hgcf, 'Units', 'pixels');
 
 set(hgcf, 'PaperUnits', obj.I_Unit)
-set(hgcf, 'PaperSize', [obj.I_Width obj.I_High])
+set(hgcf, 'PaperSize', [obj.I_Width obj.I_Height])
 set(hgcf, 'PaperUnits', 'normalized')
 set(hgcf, 'PaperPosition', [0 0 1 1])
 set(hgcf, 'PaperUnits', 'inches')

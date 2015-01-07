@@ -498,7 +498,8 @@ switch nAnalyser
         
         output.DataRough = DataRough;
         output.DataSpecRough = DataSpecRough;
-        stats.rough_tot = 0.5*sum(  mean( DataRough )  );
+        stats.rough_tot = mean( DataRough );
+        % stats.rough_tot = mean( 0.25*sum( DataSpecRough' ) ); % Same calculation as previous line
         
 	case 20
         
@@ -534,7 +535,8 @@ switch nAnalyser
         
         output.DataFluct = DataFluct;
         output.DataSpecFluct = DataSpecFluct;
-        stats.fluct_tot = 0.5*sum(  mean( DataFluct )  );
+        stats.fluct_tot = mean( DataFluct );
+        % stats.fluct_tot = mean( 0.25*sum( DataSpecFluct' ) );
         disp('')
 end
 

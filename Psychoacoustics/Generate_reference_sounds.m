@@ -16,7 +16,7 @@ function outs = Generate_reference_sounds(options)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 14/08/2014
 % Last update on: 26/11/2014 % Update this date manually
-% Last use on   : 26/11/2014 % Update this date manually
+% Last use on   : 07/01/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin == 0
@@ -69,13 +69,13 @@ fs  = 44100;
 dur = options.dur;
 sig = Create_sin(fc,dur,fs,0);
 
-fc125  = 125;
-T125   = 1/fc125;
-sig125 = Create_sin(fc125,dur,fs,0);
+fc1500  = 1500;
+T1500   = 1/fc1500;
+sig1500 = Create_sin(fc1500,dur,fs,0);
 
-fc500  = 500;
-T500   = 1/fc500;
-sig500 = Create_sin(fc500,dur,fs,0);
+% fc500  = 500;
+% T500   = 1/fc500;
+% sig500 = Create_sin(fc500,dur,fs,0);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 1. Loudness

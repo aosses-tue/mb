@@ -181,6 +181,10 @@ elseif strcmp(param,'specific-loudness')
             
         otherwise % analyser 12
             
+            zspec = res1.zspec;
+            freq_min = min(zspec);
+            freq_max = max(zspec);
+            
             DataLoud1 = res1.DataAvSpecLoud;
             DataLoud2 = res2.DataAvSpecLoud;
             DataSpecLoud1 = res1.DataSpecLoud;
@@ -224,7 +228,7 @@ elseif strcmp(param,'roughness')
     bPlot_vs_time = 1;
     DataRough1 = res1.DataRough;
     DataRough2 = res2.DataRough;
-
+    
     figure;
     plot(t,DataRough1,option.color{1},'LineWidth',option.LineWidth(1),'Marker','o'); hold on
     plot(t,DataRough2,option.color{2},'LineWidth',option.LineWidth(2),'Marker','<');
@@ -234,6 +238,9 @@ elseif strcmp(param,'roughness')
     title(sprintf('Roughness - %s', option.title));
     grid on
 
+    res1.stats.rough_segment = mean(DataRough1(idx));
+    res2.stats.rough_segment = mean(DataRough2(idx));
+    
     h(end+1) = gcf;
     ha(end+1) = gca;
         
@@ -246,8 +253,8 @@ elseif strcmp(param,'specific-roughness')
     DataRough1 = res1.DataSpecRough;
     DataRough2 = res2.DataSpecRough;
     
-    res1.stats.rough_segment = 0.5*sum(mean(DataRough1(idx,:)));
-    res2.stats.rough_segment = 0.5*sum(mean(DataRough2(idx,:)));
+    res1.stats.rough_segment = mean( 0.25*sum( DataRough1(idx,:)' ) ); % 0.5*sum( mean(DataRough1(idx,:)') );
+    res2.stats.rough_segment = mean( 0.25*sum( DataRough2(idx,:)' ) );
     
     figure;
     plot(z, mean(DataRough1(idx,:)),option.color{1},'LineWidth',option.LineWidth(1)); hold on

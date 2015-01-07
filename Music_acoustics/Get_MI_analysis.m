@@ -1,28 +1,21 @@
-function [output h] = Get_VoD_analysis(filename1,filename2,options)
-% function [output h] = Get_VoD_analysis(filename1,filename2,options)
+function [output h] = Get_MI_analysis(filename1,filename2,options)
+% function [output h] = Get_MI_analysis(filename1,filename2,options)
 %
 % 1. Description:
-%       Same than VoD_comparisons, but here analysis is done over aligned/
-%       truncated data.
+%       'Get Musical Instrument' analysis.
 % 
-%       Make sure you have run previously the script VoD_run.m (without 
-%       output parameters) in order to generate up-to-date calibrated 
-%       wav-files
+% 2. Stand-alone example:
+%       Get_MI_analysis;
 % 
-% 2. Additional info:
+% 3. Additional info:
 %       Tested cross-platform: No
-%       near-field: YES, OK
-%       far-field : NO,  OK 
-%
-% 3. Stand-alone example:
-%       Get_VoD_analysis;
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
-% Created on    : 20/08/2014
-% Last update on: 01/10/2014 % Update this date manually
+% Created on    : 07/01/2015
+% Last update on: 07/01/2015 % Update this date manually
 % Last use on   : 07/01/2015 % Update this date manually
 % 
-% Original file name: VoD_comparisons2.m
+% Original file name: Get_VoD_analysis.m
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin == 0
@@ -48,6 +41,9 @@ options     = Ensure_field(options,'bDoAnalyser10',0);
 options     = Ensure_field(options,'bDoAnalyser11',0);
 options     = Ensure_field(options,'bDoAnalyser12',1);
 options     = Ensure_field(options,'bDoAnalyser15',0);
+
+options     = Ensure_field(options,'ylim_bExtend',0);
+options     = Ensure_field(options,'ylim_bDrawLine',0);
 
 if options.bSave == 1
     options = Ensure_field(options,'dest_folder_fig',Get_TUe_paths('outputs'));
@@ -170,7 +166,10 @@ if options.bDoAnalyser12 == 1
             y_old = get(gca,'YLim');
             x_old = get(gca,'XLim');
             ylim_extend(gca,1.25);
-            plot([x_old],[y_old(2) y_old(2)],'k'); % horizontal line
+            
+            if options.ylim_bDrawLine == 1
+                plot([x_old],[y_old(2) y_old(2)],'k'); % horizontal line
+            end
         end
         
     end
@@ -191,7 +190,9 @@ if options.bDoAnalyser12 == 1
             y_old = get(gca,'YLim');
             x_old = get(gca,'XLim');
             ylim_extend(gca,1.25);
-            plot([x_old],[y_old(2) y_old(2)],'k'); % horizontal line
+            if options.ylim_bDrawLine == 1
+                plot([x_old],[y_old(2) y_old(2)],'k'); % horizontal line
+            end
         end
         
     end
@@ -230,19 +231,24 @@ if options.bDoAnalyser15 == 1
             y_old = get(gca,'YLim');
             x_old = get(gca,'XLim');
             ylim_extend(gca,1.25);
-            plot([x_old],[y_old(2) y_old(2)],'k'); % horizontal line
+            if options.ylim_bDrawLine == 1
+                plot([x_old],[y_old(2) y_old(2)],'k'); % horizontal line
+            end
         end
         
     end
     
 end
 
-try
+try % Percentiles for Loudness and Sharpness
+    
+output.Lt       = out_1_12.t;
+output.L_in1    = out_1_12.DataLoud;
+output.L_in2    = out_2_12.DataLoud;
 %%%%
 % Percentiles for Loudness
 one_period_s        = diff(options.tanalysis) / (options.N_periods2analyse+1);
 one_period_in_samples = ceil( one_period_s/min(diff(out_1_12.t)) );
-% N_periods           = floor(options.time2save / one_period_s); % To analyse whole file
 N_periods = options.N_periods2analyse+1;
 
 pLmeas  = Get_percentiles_per_period(out_1_12.DataLoud,one_period_in_samples);
@@ -250,26 +256,6 @@ pLmodel = Get_percentiles_per_period(out_2_12.DataLoud,one_period_in_samples);
 
 output.pL_in1   = pLmeas;
 output.pL_in2   = pLmodel;
-output.L_in1    = out_1_12.DataLoud;
-output.L_in2    = out_2_12.DataLoud;
-output.Lt       = out_1_12.t;
-
-%%%%
-% Percentiles for Roughness
-
-one_period_s        = diff(options.tanalysis) / (options.N_periods2analyse+1);
-one_period_in_samples = ceil( one_period_s/min(diff(out_1_15.t)) );
-% N_periods           = floor(options.time2save / one_period_s);
-
-
-pRmeas  = Get_percentiles_per_period(out_1_15.DataRough,one_period_in_samples);
-pRmodel = Get_percentiles_per_period(out_2_15.DataRough,one_period_in_samples);
-
-output.R_in1    = out_1_15.DataRough;
-output.R_in2    = out_2_15.DataRough;
-output.pR_in1   = pRmeas;
-output.pR_in2   = pRmodel;
-output.Rt       = out_1_15.t;
 
 %%%%
 % Percentiles for Sharpness
@@ -289,6 +275,28 @@ p95_mod = percentile(y,95);
 catch
     warning('Percentile calculation not succeeded, maybe not every Analyser is enabled')
 end
+
+try % Roughness
+
+output.Rt       = out_1_15.t;
+output.R_in1    = out_1_15.DataRough;
+output.R_in2    = out_2_15.DataRough;
+
+% Percentiles for Roughness
+
+one_period_s        = diff(options.tanalysis) / (options.N_periods2analyse+1);
+one_period_in_samples = ceil( one_period_s/min(diff(out_1_15.t)) );
+
+pRmeas  = Get_percentiles_per_period(out_1_15.DataRough,one_period_in_samples);
+pRmodel = Get_percentiles_per_period(out_2_15.DataRough,one_period_in_samples);
+
+output.pR_in1   = pRmeas;
+output.pR_in2   = pRmodel;
+
+catch
+    warning('Percentile calculation not succeeded, maybe not every Analyser is enabled')
+end
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 output.h = h; % figure handles
