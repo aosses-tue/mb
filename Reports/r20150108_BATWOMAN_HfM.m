@@ -11,7 +11,7 @@ function r20150108_BATWOMAN_HfM(options)
 %       r20150108_BATWOMAN_HfM(options);
 %
 % 3. Additional info:
-%       Tested cross-platform: No
+%       Tested cross-platform: Yes
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Original file : r20141104_Acoustics_TUe 
@@ -31,7 +31,7 @@ bDoFluct    = 0; % Figure 5
 bDoAcMode5  = 1;
 bDoAcMode2  = 1;
 bDoAcMode2_filt = 1;
-bCalculateRoughness = 1; % calculates roughness of existing test tones
+bCalculateRoughness = 0; % calculates roughness of existing test tones
 
 bPlotOnly4paper = 1;
 
@@ -48,6 +48,33 @@ options.bDoAnalyser15 = 1; % Roughness
 
 bDiary = 0;
 Diary(mfilename,bDiary);
+
+%%
+%%
+
+close all
+figure;
+subplot(1,3,1)
+plot([1 1], [0 3.2], 'k','LineWidth',2), hold on
+grid on
+deltax = 0.3; 
+plot([1-deltax 1+deltax], [0.07   0.07] , 'g','LineWidth',.5), hold on
+plot([1-deltax 1+deltax], [0.474  0.474], 'g','LineWidth',1), hold on
+plot([1-deltax 1+deltax], [0.897  0.897], 'g','LineWidth',2), hold on
+ylabel('Roughness [asper]')
+set(gca,'XTickLabel','')
+ylim([0 1])
+Saveas(gcf, [options.dest_folder_fig 'R-1'])
+
+plot([1-deltax 1+deltax], [0.01  0.01], 'r--','LineWidth',3), hold on % ac 2, model
+plot([1-deltax 1+deltax], [0.21  0.21], 'b--','LineWidth',3), hold on % ac 2, meas
+Saveas(gcf, [options.dest_folder_fig 'R-1-a2'])
+
+plot([1-deltax 1+deltax], [0.15  0.15], 'r->','LineWidth',2), hold on % ac 5, model
+plot([1-deltax 1+deltax], [0.13  0.13], 'b->','LineWidth',2), hold on % ac 5, meas
+Saveas(gcf, [options.dest_folder_fig 'R-1-a2-5'])
+
+%%
 
 %% Wav files used:
 fi_ac5_meas     = [options.dest_folder 'meas-ac-mode-5.wav']; % measured
