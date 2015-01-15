@@ -31,7 +31,7 @@ function misc = Get_TUe_paths(type)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 15/03/2014
 % Last update on: 16/10/2014
-% Last use on   : 16/10/2014
+% Last use on   : 13/01/2015
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Alejandro's paths
@@ -107,6 +107,7 @@ misc.db_HRIR_Oldenburg  = [misc.Databases 'dir02-HRTFs'       delim 'Oldenburg' 
 misc.db_fastl2007       = [misc.Databases 'dir04-Psychoacoustics' delim 'Fastl-and-Zwicker-2007' delim '03-Extracted-files' delim];
 misc.db_fastl2007_src   = [misc.Databases 'dir04-Psychoacoustics' delim 'Fastl-and-Zwicker-2007' delim '01-audio-files' delim 'Sound' delim];
 misc.db_calfiles        = [misc.Databases 'dir04-Psychoacoustics' delim 'Fastl-and-Zwicker-2007' delim '03-Extracted-files' delim]; % TMP dir
+misc.db_ir              = [misc.Databases 'dir05-IR'       delim];
 misc.DSP                = [misc.MATLAB   'DSP'             delim]; 
 misc.F0_extraction      = [misc.MATLAB   'F0_extraction' delim];
 misc.Filterbank         = [misc.MATLAB   'Filterbank'      delim];

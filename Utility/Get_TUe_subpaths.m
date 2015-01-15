@@ -1,6 +1,8 @@
 function misc = Get_TUe_subpaths(type) 
 % function misc = Get_TUe_subpaths(type)
 %   
+% 1. Description:
+% 
 %   Get local subpaths.
 % 
 %   type:
@@ -20,7 +22,7 @@ function misc = Get_TUe_subpaths(type)
 % Programmed by Alejandro Osses, TUe, 2014
 % Created on    : 24/06/2014
 % Last update on: 17/09/2014
-% Last use on   : 17/09/2014
+% Last use on   : 13/01/2015
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 path = Get_TUe_paths(type);
