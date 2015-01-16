@@ -36,6 +36,7 @@ options     = Ensure_field(options,'label','');
 options     = Ensure_field(options,'SPLrange',[10 70]);
 options     = Ensure_field(options,'frange',[50 5000]);
 
+options     = Ensure_field(options,'bDoAnalyser01',0);
 options     = Ensure_field(options,'bDoAnalyser08',0);
 options     = Ensure_field(options,'bDoAnalyser10',0);
 options     = Ensure_field(options,'bDoAnalyser11',0);
@@ -217,7 +218,7 @@ if options.bDoAnalyser15 == 1
     end
     
     options.nAnalyser = 15;
-    param{end+1} = 'specific-roughness';
+    param{end+1} = 'average-specific-roughness';
     [h(end+1) xx stats] = PsySoundCL_Figures(param{end},out_1_15,out_2_15,options);
     param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
     

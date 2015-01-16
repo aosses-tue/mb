@@ -6,6 +6,7 @@ function [h ha stats] = PsySoundCL_Figures(param,res1, res2, option)
 %       'param' can be:
 % 
 %       nAnalyser                           excerpt     stats
+%       1           - FFT
 %       10          - 'one-third-OB'        NO          NO
 %       10          - 'specific-loudness'   NO          NO
 %       11          - 'one-third-OB'        YES         NO
@@ -24,14 +25,15 @@ function [h ha stats] = PsySoundCL_Figures(param,res1, res2, option)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 20/08/2014
 % Last update on: 01/10/2014 % Update this date manually
-% Last use on   : 01/10/2014 % Update this date manually
+% Last use on   : 16/01/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 h = [];
 ha = [];
 stats = [];
 
-t   = res1.t; % assuming the same time vector
+t1   = res1.t; 
+t2   = res2.t; 
 
 try 
     z   = res1.z;
@@ -50,13 +52,21 @@ option = Ensure_field(option,'label2','audio-2');
 option = Ensure_field(option,'label1suffix','');
 option = Ensure_field(option,'label2suffix','');
 
-option = Ensure_field(option,'tanalysis',[min(res1.t) max(res1.t)]);
+minValue = max( min(res1.t), min(res2.t) ); % normally = 0
+maxValue = min( max(res1.t), max(res2.t) );
+
+if length(res1.t) ~= length(res2.t)
+    warning('Average values based on truncated time series...');
+end
+
+option = Ensure_field(option,'tanalysis',[minValue maxValue]);
 
 option = Ensure_field(option,'title',[]);
 option = Ensure_field(option,'color',{'b-','r--'});
 option = Ensure_field(option,'LineWidth',[2 1]);
 
-idx = find(t>=option.tanalysis(1) & t<=option.tanalysis(2));
+idx1 = find(t1>=option.tanalysis(1) & t1<=option.tanalysis(2));
+idx2 = find(t2>=option.tanalysis(1) & t2<=option.tanalysis(2));
 
 if strcmp(param,'sharpness')
     
@@ -65,8 +75,8 @@ if strcmp(param,'sharpness')
     DataSharp2 = res2.DataSharp;
         
     figure;
-    plot(t,DataSharp1,option.color{1},'LineWidth',option.LineWidth(1)); hold on
-    plot(t,DataSharp2,option.color{2},'LineWidth',option.LineWidth(2));
+    plot(t1,DataSharp1,option.color{1},'LineWidth',option.LineWidth(1)); hold on
+    plot(t2,DataSharp2,option.color{2},'LineWidth',option.LineWidth(2));
 
     xlabel('Time (Seconds)')
     ylabel('Sharpness (Acums)');
@@ -83,8 +93,8 @@ elseif strcmp(param,'loudness')
     DataLoud2 = res2.DataLoud;
 
     figure;
-    plot(t,DataLoud1,option.color{1},'LineWidth',option.LineWidth(1)); hold on
-    plot(t,DataLoud2,option.color{2},'LineWidth',option.LineWidth(2));
+    plot(t1,DataLoud1,option.color{1},'LineWidth',option.LineWidth(1)); hold on
+    plot(t2,DataLoud2,option.color{2},'LineWidth',option.LineWidth(2));
 
     xlabel('Time (Seconds)')
     ylabel('Loudness (Sones)');
@@ -99,6 +109,7 @@ elseif strcmp(param,'one-third-OB')
     option = Ensure_field(option,'nAnalyser',10);
     
     switch option.nAnalyser
+            
         case 10
             
             % nParam = 2;
@@ -127,7 +138,7 @@ elseif strcmp(param,'one-third-OB')
         
             figure;
             
-            if length(idx) == length(t)
+            if length(idx1) == length(t1)
                 
                 semilogx(f,DataSpecOneThirdAvg1,option.color{1},'LineWidth',option.LineWidth(1),'Marker','o'); hold on
                 semilogx(f,DataSpecOneThirdAvg2,option.color{2},'LineWidth',option.LineWidth(2),'Marker','<'); grid on;
@@ -136,8 +147,8 @@ elseif strcmp(param,'one-third-OB')
             else
                 
                 title(sprintf('Average one-third octave band spectrum - %s (ti, tf) = (%.3f,%.3f) [s]', option.title,option.tanalysis(1),option.tanalysis(2)));   
-                semilogx(f,dbmean( res1.DataSpecOneThird(idx,:) ),option.color{1},'LineWidth',option.LineWidth(1),'Marker','o'); hold on
-                semilogx(f,dbmean( res2.DataSpecOneThird(idx,:) ),option.color{2},'LineWidth',option.LineWidth(2),'Marker','<'); grid on;
+                semilogx(f,dbmean( res1.DataSpecOneThird(idx1,:) ),option.color{1},'LineWidth',option.LineWidth(1),'Marker','o'); hold on
+                semilogx(f,dbmean( res2.DataSpecOneThird(idx1,:) ),option.color{2},'LineWidth',option.LineWidth(2),'Marker','<'); grid on;
             
             end
             ylabel('Magnitude (dB)')
@@ -148,7 +159,25 @@ elseif strcmp(param,'one-third-OB')
             
     end
     
-elseif strcmp(param,'specific-loudness')
+elseif strcmp(param,'average-power-spectrum')
+    
+    bPlot_vs_time = 0;
+    % option = Ensure_field(option,'nAnalyser',10);
+    
+    switch option.nAnalyser
+        case 1
+            f = res1.f;
+            figure;
+            semilogx(f,res1.Data2,option.color{1},'LineWidth',option.LineWidth(1)); hold on
+            semilogx(f,res2.Data2,option.color{2},'LineWidth',option.LineWidth(2)); grid on;
+            ylabel('Magnitude (dB)'); % this can be automised
+            xlabel('Frequency (Hz)'); % this can be automised
+            title(sprintf('%s - %s', res1.name{2}, option.title));
+            h(end+1) = gcf;
+            ha(end+1) = gca;
+    end 
+    
+elseif strcmp(param,'specific-loudness')| strcmp(param,'average-specific-loudness')
     
     option = Ensure_field(option,'nAnalyser',12);
     bPlot_vs_time = 0;
@@ -191,7 +220,7 @@ elseif strcmp(param,'specific-loudness')
             DataSpecLoud2 = res2.DataSpecLoud;
             
             figure;
-            if length(idx) == length(t)
+            if length(idx1) == length(t1)
                 
                 plot(zspec,DataLoud1,option.color{1},'LineWidth',option.LineWidth(1)); hold on
                 plot(zspec,DataLoud2,option.color{2},'LineWidth',option.LineWidth(2));
@@ -201,11 +230,11 @@ elseif strcmp(param,'specific-loudness')
                 
             else
                 % Excerpt
-                plot(zspec,mean(DataSpecLoud1(idx,:)),option.color{1},'LineWidth',option.LineWidth(1)); hold on
-                plot(zspec,mean(DataSpecLoud2(idx,:)),option.color{2},'LineWidth',option.LineWidth(2));
+                plot(zspec,mean(DataSpecLoud1(idx1,:)),option.color{1},'LineWidth',option.LineWidth(1)); hold on
+                plot(zspec,mean(DataSpecLoud2(idx1,:)),option.color{2},'LineWidth',option.LineWidth(2));
                 title(sprintf('Average Specific Loudness - %s (ti, tf) = (%.3f,%.3f) [s]', option.title,option.tanalysis(1),option.tanalysis(2)));
-                data2show1 = sum(DataSpecLoud1(idx,:))*0.1;
-                data2show2 = sum(DataSpecLoud2(idx,:))*0.1;
+                data2show1 = sum(DataSpecLoud1(idx1,:))*0.1;
+                data2show2 = sum(DataSpecLoud2(idx1,:))*0.1;
                 
             end
             
@@ -230,21 +259,21 @@ elseif strcmp(param,'roughness')
     DataRough2 = res2.DataRough;
     
     figure;
-    plot(t,DataRough1,option.color{1},'LineWidth',option.LineWidth(1),'Marker','o'); hold on
-    plot(t,DataRough2,option.color{2},'LineWidth',option.LineWidth(2),'Marker','<');
+    plot(t1,DataRough1,option.color{1},'LineWidth',option.LineWidth(1),'Marker','o'); hold on
+    plot(t2,DataRough2,option.color{2},'LineWidth',option.LineWidth(2),'Marker','<');
 
     xlabel('Time (seconds)')
     ylabel('Roughness (aspers)')
     title(sprintf('Roughness - %s', option.title));
     grid on
 
-    res1.stats.rough_segment = mean(DataRough1(idx));
-    res2.stats.rough_segment = mean(DataRough2(idx));
+    res1.stats.rough_segment = mean(DataRough1(idx1));
+    res2.stats.rough_segment = mean(DataRough2(idx2));
     
     h(end+1) = gcf;
     ha(end+1) = gca;
         
-elseif strcmp(param,'specific-roughness')
+elseif strcmp(param,'specific-roughness')| strcmp(param,'average-specific-roughness')
     
     bPlot_vs_time = 0;
     freq_min = min(z);
@@ -253,17 +282,17 @@ elseif strcmp(param,'specific-roughness')
     DataRough1 = res1.DataSpecRough;
     DataRough2 = res2.DataSpecRough;
     
-    res1.stats.rough_segment = mean( 0.25*sum( DataRough1(idx,:)' ) ); % 0.5*sum( mean(DataRough1(idx,:)') );
-    res2.stats.rough_segment = mean( 0.25*sum( DataRough2(idx,:)' ) );
+    res1.stats.rough_segment = mean( 0.25*sum( DataRough1(idx1,:)' ) ); % 0.5*sum( mean(DataRough1(idx,:)') );
+    res2.stats.rough_segment = mean( 0.25*sum( DataRough2(idx1,:)' ) );
     
     figure;
-    plot(z, mean(DataRough1(idx,:)),option.color{1},'LineWidth',option.LineWidth(1)); hold on
-    plot(z, mean(DataRough2(idx,:)),option.color{2},'LineWidth',option.LineWidth(2));
+    plot(z, mean(DataRough1(idx1,:)),option.color{1},'LineWidth',option.LineWidth(1)); hold on
+    plot(z, mean(DataRough2(idx2,:)),option.color{2},'LineWidth',option.LineWidth(2));
     xlabel('Critical band rate (Bark)')
     ylabel('Specific Roughness (Aspers/Bark)')
     %title(sprintf('Average Roughness - %s', option.title));
     
-    if length(idx) == length(t)
+    if length(idx1) == length(t1)
         title(sprintf('Average Roughness - %s', option.title));
         option.label1suffix = sprintf(', tot = %.2f [asper]',res1.stats.rough_tot);
         option.label2suffix = sprintf(', tot = %.2f [asper]',res2.stats.rough_tot);
@@ -286,8 +315,8 @@ elseif strcmp(param,'specific-roughness')
     
 end
 
-stats.idx   = idx;
-stats.t     = t;
+stats.idx   = idx1;
+stats.t     = t1;
 
 legend( sprintf('%s %s',option.label1,option.label1suffix), ... 
         sprintf('%s %s',option.label2,option.label2suffix) );

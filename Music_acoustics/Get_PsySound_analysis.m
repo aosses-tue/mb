@@ -18,8 +18,8 @@ function [output h] = Get_PsySound_analysis(filename1,filename2,options,stPlot)
 
 if nargin == 0
     close all
-    filename1 = [Get_TUe_paths('outputs') 'ref_loud.wav'];
-    filename2 = [Get_TUe_paths('outputs') 'ref_rough.wav'];
+    filename1 = [Get_TUe_paths('outputs') 'tmp-cal\ref_loud.wav'];
+    filename2 = [Get_TUe_paths('outputs') 'tmp-cal\ref_rough.wav'];
     options.calfile = [Get_TUe_paths('db_calfiles') 'track_03.wav'];
     options.callevel = 60; % rms 90 dB SPL = 0 dBFS     
 end

@@ -11,6 +11,7 @@ function [output h ha] = PsySoundCL(filename,option)
 %       filename (Include extension) - file to be analysed
 %       option.CalMethod - file calibration according to known references
 %       option.nAnalyser - analyser to be applied. Analysers tested:
+%           option.nAnalyser = 1;  %  
 %           option.nAnalyser = 8;  % SLM(fh); 
 %           option.nAnalyser = 10; % ThirdOctaveBand(fh);
 %           option.nAnalyser = 11; % CPBFFT(fh);
@@ -26,8 +27,8 @@ function [output h ha] = PsySoundCL(filename,option)
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 22/07/2014
-% Last update on: 17/09/2014 % Update this date manually
-% Last use on   : 06/11/2014 % Update this date manually
+% Last update on: 16/10/2015 % Update this date manually
+% Last use on   : 16/01/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 h = [];
@@ -55,7 +56,7 @@ if nargin < 2
 end
 
 option = Ensure_field(option,'bPlot'      , 1);
-option = Ensure_field(option,'nAnalyser'  ,15);
+option = Ensure_field(option,'nAnalyser'  ,1);
 
 nAnalyser = option.nAnalyser;
 % nAnalyser = 12; % Dynamic loudness
@@ -149,6 +150,8 @@ fh = calibrate(fh, 'WithFiles', option.calfile, option.callevel);
 % Step 3: Analysers
 
 switch nAnalyser
+    case 1
+        obj = FFT(fh);
     case 8
         obj = SLM(fh); 
     case 10
@@ -197,11 +200,15 @@ tmpObj  = get(obj,'output');
 
 t       = get(tmpObj{1,1},'Time');
 
-if nAnalyser == 12 | nAnalyser == 15 | nAnalyser == 20
+if nAnalyser == 1
+    
+    f   = get(tmpObj{1,2},'Freq'); % 1:fs/2
+    
+elseif nAnalyser == 12 | nAnalyser == 15 | nAnalyser == 20
     
     z   = get(tmpObj{1,2},'Freq'); % 1:24
     
-elseif nAnalyser == 10
+elseif nAnalyser == 10 
     
     f_cell = get(tmpObj{1,2},'Freq');
     f = zeros(size(f_cell));
@@ -225,7 +232,6 @@ elseif nAnalyser == 11
     
 end
     
-
 if isfield(option,'trange')  
     t = option.trange;
 end
@@ -242,6 +248,23 @@ end
 
 switch nAnalyser 
     
+    case 1
+        nParam = 2;
+        Data2   = get(tmpObj{1,nParam},'Data');
+        % Data2name = '';
+        output.Data2 = Data2;
+        output.name{nParam} = get(tmpObj{1,nParam},'Name');
+        output.param{nParam} = strrep( lower( output.name{nParam} ),' ','-');
+        output.f = f;
+        
+        if option.bPlot
+            figure;
+            semilogx(f,Data2,'-');
+            xlabel('Frequency [Hz]');
+            ylabel('Amplitude [dB]');
+            grid on
+        end 
+        
     case 8
         % Out1: SPL A-weighted Slow
         % Out2: SPL A-weighted Slow
@@ -544,7 +567,6 @@ output.nAnalyser = nAnalyser;
 output.stats     = stats;
 
 if nargout == 0
-    
     
     for i = 1:Nparams
         fprintf('Analyser Number: %.0f\n',nAnalyser);
