@@ -255,20 +255,20 @@ elseif strcmp(param,'specific-loudness')| strcmp(param,'average-specific-loudnes
 elseif strcmp(param,'roughness')
     
     bPlot_vs_time = 1;
-    DataRough1 = res1.DataRough;
-    DataRough2 = res2.DataRough;
+    Data1 = res1.Data1; % res1.DataRough;
+    Data2 = res2.Data1; % res2.DataRough;
     
     figure;
-    plot(t1,DataRough1,option.color{1},'LineWidth',option.LineWidth(1),'Marker','o'); hold on
-    plot(t2,DataRough2,option.color{2},'LineWidth',option.LineWidth(2),'Marker','<');
+    plot(t1,Data1,option.color{1},'LineWidth',option.LineWidth(1),'Marker','o'); hold on
+    plot(t2,Data2,option.color{2},'LineWidth',option.LineWidth(2),'Marker','<');
 
     xlabel('Time (seconds)')
     ylabel('Roughness (aspers)')
     title(sprintf('Roughness - %s', option.title));
     grid on
 
-    res1.stats.rough_segment = mean(DataRough1(idx1));
-    res2.stats.rough_segment = mean(DataRough2(idx2));
+    res1.stats.rough_segment = mean(Data1(idx1));
+    res2.stats.rough_segment = mean(Data2(idx2));
     
     h(end+1) = gcf;
     ha(end+1) = gca;
@@ -279,15 +279,15 @@ elseif strcmp(param,'specific-roughness')| strcmp(param,'average-specific-roughn
     freq_min = min(z);
     freq_max = max(z);
     
-    DataRough1 = res1.DataSpecRough;
-    DataRough2 = res2.DataSpecRough;
+    Data1 = res1.Data2; % res1.DataSpecRough;
+    Data2 = res2.Data2; % res2.DataSpecRough;
     
-    res1.stats.rough_segment = mean( 0.25*sum( DataRough1(idx1,:)' ) ); % 0.5*sum( mean(DataRough1(idx,:)') );
-    res2.stats.rough_segment = mean( 0.25*sum( DataRough2(idx1,:)' ) );
+    res1.stats.rough_segment = mean( 0.25*sum( Data1(idx1,:)' ) ); % 0.5*sum( mean(DataRough1(idx,:)') );
+    res2.stats.rough_segment = mean( 0.25*sum( Data2(idx1,:)' ) );
     
     figure;
-    plot(z, mean(DataRough1(idx1,:)),option.color{1},'LineWidth',option.LineWidth(1)); hold on
-    plot(z, mean(DataRough2(idx2,:)),option.color{2},'LineWidth',option.LineWidth(2));
+    plot(z, mean(Data1(idx1,:)),option.color{1},'LineWidth',option.LineWidth(1)); hold on
+    plot(z, mean(Data2(idx2,:)),option.color{2},'LineWidth',option.LineWidth(2));
     xlabel('Critical band rate (Bark)')
     ylabel('Specific Roughness (Aspers/Bark)')
     %title(sprintf('Average Roughness - %s', option.title));
@@ -305,13 +305,6 @@ elseif strcmp(param,'specific-roughness')| strcmp(param,'average-specific-roughn
     grid on
     h(end+1) = gcf;
     ha(end+1) = gca;
-    
-    disp('sum(DataRough1): ');
-    disp(['  : ' num2str(sum(mean(DataRough1))*0.1) ]);
-    disp('sum(DataRough2): ');
-    disp(['  : ' num2str(sum(mean(DataRough2))*0.1) ]);
-    disp('sum(DataRough1-DataRough2): ');
-    disp(['  : ' num2str(sum(mean(DataRough1)-mean(DataRough2))*0.1) ]);
     
 end
 

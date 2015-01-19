@@ -274,12 +274,6 @@ prefs = getPsysound3Prefs;
 
 synchFunc = [];
 
-% Create a struct to use as a conduit to assignOutputs;
-% s = struct('centerLoc',    [], ...
-%            'centerTpoint', [], ...
-%            'beginData',    [], ...
-%            'endData',      []);
-
 % We just got started!
 done  = false;
 
@@ -361,8 +355,7 @@ for index = 1:numWindows
     % Apply the window
     if length(winFunc()) < 2 && min(size(windowDataRaw)) > 1
         windowDataRaw = windowDataRaw .* winFunc();
-        % This is most likely just a multiplication by one, but I'll leave
-        % it in anyway. 
+        % This is most likely just a multiplication by one, but I'll leave it in anyway. 
     else
         windowDataRaw = windowDataRaw .* repmat(winFunc(), 1, min(size(windowDataRaw)));
     end    

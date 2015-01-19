@@ -18,14 +18,25 @@ function varargout = PsySoundControl(varargin)
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
 %      instance to run (singleton)".
 %
-% See also: GUIDE, GUIDATA, GUIHANDLES
-
+%       Line    Stage                               Last updated on
+%       37      Initialisation                      18/01/2015
+%       90      Calculation - calculate_Callback    18/01/2015
+%       267     reset_Callback                      18/01/2015
+%       309     Initialisation GUI                  18/01/2015
+%       648     Load data                           18/01/2015
+%       
+% TO DO:
+%       1. Define excerpts (t1 t2), apply them to PsySound and offline procedures
+%       2. SLM: problem at @Analyser/process, line 381. Object subclass is not readable 'AZ'
+%       3. Enable save figure...
+%       4. xlim axis, ylim axis
+% 
 % Edit the above text to modify the response to help PsySoundControl
-% Created on: 16/01/2015
-% Last modified on: 16/01/2015
+% Created on        : 16/01/2015
+% Last modified on  : 19/01/2015
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Begin initialization code - DO NOT EDIT
+%% Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
@@ -43,6 +54,7 @@ else
     gui_mainfcn(gui_State, varargin{:});
 end
 % End initialization code - DO NOT EDIT
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes just before PsySoundControl is made visible.
 function PsySoundControl_OpeningFcn(hObject, eventdata, handles, varargin)
@@ -75,68 +87,9 @@ function varargout = PsySoundControl_OutputFcn(hObject, eventdata, handles)
 varargout{1} = handles.output;
 
 
-% --- Executes during object creation, after setting all properties.
-function density_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to density (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
+%% Calculations: 
+% Executes on button press in calculate.
 
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-
-function density_Callback(hObject, eventdata, handles)
-% hObject    handle to density (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of density as text
-%        str2double(get(hObject,'String')) returns contents of density as a double
-density = str2double(get(hObject, 'String'));
-if isnan(density)
-    set(hObject, 'String', 0);
-    errordlg('Input must be a number','Error');
-end
-
-% Save the new density value
-handles.metricdata.density = density;
-guidata(hObject,handles)
-
-% --- Executes during object creation, after setting all properties.
-function volume_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to volume (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-function volume_Callback(hObject, eventdata, handles)
-% hObject    handle to volume (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of volume as text
-%        str2double(get(hObject,'String')) returns contents of volume as a double
-volume = str2double(get(hObject, 'String'));
-if isnan(volume)
-    set(hObject, 'String', 0);
-    errordlg('Input must be a number','Error');
-end
-
-% Save the new volume value
-handles.metricdata.volume = volume;
-guidata(hObject,handles)
-
-%% Calculations:
-% --- Executes on button press in calculate.
 function calculate_Callback(hObject, eventdata, handles)
 % hObject    handle to calculate (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -146,6 +99,7 @@ function calculate_Callback(hObject, eventdata, handles)
 %       Num2str
 %       ef
 
+bUsePsySound = get(handles.rbPsySound,'value');
 bSave       = get(handles.bSave,'value');
 nAnalyser   = get(handles.popAnalyser,'value');
 dir_output  = get(handles.txtOutputDir,'string');
@@ -155,99 +109,86 @@ eval( sprintf('options.bDoAnalyser%s=1;',Num2str(nAnalyser,2)) ); % activates se
 filename1 = get(handles.txtFile1,'string');
 filename2 = get(handles.txtFile2,'string');
 
-options.calfile = [Get_TUe_paths('db_calfiles') 'track_03.wav'];
-options.callevel = 60; % rms 90 dB SPL = 0 dBFS 
-
-options     = Ensure_field(options,'label1','file1');
-options     = Ensure_field(options,'label2','file2');
-
-options.bSave = bSave;
-options     = Ensure_field(options,'bPlot',1);
-options     = Ensure_field(options,'label','');
-options     = Ensure_field(options,'SPLrange',[10 70]);
-options     = Ensure_field(options,'frange',[50 5000]);
-
-options     = ef(options,'bDoAnalyser08',0);
-options     = ef(options,'bDoAnalyser10',0);
-options     = ef(options,'bDoAnalyser11',0);
-options     = ef(options,'bDoAnalyser12',0);
-options     = ef(options,'bDoAnalyser15',0);
-
-options     = Ensure_field(options,'ylim_bExtend',0);
-options     = Ensure_field(options,'ylim_bDrawLine',0);
-
-if options.bSave == 1
-    options.dest_folder_fig = dir_output;
-end
-    
-h = []; % handles figures
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-disp([mfilename '.m: analysing ' filename1 ' and ' filename2]);
- 
-ha1 = [];
-ha2 = [];    
-tmp_h = [];
-tmp_h = [];
-
-options = Ensure_field(options,'calfile',[Get_TUe_paths('db_calfiles') 'track_03.wav']);
-options = Ensure_field(options,'callevel',70); % 'AMT' reference
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-options.bCosineRamp = 0; % Cos ramp not yet applied for Loudness calculations
-options.bCosineRampOnset = 0; %ms
-
-options.bPlot = 0;
-
 options.nAnalyser = nAnalyser;
 
-[out_1 tmp_h tmp_ha]   = PsySoundCL(filename1,options);
-[out_2 tmp_h tmp_ha]   = PsySoundCL(filename2,options);
+if bUsePsySound
+    
+    options.calfile = [Get_TUe_paths('db_calfiles') 'track_03.wav'];
+    options.callevel = 60; % rms 90 dB SPL = 0 dBFS 
 
-param = [];
+    options     = Ensure_field(options,'label1','file1');
+    options     = Ensure_field(options,'label2','file2');
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if options.bDoAnalyser10 == 1
-    param{end+1}        = 'specific-loudness';
-    [h(end+1) xx stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
-    param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
+    options.bSave = bSave;
+    options     = Ensure_field(options,'bPlot',1);
+    options     = Ensure_field(options,'label','');
+    options     = Ensure_field(options,'SPLrange',[10 70]);
+    options     = Ensure_field(options,'frange',[50 5000]);
+
+    options     = ef(options,'bDoAnalyser08',0);
+    options     = ef(options,'bDoAnalyser10',0);
+    options     = ef(options,'bDoAnalyser11',0);
+    options     = ef(options,'bDoAnalyser12',0);
+    options     = ef(options,'bDoAnalyser15',0);
+
+    options     = Ensure_field(options,'ylim_bExtend',0);
+    options     = Ensure_field(options,'ylim_bDrawLine',0);
+
+    if options.bSave == 1
+        options.dest_folder_fig = dir_output;
+    end
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    disp([mfilename '.m: analysing ' filename1 ' and ' filename2]);
+   
+    tmp_h = [];
+    tmp_h = [];
+
+    options = Ensure_field(options,'calfile',[Get_TUe_paths('db_calfiles') 'track_03.wav']);
+    options = Ensure_field(options,'callevel',70); % 'AMT' reference
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    options.bCosineRamp = 0; % Cos ramp not yet applied for Loudness calculations
+    options.bCosineRampOnset = 0; %ms
+
+    options.bPlot = 0;
+
+    [out_1 tmp_h tmp_ha]   = PsySoundCL(filename1,options);
+    [out_2 tmp_h tmp_ha]   = PsySoundCL(filename2,options);
+    
+else
+    
+    [insig1 fs1] = Wavread(filename1);
+    [insig2 fs2] = Wavread(filename2);
+    
+    switch options.nAnalyser
+        case 15 % Roughness
+            
+            N = 8192; % default frame length
+            [xx out_1] = Roughness_offline(insig1,fs1,N,0);
+            [xx out_2] = Roughness_offline(insig2,fs2,N,0);
+            
+        case 20 % Fluctuation strength, see also r20141126_fluctuation
+            
+            N = 8192*4;
+            [xx out_1] = FluctuationStrength_offline_debug(insig1,fs1,N,0);
+            [xx out_2] = FluctuationStrength_offline_debug(insig2,fs2,N,0);
+            
+    end
+    
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% if options.bDoAnalyser11 == 1
-%     param{end+1}        = 'one-third-OB';
-%     [h(end+1) xx stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
-%     param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
-%     
-%     if length(stats.idx) == length(stats.t)
-%         legend( sprintf('tot = %.2f dB(Z)',dbsum( out_1.DataSpecOneThirdAvg )) ,...
-%                 sprintf('tot = %.2f dB(Z)',dbsum( out_2.DataSpecOneThirdAvg )) );
-%     else
-%         legend( sprintf('tot = %.2f dB(Z)',dbsum( dbmean( out_1.DataSpecOneThird(stats.idx,:) )) ),...
-%                 sprintf('tot = %.2f dB(Z)',dbsum( dbmean( out_2.DataSpecOneThird(stats.idx,:) )) ) );
-%     end
-%     
-%     if isfield(options,'SPLrange')
-%         set(gca,'YLim',options.SPLrange);
-%         plot(options.frange,[65 65],'k'); % horizontal line
-%     end
-%     
-%     if isfield(options,'frange')
-%         set(gca,'XLim',options.frange);
-%     end
-%     hold on
-%     
-% end
+param = [];
 
 for i = 1:6
     exp1 = sprintf('bPlotParam%.0f = get(handles.chParam%.0f,''value''); labelParam%.0f = get(handles.chParam%.0f,''string'');',i,i,i,i);
     eval( exp1 );
 end
 
-  
+h = []; % handles figures
+
 if bPlotParam1
     % Loudness, Roughness
     param{end+1}        = labelParam1;
@@ -304,65 +245,6 @@ if bPlotParam6
     param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% try % Percentiles for Loudness and Sharpness
-%     
-% output.Lt       = out_1.t;
-% output.L_in1    = out_1.DataLoud;
-% output.L_in2    = out_2.DataLoud;
-% %%%%
-% % Percentiles for Loudness
-% one_period_s        = diff(options.tanalysis) / (options.N_periods2analyse+1);
-% one_period_in_samples = ceil( one_period_s/min(diff(out_1.t)) );
-% N_periods = options.N_periods2analyse+1;
-% 
-% pLmeas  = Get_percentiles_per_period(out_1.DataLoud,one_period_in_samples);
-% pLmodel = Get_percentiles_per_period(out_2.DataLoud,one_period_in_samples);
-% 
-% output.pL_in1   = pLmeas;
-% output.pL_in2   = pLmodel;
-% 
-% %%%%
-% % Percentiles for Sharpness
-% one_period_in_samples = ceil( one_period_s/min(diff(out_1.t)) );
-% yy1 = buffer(out_1.DataSharp,one_period_in_samples,0);
-% yy2 = buffer(out_2.DataSharp,one_period_in_samples,0);
-% 
-% y = yy1(:,1:N_periods);
-% p5 = percentile(y,5);
-% p50 = percentile(y,50);
-% p95 = percentile(y,95);
-% 
-% p5_mod = percentile(y,5);
-% p50_mod = percentile(y,50);
-% p95_mod = percentile(y,95);
-% 
-% catch
-%     warning('Percentile calculation not succeeded, maybe not every Analyser is enabled')
-% end
-% 
-% try % Roughness
-% 
-% output.Rt       = out_1_15.t;
-% output.R_in1    = out_1_15.DataRough;
-% output.R_in2    = out_2_15.DataRough;
-% 
-% % Percentiles for Roughness
-% 
-% one_period_s        = diff(options.tanalysis) / (options.N_periods2analyse+1);
-% one_period_in_samples = ceil( one_period_s/min(diff(out_1_15.t)) );
-% 
-% pRmeas  = Get_percentiles_per_period(out_1_15.DataRough,one_period_in_samples);
-% pRmodel = Get_percentiles_per_period(out_2_15.DataRough,one_period_in_samples);
-% 
-% output.pR_in1   = pRmeas;
-% output.pR_in2   = pRmodel;
-% 
-% catch
-%     warning('Percentile calculation not succeeded, maybe not every Analyser is enabled')
-% end
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 output.h = h; % figure handles
@@ -392,10 +274,7 @@ else
     
 end
 
-disp('')
-
-%%
-% --- Executes on button press in reset.
+%% reset - Executes on button press in reset.
 function reset_Callback(hObject, eventdata, handles)
 % hObject    handle to reset (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -403,23 +282,29 @@ function reset_Callback(hObject, eventdata, handles)
 
 initialize_gui(gcbf, handles, true);
 
-% --- Executes when selected object changed in unitgroup.
+%% radio group change 
+%       - Executes when selected object changed in unitgroup.
 function unitgroup_SelectionChangeFcn(hObject, eventdata, handles)
 % hObject    handle to the selected object in unitgroup 
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+nAnalyser = get(handles.popAnalyser,'value');
+
 if (hObject == handles.rbPsySound)
-    set(handles.text4, 'String', 'lb/cu.in');
-    set(handles.text5, 'String', 'cu.in');
-    set(handles.text6, 'String', 'lb');
+    set(handles.txtScript, 'String', '');
 else
-    set(handles.text4, 'String', 'kg/cu.m');
-    set(handles.text5, 'String', 'cu.m');
-    set(handles.text6, 'String', 'kg');
+    switch nAnalyser
+        case 15
+            set(handles.txtScript, 'String', 'Roughness_offline.m');
+        case 20 
+            set(handles.txtScript, 'String', 'FluctuationStrength_offline_debug.m');
+        otherwise
+            set(handles.txtScript, 'String', '');
+    end
 end
 
-%% Initialisation
+%% Initialisation GUI
 function initialize_gui(fig_handle, handles, isreset)
 % If the metricdata field is present and the reset flag is false, it means
 % we are we are just re-initializing a GUI by calling it from the cmd line
@@ -428,13 +313,10 @@ if isfield(handles, 'metricdata') && ~isreset
     return;
 end
 
-handles.metricdata.density = 0;
-handles.metricdata.volume  = 0;
-
 set(handles.unitgroup, 'SelectedObject', handles.rbPsySound);
 
 try
-    set(handles.txtOutputDir,'string',Get_TUe_paths('outputs'))
+    set(handles.txtOutputDir,'string',Get_TUe_paths('outputs'));
 catch
     warning('Type your output dir in the GUI');
 end
@@ -651,6 +533,29 @@ switch nAnalyser
         set(handles.chParam6,'string','Param6');
         set(handles.chParam6,'enable','off');
         set(handles.chParam6,'value',0);
+    
+    case 20
+        set(handles.chParam1,'string','fluctuation-strength');
+        set(handles.chParam1,'enable','on');
+        
+        set(handles.chParam2,'string','specific-fluctuation-strength');
+        set(handles.chParam2,'enable','off');
+        set(handles.chParam2,'value',0);
+        
+        set(handles.chParam3,'string','average-specific-fluctuation-strength'); % determined using specific-fluctuation-strength
+        set(handles.chParam3,'enable','on');
+        
+        set(handles.chParam4,'string','Param4');
+        set(handles.chParam4,'enable','off');
+        set(handles.chParam4,'value',0);
+        
+        set(handles.chParam5,'string','Param5');
+        set(handles.chParam5,'enable','off');
+        set(handles.chParam5,'value',0);
+        
+        set(handles.chParam6,'string','Param6');
+        set(handles.chParam6,'enable','off');
+        set(handles.chParam6,'value',0);
         
     otherwise
         for i = 1:6
@@ -775,8 +680,8 @@ end
 % 
 % % Hint: get(hObject,'Value') returns toggle state of chParam4
 
-
-% --- Executes on button press in btnLoad.
+%% Load data
+%   - Executes on button press in btnLoad.
 function btnLoad_Callback(hObject, eventdata, handles)
 % hObject    handle to btnLoad (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -790,13 +695,142 @@ end
 
 set(handles.txtOutputDir,'string',dir_out)
 
-try
-    filename1 = [dir_out 'tmp-cal' delim 'ref_loud.wav'];
-    filename2 = [dir_out 'tmp-cal' delim 'ref_rough.wav'];
-catch
-    warning('Enter you wav filenames...')
+filename1 = get(handles.txtFile1,'string');
+filename2 = get(handles.txtFile2,'string');
+
+if strcmp(filename1,'')|strcmp(filename2,'')
+    try
+        filename1 = [dir_out 'tmp-cal' delim 'ref_loud.wav'];
+        filename2 = [dir_out 'tmp-cal' delim 'ref_rough.wav'];
+    catch
+        warning('Enter you wav filenames...')
+    end
+
+    set(handles.txtFile1    ,'string',filename1);
+    set(handles.txtFile2    ,'string',filename2);
+end
+set(handles.txtOutputDir,'string',dir_out)
+
+[x1,fs1] = Wavread(filename1);
+[x2,fs2] = Wavread(filename2);
+
+t1 = ( 0:length(x1)-1 )/fs1;
+t2 = ( 0:length(x2)-1 )/fs2;
+
+axes(handles.axes1)
+plot(t1,x1);
+% title( name2figname( filename1 ) )
+
+axes(handles.axes2)
+plot(t2,x2,'r');
+% title( name2figname( filename2 ) )
+
+txt2display = sprintf('Length: %.3f [s],\n\t %.0f [samples]\nSample rate: %.0f [Hz]\n',max(t1),length(x1),fs1); 
+set( handles.txtFile1info,'string',txt2display);
+
+txt2display2 = sprintf('Length: %.3f [s],\n\t %.0f [samples]\nSample rate: %.0f [Hz]\n',max(t2),length(x2),fs2); 
+set( handles.txtFile2info,'string',txt2display2);
+
+ti = str2num( get(handles.txtti,'string') );
+tf = str2num( get(handles.txttf,'string') );
+
+if length(ti)==0 & length(tf)==0
+    ti = 1;
+    tf = min( length(x1), length(x2) );
+    set( handles.txtti,'string',num2str(ti) );
+    set( handles.txttf,'string',num2str(tf) );
 end
 
-set(handles.txtOutputDir,'string',dir_out)
-set(handles.txtFile1    ,'string',filename1);
-set(handles.txtFile2    ,'string',filename2);
+set(handles.txtti_s,'string',sprintf('%.3f [s]',ti/fs1));
+set(handles.txttf_s,'string',sprintf('%.3f [s], total time of %.3f',tf/fs1,(tf-ti)/fs1));
+
+
+function txtti_Callback(hObject, eventdata, handles)
+% hObject    handle to txtti (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of txtti as text
+%        str2double(get(hObject,'String')) returns contents of txtti as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function txtti_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to txtti (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function txttf_Callback(hObject, eventdata, handles)
+% hObject    handle to txttf (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of txttf as text
+%        str2double(get(hObject,'String')) returns contents of txttf as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function txttf_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to txttf (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function txtti_s_Callback(hObject, eventdata, handles)
+% hObject    handle to txtti_s (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of txtti_s as text
+%        str2double(get(hObject,'String')) returns contents of txtti_s as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function txtti_s_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to txtti_s (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function txttf_s_Callback(hObject, eventdata, handles)
+% hObject    handle to txttf_s (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of txttf_s as text
+%        str2double(get(hObject,'String')) returns contents of txttf_s as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function txttf_s_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to txttf_s (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

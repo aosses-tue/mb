@@ -29,14 +29,14 @@ j = 1;
 
 % Loop through and populate the struct
 for w = 1:wLen % foreach weighting type
-  % Create and assign function handle
-  s(j).wFH = weightings(N, fs, wChoices(w));
-  s(j).iFH = {};
-  % Now loop over each integration type
-  for i = 1:iLen
-    s(j).iFH{end+1} = integrator(fs, char(iChoices(i)));
-  end
-  j = j + 1;
+      % Create and assign function handle
+      s(j).wFH = weightings(N, fs, wChoices(w));
+      s(j).iFH = {};
+      % Now loop over each integration type
+      for i = 1:iLen
+        s(j).iFH{end+1} = integrator(fs, char(iChoices(i)));
+      end
+      j = j + 1;
 end
 
 % Create the function handle

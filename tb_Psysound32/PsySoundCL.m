@@ -488,9 +488,24 @@ switch nAnalyser
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % Step 4: PostProcessing
-
-        DataRough       = get(tmpObj{1,1},'Data');
-        DataSpecRough   = get(tmpObj{1,2},'Data');
+        
+        nParam  = 1;
+        Data1   = get(tmpObj{1,nParam},'Data');
+        output.name{nParam}     = get(tmpObj{1,nParam},'Name');
+        output.param{nParam}    = strrep( lower( output.name{nParam} ),' ','-');
+        
+        nParam  = 2;
+        Data2   = get(tmpObj{1,nParam},'Data');
+        output.name{nParam}     = get(tmpObj{1,nParam},'Name');
+        output.param{nParam}    = strrep( lower( output.name{nParam} ),' ','-');
+        
+        output.Data1    = Data1;
+        output.Data2    = Data2;
+        
+        DataRough       = Data1;
+        DataSpecRough   = Data2;
+        
+        stats.rough_tot = mean( DataRough );
         
         if option.bPlot
             figure
@@ -518,11 +533,6 @@ switch nAnalyser
             ha(end+1) = gca;
         end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        
-        output.DataRough = DataRough;
-        output.DataSpecRough = DataSpecRough;
-        stats.rough_tot = mean( DataRough );
-        % stats.rough_tot = mean( 0.25*sum( DataSpecRough' ) ); % Same calculation as previous line
         
 	case 20
         

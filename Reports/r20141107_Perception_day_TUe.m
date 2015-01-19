@@ -30,7 +30,7 @@ bDoFluct    = 0; % Not used for Dag van de perceptie
 bDoFluct3   = 0;
 bDoPsySound = 1;
 
-options.bDoAnalyser01 = 0; % OK FFT
+options.bDoAnalyser01 = 1; % OK FFT
 options.bDoAnalyser08 = 0; %    SLM
 options.bDoAnalyser10 = 0; %
 options.bDoAnalyser11 = 0; % Fig 3, one-third OB analysis

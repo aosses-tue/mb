@@ -1,9 +1,9 @@
-function dataOut = FluctuationStrength_offline_debug(insig, Fs, N, bDebug)
-% function dataOut = FluctuationStrength_offline_debug(insig, Fs, N, bDebug)
+function [dataOut out] = FluctuationStrength_offline_debug(insig, Fs, N, bDebug)
+% function [dataOut out] = FluctuationStrength_offline_debug(insig, Fs, N, bDebug)
 %
 % 1. Description:
-%       Off-line implementation of the Fluctuation Strength algorithm based 
-%       on Roughness model.
+%       Frame-based, off-line implementation of the Fluctuation Strength 
+%       algorithm based. The algorithm was adapted from the Roughness model.
 % 
 %       Changes introduced by AO:
 %           - amp2db replaced by To_dB
@@ -32,7 +32,7 @@ function dataOut = FluctuationStrength_offline_debug(insig, Fs, N, bDebug)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 10/11/2014
 % Last update on: 18/11/2014 % Update this date manually
-% Last use on   : 04/01/2015 % Update this date manually
+% Last use on   : 18/01/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 4
@@ -102,9 +102,10 @@ k = (N0:1:Ntop);
 MinExcdB = interp1(HTres(:,1),HTres(:,2),Barkno(k));
   
 % Initialize constants and variables
-zb    = sort([Bf(1,:),Cf(1,:)]);
+zi      = 0.5:0.5:23.5;
+zb      = sort([Bf(1,:),Cf(1,:)]);
 
-idxtmp = find(zb==0 | zb==1);
+idxtmp  = find(zb==0 | zb==1);
 zb(idxtmp) = [];
 
 MinBf = MinExcdB(zb);
@@ -185,6 +186,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for idx_j = 1:m_blocks
 
+    tn(idx_j) = (idx_j-1)*N_hop; % sample number to determine time
     dataIn = insig_buf(:,idx_j);
     
     dataIn = dataIn .*Window;
@@ -199,6 +201,7 @@ for idx_j = 1:m_blocks
     qb		=	N0:1:Ntop;
     freqs	=	(qb+1)*Fs/N;
     hBPi	=	zeros(Chno,N);
+    hCrossi	=	zeros(Chno,N);
     hBPrms	=	zeros(1,Chno);
     mdept	=	zeros(1,Chno);
     ki		=	zeros(1,Chno-2);
@@ -343,6 +346,8 @@ for idx_j = 1:m_blocks
         Fei(k,:)	= fft( etmp_td(k,:)-h0(k) ); % changes the phase but not the amplitude
         
         hBPi(k,:)	= 2*real(  ifft( Fei(k,:).*Hweight(k,:) ,N)  );
+        hCrossi(k,:)= 2*real(  ifft( Fei(k,:)               ,N)  );
+        
         hBPrms(k)	= dw_rms(hBPi(k,:));
         
        
@@ -486,7 +491,18 @@ for idx_j = 1:m_blocks
         end
     end
 
-    % Calculate specific roughness ri and total roughness R
+    for k=1:1:Chno-2
+        ccfac	=	cov(hCrossi(k,:),hCrossi(k+2,:));
+        denc	=	diag(ccfac);
+        denc	=	sqrt(denc*denc');
+        if denc(2,1)>0
+            kki(k)	=	ccfac(2,1)/denc(2,1);
+        else
+            kki(k)	=	0;
+        end
+    end
+    
+    % Calculate specific fluctuation strength fi and total FS
     fi(idx_j,1)         =	(h0(1)^qg)*(mdept(1)^p)*(ki(1)^kg);
     fi(idx_j,2)         =	(h0(2)^qg)*(mdept(2)^p)*(ki(2)^kg);
 
@@ -514,5 +530,20 @@ end
 dataOut{1} = FS;
 dataOut{2} = fi;
 dataOut{3} = SPL;
+
+out.t       = transpose(tn/Fs);
+out.z       = transpose(zi);
+
+nParam      = 1;
+out.Data1   = transpose(FS);
+output.name{nParam} = 'Fluctuation strength';
+output.param{nParam} = strrep( lower( output.name{nParam} ),' ','-');
+
+nParam      = 2;
+out.Data2   = fi;
+output.name{nParam} = 'Specific fluctuation strength';
+output.param{nParam} = strrep( lower( output.name{nParam} ),' ','-');
+
+output.nAnalyser = 20;
 
 end
