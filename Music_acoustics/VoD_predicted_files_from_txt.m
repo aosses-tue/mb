@@ -1,5 +1,5 @@
-function VoD_predicted_files_from_txt(do_modes, do_fields)
-% function VoD_predicted_files_from_txt(do_modes, do_fields)
+function VoD_predicted_files_from_txt(do_modes, do_fields, bDoCheckCompatibility)
+% function VoD_predicted_files_from_txt(do_modes, do_fields, bDoCheckCompatibility)
 %
 % 1. Description:
 %       Generate predicted Voice of the Dragon audio files. The data were 
@@ -9,6 +9,8 @@ function VoD_predicted_files_from_txt(do_modes, do_fields)
 %       Where X is related to the acoustic mode (1 to 4 for ac modes 2 to 5) 
 %       and Y to the close/distant microphone (1, 2).
 %
+%       Calibration stage removed on 20/01/2015
+% 
 % 2.1 Stand-alone example to generate all wav-files:
 %       VoD_predicted_files_from_txt;
 %
@@ -17,8 +19,12 @@ function VoD_predicted_files_from_txt(do_modes, do_fields)
 %       do_fields   = 2;
 %       VoD_predicted_files_from_txt(do_modes, do_fields);
 %
+%       do_modes    = 2;
+%       do_fields   = 1;
+%       VoD_predicted_files_from_txt(do_modes, do_fields);
+% 
 % 3. Additional info:
-%       Tested cross-platform: No
+%       Tested cross-platform: Yes
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 27/05/2014
@@ -34,7 +40,7 @@ end
 
 info.bSave  = input([mfilename '.m: type 1 if you want to generate VoD data: ']);
 paths.VoD   = Get_TUe_paths('db_voice_of_dragon');
-bDoCheckCompatibility = 1;
+bDoCheckCompatibility = 0;
 
 if nargin < 1
     do_modes    = 2:5;
@@ -44,13 +50,17 @@ if nargin < 2
     do_fields   = 1:2;
 end
 
+if nargin < 3
+    bDoCheckCompatibility = 0;
+end
+
 dir_initial = [paths.VoD '03-Wav-files-predicted' delim '01-Model' delim 'Data' delim];
 
 dir_predicted = uigetdir(dir_initial,'Select the directory where the Mathematica''s txt files are stored: ');
 dir_predicted = [dir_predicted delim];
 
 fs      = 10000; % known from Mathematica model
-dBSPL   = 65;
+% dBSPL   = 65;
 
 if bDoCheckCompatibility
     
@@ -83,7 +93,7 @@ for fieldtype = do_fields % 1 = far-field, 2 = near-field
         end
 
         tx      = (1:length(x))/fs;
-        y       = setdbspl(x,dBSPL);
+        y       = x; %setdbspl(x,dBSPL);
 
         if info.bSave
             Wavwrite(y,fs,outfilename)
@@ -93,11 +103,11 @@ for fieldtype = do_fields % 1 = far-field, 2 = near-field
     end
 end
 
-if info.bSave == 1
-    bHPF = 1;
-    options.bSave = 1;
-    VoD_run(bHPF,options,[],do_modes); %,info,take,modes2check) % To make sure that calibrated audio files are generated
-end
+% if info.bSave == 1
+%     bHPF = 1;
+%     options.bSave = 1;
+%     VoD_run(bHPF,options,[],do_modes); %,info,take,modes2check) % To make sure that calibrated audio files are generated
+% end
 
 if bDiary
     diary off
