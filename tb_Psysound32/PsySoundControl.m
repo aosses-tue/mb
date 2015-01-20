@@ -20,15 +20,15 @@ function varargout = PsySoundControl(varargin)
 %
 %       Line    Stage                               Last updated on
 %       37      Initialisation                      18/01/2015
-%       90      Calculation - calculate_Callback    18/01/2015
+%       94      Calculation - calculate_Callback    19/01/2015
 %       267     reset_Callback                      18/01/2015
 %       309     Initialisation GUI                  18/01/2015
-%       648     Load data                           18/01/2015
+%       700     Load data                           19/01/2015
 %       
 % TO DO:
-%       1. Define excerpts (t1 t2), apply them to PsySound and offline procedures
+%       1. Check zero-padding PsySound
 %       2. SLM: problem at @Analyser/process, line 381. Object subclass is not readable 'AZ'
-%       3. Enable save figure...
+%       3. Put save figures in other Button
 %       4. xlim axis, ylim axis
 % 
 % Edit the above text to modify the response to help PsySoundControl
@@ -104,26 +104,47 @@ bSave       = get(handles.bSave,'value');
 nAnalyser   = get(handles.popAnalyser,'value');
 dir_output  = get(handles.txtOutputDir,'string');
 
+fs          = handles.audio.fs;
+tanalysis_inf = str2num(get(handles.txtti,'string')); % in samples
+tanalysis_sup = str2num(get(handles.txttf,'string')); % in samples
+
+options.bGenerateExcerpt = handles.audio.bGenerateExcerpt;
+
+if options.bGenerateExcerpt
+    options.tanalysis = [tanalysis_inf tanalysis_sup]/fs;
+    set( handles.txtExcerpt,'visible','on');
+ else
+    set( handles.txtExcerpt,'visible','off');
+end
+
 eval( sprintf('options.bDoAnalyser%s=1;',Num2str(nAnalyser,2)) ); % activates selected processor
 
 filename1 = get(handles.txtFile1,'string');
 filename2 = get(handles.txtFile2,'string');
 
-options.nAnalyser = nAnalyser;
+options.nAnalyser   = nAnalyser;
+options.bSave       = bSave;
 
+if options.bSave == 1
+    options.dest_folder_fig = dir_output;
+end
+    
+%% Plot options:
+options     = Ensure_field(options,'label1','file1');
+options     = Ensure_field(options,'label2','file2');
+
+options     = Ensure_field(options,'bPlot',1);
+options     = Ensure_field(options,'label','');
+options     = Ensure_field(options,'SPLrange',[10 70]);
+options     = Ensure_field(options,'frange',[50 5000]);
+options     = Ensure_field(options,'ylim_bExtend',0);
+options     = Ensure_field(options,'ylim_bDrawLine',0);
+    
 if bUsePsySound
     
     options.calfile = [Get_TUe_paths('db_calfiles') 'track_03.wav'];
-    options.callevel = 60; % rms 90 dB SPL = 0 dBFS 
-
-    options     = Ensure_field(options,'label1','file1');
-    options     = Ensure_field(options,'label2','file2');
-
-    options.bSave = bSave;
-    options     = Ensure_field(options,'bPlot',1);
-    options     = Ensure_field(options,'label','');
-    options     = Ensure_field(options,'SPLrange',[10 70]);
-    options     = Ensure_field(options,'frange',[50 5000]);
+    
+    callevel = str2num( get(handles.txtCalLevel,'string') ); % rms 90 dB SPL = 0 dBFS 
 
     options     = ef(options,'bDoAnalyser08',0);
     options     = ef(options,'bDoAnalyser10',0);
@@ -131,23 +152,11 @@ if bUsePsySound
     options     = ef(options,'bDoAnalyser12',0);
     options     = ef(options,'bDoAnalyser15',0);
 
-    options     = Ensure_field(options,'ylim_bExtend',0);
-    options     = Ensure_field(options,'ylim_bDrawLine',0);
-
-    if options.bSave == 1
-        options.dest_folder_fig = dir_output;
-    end
-
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-    disp([mfilename '.m: analysing ' filename1 ' and ' filename2]);
-   
     tmp_h = [];
     tmp_h = [];
 
     options = Ensure_field(options,'calfile',[Get_TUe_paths('db_calfiles') 'track_03.wav']);
-    options = Ensure_field(options,'callevel',70); % 'AMT' reference
-
+    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     options.bCosineRamp = 0; % Cos ramp not yet applied for Loudness calculations
@@ -155,13 +164,28 @@ if bUsePsySound
 
     options.bPlot = 0;
 
+    options.callevel = callevel + handles.audio.G1;
     [out_1 tmp_h tmp_ha]   = PsySoundCL(filename1,options);
+    
+    options.callevel = callevel + handles.audio.G2;
     [out_2 tmp_h tmp_ha]   = PsySoundCL(filename2,options);
     
 else
     
     [insig1 fs1] = Wavread(filename1);
     [insig2 fs2] = Wavread(filename2);
+    
+    if options.bGenerateExcerpt
+        insig1 = insig1( tanalysis_inf:tanalysis_sup );
+        insig2 = insig2( tanalysis_inf:tanalysis_sup );
+        set(handles.txtExcerpt,'visible','on');
+    else
+        set(handles.txtExcerpt,'visible','off');
+    end
+    
+    calvalue = str2num( get(handles.txtCalLevel) )-60; % values calibrated to 90 dB RMS = 0 dBFS (Fastl's standard)
+    insig1 = From_dB(calvalue+handles.audio.G1) * insig1;    
+    insig2 = From_dB(calvalue+handles.audio.G2) * insig2;
     
     switch options.nAnalyser
         case 15 % Roughness
@@ -180,19 +204,19 @@ else
     
 end
 
-param = [];
+param   = [];
+h       = []; % handles figures
+ha      = [];
 
 for i = 1:6
     exp1 = sprintf('bPlotParam%.0f = get(handles.chParam%.0f,''value''); labelParam%.0f = get(handles.chParam%.0f,''string'');',i,i,i,i);
     eval( exp1 );
 end
 
-h = []; % handles figures
-
 if bPlotParam1
     % Loudness, Roughness
     param{end+1}        = labelParam1;
-    [h(end+1) xx stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
+    [h(end+1) ha(end+1) stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
     param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
 
     if isfield(options,'ylim') % ylim_loudness, ylim_roughness
@@ -216,38 +240,39 @@ end
 if bPlotParam2
     % Specific loudness, roughness
     param{end+1}        = labelParam2;
-    [h(end+1) xx stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
+    [h(end+1) ha(end+1) stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
     param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
 
 end
 
 if bPlotParam3
     param{end+1}        = labelParam3;
-    [h(end+1) xx stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
+    [h(end+1) ha(end+1) stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
     param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
 end
 
 if bPlotParam4
     param{end+1}        = labelParam4;
-    [h(end+1) xx stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
+    [h(end+1) ha(end+1) stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
     param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
 end
 
 if bPlotParam5
     param{end+1}        = labelParam5;
-    [h(end+1) xx stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
+    [h(end+1) ha(end+1) stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
     param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
 end
 
 if bPlotParam6
     param{end+1}        = labelParam6;
-    [h(end+1) xx stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
+    [h(end+1) ha(end+1) stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
     param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-output.h = h; % figure handles
+assignin('base', 'h', h);
+assignin('base', 'ha', ha);
 
 if options.bSave
     
@@ -309,11 +334,15 @@ function initialize_gui(fig_handle, handles, isreset)
 % If the metricdata field is present and the reset flag is false, it means
 % we are we are just re-initializing a GUI by calling it from the cmd line
 % while it is up. So, bail out as we dont want to reset the data.
-if isfield(handles, 'metricdata') && ~isreset
+if isfield(handles, 'audio') && ~isreset
     return;
 end
 
+handles.audio.fs = 0;
+handles.audio.bGenerateExcerpt = 0;
+
 set(handles.unitgroup, 'SelectedObject', handles.rbPsySound);
+set(handles.txtExcerpt,'visible','off');
 
 try
     set(handles.txtOutputDir,'string',Get_TUe_paths('outputs'));
@@ -414,7 +443,7 @@ switch nAnalyser
         
         set(handles.chParam1,'string','spectrogram'); % 381 x 1024 x 381
         set(handles.chParam1,'enable','off');
-        set(handles.chParam2,'value',0);
+        set(handles.chParam1,'value',0);
         
         set(handles.chParam2,'string','average-power-spectrum'); % 1 x 1024
         set(handles.chParam2,'enable','on');
@@ -422,7 +451,7 @@ switch nAnalyser
         
         set(handles.chParam3,'string','spectral-centroid'); % 
         set(handles.chParam3,'enable','off');
-        set(handles.chParam2,'value',0);
+        set(handles.chParam3,'value',0);
         
         set(handles.chParam4,'string','Param4');
         set(handles.chParam4,'enable','off');
@@ -711,19 +740,20 @@ if strcmp(filename1,'')|strcmp(filename2,'')
 end
 set(handles.txtOutputDir,'string',dir_out)
 
+handles.audio.G1 = str2num( get(handles.txtGain1,'string') );
+handles.audio.G2 = str2num( get(handles.txtGain2,'string') );
+
 [x1,fs1] = Wavread(filename1);
 [x2,fs2] = Wavread(filename2);
 
+if fs1 == fs2
+    
+    handles.audio.fs = fs1;
+    
+end
+
 t1 = ( 0:length(x1)-1 )/fs1;
 t2 = ( 0:length(x2)-1 )/fs2;
-
-axes(handles.axes1)
-plot(t1,x1);
-% title( name2figname( filename1 ) )
-
-axes(handles.axes2)
-plot(t2,x2,'r');
-% title( name2figname( filename2 ) )
 
 txt2display = sprintf('Length: %.3f [s],\n\t %.0f [samples]\nSample rate: %.0f [Hz]\n',max(t1),length(x1),fs1); 
 set( handles.txtFile1info,'string',txt2display);
@@ -741,9 +771,38 @@ if length(ti)==0 & length(tf)==0
     set( handles.txttf,'string',num2str(tf) );
 end
 
-set(handles.txtti_s,'string',sprintf('%.3f [s]',ti/fs1));
-set(handles.txttf_s,'string',sprintf('%.3f [s], total time of %.3f',tf/fs1,(tf-ti)/fs1));
+if ti ~= 1 | (tf ~= length(x1) & tf ~= length(x2) )
+    handles.audio.bGenerateExcerpt = 1;
+    set(handles.txtExcerpt,'visible','on');
+else
+    handles.audio.bGenerateExcerpt = 0;
+    set(handles.txtExcerpt,'visible','off');
+end
 
+xliminf = ti/fs1;
+xlimsup = tf/fs1;
+set(handles.txtti_s,'string',sprintf('%.3f [s]',xliminf));
+set(handles.txttf_s,'string',sprintf('%.3f [s], total time of %.3f',xlimsup,(tf-ti)/fs1));
+
+axes(handles.axes1)
+plot(t1,x1);
+% title( name2figname( filename1 ) )
+xlim([xliminf xlimsup])
+
+axes(handles.axes2)
+plot(t2,x2,'r');
+% title( name2figname( filename2 ) )
+xlim([xliminf xlimsup])
+
+callevel = str2num( get(handles.txtCalLevel,'string') );
+
+RMS1 = rmsdb(x1(ti:tf))+handles.audio.G1+callevel+30; % Zwicker's correction
+RMS2 = rmsdb(x2(ti:tf))+handles.audio.G2+callevel+30; % Zwicker's correction
+
+set( handles.txtRMS1,'string',sprintf('RMS, file 1 = %.2f [dB SPL]',RMS1) )
+set( handles.txtRMS2,'string',sprintf('RMS, file 2 = %.2f [dB SPL]',RMS2) )
+
+guidata(hObject,handles)
 
 function txtti_Callback(hObject, eventdata, handles)
 % hObject    handle to txtti (see GCBO)
@@ -752,7 +811,15 @@ function txtti_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of txtti as text
 %        str2double(get(hObject,'String')) returns contents of txtti as a double
+ti = str2double(get(hObject, 'String'));
+if isnan(ti)
+    set(hObject, 'String', 0);
+    errordlg('Input must be a number','Error');
+end
 
+% Save the new ti value
+handles.audio.ti_samples = ti;
+guidata(hObject,handles)
 
 % --- Executes during object creation, after setting all properties.
 function txtti_CreateFcn(hObject, eventdata, handles)
@@ -773,9 +840,15 @@ function txttf_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of txttf as text
-%        str2double(get(hObject,'String')) returns contents of txttf as a double
+tf = str2double(get(hObject, 'String'));
+if isnan(tf)
+    set(hObject, 'String', 0);
+    errordlg('Input must be a number','Error');
+end
 
+% Save the new ti value
+handles.audio.tf_samples = tf;
+guidata(hObject,handles)
 
 % --- Executes during object creation, after setting all properties.
 function txttf_CreateFcn(hObject, eventdata, handles)
@@ -826,6 +899,75 @@ function txttf_s_Callback(hObject, eventdata, handles)
 % --- Executes during object creation, after setting all properties.
 function txttf_s_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to txttf_s (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function txtCalLevel_Callback(hObject, eventdata, handles)
+% hObject    handle to txtCalLevel (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of txtCalLevel as text
+%        str2double(get(hObject,'String')) returns contents of txtCalLevel as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function txtCalLevel_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to txtCalLevel (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function txtGain1_Callback(hObject, eventdata, handles)
+% hObject    handle to txtGain1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of txtGain1 as text
+%        str2double(get(hObject,'String')) returns contents of txtGain1 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function txtGain1_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to txtGain1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function txtGain2_Callback(hObject, eventdata, handles)
+% hObject    handle to txtGain2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of txtGain2 as text
+%        str2double(get(hObject,'String')) returns contents of txtGain2 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function txtGain2_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to txtGain2 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 

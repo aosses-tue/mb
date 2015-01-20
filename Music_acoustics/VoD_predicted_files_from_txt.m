@@ -3,23 +3,27 @@ function VoD_predicted_files_from_txt(do_modes, do_fields)
 %
 % 1. Description:
 %       Generate predicted Voice of the Dragon audio files. The data were 
-%       previously generated in txt files from Mathematica
-% 
-% 2. Additional info:
-%       Tested cross-platform: No
+%       previously generated in txt files from Mathematica.
+%       Looks for audio files of the form: 
+%           - mode-X-v_Y.txt
+%       Where X is related to the acoustic mode (1 to 4 for ac modes 2 to 5) 
+%       and Y to the close/distant microphone (1, 2).
 %
-% 3.1 Stand-alone example to generate all wav-files:
+% 2.1 Stand-alone example to generate all wav-files:
 %       VoD_predicted_files_from_txt;
 %
-% 3.2 Stand-alone example to generate Mode 2, near-field:
+% 2.2 Stand-alone example to generate Mode 2, near-field:
 %       do_modes    = 2;
 %       do_fields   = 2;
 %       VoD_predicted_files_from_txt(do_modes, do_fields);
+%
+% 3. Additional info:
+%       Tested cross-platform: No
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 27/05/2014
 % Last update on: 18/06/2014 % Update this date manually
-% Last use on   : 18/06/2014 % Update this date manually
+% Last use on   : 20/01/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 bDiary = 1;

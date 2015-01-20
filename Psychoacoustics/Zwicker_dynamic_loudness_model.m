@@ -3,11 +3,11 @@ function res = Zwicker_dynamic_loudness_model(sig,fs,info)
 %
 % 1. Description:
 %
-% 2. Additional info:
+% 2. Stand-alone example:
+%
+% 3. Additional info:
 %   Tested cross-platform: No
-%
-% 3. Stand-alone example:
-%
+% 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on : 30/06/2014
 % Last update: 03/07/2014 % Update this date manually

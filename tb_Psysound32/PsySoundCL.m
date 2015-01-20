@@ -23,20 +23,20 @@ function [output h ha] = PsySoundCL(filename,option)
 %       PsySoundCL;
 %
 % 3. Additional info:
-%       Tested cross-platform: No
+%       Tested cross-platform: Yes
 %
+% 4. TO DO:
+%       work on something similar to readData but using data 'not stored' (L114)
+
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 22/07/2014
-% Last update on: 16/10/2015 % Update this date manually
-% Last use on   : 16/01/2015 % Update this date manually
+% Last update on: 19/10/2015 % Update this date manually
+% Last use on   : 19/01/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 h = [];
 ha = [];
 
-% Step 1:
-
-% Daniel and Weber Roughness model
 % close all
 if nargin < 2
     option = [];
@@ -48,7 +48,8 @@ if nargin == 0
 end
 
 if nargin < 2
-    str_analysers = ['\n - type 10 for one-third OB or ' ...
+    str_analysers = ['\n - type 1, 8' ...
+                     '\n - type 10 for one-third OB or ' ...
                      '\n - type 12 for DLM model or ' ...
                      '\n - type 15 for Roughness model'];
                 
@@ -59,8 +60,6 @@ option = Ensure_field(option,'bPlot'      , 1);
 option = Ensure_field(option,'nAnalyser'  ,1);
 
 nAnalyser = option.nAnalyser;
-% nAnalyser = 12; % Dynamic loudness
-% nAnalyser = 15; % Roughness
 
 if ~isfield(option,'title')
     option = Ensure_field(option,'title',name2figname(filename));
@@ -74,6 +73,8 @@ else
     [x fs] = Wavread(filename);
 end
 
+%% Calibration, reference file:
+%       Selects reference file to adjust proper SPL level for input signals
 if ~isfield(option,'calfile')
     disp([mfilename '.m: calibration file not specified. Calibration respect to itself, 0 dBFS = 100 dB SPL is going to be used...'])
     
@@ -103,6 +104,10 @@ if ~isfield(option,'calfile')
             tmp = Get_TUe_subpaths('db_speechmaterials');
             option.calfile = [tmp.allfiles_LISTf 'wivineruis.wav']; % SSN
             option.callevel = 65;
+        % case 99 % custom
+        %     option.calfile = filename;
+        %     option.calfile = [Get_TUe_paths('db_calfiles') 'track_03.wav']; %white noise, adjusted to AMT convention
+        %     option = Ensure_field(option,'callevel',70);
     end
 else
     if ~isfield(option,'callevel')
@@ -110,9 +115,7 @@ else
     end
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% TO DO: work on something similar to readData but using data 'not stored'
-
+%% Extracts excerpt:
 if isfield(option,'tanalysis') 
     
     option = Ensure_field(option,'bGenerateExcerpt',1);
@@ -120,7 +123,7 @@ if isfield(option,'tanalysis')
         if option.bGenerateExcerpt == 1
             [xx ffs] = Wavread(filename);
             tt = (1:length(xx))/ffs;
-            idx = find(tt>=option.tanalysis(1) & tt>=option.tanalysis(2));
+            idx = find(tt>=option.tanalysis(1) & tt<=option.tanalysis(2));
 
             filename_excerpt = [Delete_extension(filename,'wav') '-e.wav']; 
             Wavwrite( xx(idx),ffs,filename_excerpt );
@@ -140,14 +143,13 @@ else
     fh = readData(filename);
 end    
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Step 2: Calibation
+%% Step 2: Calibation: applying adjustments
 disp(['Calibration file      : ' option.calfile])
 disp(['Calibration level [dB]: ' num2str(option.callevel)])
 fh = calibrate(fh, 'WithFiles', option.calfile, option.callevel); 
 % fh.calCoeff = 1; % To avoid calibration set this value to 1
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Step 3: Analysers
+
+%% Step 3: Analysers
 
 switch nAnalyser
     case 1
@@ -575,6 +577,13 @@ end
 
 output.nAnalyser = nAnalyser;
 output.stats     = stats;
+
+if option.bGenerateExcerpt
+    
+    disp('...deleting temporal audio file');
+    delete( filename_excerpt );
+    
+end
 
 if nargout == 0
     
