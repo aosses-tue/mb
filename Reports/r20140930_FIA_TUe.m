@@ -26,7 +26,7 @@ end
 close all
 
 bGenerate   = 0;
-bDoFluct    = 0; % Figure 5
+bDoFluct    = 1; % Figure 5
 bDoAcMode5  = 1;
 bDoAcMode2  = 0;
 bDoAcMode2_filt = 0;

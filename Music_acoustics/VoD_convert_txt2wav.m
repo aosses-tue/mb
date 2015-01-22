@@ -7,12 +7,12 @@ function VoD_convert_txt2wav
 %       Note that *-3 files always saturate, however, these signals were 
 %       recorded just to determine period of rotation
 % 
-% 2. Additional info:
-%   Tested cross-platform: No
-%
-% 3. Stand-alone example:
+% 2. Stand-alone example:
 %       VoD_convert_txt2wav;
 %
+% 3. Additional info:
+%   Tested cross-platform: No
+% 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 13/05/2014
 % Last update on: 28/07/2014 % Update this date manually
@@ -28,7 +28,7 @@ if bDiary
 end
 
 main_dir    = Get_TUe_paths('db_voice_of_dragon');
-output_dir  = [main_dir '02-Wav-files' delim];
+output_dir  = [main_dir '02-Wav-files' delim 'new' delim];
 fs          = 10000;
 Att         = 1; % From_dB(-20);
 

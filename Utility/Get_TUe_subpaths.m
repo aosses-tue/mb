@@ -22,7 +22,7 @@ function misc = Get_TUe_subpaths(type)
 % Programmed by Alejandro Osses, TUe, 2014
 % Created on    : 24/06/2014
 % Last update on: 17/09/2014
-% Last use on   : 13/01/2015
+% Last use on   : 20/01/2015
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 path = Get_TUe_paths(type);
@@ -39,10 +39,14 @@ if strcmp(type,'db_speechmaterials')
 elseif strcmp(type,'db_voice_of_dragon')
     
     misc.dir_meas_wav      = [path '02-Wav-files' delim];
-    misc.dir_calibrated_m  = [misc.dir_meas_wav '03-Wav-files-calibrated' delim]; 
-    misc.dir_calibrated_ms = [misc.dir_meas_wav '04-Wav-files-calibrated-synchro' delim];
+    misc.dir_calibrated_m  = [misc.dir_meas_wav '03-Wav-files-1-referentie'         delim]; % before 20/01/2015 = '03-Wav-files-calibrated'
+    misc.dir_calibrated_m6 = [misc.dir_meas_wav '03-Wav-files-6-lederenmaat-eraf'   delim]; % created on 20/01/2015
+    
+    misc.dir_calibrated_ms = [misc.dir_meas_wav '04-Wav-files-calibrated-synchro'   delim];
     misc.dir_predicted_txt = [path '03-Wav-files-predicted' delim '01-model' delim 'Data' delim];
-    misc.dir_calibrated_p  = [path '03-Wav-files-predicted' delim '03-Wav-files-calibrated' delim]; 
+    misc.dir_calibrated_p  = [path '03-Wav-files-predicted' delim '03-Wav-files-1-referentie' delim]; % before 20/01/2015 = '03-Wav-files-calibrated'
+    misc.dir_calibrated_p6 = [path '03-Wav-files-predicted' delim '03-Wav-files-6-lederenmaat-eraf' delim]; % created on 20/01/2015
+    
     misc.dir_calibrated_ps = [path '03-Wav-files-predicted' delim '05-Wav-files-calibrated-synchro' delim]; 
     misc.dir_wav_all       = [path '04-Wav-files-all' delim];
     misc.dir_f0_m          = [path '05-fn-extraction' delim 'measured_f0' delim];

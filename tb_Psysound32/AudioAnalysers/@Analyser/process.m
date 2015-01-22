@@ -285,32 +285,32 @@ end
 
 % This is the main process loop
 for index = 1:numWindows
-  % Reset loop time
-  lTime = 0;
-  if vLvl == 1, fprintf('.'); end
-  
-  if vLvl | estimate, tic; end
-  % Read next block of data
-  if strcmp(obj.type,'Raw')
-    [fH, done] = readData(fH,1);
-  else
-    [fH, done] = readData(fH);
-  end
-  
-  if vLvl | estimate
-    tictoc = toc;
-    lTime  = lTime + tictoc;
-    if vLvl > 1
-      fprintf('[Window %d of %d]\n', index, numWindows);
-      fprintf(' %-10s :\t%.5f\n', 'Read', tictoc);
-    end
-  end
+    % Reset loop time
+    lTime = 0;
+    if vLvl == 1, fprintf('.'); end
 
-  % Consistency checking, if we're done, then we *must* be
-  % processing the very last window
-  if done && (index ~= numWindows)
-    error('Analyser: process: There is a problem with windowing');
-  end
+    if vLvl | estimate, tic; end
+    % Read next block of data
+    if strcmp(obj.type,'Raw')
+        [fH, done] = readData(fH,1);
+    else
+        [fH, done] = readData(fH);
+    end
+  
+    if vLvl | estimate
+        tictoc = toc;
+        lTime  = lTime + tictoc;
+        if vLvl > 1
+            fprintf('[Window %d of %d]\n', index, numWindows);
+            fprintf(' %-10s :\t%.5f\n', 'Read', tictoc);
+        end
+    end
+
+    % Consistency checking, if we're done, then we *must* be
+    % processing the very last window
+    if done && (index ~= numWindows)
+        error('Analyser: process: There is a problem with windowing');
+    end
 
   % MultiChannel support
 	windowDataRaw = fH.data;

@@ -18,22 +18,27 @@ function varargout = PsySoundControl(varargin)
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
 %      instance to run (singleton)".
 %
+%   Limitations (written by AO):
+%       - Roughness calculations using PsySound include first and last frame
+%       in the average value calculations. Use Roughness_offline.m
+% 
 %       Line    Stage                               Last updated on
 %       37      Initialisation                      18/01/2015
 %       94      Calculation - calculate_Callback    19/01/2015
 %       267     reset_Callback                      18/01/2015
 %       309     Initialisation GUI                  18/01/2015
-%       700     Load data                           19/01/2015
+%       313     unitgroup_SelectionChangeFcn        21/01/2015
+%       455     popAnalyser_Callback                22/01/2015
+%       783     Load data                           21/01/2015
 %       
 % TO DO:
-%       1. Check zero-padding PsySound
 %       2. SLM: problem at @Analyser/process, line 381. Object subclass is not readable 'AZ'
 %       3. Put save figures in other Button
 %       4. xlim axis, ylim axis
 % 
 % Edit the above text to modify the response to help PsySoundControl
 % Created on        : 16/01/2015
-% Last modified on  : 19/01/2015
+% Last modified on  : 21/01/2015
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Begin initialization code - DO NOT EDIT
@@ -108,6 +113,8 @@ fs          = handles.audio.fs;
 tanalysis_inf = str2num(get(handles.txtti,'string')); % in samples
 tanalysis_sup = str2num(get(handles.txttf,'string')); % in samples
 
+toffset = handles.audio.toffset; % time offset of audio 2 in relation to audio 1
+
 options.bGenerateExcerpt = handles.audio.bGenerateExcerpt;
 
 if options.bGenerateExcerpt
@@ -130,13 +137,13 @@ if options.bSave == 1
 end
     
 %% Plot options:
-options     = Ensure_field(options,'label1','file1');
-options     = Ensure_field(options,'label2','file2');
+options.label1 = get(handles.txtLabel1,'string');
+options.label2 = get(handles.txtLabel2,'string');
 
 options     = Ensure_field(options,'bPlot',1);
 options     = Ensure_field(options,'label','');
 options     = Ensure_field(options,'SPLrange',[10 70]);
-options     = Ensure_field(options,'frange',[50 5000]);
+options.frange = [str2num(get(handles.txtFreqmin,'string')) str2num(get(handles.txtFreqmax,'string'))];
 options     = Ensure_field(options,'ylim_bExtend',0);
 options     = Ensure_field(options,'ylim_bDrawLine',0);
     
@@ -176,23 +183,37 @@ else
     [insig2 fs2] = Wavread(filename2);
     
     if options.bGenerateExcerpt
-        insig1 = insig1( tanalysis_inf:tanalysis_sup );
-        insig2 = insig2( tanalysis_inf:tanalysis_sup );
+        insig1 = insig1( tanalysis_inf:tanalysis_sup + 8192 ); % one additional frame
+        insig2 = insig2( tanalysis_inf + toffset:tanalysis_sup + toffset + 8192 ); % one additional frame
         set(handles.txtExcerpt,'visible','on');
     else
         set(handles.txtExcerpt,'visible','off');
     end
     
-    calvalue = str2num( get(handles.txtCalLevel) )-60; % values calibrated to 90 dB RMS = 0 dBFS (Fastl's standard)
+    calvalue = str2num( get(handles.txtCalLevel,'string') )-60; % values calibrated to 90 dB RMS = 0 dBFS (Fastl's standard)
     insig1 = From_dB(calvalue+handles.audio.G1) * insig1;    
     insig2 = From_dB(calvalue+handles.audio.G2) * insig2;
     
     switch options.nAnalyser
+        
+        case 12 % Loudness
+            
+            % Only loudness fluctuation:
+            [xx out_1] = LoudnessFluctuation_offline(insig1,[],fs);
+            [xx out_2] = LoudnessFluctuation_offline(insig2,[],fs);
+              
         case 15 % Roughness
             
             N = 8192; % default frame length
             [xx out_1] = Roughness_offline(insig1,fs1,N,0);
             [xx out_2] = Roughness_offline(insig2,fs2,N,0);
+            Ndel = length(out_1.t);
+            out_1.t(Ndel)       = []; % we delete last frame
+            out_1.Data1(Ndel)   = [];
+            out_1.Data2(Ndel,:) = [];
+            out_2.t(Ndel)       = [];
+            out_2.Data1(Ndel)   = [];
+            out_2.Data2(Ndel,:) = [];
             
         case 20 % Fluctuation strength, see also r20141126_fluctuation
             
@@ -200,6 +221,8 @@ else
             [xx out_1] = FluctuationStrength_offline_debug(insig1,fs1,N,0);
             [xx out_2] = FluctuationStrength_offline_debug(insig2,fs2,N,0);
             
+        case 21 % Calculation made at plot section
+            warning('color of the series are not automated')
     end
     
 end
@@ -208,67 +231,79 @@ param   = [];
 h       = []; % handles figures
 ha      = [];
 
-for i = 1:6
+for i = 1:7
     exp1 = sprintf('bPlotParam%.0f = get(handles.chParam%.0f,''value''); labelParam%.0f = get(handles.chParam%.0f,''string'');',i,i,i,i);
     eval( exp1 );
 end
 
-if bPlotParam1
-    % Loudness, Roughness
-    param{end+1}        = labelParam1;
-    [h(end+1) ha(end+1) stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
-    param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
+%% Plots
+if nAnalyser ~= 21
+    if bPlotParam1
+        % Loudness, Roughness
+        param{end+1}        = labelParam1;
+        [h(end+1) ha(end+1) stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
+        param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
 
-    if isfield(options,'ylim') % ylim_loudness, ylim_roughness
-        ylim(options.ylim);
-    end
-    if isfield(options,'ylim_bExtend')
-     
-        if options.ylim_bExtend == 1
-            y_old = get(gca,'YLim');
-            x_old = get(gca,'XLim');
-            ylim_extend(gca,1.25);
+        if isfield(options,'ylim') % ylim_loudness, ylim_roughness
+            ylim(options.ylim);
+        end
+        if isfield(options,'ylim_bExtend')
 
-            if options.ylim_bDrawLine == 1
-                plot([x_old],[y_old(2) y_old(2)],'k'); % horizontal line
+            if options.ylim_bExtend == 1
+                y_old = get(gca,'YLim');
+                x_old = get(gca,'XLim');
+                ylim_extend(gca,1.25);
+
+                if options.ylim_bDrawLine == 1
+                    plot([x_old],[y_old(2) y_old(2)],'k'); % horizontal line
+                end
             end
         end
+
+    end
+
+    if bPlotParam2
+        % Specific loudness, roughness
+        param{end+1}        = labelParam2;
+        [h(end+1) ha(end+1) stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
+    end
+
+    if bPlotParam3
+        param{end+1}        = labelParam3;
+        [h(end+1) ha(end+1) stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
+    end
+
+    if bPlotParam4
+        param{end+1}        = labelParam4;
+        [h(end+1) ha(end+1) stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
+    end
+
+    if bPlotParam5
+        param{end+1}        = labelParam5;
+        [h(end+1) ha(end+1) stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
+    end
+
+    if bPlotParam6
+        param{end+1}        = labelParam6;
+        [h(end+1) ha(end+1) stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
     end
     
-end
+    if bPlotParam7
+        param{end+1}        = labelParam7;
+        [h(end+1) xx        stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
+    end
     
-if bPlotParam2
-    % Specific loudness, roughness
-    param{end+1}        = labelParam2;
-    [h(end+1) ha(end+1) stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
-    param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
-
+else
+    if nAnalyser == 21
+        
+        %title( 'f0 extraction (Praat Analyser)' );
+        [h ha] = Get_waveforms_and_F0_praat(filename1,filename2,options);
+        param{1} = 'fundamental-frequency';
+        
+    end
 end
 
-if bPlotParam3
-    param{end+1}        = labelParam3;
-    [h(end+1) ha(end+1) stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
-    param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
-end
-
-if bPlotParam4
-    param{end+1}        = labelParam4;
-    [h(end+1) ha(end+1) stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
-    param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
-end
-
-if bPlotParam5
-    param{end+1}        = labelParam5;
-    [h(end+1) ha(end+1) stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
-    param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
-end
-
-if bPlotParam6
-    param{end+1}        = labelParam6;
-    [h(end+1) ha(end+1) stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
-    param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
-end
-
+param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 assignin('base', 'h', h);
@@ -441,8 +476,13 @@ switch nAnalyser
 
     case 1
         
+        set(handles.rbPsySound,'value',1);
+        set(handles.rbPsySound,'enable','on');
+        set(handles.rbScripts,'value',0);
+        set(handles.rbScripts,'enable','off');
+        
         set(handles.chParam1,'string','spectrogram'); % 381 x 1024 x 381
-        set(handles.chParam1,'enable','off');
+        set(handles.chParam1,'enable','on');
         set(handles.chParam1,'value',0);
         
         set(handles.chParam2,'string','average-power-spectrum'); % 1 x 1024
@@ -464,9 +504,18 @@ switch nAnalyser
         set(handles.chParam6,'string','Param6');
         set(handles.chParam6,'enable','off');
         set(handles.chParam6,'value',0);
+        
+        set(handles.chParam7,'string','Param7');
+        set(handles.chParam7,'enable','off');
+        set(handles.chParam7,'value',0);
     
     case 10
         
+        set(handles.rbPsySound,'value',1);
+        set(handles.rbPsySound,'enable','on');
+        set(handles.rbScripts,'value',0);
+        set(handles.rbScripts,'enable','off');
+        
         set(handles.chParam1,'string','one-third-octave-band-spectrogram'); % 440 x 28 x 440
         set(handles.chParam1,'enable','off');
         set(handles.chParam2,'value',0);
@@ -490,9 +539,18 @@ switch nAnalyser
         set(handles.chParam6,'string','Param6');
         set(handles.chParam6,'enable','off');
         set(handles.chParam6,'value',0);
+        
+        set(handles.chParam7,'string','Param7');
+        set(handles.chParam7,'enable','off');
+        set(handles.chParam7,'value',0);
     
     case 11
         
+        set(handles.rbPsySound,'value',1);
+        set(handles.rbPsySound,'enable','on');
+        set(handles.rbScripts,'value',0);
+        set(handles.rbScripts,'enable','off');
+        
         set(handles.chParam1,'string','one-third-octave-band-spectrogram'); % 440 x 28 x 440
         set(handles.chParam1,'enable','off');
         set(handles.chParam2,'value',0);
@@ -517,7 +575,18 @@ switch nAnalyser
         set(handles.chParam6,'enable','off');
         set(handles.chParam6,'value',0);
         
+        set(handles.chParam7,'string','Param7');
+        set(handles.chParam7,'enable','off');
+        set(handles.chParam7,'value',0);
+        
     case 12
+        
+        set(handles.rbScripts,'enable','on');
+        
+        set(handles.rbPsySound,'value',1);
+        set(handles.rbPsySound,'enable','on');
+        set(handles.rbScripts,'value',0);
+        
         set(handles.chParam1,'string','loudness');
         set(handles.chParam1,'enable','on');
         
@@ -538,8 +607,15 @@ switch nAnalyser
         
         set(handles.chParam6,'string','sharpness');
         set(handles.chParam6,'enable','on');
+        
+        set(handles.chParam7,'string','loudness-fluctuation');
+        set(handles.chParam7,'enable','on');
+        set(handles.chParam7,'value',0);
     
     case 15
+        
+        set(handles.rbPsySound,'enable','on');
+        set(handles.rbScripts,'enable','on');
         
         set(handles.chParam1,'string','roughness');
         set(handles.chParam1,'enable','on');
@@ -562,8 +638,18 @@ switch nAnalyser
         set(handles.chParam6,'string','Param6');
         set(handles.chParam6,'enable','off');
         set(handles.chParam6,'value',0);
+        
+        set(handles.chParam7,'string','Param7');
+        set(handles.chParam7,'enable','off');
+        set(handles.chParam7,'value',0);
     
     case 20
+        
+        set(handles.rbPsySound,'enable','off');
+        set(handles.rbScripts,'value',1);
+        
+        set(handles.rbScripts,'enable','on');
+        
         set(handles.chParam1,'string','fluctuation-strength');
         set(handles.chParam1,'enable','on');
         
@@ -586,13 +672,50 @@ switch nAnalyser
         set(handles.chParam6,'enable','off');
         set(handles.chParam6,'value',0);
         
+        set(handles.chParam7,'string','Param7');
+        set(handles.chParam7,'enable','off');
+        set(handles.chParam7,'value',0);
+        
+    case 21
+        
+        set(handles.rbScripts,'value',1);
+        set(handles.rbPsySound,'enable','off');
+        
+        set(handles.chParam1,'string','fundamental-frequency');
+        set(handles.chParam1,'enable','on');
+        
+        set(handles.chParam2,'string','Param2');
+        set(handles.chParam2,'enable','off');
+        set(handles.chParam2,'value',0);
+        
+        set(handles.chParam3,'string','Param3'); 
+        set(handles.chParam3,'enable','off');
+        
+        set(handles.chParam4,'string','Param4');
+        set(handles.chParam4,'enable','off');
+        set(handles.chParam4,'value',0);
+        
+        set(handles.chParam5,'string','Param5');
+        set(handles.chParam5,'enable','off');
+        set(handles.chParam5,'value',0);
+        
+        set(handles.chParam6,'string','Param6');
+        set(handles.chParam6,'enable','off');
+        set(handles.chParam6,'value',0);
+        
+        set(handles.chParam7,'string','Param7');
+        set(handles.chParam7,'enable','off');
+        set(handles.chParam7,'value',0);
+        
     otherwise
-        for i = 1:6
+        for i = 1:7
             exp1 = sprintf('set(handles.chParam%.0f,''string'',''Param%.0f''); set(handles.chParam%.0f,''enable'',''off''); set(handles.chParam%.0f,''value'',0); ',i,i,i,i);
             eval( exp1 );
         end
         
 end
+
+unitgroup_SelectionChangeFcn(hObject, eventdata, handles);
 
 % --- Executes during object creation, after setting all properties.
 function popAnalyser_CreateFcn(hObject, eventdata, handles)
@@ -763,6 +886,7 @@ set( handles.txtFile2info,'string',txt2display2);
 
 ti = str2num( get(handles.txtti,'string') );
 tf = str2num( get(handles.txttf,'string') );
+toffset = str2num( get(handles.txtXoffset,'string') );
 
 if length(ti)==0 & length(tf)==0
     ti = 1;
@@ -785,22 +909,28 @@ set(handles.txtti_s,'string',sprintf('%.3f [s]',xliminf));
 set(handles.txttf_s,'string',sprintf('%.3f [s], total time of %.3f',xlimsup,(tf-ti)/fs1));
 
 axes(handles.axes1)
-plot(t1,x1);
+plot(t1,From_dB(handles.audio.G1)*x1);
 % title( name2figname( filename1 ) )
 xlim([xliminf xlimsup])
 
 axes(handles.axes2)
-plot(t2,x2,'r');
+try
+    plot(t2(1:end-toffset+1),From_dB(handles.audio.G2)*x2(toffset:end),'r');
+catch
+    plot(t2,From_dB(handles.audio.G2)*x2,'r');
+end
 % title( name2figname( filename2 ) )
 xlim([xliminf xlimsup])
 
 callevel = str2num( get(handles.txtCalLevel,'string') );
 
-RMS1 = rmsdb(x1(ti:tf))+handles.audio.G1+callevel+30; % Zwicker's correction
-RMS2 = rmsdb(x2(ti:tf))+handles.audio.G2+callevel+30; % Zwicker's correction
+RMS1 = rmsdb(x1(ti        :tf))+handles.audio.G1+callevel+30; % Zwicker's correction
+RMS2 = rmsdb(x2(ti+toffset:tf))+handles.audio.G2+callevel+30; % Zwicker's correction
 
 set( handles.txtRMS1,'string',sprintf('RMS, file 1 = %.2f [dB SPL]',RMS1) )
 set( handles.txtRMS2,'string',sprintf('RMS, file 2 = %.2f [dB SPL]',RMS2) )
+
+handles.audio.toffset = toffset;
 
 guidata(hObject,handles)
 
@@ -976,3 +1106,138 @@ function txtGain2_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+
+function txtLabel1_Callback(hObject, eventdata, handles)
+% hObject    handle to txtLabel1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of txtLabel1 as text
+%        str2double(get(hObject,'String')) returns contents of txtLabel1 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function txtLabel1_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to txtLabel1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function txtLabel2_Callback(hObject, eventdata, handles)
+% hObject    handle to txtLabel2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of txtLabel2 as text
+%        str2double(get(hObject,'String')) returns contents of txtLabel2 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function txtLabel2_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to txtLabel2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function txtFreqmin_Callback(hObject, eventdata, handles)
+% hObject    handle to txtFreqmin (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of txtFreqmin as text
+%        str2double(get(hObject,'String')) returns contents of txtFreqmin as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function txtFreqmin_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to txtFreqmin (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function txtFreqmax_Callback(hObject, eventdata, handles)
+% hObject    handle to txtFreqmax (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of txtFreqmax as text
+%        str2double(get(hObject,'String')) returns contents of txtFreqmax as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function txtFreqmax_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to txtFreqmax (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function txtXoffset_Callback(hObject, eventdata, handles)
+% hObject    handle to txtXoffset (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+toffset = str2double(get(hObject, 'String'));
+ti = str2double(get(handles.txtti, 'String'));
+
+if isnan(toffset)
+    set(hObject, 'String', 0);
+    errordlg('Input must be a number','Error');
+end
+
+if ti+toffset < 1
+    set(hObject, 'String', 0);
+    errordlg('offset - ti has to be greater than 0','Error');
+end
+
+guidata(hObject,handles)
+
+% --- Executes during object creation, after setting all properties.
+function txtXoffset_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to txtXoffset (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in chParam7.
+function chParam7_Callback(hObject, eventdata, handles)
+% hObject    handle to chParam7 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chParam7

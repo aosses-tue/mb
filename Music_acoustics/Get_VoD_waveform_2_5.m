@@ -3,10 +3,10 @@ function [h ha] = Get_VoD_waveform_2_5(fi1,fi2,acmode,options,stPlot)
 %
 % 1. Description:
 %       
-% 2. Additional info:
+% 2. Stand-alone example:
+% 
+% 3. Additional info:
 %   Tested cross-platform: Yes
-%
-% 3. Stand-alone example:
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Original file name: VoD_read_aligned

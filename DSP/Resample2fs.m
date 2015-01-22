@@ -13,7 +13,7 @@ function y = Resample2fs(directory,fs)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 19/01/2015
 % Last update on: 19/01/2015 % Update this date manually
-% Last use on   : 19/01/2015 % Update this date manually
+% Last use on   : 22/01/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 bDiary = 1;

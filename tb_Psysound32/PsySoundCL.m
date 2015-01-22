@@ -1,5 +1,5 @@
-function [output h ha] = PsySoundCL(filename,option)
-% function [output h ha] = PsySoundCL(filename,option)
+function [output h ha] = PsySoundCL(filename,option,st)
+% function [output h ha] = PsySoundCL(filename,option,st)
 % 
 % PAS OP:
 %       before 17/09: [h ha output] = PsySoundCL(filename,option)
@@ -18,6 +18,7 @@ function [output h ha] = PsySoundCL(filename,option)
 %           option.nAnalyser = 12; % LoudnessCF(fh);
 %           option.nAnalyser = 15; % RoughnessDW(fh);
 %           option.nAnalyser = 20; % FluctuationStrength(fh);
+%       st - to pass config parameters to object
 % 
 % 2. Stand-alone example:
 %       PsySoundCL;
@@ -30,8 +31,8 @@ function [output h ha] = PsySoundCL(filename,option)
 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 22/07/2014
-% Last update on: 19/10/2015 % Update this date manually
-% Last use on   : 19/01/2015 % Update this date manually
+% Last update on: 20/01/2015 % Update this date manually
+% Last use on   : 20/01/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 h = [];
@@ -120,12 +121,18 @@ if isfield(option,'tanalysis')
     
     option = Ensure_field(option,'bGenerateExcerpt',1);
     try
+        filename_excerpt = [Delete_extension(filename,'wav') '-e.wav']; 
+        
         if option.bGenerateExcerpt == 1
             [xx ffs] = Wavread(filename);
             tt = (1:length(xx))/ffs;
             idx = find(tt>=option.tanalysis(1) & tt<=option.tanalysis(2));
-
-            filename_excerpt = [Delete_extension(filename,'wav') '-e.wav']; 
+    
+            Wavwrite( xx(idx),ffs,filename_excerpt );
+            filename = filename_excerpt;
+        else
+            [xx ffs] = Wavread(filename);
+            
             Wavwrite( xx(idx),ffs,filename_excerpt );
             filename = filename_excerpt;
         end
@@ -154,6 +161,13 @@ fh = calibrate(fh, 'WithFiles', option.calfile, option.callevel);
 switch nAnalyser
     case 1
         obj = FFT(fh);
+        
+        obj = set(obj,'windowLength',2*8192);
+        st = [];
+        st.type = 'percent';
+        st.size = 75; % default = 75
+        obj = set(obj,'overlap',st);
+
     case 8
         obj = SLM(fh); 
     case 10
@@ -161,8 +175,7 @@ switch nAnalyser
     case 11
         obj = CPBFFT(fh);
         
-        obj = set(obj,'windowLength',65536/16);
-        
+        obj = set(obj,'windowLength',8192);
         st = [];
         st.type = 'percent';
         st.size = 75; % default = 75
@@ -251,6 +264,13 @@ end
 switch nAnalyser 
     
     case 1
+        
+        nParam = 1;
+        Data1   = get(tmpObj{1,nParam},'Data');
+        output.Data1 = Data1;
+        output.name{nParam} = get(tmpObj{1,nParam},'Name');
+        output.param{nParam} = strrep( lower( output.name{nParam} ),' ','-');
+        
         nParam = 2;
         Data2   = get(tmpObj{1,nParam},'Data');
         % Data2name = '';
@@ -415,11 +435,11 @@ switch nAnalyser
         
         % Loudness
         nParam = 1;
-        DataLoud = get(tmpObj{1,nParam},'Data');
+        Data1 = get(tmpObj{1,nParam},'Data');
         
         if option.bPlot
             figure;
-            plot(t,DataLoud)
+            plot(t,Data1)
             xlabel('Time (Seconds)')
             ylabel('Loudness (Sones)');
             title(sprintf('Loudness - %s', option.title));
@@ -430,11 +450,11 @@ switch nAnalyser
         
         % Main loudness
         nParam = 2;
-        DataMainLoud = get(tmpObj{1,nParam},'Data');
+        Data2 = get(tmpObj{1,nParam},'Data');
         
         if option.bPlot
             figure;
-            imagesc(t,z,DataMainLoud');
+            imagesc(t,z,Data2');
             set(gca,'YDir','Normal');
             colormap(option.colorbar_scale);
             hcb = colorbar; 
@@ -479,8 +499,8 @@ switch nAnalyser
         end
         
         output.zspec = zspec;
-        output.DataLoud       = DataLoud;       % Param 1: Loudness
-        output.DataMainLoud   = DataMainLoud;   % Param 2: Main loudness - 3D
+        output.DataLoud       = Data1;          % Param 1: Loudness
+        output.DataMainLoud   = Data2;          % Param 2: Main loudness - 3D
         output.DataSpecLoud   = DataSpecLoud;   % Param 3: Specific loudness - 3D
         output.DataAvMainLoud = DataAvMainLoud; % Param 4: Average Main loudness % not interesting by now
         output.DataAvSpecLoud = DataAvSpecLoud; % Param 5: Average specific loudness
@@ -581,6 +601,11 @@ output.stats     = stats;
 if option.bGenerateExcerpt
     
     disp('...deleting temporal audio file');
+    delete( filename_excerpt );
+    
+else
+    
+    disp('...deleting temporal audio file, with zero padding');
     delete( filename_excerpt );
     
 end

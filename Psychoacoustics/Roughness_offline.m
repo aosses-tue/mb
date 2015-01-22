@@ -33,7 +33,7 @@ function [dataOut out] = Roughness_offline(insig, Fs, N, bDebug)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 10/11/2014
 % Last update on: 17/01/2015 % Update this date manually
-% Last use on   : 17/01/2015 % Update this date manually
+% Last use on   : 22/01/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 4
@@ -413,6 +413,8 @@ output.name{nParam} = 'Specific roughness';
 output.param{nParam} = strrep( lower( output.name{nParam} ),' ','-');
 
 output.nAnalyser = 15;
+
+out.stats.rough_tot = mean( out.Data1 );
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
 % END: RoughBody

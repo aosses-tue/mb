@@ -6,7 +6,7 @@ function [h ha stats] = PsySoundCL_Figures(param,res1, res2, option)
 %       'param' can be:
 % 
 %       nAnalyser                           excerpt     stats
-%       1           - FFT
+%       1           - FFT                   PsySoundCL_Figures not working, probably one of the revisions was overwritten (see r20141007_Perception_day_TUe.m)
 %       10          - 'one-third-OB'        NO          NO
 %       10          - 'specific-loudness'   NO          NO
 %       11          - 'one-third-OB'        YES         NO
@@ -25,15 +25,19 @@ function [h ha stats] = PsySoundCL_Figures(param,res1, res2, option)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 20/08/2014
 % Last update on: 01/10/2014 % Update this date manually
-% Last use on   : 16/01/2015 % Update this date manually
+% Last use on   : 21/01/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 h = [];
 ha = [];
 stats = [];
 
-t1   = res1.t; 
-t2   = res2.t; 
+try
+    t1   = res1.t; 
+    t2   = res2.t; 
+catch
+    warning('no time variable was found...')
+end
 
 try 
     z   = res1.z;
@@ -51,6 +55,7 @@ option = Ensure_field(option,'label1','audio-1');
 option = Ensure_field(option,'label2','audio-2');
 option = Ensure_field(option,'label1suffix','');
 option = Ensure_field(option,'label2suffix','');
+option = ef(option,'bGenerateExcerpt',0);
 
 minValue = max( min(res1.t), min(res2.t) ); % normally = 0
 maxValue = min( max(res1.t), max(res2.t) );
@@ -67,6 +72,14 @@ option = Ensure_field(option,'LineWidth',[2 1]);
 
 idx1 = find(t1>=option.tanalysis(1) & t1<=option.tanalysis(2));
 idx2 = find(t2>=option.tanalysis(1) & t2<=option.tanalysis(2));
+
+if option.bGenerateExcerpt == 1
+    idx1 = find(t1>=0 & t1<=option.tanalysis(2)-option.tanalysis(1));
+    idx2 = find(t2>=0 & t2<=option.tanalysis(2)-option.tanalysis(1));
+    timeoffset = option.tanalysis(1);
+else
+    timeoffset = 0;
+end
 
 if strcmp(param,'sharpness')
     
@@ -103,6 +116,68 @@ elseif strcmp(param,'loudness')
     h(end+1) = gcf;
     ha(end+1) = gca;
  
+elseif strcmp(param,'loudness-fluctuation')
+    
+    bPlot_vs_time = 0;
+    Data1max = res1.Data1;
+    Data2max = res2.Data1;
+    Data1min = res1.Data2;
+    Data2min = res2.Data2;
+    
+    figure;
+    subplot(2,2,1)
+    plot(z,Data1max,option.color{1},'LineWidth',option.LineWidth(1)); hold on
+    plot(z,Data2max,option.color{2},'LineWidth',option.LineWidth(2));
+    grid on
+    legend(option.label1,option.label2)
+    
+    xlabel('Critical band rate (Bark)')
+    ylabel('Critical-band level L_G [dB]')
+    ha = gca;
+    title('L_G_{max}')
+    
+    subplot(2,2,2)
+    plot(z,Data1min,option.color{1},'LineWidth',option.LineWidth(1)); hold on
+    plot(z,Data2min,option.color{2},'LineWidth',option.LineWidth(2));
+
+    grid on
+    
+    xlabel('Critical band rate (Bark)')
+    ylabel('Critical-band level L_G [dB]')
+    % title(sprintf('Loudness - %s', option.title));
+    % ylim(stPlot.YLim_fig1)
+    % title(stPlot.Title2)
+    
+    ha(end+1) = gca;
+    title('L_G_{min}')
+    
+    % title('L_G_{max} based on N_{95}')
+    
+    subplot(2,2,3)
+    plot(   z,Data1max-Data2max,'bo-')
+    ylabel('\Delta L_G [dB]')
+    xlabel('Critical-band rate [Bark]')
+    grid on
+    % ylim(stPlot.YLim_fig2)
+    % title(stPlot.Title4)
+    ha(end+1) = gca;
+    legend('diff max. levels')
+    
+    subplot(2,2,4)
+    plot(   z,Data1min-Data2min,'bo-')
+    ylabel('\Delta L_G [dB]')
+    xlabel('Critical-band rate [Bark]')
+    grid on
+    
+    % ylim(stPlot.YLim_fig2)
+    % title(stPlot.Title4)
+    h(end+1) = gcf;
+    ha(end+1) = gca;
+    legend('diff min. levels')
+    
+    linkaxes(ha,'x');
+    % xlim([0 24])
+    
 elseif strcmp(param,'one-third-OB')
     
     bPlot_vs_time = 0;
@@ -114,6 +189,7 @@ elseif strcmp(param,'one-third-OB')
             
             % nParam = 2;
             f = res1.f;
+            option = Ensure_field(option,'frange',minmax(f));
             freq_min = min(f);
             freq_max = max(f);
             DataSpecOneThirdAvg1 = res1.DataSpecOneThirdAvg;
@@ -122,6 +198,8 @@ elseif strcmp(param,'one-third-OB')
             figure;
             semilogx(f,DataSpecOneThirdAvg1,option.color{1},'LineWidth',option.LineWidth(1),'Marker','o'); hold on
             semilogx(f,DataSpecOneThirdAvg2,option.color{2},'LineWidth',option.LineWidth(2),'Marker','<'); grid on;
+            
+            xlim(option.frange);
             ylabel('Magnitude (dB)')
             xlabel('Frequency (Hz)');
             title(sprintf('Average one-third octave band spectrum - %s', option.title));
@@ -167,15 +245,55 @@ elseif strcmp(param,'average-power-spectrum')
     switch option.nAnalyser
         case 1
             f = res1.f;
+            option = ef(option,'frange',minmax(f));
+            
             figure;
-            semilogx(f,res1.Data2,option.color{1},'LineWidth',option.LineWidth(1)); hold on
-            semilogx(f,res2.Data2,option.color{2},'LineWidth',option.LineWidth(2)); grid on;
+            semilogx(f,dbmean( res1.Data1(:,:)),option.color{1},'LineWidth',option.LineWidth(1)); hold on
+            semilogx(f,dbmean( res2.Data1(:,:)),option.color{2},'LineWidth',option.LineWidth(2)); grid on;
             ylabel('Magnitude (dB)'); % this can be automised
             xlabel('Frequency (Hz)'); % this can be automised
-            title(sprintf('%s - %s', res1.name{2}, option.title));
+            xlim(option.frange)
+            
+            title(sprintf('%s - %s (ti, tf) = (%.3f,%.3f) [s]',res1.name{2},option.title,option.tanalysis(1),option.tanalysis(2)));
             h(end+1) = gcf;
             ha(end+1) = gca;
     end 
+    
+elseif strcmp(param,'spectrogram')
+    
+    switch option.nAnalyser
+        case 1
+            f = res1.f;
+            option = ef(option,'frange',minmax(f));
+            t = transpose( res1.t );
+            
+            figure;
+            subplot(1,2,1)
+            imagesc( t(idx1), f, transpose(res1.Data1(idx1,:)) );
+            colormap('Gray')
+            set(gca,'YDir','normal')
+            set(gca, 'FontName', 'Times New Roman', 'FontSize', 14)
+            xlabel('Time (s)'); 
+            ylabel('Frequency (Hz)'); 
+            h(end+1) = gcf;
+            ha(end+1) = gca;
+            title( sprintf('%s %s',option.label1,option.label1suffix) );
+            ylim(option.frange);
+            
+            subplot(1,2,2)
+            imagesc( t(idx2), f, transpose(res2.Data1(idx2,:)) );
+            colormap('Gray')
+            set(gca,'YDir','normal')
+            set(gca, 'FontName', 'Times New Roman', 'FontSize', 14)
+            xlabel('Time (s)'); 
+            ylabel('Frequency (Hz)'); 
+            ylim(option.frange);
+            % h(end+1) = gcf;
+            % ha(end+1) = gca;
+            title( sprintf('%s %s',option.label2,option.label2suffix) );
+            
+            linkaxes([ha gca],'xy');
+    end
     
 elseif strcmp(param,'specific-loudness')| strcmp(param,'average-specific-loudness')
     
@@ -259,8 +377,8 @@ elseif strcmp(param,'roughness')
     Data2 = res2.Data1; % res2.DataRough;
     
     figure;
-    plot(t1,Data1,option.color{1},'LineWidth',option.LineWidth(1),'Marker','o'); hold on
-    plot(t2,Data2,option.color{2},'LineWidth',option.LineWidth(2),'Marker','<');
+    plot(t1+timeoffset,Data1,option.color{1},'LineWidth',option.LineWidth(1),'Marker','o'); hold on
+    plot(t2+timeoffset,Data2,option.color{2},'LineWidth',option.LineWidth(2),'Marker','<');
 
     xlabel('Time (seconds)')
     ylabel('Roughness (aspers)')
@@ -293,7 +411,11 @@ elseif strcmp(param,'specific-roughness')| strcmp(param,'average-specific-roughn
     %title(sprintf('Average Roughness - %s', option.title));
     
     if length(idx1) == length(t1)
-        title(sprintf('Average Roughness - %s', option.title));
+        try
+            title(sprintf('Average Roughness - %s (ti, tf) = (%.3f,%.3f) [s]', option.title,option.tanalysis(1),option.tanalysis(2)));
+        catch
+            title(sprintf('Average Roughness - %s', option.title));
+        end
         option.label1suffix = sprintf(', tot = %.2f [asper]',res1.stats.rough_tot);
         option.label2suffix = sprintf(', tot = %.2f [asper]',res2.stats.rough_tot);
     else
@@ -311,14 +433,16 @@ end
 stats.idx   = idx1;
 stats.t     = t1;
 
-legend( sprintf('%s %s',option.label1,option.label1suffix), ... 
-        sprintf('%s %s',option.label2,option.label2suffix) );
+if ~strcmp(param,'spectrogram')
+    legend( sprintf('%s %s',option.label1,option.label1suffix), ... 
+            sprintf('%s %s',option.label2,option.label2suffix) );
+end
     
 try
     if bPlot_vs_time == 0
         xlim([freq_min freq_max]) % Bark
     else
-        xlim(option.tanalysis)
+        % xlim(option.tanalysis)
     end
 end
 

@@ -69,34 +69,34 @@ end
 
 % Get file name from dialog
 if askForFileName
-  [fileName, pathName] = getFileNameFromDialog;
+    [fileName, pathName] = getFileNameFromDialog;
 end
 
 % Setup the fileHandle
 if nameToHandle
-  len = length(fileNames);
-  for i=1:len
-    fileName = fileNames{i};
-    pathName = pathNames{i};
-    
-    % At this stage we should have a valid file name
-    ftemp.realName = fullfile(pathName, fileName);
-    ftemp.name     = fullfile(pathName, fileName);
-  
-    % See if we need to convert using sox
-    ftemp = setupWavFileName(ftemp, pathName, fileName);
-  
-    % Initialise fields
-    if i == 1
-      fH    = initFileHandleWithDefaults(ftemp);
-    else
-      fH(i) = initFileHandleWithDefaults(ftemp);
+    len = length(fileNames);
+    for i=1:len
+        fileName = fileNames{i};
+        pathName = pathNames{i};
+
+        % At this stage we should have a valid file name
+        ftemp.realName = fullfile(pathName, fileName);
+        ftemp.name     = fullfile(pathName, fileName);
+
+        % See if we need to convert using sox
+        ftemp = setupWavFileName(ftemp, pathName, fileName);
+
+        % Initialise fields
+        if i == 1
+            fH    = initFileHandleWithDefaults(ftemp);
+        else
+            fH(i) = initFileHandleWithDefaults(ftemp);
+        end
     end
-  end
 else
-  % A previously initialised fileHandle was passed in so read the
-  % next block of data from file
-  [fH, done] = readNextBlock(fH,raw);
+    % A previously initialised fileHandle was passed in so read the next block 
+    % of data from file
+    [fH, done] = readNextBlock(fH,raw);
 end
 
 % Assign output
@@ -116,8 +116,8 @@ fileHandle = struct([]);
 
 % Setup default parameters
 DWINDOWLENGTH = 2^17; % 131072 samples
-                      % This works out to be 1 Mb worth of doubles
-                      % which corresponds to approx 3s @ 44.1 KHz
+                      % This works out to be 1 Mb worth of doubles which 
+                      % corresponds to approx 3s @ 44.1 KHz
                       % Note: This is for each channel
 
 % Add location and window count fields
@@ -154,6 +154,7 @@ fH.tPoint     = 0; % time point of the center of window i.e. time
 
 fH.startIndex = 0; % Where in the data array does the window
                    % begin. Note that this always starts of negative
+% fH = Ensure_field(fH,'loc',4096); % Added by AO
 
 % Start and end indicies within a window of the actual data -
 % i.e. non-zero paddd
@@ -173,21 +174,20 @@ fileHandle = fH;
 % end initFileHandleWithDefaults
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
 % Reads the next block of data from the wav file
-%
+
 function [fileHandle, done] = readNextBlock(fH,raw)
 
 done = false;
 
 % check if window length is an even number
 if mod(fH.windowLength, 2)
-  error('readData: WindowLength must be even!');
+    error('readData: WindowLength must be even!');
 end
 
 % check the file is real and not a link... or anything else !
 if exist(fH.name, 'file') ~= 2
-  error(['File ' fH.name ' does not exist']);
+    error(['File ' fH.name ' does not exist']);
 end
 
 % This is how much the window moves forward by
@@ -199,31 +199,34 @@ halfWindow = fH.windowLength/2;
 % Point to the center of window
 if (fH.loc == 0)
   % Very first read
-  fH.loc = 1;
+    fH.loc = 1;
 else
   % Advance current location
-  fH.loc = fH.loc + offset;
+    fH.loc = fH.loc + offset;
 end
 
 if ~raw 
-    % Figure out the start and end indicies
+    % Figure out the start and end indicies.
+    % Commented on 21/01/2015 by AO, to avoid zero-padding:
     startIndex = fH.loc - halfWindow;
-    endIndex   = startIndex + fH.windowLength - 1;
 else
     startIndex = fH.loc;
-    endIndex = startIndex + fH.windowLength - 1;
 end
-    
+
+endIndex   = startIndex + fH.windowLength - 1;
+
 % Cache the startIndex
 fH.startIndex = startIndex;
 
 padInFront = [];
 pad        = 0;
 if startIndex < 1
-  % Zero pad the front
-  pad        = abs(startIndex) + 1;
-  padInFront = zeros(pad, fH.channels);
-  startIndex = 1;
+    % Zero pad the front
+    pad        = abs(startIndex) + 1;
+    padInFront = []; % padInFront = zeros(pad, fH.channels);
+    startIndex = 1;
+    endIndex   = startIndex + fH.windowLength - 1; % Added by AO
+    warning('Zero-padding by-passed by AO on 22/01/2015')
 end
 
 % This is where the data in the window begins
@@ -232,10 +235,10 @@ fH.winDataStart = pad + 1;
 padAtRear  = [];
 pad        = 0;
 if endIndex > fH.samples
-  % Zero pad the end
-  pad       = endIndex - fH.samples;
-  padAtRear = zeros(pad, fH.channels);
-  endIndex  = fH.samples;
+    % Zero pad the end
+    pad       = endIndex - fH.samples;
+    padAtRear = zeros(pad, fH.channels);
+    endIndex  = fH.samples;
 end
 
 % This is where the data in the window ends

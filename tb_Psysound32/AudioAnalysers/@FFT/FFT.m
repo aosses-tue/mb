@@ -1,6 +1,10 @@
 function obj = FFT(varargin)
+% function obj = FFT(varargin)
+%
 % FFT Constructor
 %
+% Last used on: 20/01/2015
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 obj = struct('levelOffset', 0, 'cztF', [],'complexAverage',0);
 

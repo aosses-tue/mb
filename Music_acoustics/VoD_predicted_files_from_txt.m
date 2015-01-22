@@ -19,9 +19,11 @@ function VoD_predicted_files_from_txt(do_modes, do_fields, bDoCheckCompatibility
 %       do_fields   = 2;
 %       VoD_predicted_files_from_txt(do_modes, do_fields);
 %
-%       do_modes    = 2;
+% 2.3 Stand-alone example to generate Mode 4, far-field
+%       do_modes    = 4;
 %       do_fields   = 1;
-%       VoD_predicted_files_from_txt(do_modes, do_fields);
+%       bCheckCompatibility = 0;
+%       VoD_predicted_files_from_txt(do_modes, do_fields, bCheckCompatibility);
 % 
 % 3. Additional info:
 %       Tested cross-platform: Yes
@@ -40,7 +42,10 @@ end
 
 info.bSave  = input([mfilename '.m: type 1 if you want to generate VoD data: ']);
 paths.VoD   = Get_TUe_paths('db_voice_of_dragon');
-bDoCheckCompatibility = 0;
+
+if nargin < 3
+    bDoCheckCompatibility = 0;
+end
 
 if nargin < 1
     do_modes    = 2:5;
@@ -96,6 +101,7 @@ for fieldtype = do_fields % 1 = far-field, 2 = near-field
         y       = x; %setdbspl(x,dBSPL);
 
         if info.bSave
+            % y = y*From_dB(-10); % applied to ac-mode 2 on 20/01/2015
             Wavwrite(y,fs,outfilename)
         else
             disp([outfilename ' loaded but not stored'])
