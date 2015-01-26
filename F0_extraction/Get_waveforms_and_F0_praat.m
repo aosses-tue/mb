@@ -14,7 +14,7 @@ function [h ha] = Get_waveforms_and_F0_praat(f1,f2,options,stPlot)
 % Original file name: VoD_read_aligned
 % Created on    : 21/01/2015
 % Last update on: 21/01/2015 % Update this date manually
-% Last use on   : 21/01/2015 % Update this date manually
+% Last use on   : 26/01/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 h   = [];
@@ -27,6 +27,9 @@ end
 if nargin < 3
     options = [];
 end 
+
+options = Ensure_field(options,'label1','input-1');
+options = Ensure_field(options,'label2','input-2');
 
 for counti = 0
       
@@ -87,22 +90,27 @@ for counti = 0
     subplot(n,1,1)
     plot(t,y1,stPlot.color{1})
     ha = gca;
-
+    
     title(stPlot.Title1)
+    legend(options.label1);
+    
     stPlot = rmfield(stPlot,'Title1');
     if stPlot.bYLabel == 1
         ylabel('Amplitude')
     end
-    subplot(n,1,2)
+    
     ylims = get(ha,'YLim');
-    set(ha(end),'YLim',1.2*ylims); % expand YLim in 20%
+    set(ha(end),'YLim',1.3*ylims); % expand YLim in 20%
 
+    subplot(n,1,2)
     % plot(t,ynearp,stPlot.color{2}); 
     plot(t,y2,'r-');
     ha(end+1) = gca;
     title(stPlot.Title2)
+    legend(options.label2);
+    
     ylims = get(ha(end),'YLim');
-    set(ha,'YLim',1.2*ylims); % expand YLim in 20%
+    set(ha(end),'YLim',1.3*ylims); % expand YLim in 20%
 
     if n == 2
         xlabel('Time [s]')
@@ -137,7 +145,7 @@ for counti = 0
             ylabel('\Delta f_0 [Hz]')
         end
         ylims = get(ha(end),'YLim');
-        % set(ha(end),'YLim',1.2*ylims); % expand YLim in 20%
+        set(ha(end),'YLim',1.2*ylims); % expand YLim in 20%
 
     end
 

@@ -16,7 +16,7 @@ function r20140930_FIA_TUe(options)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 03/09/2014
 % Last update on: 26/09/2014 % Update this date manually
-% Last use on   : 26/09/2014 % Update this date manually
+% Last use on   : 23/01/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin == 0
@@ -26,7 +26,7 @@ end
 close all
 
 bGenerate   = 0;
-bDoFluct    = 1; % Figure 5
+bDoFluct    = 0; % Figure 5
 bDoAcMode5  = 1;
 bDoAcMode2  = 0;
 bDoAcMode2_filt = 0;

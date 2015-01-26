@@ -12,7 +12,7 @@ function [h ha] = Get_VoD_waveform_2_5(fi1,fi2,acmode,options,stPlot)
 % Original file name: VoD_read_aligned
 % Created on    : 31/10/2014
 % Last update on: 31/10/2014 % Update this date manually
-% Last use on   : 31/10/2014 % Update this date manually
+% Last use on   : 23/01/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin == 0

@@ -127,7 +127,7 @@ if bGetT == 1
         
     end
     
-    Perc = 70.8559/100;
+    Perc = 70.8559/100; % Time at which magnet is located respect to the total period time
     t_coil(:,1) = []; % removing incomplete cycles
     tstart = t_coil(:,1) - Perc*params.Tmodel;
     % params.ti_measured = tstart'; % uncomment to assign. These values were 

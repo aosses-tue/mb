@@ -17,7 +17,7 @@ function varargout = PsySoundControl(varargin)
 %
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
 %      instance to run (singleton)".
-%
+%   
 %   Limitations (written by AO):
 %       - Roughness calculations using PsySound include first and last frame
 %       in the average value calculations. Use Roughness_offline.m
@@ -28,7 +28,7 @@ function varargout = PsySoundControl(varargin)
 %       267     reset_Callback                      18/01/2015
 %       309     Initialisation GUI                  18/01/2015
 %       313     unitgroup_SelectionChangeFcn        21/01/2015
-%       455     popAnalyser_Callback                22/01/2015
+%       479     popAnalyser_Callback                25/01/2015
 %       783     Load data                           21/01/2015
 %       
 % TO DO:
@@ -109,6 +109,9 @@ bSave       = get(handles.bSave,'value');
 nAnalyser   = get(handles.popAnalyser,'value');
 dir_output  = get(handles.txtOutputDir,'string');
 
+nSkipStart  = str2num( get(handles.txtAnalysisStart,'string') );
+nSkipEnd    = str2num( get(handles.txtAnalysisEnd  ,'string') );
+
 fs          = handles.audio.fs;
 tanalysis_inf = str2num(get(handles.txtti,'string')); % in samples
 tanalysis_sup = str2num(get(handles.txttf,'string')); % in samples
@@ -172,9 +175,11 @@ if bUsePsySound
     options.bPlot = 0;
 
     options.callevel = callevel + handles.audio.G1;
+    options.nSkipStart = nSkipStart;
     [out_1 tmp_h tmp_ha]   = PsySoundCL(filename1,options);
     
     options.callevel = callevel + handles.audio.G2;
+    options.nSkipStart = nSkipStart;
     [out_2 tmp_h tmp_ha]   = PsySoundCL(filename2,options);
     
 else
@@ -183,8 +188,13 @@ else
     [insig2 fs2] = Wavread(filename2);
     
     if options.bGenerateExcerpt
-        insig1 = insig1( tanalysis_inf:tanalysis_sup + 8192 ); % one additional frame
-        insig2 = insig2( tanalysis_inf + toffset:tanalysis_sup + toffset + 8192 ); % one additional frame
+        Nextra = length(insig1)-(tanalysis_sup - tanalysis_inf)-1;
+        if Nextra >= 8192
+            Nextra = 8192;
+        end
+            
+        insig1 = insig1( tanalysis_inf:tanalysis_sup + Nextra ); % one additional frame
+        insig2 = insig2( tanalysis_inf + toffset:tanalysis_sup + toffset + Nextra ); % one additional frame
         set(handles.txtExcerpt,'visible','on');
     else
         set(handles.txtExcerpt,'visible','off');
@@ -205,8 +215,9 @@ else
         case 15 % Roughness
             
             N = 8192; % default frame length
-            [xx out_1] = Roughness_offline(insig1,fs1,N,0);
-            [xx out_2] = Roughness_offline(insig2,fs2,N,0);
+            opts.nSkipStart = nSkipStart;
+            [xx out_1] = Roughness_offline(insig1,fs1,N,opts,0);
+            [xx out_2] = Roughness_offline(insig2,fs2,N,opts,0);
             Ndel = length(out_1.t);
             out_1.t(Ndel)       = []; % we delete last frame
             out_1.Data1(Ndel)   = [];
@@ -217,9 +228,11 @@ else
             
         case 20 % Fluctuation strength, see also r20141126_fluctuation
             
-            N = 8192*4;
-            [xx out_1] = FluctuationStrength_offline_debug(insig1,fs1,N,0);
-            [xx out_2] = FluctuationStrength_offline_debug(insig2,fs2,N,0);
+            N = 44100*4; % 8192*4;
+            opts.nSkipStart = nSkipStart;
+            warning('Fluctuation strength: temporal value...')
+            [xx out_1] = FluctuationStrength_offline_debug(insig1(1:N),fs1,N,0);
+            [xx out_2] = FluctuationStrength_offline_debug(insig2(1:N),fs2,N,0);
             
         case 21 % Calculation made at plot section
             warning('color of the series are not automated')
@@ -476,6 +489,8 @@ switch nAnalyser
 
     case 1
         
+        set(handles.txtAnalysisStart,'Enable','off');
+        
         set(handles.rbPsySound,'value',1);
         set(handles.rbPsySound,'enable','on');
         set(handles.rbScripts,'value',0);
@@ -510,6 +525,8 @@ switch nAnalyser
         set(handles.chParam7,'value',0);
     
     case 10
+        
+        set(handles.txtAnalysisStart,'Enable','off');
         
         set(handles.rbPsySound,'value',1);
         set(handles.rbPsySound,'enable','on');
@@ -546,6 +563,8 @@ switch nAnalyser
     
     case 11
         
+        set(handles.txtAnalysisStart,'Enable','off');
+        
         set(handles.rbPsySound,'value',1);
         set(handles.rbPsySound,'enable','on');
         set(handles.rbScripts,'value',0);
@@ -581,6 +600,8 @@ switch nAnalyser
         
     case 12
         
+        set(handles.txtAnalysisStart,'Enable','off');
+        
         set(handles.rbScripts,'enable','on');
         
         set(handles.rbPsySound,'value',1);
@@ -614,6 +635,8 @@ switch nAnalyser
     
     case 15
         
+        set(handles.txtAnalysisStart,'Enable','on');
+        
         set(handles.rbPsySound,'enable','on');
         set(handles.rbScripts,'enable','on');
         
@@ -644,6 +667,8 @@ switch nAnalyser
         set(handles.chParam7,'value',0);
     
     case 20
+        
+        set(handles.txtAnalysisStart,'Enable','on');
         
         set(handles.rbPsySound,'enable','off');
         set(handles.rbScripts,'value',1);
@@ -677,6 +702,8 @@ switch nAnalyser
         set(handles.chParam7,'value',0);
         
     case 21
+        
+        set(handles.txtAnalysisStart,'Enable','off');
         
         set(handles.rbScripts,'value',1);
         set(handles.rbPsySound,'enable','off');
@@ -839,13 +866,26 @@ function btnLoad_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-try
-    dir_out = Get_TUe_paths('outputs');
-catch
-    warning('Type your output dir in the GUI');
-end
+dir_out = get(handles.txtOutputDir,'string');
 
-set(handles.txtOutputDir,'string',dir_out)
+if length(dir_out) == 0
+    
+    try
+        dir_out = Get_TUe_paths('outputs');
+    catch
+        warning('Type your output dir in the GUI');
+    end
+    set(handles.txtOutputDir,'string',dir_out)
+    
+else
+    
+    if ~strcmp( dir_out(end), delim )
+        dir_out = [dir_out delim];
+    end
+    
+    Mkdir(dir_out);
+    
+end
 
 filename1 = get(handles.txtFile1,'string');
 filename2 = get(handles.txtFile2,'string');
@@ -1241,3 +1281,49 @@ function chParam7_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of chParam7
+
+
+
+function txtAnalysisStart_Callback(hObject, eventdata, handles)
+% hObject    handle to txtAnalysisStart (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of txtAnalysisStart as text
+%        str2double(get(hObject,'String')) returns contents of txtAnalysisStart as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function txtAnalysisStart_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to txtAnalysisStart (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function txtAnalysisEnd_Callback(hObject, eventdata, handles)
+% hObject    handle to txtAnalysisEnd (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of txtAnalysisEnd as text
+%        str2double(get(hObject,'String')) returns contents of txtAnalysisEnd as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function txtAnalysisEnd_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to txtAnalysisEnd (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

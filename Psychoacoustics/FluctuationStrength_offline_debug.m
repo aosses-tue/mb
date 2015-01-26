@@ -1,5 +1,5 @@
-function [dataOut out] = FluctuationStrength_offline_debug(insig, Fs, N, bDebug)
-% function [dataOut out] = FluctuationStrength_offline_debug(insig, Fs, N, bDebug)
+function [dataOut out] = FluctuationStrength_offline_debug(insig, Fs, N, options, bDebug)
+% function [dataOut out] = FluctuationStrength_offline_debug(insig, Fs, N, options, bDebug)
 %
 % 1. Description:
 %       Frame-based, off-line implementation of the Fluctuation Strength 
@@ -35,12 +35,24 @@ function [dataOut out] = FluctuationStrength_offline_debug(insig, Fs, N, bDebug)
 % Last use on   : 18/01/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if nargin < 4
+if nargin < 5
     bDebug = 0;
 end
 
+if nargin < 4
+    options = [];
+end
+
+options = ef(options,'nSkipStart',0);
+
+nSkipStart = options.nSkipStart; % to correct time series, in case an analysis frame has been excluded
+
+N_hop       =   N/2; % 2048;
+warning('temporal hop size')
+insig   = insig( nSkipStart*N_hop+1:end );
+
 if nargin < 3
-    N = 8192;
+    N = 8192*4;
 end
 
 if ~(Fs == 44100 | Fs == 40960 | Fs == 48000)
@@ -170,7 +182,6 @@ Hhann       = Hanning_half(8192);
 
 Window      =   blackman(N, 'periodic') .* 1.8119;
 dBcorr      =   80+2.72; % originally = 80, last change of this value on 26/11/2014
-N_hop       =   2048;
 
 insig_buf   =   buffer(insig, N, N-N_hop,'nodelay');
 m_blocks    =   size(insig_buf,2);
@@ -186,7 +197,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for idx_j = 1:m_blocks
 
-    tn(idx_j) = (idx_j-1)*N_hop; % sample number to determine time
+    tn(idx_j) = (idx_j-1 + nSkipStart)*N_hop; % sample number to determine time
     dataIn = insig_buf(:,idx_j);
     
     dataIn = dataIn .*Window;
@@ -510,7 +521,7 @@ for idx_j = 1:m_blocks
         fi(idx_j,k)     =	(h0(k)^qg)*(mdept(k)^p)*( ki(k-2)*ki(k) )^kg;
     end
 
-    fi(idx_j,Chno-1)	=	(h0(Chno-1)^qg)*(mdept(Chno-1)^p)*(ki(Chno-3)^kg);
+    fi(idx_j,Chno-1)	=	(h0(Chno-1)^qg)*(mdept(Chno-1)^p)*(ki(Chno-3)^kg); % ki
     fi(idx_j,Chno  )	=	(h0(Chno  )^qg)*(mdept(Chno  )^p)*(ki(Chno-2)^kg);
     FS(idx_j)           =	Cal*( sum(fi(idx_j,:)) )^(1/s);
 
@@ -519,6 +530,16 @@ for idx_j = 1:m_blocks
         SPL(idx_j) = To_dB(SPL(idx_j))+90; 
     else
         SPL(idx_j) = -400;
+    end
+    
+    if bDebug
+        figure; 
+        plot(fi(1,:),'r'), hold on
+        plot(mdept,'b-')
+        plot(ki,'k')
+        grid on
+        title(sprintf('FS = %.2f [vacil]',FS(1)))
+        legend('f_i','mdepth','cc')
     end
     
     bDebug = 0;

@@ -1,6 +1,10 @@
 function obj = SLM(varargin)
+% function obj = SLM(varargin)
+%
 % SLM Constructor
 %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 obj = struct;
 
 switch nargin

@@ -25,7 +25,7 @@ function [h ha stats] = PsySoundCL_Figures(param,res1, res2, option)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 20/08/2014
 % Last update on: 01/10/2014 % Update this date manually
-% Last use on   : 21/01/2015 % Update this date manually
+% Last use on   : 26/01/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 h = [];
@@ -73,7 +73,7 @@ option = Ensure_field(option,'LineWidth',[2 1]);
 idx1 = find(t1>=option.tanalysis(1) & t1<=option.tanalysis(2));
 idx2 = find(t2>=option.tanalysis(1) & t2<=option.tanalysis(2));
 
-if option.bGenerateExcerpt == 1
+if option.bGenerateExcerpt == 1 & option.nAnalyser == 15 % only for roughness
     idx1 = find(t1>=0 & t1<=option.tanalysis(2)-option.tanalysis(1));
     idx2 = find(t2>=0 & t2<=option.tanalysis(2)-option.tanalysis(1));
     timeoffset = option.tanalysis(1);
@@ -113,6 +113,7 @@ elseif strcmp(param,'loudness')
     ylabel('Loudness (Sones)');
     title(sprintf('Loudness - %s', option.title));
     grid on;
+    
     h(end+1) = gcf;
     ha(end+1) = gca;
  
@@ -232,6 +233,13 @@ elseif strcmp(param,'one-third-OB')
             ylabel('Magnitude (dB)')
             xlabel('Frequency (Hz)');
                 
+            ylims = get(gca,'YLim');
+            ylims(1) = 0; % Nothing below 0 dB
+            set(gca,'YLim',ylims);
+            
+            xticks = get(gca,'XTick');
+            set(gca,'XTickLabel',xticks);
+            
             h(end+1) = gcf;
             ha(end+1) = gca;
             
@@ -255,6 +263,14 @@ elseif strcmp(param,'average-power-spectrum')
             xlim(option.frange)
             
             title(sprintf('%s - %s (ti, tf) = (%.3f,%.3f) [s]',res1.name{2},option.title,option.tanalysis(1),option.tanalysis(2)));
+            
+            ylims = get(gca,'YLim');
+            ylims(1) = 0; % Nothing below 0 dB
+            set(gca,'YLim',ylims);
+            
+            xticks = get(gca,'XTick');
+            set(gca,'XTickLabel',xticks);
+            
             h(end+1) = gcf;
             ha(end+1) = gca;
     end 
@@ -351,11 +367,14 @@ elseif strcmp(param,'specific-loudness')| strcmp(param,'average-specific-loudnes
                 plot(zspec,mean(DataSpecLoud1(idx1,:)),option.color{1},'LineWidth',option.LineWidth(1)); hold on
                 plot(zspec,mean(DataSpecLoud2(idx1,:)),option.color{2},'LineWidth',option.LineWidth(2));
                 title(sprintf('Average Specific Loudness - %s (ti, tf) = (%.3f,%.3f) [s]', option.title,option.tanalysis(1),option.tanalysis(2)));
-                data2show1 = sum(DataSpecLoud1(idx1,:))*0.1;
-                data2show2 = sum(DataSpecLoud2(idx1,:))*0.1;
+                data2show1 = sum( mean(DataSpecLoud1(idx1,:)) )*0.1;
+                data2show2 = sum( mean(DataSpecLoud2(idx1,:)) )*0.1;
                 
             end
             
+            option.label1suffix = sprintf(', avg = %.2f [sones]',data2show1);
+            option.label2suffix = sprintf(', avg = %.2f [sones]',data2show2);
+                
             xlabel('Critical band rate (Bark)');
             ylabel('Loudness (Sone/Bark)')
             grid on;
@@ -427,7 +446,70 @@ elseif strcmp(param,'specific-roughness')| strcmp(param,'average-specific-roughn
     grid on
     h(end+1) = gcf;
     ha(end+1) = gca;
+
+elseif strcmp(param,'fluctuation-strength')
     
+    bPlot_vs_time = 1;
+    Data1 = res1.Data1; 
+    Data2 = res2.Data1; 
+    
+    figure;
+    plot(t1+timeoffset,Data1,option.color{1},'LineWidth',option.LineWidth(1),'Marker','o'); hold on
+    plot(t2+timeoffset,Data2,option.color{2},'LineWidth',option.LineWidth(2),'Marker','<');
+
+    xlabel('Time (seconds)')
+    ylabel('Fluctuation strength (vacils)')
+    title(sprintf('FS - %s', option.title));
+    grid on
+
+    % res1.stats.rough_segment = mean(Data1(idx1));
+    % res2.stats.rough_segment = mean(Data2(idx2));
+    
+    h(end+1) = gcf;
+    ha(end+1) = gca;
+        
+elseif strcmp(param,'specific-fluctuation-strength')| strcmp(param,'average-specific-fluctuation-strength')
+    
+    bPlot_vs_time = 0;
+    freq_min = min(z);
+    freq_max = max(z);
+    
+    Data1 = res1.Data2; 
+    Data2 = res2.Data2; 
+    
+    %res1.stats.rough_segment = mean( 0.25*sum( Data1(idx1,:)' ) ); % 0.5*sum( mean(DataRough1(idx,:)') );
+    %res2.stats.rough_segment = mean( 0.25*sum( Data2(idx1,:)' ) );
+    
+    figure;
+    if size(Data1,1) ~= 1
+        plot(z, mean(Data1(idx1,:)),option.color{1},'LineWidth',option.LineWidth(1)); hold on
+        plot(z, mean(Data2(idx2,:)),option.color{2},'LineWidth',option.LineWidth(2));
+    else % average of one value is the same value
+        plot(z, Data1,option.color{1},'LineWidth',option.LineWidth(1)); hold on
+        plot(z, Data2,option.color{2},'LineWidth',option.LineWidth(2));
+    end
+    xlabel('Critical band rate (Bark)')
+    ylabel('Specific Fluctuation strength (Vacils/Bark)')
+    %title(sprintf('Average Roughness - %s', option.title));
+    
+    if length(idx1) == length(t1)
+        try
+            title(sprintf('Average FS - %s (ti, tf) = (%.3f,%.3f) [s]', option.title,option.tanalysis(1),option.tanalysis(2)));
+        catch
+            title(sprintf('Average FS - %s', option.title));
+        end
+        % option.label1suffix = sprintf(', tot = %.2f [asper]',res1.stats.rough_tot);
+        % option.label2suffix = sprintf(', tot = %.2f [asper]',res2.stats.rough_tot);
+    else
+        title(sprintf('Average FS - %s (ti, tf) = (%.3f,%.3f) [s]', option.title,option.tanalysis(1),option.tanalysis(2)));
+        % option.label1suffix = sprintf(', tot = %.2f [asper]',res1.stats.rough_segment);
+        % option.label2suffix = sprintf(', tot = %.2f [asper]',res2.stats.rough_segment);
+    end
+    
+    grid on
+    h(end+1) = gcf;
+    ha(end+1) = gca;
+
 end
 
 stats.idx   = idx1;

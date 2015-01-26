@@ -32,7 +32,7 @@ function [output h ha] = PsySoundCL(filename,option,st)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 22/07/2014
 % Last update on: 20/01/2015 % Update this date manually
-% Last use on   : 20/01/2015 % Update this date manually
+% Last use on   : 26/01/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 h = [];
@@ -120,13 +120,23 @@ end
 if isfield(option,'tanalysis') 
     
     option = Ensure_field(option,'bGenerateExcerpt',1);
+    
+    if option.nSkipStart
+        tanalysis_inf_tmp = max( option.tanalysis(1)-1, 0);
+        delta_t = option.tanalysis(1) - tanalysis_inf_tmp; % time to add at output of PsySound
+    else
+        tanalysis_inf_tmp = option.tanalysis(1);
+        delta_t     = 0;
+    end
+    delta_tN    = delta_t*fs; 
+    
     try
         filename_excerpt = [Delete_extension(filename,'wav') '-e.wav']; 
         
         if option.bGenerateExcerpt == 1
             [xx ffs] = Wavread(filename);
             tt = (1:length(xx))/ffs;
-            idx = find(tt>=option.tanalysis(1) & tt<=option.tanalysis(2));
+            idx = find(tt>= tanalysis_inf_tmp & tt<=option.tanalysis(2));
     
             Wavwrite( xx(idx),ffs,filename_excerpt );
             filename = filename_excerpt;
@@ -214,6 +224,10 @@ obj = process(obj,fh,[]);
 tmpObj  = get(obj,'output');
 
 t       = get(tmpObj{1,1},'Time');
+t       = t + tanalysis_inf_tmp;
+idx_dlt = find(t <= tanalysis_inf_tmp + delta_t);
+
+t(idx_dlt) = []; 
 
 if nAnalyser == 1
     
@@ -334,12 +348,12 @@ switch nAnalyser
         
         nParam = 3;
         zspec = transpose( get(tmpObj{1,nParam},'Freq') ); 
-        DataAvMainLoud  = get(tmpObj{1,nParam},'Data');
+        Data4  = get(tmpObj{1,nParam},'Data');
         txt_title = sprintf('%s - %s',get(tmpObj{1,nParam},'Name'),option.title);
         
         if option.bPlot
             figure;
-            plot(zspec,DataAvMainLoud);
+            plot(zspec,Data4);
             xlabel('Critical band rate (Bark)')
             ylabel('Loudness (Sones/Bark)');
             title(txt_title); % title(sprintf('Specific Loudness (ISO532B) - %s', option.title));
@@ -353,8 +367,8 @@ switch nAnalyser
         output.DataSpecOneThirdAvg  = DataSpecOneThirdAvg;
         
         output.zspec = zspec;
-        output.DataLoud = DataAvMainLoud;
-        stats.loud_tot = sum(DataAvMainLoud)*0.1;
+        output.DataLoud = Data4;
+        stats.loud_tot = sum(Data4)*0.1;
         
         % output.percentilesLoud
         
@@ -403,39 +417,11 @@ switch nAnalyser
             disp( get(tmpObj{1,i},'Name') );
         end
         
-        % Average main loudness:
-        nParam = 4;
-        DataAvMainLoud = get(tmpObj{1,nParam},'Data');
-        
-        if option.bPlot
-            figure;
-            plot(z,DataAvMainLoud);
-            xlabel('Critical band rate (Bark)')
-            ylabel('Loudness (Sones/Bark)');
-            title(sprintf('Average Main Loudness - %s', option.title));
-            grid on;
-            h(end+1) = gcf;
-            ha(end+1) = gca;
-        end
-        
-        % Average specific loudness
-        nParam = 5;
-        DataAvSpecLoud = get(tmpObj{1,nParam},'Data');
-        
-        if option.bPlot
-            figure;
-            plot(zspec,DataAvSpecLoud);
-            xlabel('Critical band rate (Bark)')
-            ylabel('Loudness (Sones/Bark)');
-            title(sprintf('Average Specific Loudness - %s', option.title));
-            grid on;
-            h(end+1) = gcf;
-            ha(end+1) = gca;
-        end
-        
         % Loudness
         nParam = 1;
         Data1 = get(tmpObj{1,nParam},'Data');
+        
+        Data1(idx_dlt) = [];
         
         if option.bPlot
             figure;
@@ -451,6 +437,7 @@ switch nAnalyser
         % Main loudness
         nParam = 2;
         Data2 = get(tmpObj{1,nParam},'Data');
+        Data2(idx_dlt,:) = [];
         
         if option.bPlot
             figure;
@@ -468,11 +455,12 @@ switch nAnalyser
         
         % Specific loudness
         nParam = 3;
-        DataSpecLoud = get(tmpObj{1,nParam},'Data');
-        
+        Data3 = get(tmpObj{1,nParam},'Data');
+        Data3(idx_dlt,:) = [];
+                
         if option.bPlot
             figure;
-            imagesc(t,zspec,DataSpecLoud');
+            imagesc(t,zspec,Data3');
             set(gca,'YDir','Normal');
             colormap(option.colorbar_scale);
             hcb = colorbar; 
@@ -484,12 +472,43 @@ switch nAnalyser
             ha(end+1) = gca;
         end
         
-        nParam = 6;
-        DataSharp = get(tmpObj{1,nParam},'Data');
+        % Average main loudness:
+        nParam = 4;
+        Data4 = get(tmpObj{1,nParam},'Data');
         
         if option.bPlot
             figure;
-            plot(t,DataSharp)
+            plot(z,Data4);
+            xlabel('Critical band rate (Bark)')
+            ylabel('Loudness (Sones/Bark)');
+            title(sprintf('Average Main Loudness - %s, whole audio file', option.title));
+            grid on;
+            h(end+1) = gcf;
+            ha(end+1) = gca;
+        end
+        
+        % Average specific loudness
+        nParam = 5;
+        Data5 = get(tmpObj{1,nParam},'Data');
+        
+        if option.bPlot
+            figure;
+            plot(zspec,Data5);
+            xlabel('Critical band rate (Bark)')
+            ylabel('Loudness (Sones/Bark)');
+            title(sprintf('Average Specific Loudness - %s, whole audio file', option.title));
+            grid on;
+            h(end+1) = gcf;
+            ha(end+1) = gca;
+        end
+        
+        nParam = 6;
+        Data6 = get(tmpObj{1,nParam},'Data');
+        Data6(idx_dlt) = [];
+        
+        if option.bPlot
+            figure;
+            plot(t,Data6)
             xlabel('Time (Seconds)')
             ylabel('Sharpness (Acums)');
             title(sprintf('Sharpness - %s', option.title));
@@ -499,12 +518,12 @@ switch nAnalyser
         end
         
         output.zspec = zspec;
-        output.DataLoud       = Data1;          % Param 1: Loudness
-        output.DataMainLoud   = Data2;          % Param 2: Main loudness - 3D
-        output.DataSpecLoud   = DataSpecLoud;   % Param 3: Specific loudness - 3D
-        output.DataAvMainLoud = DataAvMainLoud; % Param 4: Average Main loudness % not interesting by now
-        output.DataAvSpecLoud = DataAvSpecLoud; % Param 5: Average specific loudness
-        output.DataSharp      = DataSharp;      % Param 6: Sharpness
+        output.DataLoud       = Data1; % Param 1: Loudness
+        output.DataMainLoud   = Data2; % Param 2: Main loudness - 3D
+        output.DataSpecLoud   = Data3; % Param 3: Specific loudness - 3D
+        output.DataAvMainLoud = Data4; % Param 4: Average Main loudness % not interesting by now
+        output.DataAvSpecLoud = Data5; % Param 5: Average specific loudness
+        output.DataSharp      = Data6; % Param 6: Sharpness
         
     case 15
         

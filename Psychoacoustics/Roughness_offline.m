@@ -1,5 +1,5 @@
-function [dataOut out] = Roughness_offline(insig, Fs, N, bDebug)
-% function [dataOut out] = Roughness_offline(insig, Fs, N, bDebug)
+function [dataOut out] = Roughness_offline(insig, Fs, N, options, bDebug)
+% function [dataOut out] = Roughness_offline(insig, Fs, N, options, bDebug)
 %
 % 1. Description:
 %       Frame-based, off-line implementation of the roughness algorithm.
@@ -36,9 +36,20 @@ function [dataOut out] = Roughness_offline(insig, Fs, N, bDebug)
 % Last use on   : 22/01/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if nargin < 4
+if nargin < 5
     bDebug = 0;
 end
+
+if nargin < 4
+    options = [];
+end
+
+options = ef(options,'nSkipStart',0);
+
+nSkipStart = options.nSkipStart; % to correct time series, in case an analysis frame has been excluded
+
+N_hop   = 4096;
+insig   = insig( nSkipStart*N_hop+1:end );
 
 if nargin < 3
     N = 8192;
@@ -127,8 +138,6 @@ Hweight = Get_Hweight_roughness(N,Fs);
 
 %% Stage 1, BEGIN: RoughBody
 
-N_hop       =   4096;
-
 insig_buf   =   buffer(insig, N, N-N_hop,'nodelay');
 m_blocks    =   size(insig_buf,2);
 ri          =   zeros(m_blocks,Chno);
@@ -139,7 +148,7 @@ dBcorr      = 81; % originally = 80
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for idx_j = 1:m_blocks
 
-    tn(idx_j) = (idx_j-1)*N_hop; % sample number to determine time
+    tn(idx_j) = (idx_j-1 + nSkipStart)*N_hop; % sample number to determine time
     dataIn = insig_buf(:,idx_j);
     
     dataIn = dataIn .*Window;
@@ -382,8 +391,8 @@ for idx_j = 1:m_blocks
     for k           = 3:1:45
         ri(idx_j,k)	=	(gzi(k)*mdept(k)*ki(k-2)*ki(k))^2;
     end
-    ri(idx_j,46)	=	(gzi(46)*mdept(46)*ki(44))^2;
-    ri(idx_j,47)	=	(gzi(47)*mdept(47)*ki(45))^2;
+    ri(idx_j,46)	=	( gzi(46)*mdept(46)*ki(44) )^2;
+    ri(idx_j,47)	=	( gzi(47)*mdept(47)*ki(45) )^2;
     R(idx_j)        =	Cal*sum(ri(idx_j,:));
 
     SPL(idx_j) = mean(rms(dataIn));
@@ -392,6 +401,18 @@ for idx_j = 1:m_blocks
     else
         SPL(idx_j) = -400;
     end
+    
+    if bDebug
+        figure; 
+        plot(ri(1,:),'r'), hold on
+        plot(mdept,'b-')
+        plot(ki,'k')
+        plot(gzi,'g--')
+        grid on
+        
+        legend('r_i','mdepth','cc','gzi')
+    end
+    
 end
 
 % Create a cell array to return

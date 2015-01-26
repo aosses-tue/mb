@@ -9,7 +9,10 @@ function [misc] = VoD_write_aligned(info,stPlot)
 %       determined for near to far-field wav files and the same attenuation
 %       is applied to predicted far-field file
 %       
-%       In terms of alignment, predicted audio files will be the reference
+%       In terms of alignment, predicted audio files will be the reference.
+%       The time correction applied to measured audio files is stored in the
+%       constant 'ti_measured(mode_idx)' obtained as a struct field using
+%       Get_VoD_params(0);
 % 
 %       Outputs are structs with far and near fields per modus 1-4 (modes 2 
 %       to 5):  y_measured 
@@ -28,15 +31,17 @@ function [misc] = VoD_write_aligned(info,stPlot)
 %       VoD_write_aligned;
 % 
 %   % Example 2:
-%       info.Dest_folder = Get_TUe_paths('outputs');
+%       info.dest_folder = Get_TUe_paths('outputs');
 %       info.bPlot = 1;
-%       VoD_read_aligned(info);
+%       info.bSave = 0;
+%       info.modes2check = 2;
+%       VoD_write_aligned(info);
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Original file name: VoD_read_aligned
 % Created on    : 29/08/2014
 % Last update on: 26/09/2014 % Update this date manually
-% Last use on   : 26/09/2014 % Update this date manually
+% Last use on   : 23/01/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Default inputs:
@@ -66,6 +71,8 @@ end
 
 info = Ensure_field(info,'modes2check',2:5);
 info = Ensure_field(info,'bSave',0);
+
+bSave = info.bSave;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 misc        = Get_VoD_params(1); % input = 0, to not store 'period' results
@@ -101,15 +108,21 @@ for acmode = info.modes2check
       
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Audio files:
+    %       filename{1} - far mic audio file
+    %       filename{2} - close mic audio file
+    %       filename{3} - magnet file
+    %       filename{4} - far mic modelled file
+    %       filename{5} - close mic modelled file
+    
     % 1. Measured wav files:
     field = '1';
     filename{1} = [dir_calibrated_m 'modus-' modus '_v' num2str(take) '-' field lblFilter '.wav'];
+    
     field = '2';
     filename1 = ['modus-' modus '_v' num2str(take) '-' field lblFilter];
     filename{2} = [dir_calibrated_m filename1 '.wav'];
     file_f0_m   = [dir_f0_m         filename1 '.txt']; % added on 31/07/2014
     filename{3} = [dir_meas_def     'modus ' modus '_v' num2str(take) '-3.wav'];
-    filename1new = sprintf('meas-ac-mode-%.0f',acmode);
     
     % 2. Modelled wav files:
     field = '1';
@@ -119,14 +132,16 @@ for acmode = info.modes2check
     filename2 = ['modus-' modus '-v_' field lblFilter];
     filename{5} = [dir_calibrated_p filename2 '.wav'];
     file_f0_p   = [dir_f0_p         filename2 '.txt']; % added on 31/07/2014
-    filename2new = sprintf('model-ac-mode-%.0f',acmode);
+    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Loading audio files...
     
     [ynear, fs] = Wavread(filename{2});
+    [ynearp   ] = Wavread(filename{5});
     y4period    = Wavread(filename{3});
 
-    [ynearp fs] = Wavread(filename{5});
+    [yfar     ] = Wavread(filename{1});
+    [yfarp fs ] = Wavread(filename{4});
     
     misc.near_field_filename{end+1,1} = filename{2}; % measured file name
     misc.near_field_filename{end  ,2} = filename{5}; % modelled file name
@@ -137,20 +152,31 @@ for acmode = info.modes2check
     % Actual alignment, Version 2:
     % Truncation according to stored intial time values:
     [ynear , tm] = Do_alignment(  misc.t, ynear , misc.ti_measured(mode_idx)  );
-        
     [ynearp, tp] = Do_alignment(  misc.t, ynearp, misc.ti_model(mode_idx)     );
+    [yfar  , tmf] = Do_alignment(  misc.t, yfar , misc.ti_measured(mode_idx)  );
+    [yfarp , tpf] = Do_alignment(  misc.t, yfarp, misc.ti_model(mode_idx)     );
     
     L = min( length(ynear), length(ynearp));
     
     ynear   = Do_truncate(ynear , L);
     ynearp  = Do_truncate(ynearp, L);
+    yfar    = Do_truncate(yfar  , L);
+    yfarp   = Do_truncate(yfarp , L);
     t       = Do_truncate(tm,L); % same t for measured and modelled
 
-    misc.Excerpt_m{mode_idx} = [dest_folder filename1new];
-    misc.Excerpt_p{mode_idx} = [dest_folder filename2new]; 
+    f1new  = sprintf('meas-ac-mode-%.0f'    ,acmode);
+    f1newf = sprintf('meas-ac-mode-%.0f-far',acmode);
+    f2new  = sprintf('model-ac-mode-%.0f'    ,acmode);
+    f2newf = sprintf('model-ac-mode-%.0f-far',acmode);
     
-    if info.bSave
-        info = Ensure_field(info, 'time2save', 5);
+    
+    misc.Excerpt_m{mode_idx} = [dest_folder f1new];
+    misc.Excerpt_p{mode_idx} = [dest_folder f2new]; 
+    misc.Excerpt_mf{mode_idx} = [dest_folder f1newf];
+    misc.Excerpt_pf{mode_idx} = [dest_folder f2newf]; 
+    
+    if bSave
+        info = Ensure_field(info, 'time2save', 10);
         
         disp('Include CALIBRATION step!')
         ynear2 = resample(ynear,44100,fs);
@@ -163,6 +189,18 @@ for acmode = info.modes2check
         ynearp2 = ynearp2(1:round(info.time2save*44100));
         Wavwrite(ynearp2,44100,misc.Excerpt_p{mode_idx});
         Get_F0_AC_praat([misc.Excerpt_p{mode_idx} '.wav'],[misc.Excerpt_p{mode_idx} '.txt']);
+        
+        disp('Include CALIBRATION step!')
+        yfar2 = resample(yfar,44100,fs);
+        yfar2 = yfar2(1:round(info.time2save*44100));
+        Wavwrite(yfar2,44100,misc.Excerpt_mf{mode_idx});
+        Get_F0_AC_praat([misc.Excerpt_mf{mode_idx} '.wav'],[misc.Excerpt_mf{mode_idx} '.txt']);
+        
+        disp('Include CALIBRATION step!')
+        yfarp2 = resample(yfarp,44100,fs);
+        yfarp2 = yfarp2(1:round(info.time2save*44100));
+        Wavwrite(yfarp2,44100,misc.Excerpt_pf{mode_idx});
+        Get_F0_AC_praat([misc.Excerpt_pf{mode_idx} '.wav'],[misc.Excerpt_pf{mode_idx} '.txt']);
         
         disp([mfilename '.m: Synchronised file names returned...'])
     else
