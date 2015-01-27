@@ -1,5 +1,5 @@
-function params = Get_VoD_params(bGetT,bSave)
-% function params = Get_VoD_params(bGetT,bSave)
+function params = Get_VoD_params_ledenmaat(bSave)
+% function params = Get_VoD_params_ledenmaat(bSave)
 %
 % 1. Description:
 %
@@ -23,12 +23,8 @@ function params = Get_VoD_params(bGetT,bSave)
 % Last used on  : 27/01/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if nargin == 0
-    bGetT = input('Do you want to determine the measured signal periods? (1 = yes; 0 = no): ');
-end
-
-if nargin < 2
-    bSave = 0;
+if nargin < 1
+    bSave = 1;
 end
 
 hFig = [];
@@ -99,16 +95,18 @@ params.nTmeas_stable = [ length(params.meas_n2); ...
 params.tmeas_stable = params.nTmeas_stable .* params.Tmodel;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if bGetT == 1
     
-    subdir_db_vod = Get_TUe_subpaths('db_voice_of_dragon');
+subdir_db_vod = Get_TUe_subpaths('db_voice_of_dragon');
     
-    % 1. Referentie
-    sourcedir   = subdir_db_vod.dir_meas_def;
-    filename    = Get_filenames(sourcedir,'*3.wav'); % Signals used to get periods
-    T           = nan(length(filename),100); % 100 columns arbitrarily
-    t_coil_all      = nan(length(filename),100); % 100 columns arbitrarily
-    idx_count   = 4;
+% 1. Referentie
+sourcedir   = subdir_db_vod.dir_measurements{6};
+
+filename    = Get_filenames(sourcedir,'*3.wav'); % Signals used to get periods
+T           = nan(length(filename),100); % 100 columns arbitrarily
+
+t_coil_all  = nan(length(filename),100); % 100 columns arbitrarily
+idx_count   = 4;
+
     for i = length(filename):-1:1
         
         [Counter misc] = Count_times_above_thr([sourcedir filename{i}]);
@@ -116,76 +114,68 @@ if bGetT == 1
         T(i,1:length(misc.T)) = misc.T;
         t_coil_all(i,1:length(misc.ti)) = misc.ti;
         
-        if i == params.last_take_idx(idx_count)
-            Ti_coil(idx_count) = misc.ti(1);
-            t_coil(idx_count,:) = t_coil_all(i,:);
-            
-            idx_count = idx_count - 1;
-            if idx_count == 0
-                idx_count = 1;
-            end
-        end
+        % if i == params.last_take_idx(idx_count)
+        %     Ti_coil(idx_count) = misc.ti(1);
+        %     t_coil(idx_count,:) = t_coil_all(i,:);
+        % 
+        %     idx_count = idx_count - 1;
+        %     if idx_count == 0
+        %         idx_count = 1;
+        %     end
+        % end
         
     end
     
-    Perc = 70.8559/100; % Time at which magnet is located respect to the total period time
-    t_coil(:,1) = []; % removing incomplete cycles
-    tstart = t_coil(:,1) - Perc*params.Tmodel;
-    % params.ti_measured = tstart'; % uncomment to assign. These values were 
-                                    % manually copied into VoD_get_period_init
+    % t_coil(:,1) = []; % removing incomplete cycles
+    % tstart = t_coil(:,1) - Perc*params.Tmodel;
     
     T           = Delete_NaN_columns(T);
     t_coil_all  = Delete_NaN_columns(t_coil_all);
-    t_coil      = Delete_NaN_columns(t_coil);
+    % t_coil      = Delete_NaN_columns(t_coil);
     
     N           = Count_isnan(T);
     [m,s,ci]    = Get_mean(T');
     
     params.T            = T;
-    params.Ti_coil      = Ti_coil;
+    % params.Ti_coil      = Ti_coil;
     params.t_coil_all   = t_coil_all;
-    params.t_coil       = t_coil;
+    % params.t_coil       = t_coil;
     
     MeasNr = (1:length(N))';
     
     % Information to be displayed
-    params.info_1ref = [MeasNr N m' minmax(T)];
+    params.info = [MeasNr N m' minmax(T)];
     
     
-    
+    % Real boxplot:
+    [h   stats] = Boxplot(T');
+    ylabel('Period [s]')
+    xlabel('Measurement Number')
+    ylim([0.24 0.62])
+    hFig(end+1) = gcf;
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Box plot as presented in report sent on 20/06/2014: go back to a 
+    % version of this file before 31/07/2014
+
+    % Ratio as discussed on 23/07/2014
+    TT = T ./ repmat(stats.Median',1,size(T,2)); 
+    figure;
+    Boxplot(TT');
+    ylabel('Period / Median(Period) [dimensionless]')
+    xlabel('Measurement Number')
+
+    hFig(end+1) = gcf;
+
+    disp('Copy the following into your LaTeX file: ')
+    latex(params.info);
+
     if bSave
-        % Real boxplot:
-        [h   stats] = Boxplot(T');
-        ylabel('Period [s]')
-        xlabel('Measurement Number')
-    
-        hFig(end+1) = gcf;
-    
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        % Box plot as presented in report sent on 20/06/2014: go back to a 
-        % version of this file before 31/07/2014
-
-        % Ratio as discussed on 23/07/2014
-        TT = T ./ repmat(stats.Median',1,size(T,2)); 
-        figure;
-        Boxplot(TT');
-        ylabel('Period / Median(Period) [dimensionless]')
-        xlabel('Measurement Number')
-
-        hFig(end+1) = gcf;
-    
-        disp('Copy the following into your LaTeX file: ')
-        latex(params.info_1ref);
-        
-        
-        
         outputpath = Get_TUe_paths('outputs');
         for i = 1:length(hFig)
             Saveas(hFig(i),[outputpath mfilename '-' num2str(i)])
         end
     end
-    
-end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
