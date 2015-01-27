@@ -26,7 +26,8 @@ close all
 
 bPart1 = 0;
 bPartFluct = 0;
-bPartRough = 1;
+bPartFluct2= 1;
+bPartRough = 0;
 
 if bPart1
 % directory = '/home/alejandro/Documenten/Databases/dir01-Instruments/Mech-Hummer/';
@@ -76,14 +77,16 @@ end
 % Cal file: white noise:
 
 dir_where_ref = Get_TUe_paths('db_fastl2007');
-dir_output  = '~/Documenten/MATLAB/outputs/tones/';
+dir_output  = [Get_TUe_paths('outputs') 'tones' delim];
 
 file    = [dir_where_ref 'track_03.wav'];
 
 if bPartFluct
     
     % For Figure 10.a (Fastl 2007)
-    t       = 8;
+    %   - AM-white noise
+    
+    t       = 2;
     
     [insig fs] = Wavread(file);
     options.callevel = 60;
@@ -98,9 +101,138 @@ if bPartFluct
     
     for i = 1:length(fmod)
         [y env] = ch_am(insig,fmod(i),m,option,fs,start_phase);
-        Wavwrite( y(1:t*fs),fs, sprintf('%sbbn_AM_m_%s_fmod_%sHz',dir_output,Num2str(m,3),Num2str(fmod(i),3)) );
+        % Wavwrite( y(1:t*fs),fs, sprintf('%sbbn_AM_m_%s_fmod_%sHz',dir_output,Num2str(m,3),Num2str(fmod(i),3)) );
+    end
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %   - AM-sine-tone
+    fmod    = 4;
+    m       = [0 10 50 70 100];
+    option  = 'm';
+    % lvlref  = 60;
+    % lvl     = 60;
+    
+    start_phase = -pi/2; % pi/2;
+    
+    fc  = 1000;
+    T   = 1/fc;
+    fs  = 44100;
+    t   = 2;
+    sig = Create_sin(fc,t,fs,0);
+    
+    for i = 1:length(m)
+        
+        [y env] = ch_am(insig,fmod,m(i),option,fs,start_phase);
+        y = setdbspl(y,70);
+        Wavwrite( y(1:t*fs),fs, sprintf('%sbbn_AM_m_%s_fmod_%sHz_%.0fdB',dir_output,Num2str(m(i),3),Num2str(fmod,3),rmsdb(y)+90) );
+        
+        [yt envt] = ch_am(sig,fmod,m(i),option,fs,start_phase);
+        yt = setdbspl(yt,70);
+        Wavwrite( yt(1:t*fs),fs, sprintf('%stone_%s_AM_m_%s_fmod_%sHz_%.0fdB',dir_output,Num2str(fc,4), Num2str(m(i),3),Num2str(fmod,3),rmsdb(yt)+90) );
+    end
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %   - FM-sine-tone
+    fs = 44100;
+    deltaf = [100 400 700]; % Hz
+    
+    for i = 1:length(deltaf)
+        yf = fm(fc,t,fs,fmod,deltaf(i));
+        yf = setdbspl(yf,70);
+        Wavwrite( yf(1:t*fs),fs, sprintf('%stone_%s_FM_dev_%s_fmod_%sHz_%.0fdB',dir_output,Num2str(fc,4), Num2str(deltaf(i),3),Num2str(fmod,3),rmsdb(yf)+90) );
     end
 end
+
+close all
+if bPartFluct2
+   
+    fl = {  'tone_1000_AM_m_100_fmod_004Hz_60dB.wav', ...
+            'tone_1000_AM_m_050_fmod_004Hz_60dB.wav', ...
+            'tone_1000_AM_m_010_fmod_004Hz_60dB.wav'};
+    
+    res1 = [];
+    res2 = [];
+    k = 17;
+    for i = 1:length(fl)
+        [x fs] = Wavread([dir_output fl{i}]);
+        t = ( 1:length(x) )/fs;
+        figure;
+        plot(t,x);
+        
+        out = fs_offline(x,fs,0);
+        res1 = [res1 transpose( out{1}(k,:) )];
+        res2 = [res2 transpose( out{2}(k,:) )];
+    end
+    
+    fl = {  'tone_1000_FM_dev_700_fmod_004Hz_60dB.wav', ...
+            'tone_1000_FM_dev_400_fmod_004Hz_60dB.wav', ...
+            'tone_1000_FM_dev_100_fmod_004Hz_60dB.wav'};
+    
+    res1f = [];
+    res2f = [];
+    k = 17;
+    for i = 1:length(fl)
+        [x fs] = Wavread([dir_output fl{i}]);
+        t = ( 1:length(x) )/fs;
+                
+        out = fs_offline(x,fs,0);
+        res1f = [res1f transpose( out{1}(k,:) )];
+        res2f = [res2f transpose( out{2}(k,:) )];
+    end
+
+    fl = {  'bbn_AM_m_100_fmod_004Hz_60dB.wav', ...
+            'bbn_AM_m_050_fmod_004Hz_60dB.wav', ...
+            'bbn_AM_m_010_fmod_004Hz_60dB.wav'};
+    
+    res1b = [];
+    res2b = [];
+    for i = 1:length(fl)
+        [x fs] = Wavread([dir_output fl{i}]);
+        t = ( 1:length(x) )/fs;
+        % figure;
+        % plot(t,x);
+        % title('BBN')
+        
+        out = fs_offline(x,fs,0);
+        res1b = [res1b transpose(out{1}(k,:))];
+        res2b = [res2b transpose(out{2}(k,:))];
+    end
+    
+end
+
+%--
+figure; % AM
+subplot(1,2,1)
+plot(res1) % eim1
+title('AM')
+hold on
+plot(res1) % eim1
+
+subplot(1,2,2)
+plot(res2) % eim2
+legend('1','2','3')
+
+%--
+figure; 
+subplot(1,2,1)
+plot(res1b)
+title('BBN')
+
+subplot(1,2,2)
+plot(res2b)
+legend('1','2','3')
+
+%--
+figure; 
+subplot(1,2,1)
+plot(res1f)
+title('FM')
+
+subplot(1,2,2)
+plot(res2f)
+legend('1','2','3')
+
+%--
 
 if bPartRough
     

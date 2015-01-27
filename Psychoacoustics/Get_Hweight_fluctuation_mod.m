@@ -27,7 +27,7 @@ H2 = [	0       0
         1.9531  0.9
         3.1738	1
         12.0    1
-        15.     0.7% 0.55
+        15      0.7% 0.55
         16      0 
         30      0
         150     0]; %0];     % obtained from Sontacchi1999, Abbildung 5.4, understanding
