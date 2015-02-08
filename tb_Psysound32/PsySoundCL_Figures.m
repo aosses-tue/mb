@@ -15,6 +15,8 @@ function [h ha stats] = PsySoundCL_Figures(param,res1, res2, option)
 %       12          - 'specific-loudness'   YES         NO
 %       15          - 'roughness'           NO          YES
 %       15          - 'specific-roughness'  YES         YES
+%                   - 'average-power-spectrum' (L249, 29/01/2015)
+%                   - 'spectrogram'
 % 
 % 2. Additional info:
 %       Tested cross-platform: Yes
@@ -24,8 +26,8 @@ function [h ha stats] = PsySoundCL_Figures(param,res1, res2, option)
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 20/08/2014
-% Last update on: 01/10/2014 % Update this date manually
-% Last use on   : 26/01/2015 % Update this date manually
+% Last update on: 29/01/2015 % Update this date manually
+% Last use on   : 29/01/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 h = [];
@@ -56,6 +58,7 @@ option = Ensure_field(option,'label2','audio-2');
 option = Ensure_field(option,'label1suffix','');
 option = Ensure_field(option,'label2suffix','');
 option = ef(option,'bGenerateExcerpt',0);
+option = ef(option,'bUsePsySound'    ,1);
 
 minValue = max( min(res1.t), min(res2.t) ); % normally = 0
 maxValue = min( max(res1.t), max(res2.t) );
@@ -73,10 +76,10 @@ option = Ensure_field(option,'LineWidth',[2 1]);
 idx1 = find(t1>=option.tanalysis(1) & t1<=option.tanalysis(2));
 idx2 = find(t2>=option.tanalysis(1) & t2<=option.tanalysis(2));
 
-if option.bGenerateExcerpt == 1 & option.nAnalyser == 15 % only for roughness
+if option.bGenerateExcerpt == 1 & option.nAnalyser == 15 & option.bUsePsySound == 0 % only for roughness offline
     idx1 = find(t1>=0 & t1<=option.tanalysis(2)-option.tanalysis(1));
     idx2 = find(t2>=0 & t2<=option.tanalysis(2)-option.tanalysis(1));
-    timeoffset = option.tanalysis(1);
+     timeoffset = option.tanalysis(1);
 else
     timeoffset = 0;
 end
@@ -179,7 +182,7 @@ elseif strcmp(param,'loudness-fluctuation')
     linkaxes(ha,'x');
     % xlim([0 24])
     
-elseif strcmp(param,'one-third-OB')
+elseif strcmp(param,'one-third-OB') | strcmp(param,'one-third-octave-band-spectrum')
     
     bPlot_vs_time = 0;
     option = Ensure_field(option,'nAnalyser',10);
@@ -191,8 +194,8 @@ elseif strcmp(param,'one-third-OB')
             % nParam = 2;
             f = res1.f;
             option = Ensure_field(option,'frange',minmax(f));
-            freq_min = min(f);
-            freq_max = max(f);
+            freq_min = option.frange(1);
+            freq_max = option.frange(2);
             DataSpecOneThirdAvg1 = res1.DataSpecOneThirdAvg;
             DataSpecOneThirdAvg2 = res2.DataSpecOneThirdAvg;
         
@@ -252,12 +255,18 @@ elseif strcmp(param,'average-power-spectrum')
     
     switch option.nAnalyser
         case 1
+            option = Ensure_field(option,'bLogScale',1);
             f = res1.f;
             option = ef(option,'frange',minmax(f));
             
             figure;
-            semilogx(f,dbmean( res1.Data1(:,:)),option.color{1},'LineWidth',option.LineWidth(1)); hold on
-            semilogx(f,dbmean( res2.Data1(:,:)),option.color{2},'LineWidth',option.LineWidth(2)); grid on;
+            if option.bLogScale == 1
+                semilogx(f,dbmean( res1.Data1(:,:)),option.color{1},'LineWidth',option.LineWidth(1)); hold on
+                semilogx(f,dbmean( res2.Data1(:,:)),option.color{2},'LineWidth',option.LineWidth(2)); grid on;
+            else
+                plot(f,dbmean( res1.Data1(:,:)),option.color{1},'LineWidth',option.LineWidth(1)); hold on
+                plot(f,dbmean( res2.Data1(:,:)),option.color{2},'LineWidth',option.LineWidth(2)); grid on;
+            end
             ylabel('Magnitude (dB)'); % this can be automised
             xlabel('Frequency (Hz)'); % this can be automised
             xlim(option.frange)
@@ -269,7 +278,12 @@ elseif strcmp(param,'average-power-spectrum')
             set(gca,'YLim',ylims);
             
             xticks = get(gca,'XTick');
-            set(gca,'XTickLabel',xticks);
+            % set(gca,'XTickLabel',xticks);
+            
+            hhAxes = handle(gca);  % hAxes is the Matlab handle of our axes
+            hProp = findprop(hhAxes,'XTick');  % a schema.prop object
+            hListener = handle.listener(hhAxes, hProp, 'PropertyPostSet', @myCallbackFunction);
+            setappdata(gca, 'XTickListener', hListener);
             
             h(end+1) = gcf;
             ha(end+1) = gca;
@@ -528,6 +542,12 @@ try
     end
 end
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
+
+function myCallbackFunction(hProp,eventData)    %#ok - hProp is unused
+   hAxes = eventData.AffectedObject;
+   tickValues = get(hAxes,'XTick');
+   newLabels = arrayfun(@(value)(sprintf('%.0f',value)), tickValues, 'UniformOutput',false);
+   set(hAxes, 'XTickLabel', newLabels);
+end  % myCallbackFunction

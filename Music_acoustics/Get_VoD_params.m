@@ -1,5 +1,5 @@
-function params = Get_VoD_params(bGetT,bSave)
-% function params = Get_VoD_params(bGetT,bSave)
+function [params hFig] = Get_VoD_params(bGetT,bSave)
+% function [params hFig] = Get_VoD_params(bGetT,bSave)
 %
 % 1. Description:
 %
@@ -153,31 +153,30 @@ if bGetT == 1
     
     
     
-    if bSave
-        % Real boxplot:
-        [h   stats] = Boxplot(T');
-        ylabel('Period [s]')
-        xlabel('Measurement Number')
-    
-        hFig(end+1) = gcf;
-    
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        % Box plot as presented in report sent on 20/06/2014: go back to a 
-        % version of this file before 31/07/2014
+    % Real boxplot:
+    [h   stats] = Boxplot(T');
+    ylabel('Period [s]')
+    xlabel('Measurement Number')
 
-        % Ratio as discussed on 23/07/2014
-        TT = T ./ repmat(stats.Median',1,size(T,2)); 
-        figure;
-        Boxplot(TT');
-        ylabel('Period / Median(Period) [dimensionless]')
-        xlabel('Measurement Number')
+    hFig(end+1) = gcf;
 
-        hFig(end+1) = gcf;
-    
-        disp('Copy the following into your LaTeX file: ')
-        latex(params.info_1ref);
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Box plot as presented in report sent on 20/06/2014: go back to a 
+    % version of this file before 31/07/2014
+
+    % Ratio as discussed on 23/07/2014
+    TT = T ./ repmat(stats.Median',1,size(T,2)); 
+    figure;
+    Boxplot(TT');
+    ylabel('Period / Median(Period) [dimensionless]')
+    xlabel('Measurement Number')
+
+    hFig(end+1) = gcf;
+
+    disp('Copy the following into your LaTeX file: ')
+    latex(params.info_1ref);
         
-        
+	if bSave   
         
         outputpath = Get_TUe_paths('outputs');
         for i = 1:length(hFig)

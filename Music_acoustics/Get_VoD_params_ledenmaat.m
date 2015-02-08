@@ -1,5 +1,5 @@
-function params = Get_VoD_params_ledenmaat(bSave)
-% function params = Get_VoD_params_ledenmaat(bSave)
+function [params hFig] = Get_VoD_params_ledenmaat(bSave)
+% function [params hFig] = Get_VoD_params_ledenmaat(bSave)
 %
 % 1. Description:
 %
@@ -12,15 +12,15 @@ function params = Get_VoD_params_ledenmaat(bSave)
 %       params.ti_model
 % 
 % 2. Stand-alone example:
-%       params = Get_VoD_params;
+%       params = Get_VoD_params_ledenmaat;
 %
 % 3. Additional info:
 %   Tested cross-platform: Yes
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 18/06/2014
-% Last update on: 28/07/2014 % Update this date manually
-% Last used on  : 27/01/2015 % Update this date manually
+% Last update on: 28/01/2015 % Update this date manually
+% Last used on  : 28/01/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 1
@@ -148,6 +148,7 @@ idx_count   = 4;
     
     
     % Real boxplot:
+    figure;
     [h   stats] = Boxplot(T');
     ylabel('Period [s]')
     xlabel('Measurement Number')

@@ -1,5 +1,5 @@
-function [output h ha] = PsySoundCL(filename,option,st)
-% function [output h ha] = PsySoundCL(filename,option,st)
+function [output h ha] = PsySoundCL(filename,option,params)
+% function [output h ha] = PsySoundCL(filename,option,params)
 % 
 % PAS OP:
 %       before 17/09: [h ha output] = PsySoundCL(filename,option)
@@ -23,22 +23,25 @@ function [output h ha] = PsySoundCL(filename,option,st)
 % 2. Stand-alone example:
 %       PsySoundCL;
 %
+%       option.nAnalyser = 10;
+%       PsySound(filename,option);
+%
 % 3. Additional info:
 %       Tested cross-platform: Yes
 %
-% 4. TO DO:
-%       work on something similar to readData but using data 'not stored' (L114)
-
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 22/07/2014
-% Last update on: 20/01/2015 % Update this date manually
-% Last use on   : 26/01/2015 % Update this date manually
+% Last update on: 02/02/2015 % Update this date manually
+% Last use on   : 02/02/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 h = [];
 ha = [];
 
-% close all
+if nargin < 3
+    params = [];
+end
+
 if nargin < 2
     option = [];
 end
@@ -58,7 +61,7 @@ if nargin < 2
 end
 
 option = Ensure_field(option,'bPlot'      , 1);
-option = Ensure_field(option,'nAnalyser'  ,1);
+option = Ensure_field(option,'nAnalyser'  , 1);
 
 nAnalyser = option.nAnalyser;
 
@@ -157,6 +160,9 @@ if isfield(option,'tanalysis')
     fh = readData(filename); % then no ramp is applied
     
 else
+    option = Ensure_field(option,'bGenerateExcerpt',0);
+    tanalysis_inf_tmp = 0;
+    delta_t = 0;
     fh = readData(filename);
 end    
 
@@ -172,7 +178,10 @@ switch nAnalyser
     case 1
         obj = FFT(fh);
         
-        obj = set(obj,'windowLength',2*8192);
+        params = Ensure_field(params,'windowLength',2*8192);
+        
+        obj = set(obj,'windowLength',params.windowLength);
+        
         st = [];
         st.type = 'percent';
         st.size = 75; % default = 75
@@ -185,7 +194,10 @@ switch nAnalyser
     case 11
         obj = CPBFFT(fh);
         
-        obj = set(obj,'windowLength',8192);
+        params = Ensure_field(params,'windowLength',8192);
+        
+        obj = set(obj,'windowLength',params.windowLength);
+        
         st = [];
         st.type = 'percent';
         st.size = 75; % default = 75
@@ -198,25 +210,29 @@ switch nAnalyser
         
         obj = RoughnessDW(fh);
         
+        params = ef(params,'windowLength',8192);
+        
+        obj = set(obj,'windowLength',params.windowLength);
+        
+        st = [];
+        st = ef(st,'type','samples');
+        st = ef(st,'size',params.HopSize);
+        
+        params = Ensure_field(params,'overlap',st);
+        
         if strcmp(option.Author,'DH') % Dik Hermes
             
-            st.type = 'samples'; 
-            st.size = 4096; 
-            obj = set(obj,'overlap',st);
+            obj = set(obj,'overlap',params.overlap);
             
         end
         fprintf('Roghness model by %s is being used. Default is DW\n',option.Author);
-        pause(2)
+        
     case 20
         
         obj = FluctuationStrength(fh);
         st.type = 'samples'; % commented temporarily on 06/11/2014
         
         tmp = get(obj,'samples');
-
-        % st.type = 'samples'; 
-        % st.size = 4096; 
-        % obj = set(obj,'overlap',st);
         
 end
 
@@ -225,7 +241,7 @@ tmpObj  = get(obj,'output');
 
 t       = get(tmpObj{1,1},'Time');
 t       = t + tanalysis_inf_tmp;
-idx_dlt = find(t <= tanalysis_inf_tmp + delta_t);
+idx_dlt = find(t < tanalysis_inf_tmp + delta_t);
 
 t(idx_dlt) = []; 
 
@@ -625,7 +641,11 @@ if option.bGenerateExcerpt
 else
     
     disp('...deleting temporal audio file, with zero padding');
-    delete( filename_excerpt );
+    try
+        delete( filename_excerpt );
+    catch
+        warning(['filename_excerpt not deleted because it does not exist'])
+    end
     
 end
 

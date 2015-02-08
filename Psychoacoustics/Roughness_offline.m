@@ -1,5 +1,5 @@
-function [dataOut out] = Roughness_offline(insig, Fs, N, options, bDebug)
-% function [dataOut out] = Roughness_offline(insig, Fs, N, options, bDebug)
+function [dataOut out] = Roughness_offline(insig, Fs, N, options, CParams,bDebug)
+% function [dataOut out] = Roughness_offline(insig, Fs, N, options, CParams,bDebug)
 %
 % 1. Description:
 %       Frame-based, off-line implementation of the roughness algorithm.
@@ -36,8 +36,13 @@ function [dataOut out] = Roughness_offline(insig, Fs, N, options, bDebug)
 % Last use on   : 22/01/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if nargin < 5
+if nargin < 6
     bDebug = 0;
+end
+
+if nargin < 5
+    CParams = [];
+    CParams.HopSize = 4096;
 end
 
 if nargin < 4
@@ -48,7 +53,7 @@ options = ef(options,'nSkipStart',0);
 
 nSkipStart = options.nSkipStart; % to correct time series, in case an analysis frame has been excluded
 
-N_hop   = 4096;
+N_hop   = CParams.HopSize;
 insig   = insig( nSkipStart*N_hop+1:end );
 
 if nargin < 3
