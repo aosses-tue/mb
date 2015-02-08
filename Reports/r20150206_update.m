@@ -14,182 +14,160 @@ function r20150206_update
 % Last use on   : 06/02/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% dir ='D:\Documenten-TUe\01-Text\05-Doc-TUe\lx2015-02-06-update\Hummer-audio-files\' 
-% fi = [dir 'meas-ac-mode-2-close-anechoic.wav'];
-% 
-% c = 340;
-% [x fs] = Wavread(fi);
-% % x = zeros(size(x));
-% % x(1) = 0.8;
-% d = 4.2/2/2;
-% % d = 16.8;
-% deltat = d/c;
-% 
-% t = ( 1:length(x) )/fs;
-% 
-% idx = find(t>deltat);
-% x2 = [zeros(idx(1)-1,1); x(1:length(idx))];
-% alfa = 1;
-% 
-% y = x(1:length(x2))-alfa*x2;
-% 
-% figure;
-% plot(x+0.05), hold on
-% plot(y,'r'), 
-% 
-% Wavwrite(y,fs,sprintf('%stest-%.0f-0',dir,alfa*100))
- 
-bDiary = 1;
+bDiary = 0;
 Diary(mfilename,bDiary);
- 
-% bGetT   = 0; 
-% bLoadFiles = 0;
-bDoCalibration = 1;
-% bSave   = 0; 
-% 
-% paths   = Get_TUe_subpaths('db_voice_of_dragon');
-% 
-% if bGetT
-%    
-%     Get_VoD_params(bGetT,bSave);
-%     Get_VoD_params_ledenmaat(bSave);
-%     
-% end
 
-% if bLoadFiles
-%     
-%     ha = [];
-% %     x1 = [];
-% %     dir_1_ref       = paths.dir_measurements_cal{1};
-% %     dir_6_maateraf  = paths.dir_measurements_cal{6};
-% %   
-%     f2fm = 'D:\Databases\dir01-Instruments\Voice-of-dragon\02-Wav-files\03-Wav-files-1-referentie\modus-1_v2-1filt.wav';
-%     f2cm = 'D:\Databases\dir01-Instruments\Voice-of-dragon\02-Wav-files\03-Wav-files-1-referentie\modus-1_v2-2filt.wav'; 
-%     f5fm = 'D:\Databases\dir01-Instruments\Voice-of-dragon\02-Wav-files\03-Wav-files-1-referentie\modus-4_v3-1filt.wav';
-%     f5cm = 'D:\Databases\dir01-Instruments\Voice-of-dragon\02-Wav-files\03-Wav-files-1-referentie\modus-4_v3-2filt.wav';
-%            
-%     f2fp = 'D:\Databases\dir01-Instruments\Voice-of-dragon\03-Wav-files-predicted\03-Wav-files-1-referentie\modus-1-v_1filt.wav';
-%     f2cp = 'D:\Databases\dir01-Instruments\Voice-of-dragon\03-Wav-files-predicted\03-Wav-files-1-referentie\modus-1-v_2filt.wav'; 
-%     f5fp = 'D:\Databases\dir01-Instruments\Voice-of-dragon\03-Wav-files-predicted\03-Wav-files-1-referentie\modus-4-v_1filt.wav';
-%     f5cp = 'D:\Databases\dir01-Instruments\Voice-of-dragon\03-Wav-files-predicted\03-Wav-files-1-referentie\modus-4-v_2filt.wav'; 
-%     
-%     T = [0.6 0.4 0.3 0.27];
-%     
-% %     f1 = {  [dir_1_ref         'modus-1_v2-2filt-new.wav'], ...
-% %             [dir_1_ref         'modus-1_v2-1filt-new.wav'], ...
-% %             [dir_1_ref         'modus-3_v4-2filt-new.wav'], ...
-% %             [dir_1_ref         'modus-4_v3-2filt-new.wav'] };
-% %     f6 = [dir_6_maateraf    'meas-ac-mode-2-maat-eraf-close-2-filt.wav'];
-% %     
-%     [x2fm fs] = Wavread(f2fm);
-%     [x2cm fs] = Wavread(f2cm);
-%     [x2cp fs] = Wavread(f2cp);
-%     [x2fp fs] = Wavread(f2fp);
-% 
-%     [x5fm fs] = Wavread(f5fm);
-%     [x5cm fs] = Wavread(f5cm);
-%     [x5cp fs] = Wavread(f5cp);
-%     [x5fp fs] = Wavread(f5fp);
-% 
-%     t = ( 1:length(x2fm) )/fs;
-%         
-%     %% Zero padding
-%     
-%     idx = find(t<0.25*5);
-%     
-%     % plt.figure(1, figsize=(9.5, 6))
-%     M = length(idx); % 128;
-%     tX = t(idx);
-%     
-%     N1 = 128;
-%     N2 = N1*32;
-%     N3 = N1*32*8;
-%     % x = cos(2*pi*2/M*[1:M]) .* transpose( hanning(M) );
-%     x = x5cp(1:M); 
-%     
-%     figure;
-%     subplot(4,1,1)
-%     plot(tX, x, 'b') %, marker='x', lw=1.5)
-%     title(sprintf('x, M=%.0f',M))
-%     xlabel('Time [s]')
-%     % axis([-M/2,M/2-1,-1,1])
-%  
-%     mX = 20 * log10(abs(fft(x, N1)));
-%     subplot(4,1,2)
-%     plot([0:N1-1], mX); %, marker='x', color='r', lw=1.5)
-%     axis([0,N1/2-1,-20,max(mX)+1])
-%     title(sprintf('magnitude spectrum: mX1, N=%.0f',N1))
-% 
-%     mX = 20 * log10(abs(fft(x, N2)));
-%     subplot(4,1,3)
-%     plot([0:N2-1], mX);
-%     axis([0,N2/2-1,-20,max(mX)+1])
-%     title(sprintf('magnitude spectrum: mX2, N=%.0f',N2))
-% 
-%     mX = 20 * log10(abs(fft(x, N3)));
-%     subplot(4,1,4)
-%     plot([0:N3-1],mX) %,marker='x',color='r', lw=1.5)
-%     axis([0,N3/2-1,-20,max(mX)+1])
-%     title(sprintf('magnitude spectrum: mX3, N=%.0f',N3))
-% 
-%     % plt.tight_layout()
-%     % plt.savefig('zero-padding.png')
-%     % plt.show()
-% 
-%     
-%     [xc1 fsc] = Wavread('D:\Databases\dir01-Instruments\Voice-of-dragon\02-Wav-files\1-referentie-BP-filtered\modus 1_v1-2-filt.wav'); % starts at 0.2535 s
-%     xc2 = Wavread('D:\Databases\dir01-Instruments\Voice-of-dragon\02-Wav-files\1-referentie-BP-filtered\modus 1_v2-2-filt.wav');
-%     tc = (1:length(xc1))/fsc;
-%     
-%     figure;
-%     plot(tc-0.27,xc1+0.05,tc,xc2-0.05)
-%     xlim([0 20-0.2535])
-%     
-%     figure;
-%     subplot(4,2,2)
-%     plot( t/T(1), x2cp ,'r');
-%     ha(end+1) = gca;
-%     title('referentie, close, ac mode 2, model')
-%     
-%     subplot(4,2,4)
-%     plot( t/T(1), x2fp ,'r');
-%     ha(end+1) = gca;
-%     title('referentie, distant, ac mode 2, model')
-%     
-%     subplot(4,2,1)
-%     plot( t/T(1), x2cm );
-%     ha(end+1) = gca;
-%     title('referentie, close, ac mode 2')
-%     
-%     subplot(4,2,3)
-%     plot( t/T(1), x2fm );
-%     ha(end+1) = gca;
-%     title('referentie, distant, ac mode 2')
-%     
-%     %
-%     subplot(4,2,6)
-%     plot( t/T(4), x5cp ,'r');
-%     ha(end+1) = gca;
-%     title('referentie, close, ac mode 5, model')
-%     
-%     subplot(4,2,8)
-%     plot( t/T(4), x5fp ,'r');
-%     ha(end+1) = gca;
-%     title('referentie, distant, ac mode 5, model')
-%     
-%     subplot(4,2,5)
-%     plot( t/T(4), x5cm );
-%     ha(end+1) = gca;
-%     title('referentie, close, ac mode 5')
-%     
-%     subplot(4,2,7)
-%     plot( t/T(4), x5fm );
-%     ha(end+1) = gca;
-%     title('referentie, distant, ac mode 5')
-%     
-%     linkaxes(ha,'x');
-%      xlim([0 2])
-% end
+bLearningCombFilter = 1;
+
+if ~isunix
+    dir ='D:\Documenten-TUe\01-Text\05-Doc-TUe\lx2015-02-06-update\Hummer-audio-files\';
+else
+    
+end
+
+% Part 3
+if bLearningCombFilter
+    
+    %% Information:
+    c = 340; % in m/s
+    K = 8192*4/2; % to plot FFT
+    alfa = 1;
+    fmaxPlot = 1200;
+    
+    % Initial position:
+    S1   = [0 0  2.23];
+    S1im = [0 0 -2.23];
+    S2   = [0,.67, 2.23];
+    S2im = [0,.67,-2.23];
+    
+    MicD = [1.58,0,1.68];
+    
+    distS1_S2       = norm(S2-S1);
+    distS1_MicD     = norm(S1-MicD);
+    distS1im_MicD   = norm(S1im-MicD);
+    distS2_MicD     = norm(S2-MicD);
+    distS2im_MicD   = norm(S2im-MicD);
+    
+    % Generate test signal:
+    N   = 44100;
+    fs  = 44100;
+    lvl_dbfs = -3;
+    sig1 = wgn(2*N,1,lvl_dbfs); 
+    t = ( -length(sig1)/2:length(sig1)/2-1 )/fs;
+    
+    %% Interference 2 sources with a separation of d at mic 1 (only freqs):
+    theta     = atan( distS1_S2/distS1_MicD ); 
+    theta_deg = theta/pi*180; 
+    
+    d       = distS1_S2;
+    n       = [1 2 3];
+    deltat  = d*sin(theta)/c;
+    
+    M = round(deltat * fs);
+    sig2 = [zeros(M-1,1); sig1(1:length(sig1)-M+1)];
+    
+    idx = find(t>=0);
+
+    y1 = sig1(idx)+sig2(idx); % no alpha, since no floor is involved
+
+    info.fs       = fs;
+    info.typeplot = 3;
+    info.bNewFigure = 1;
+    freqfft(y1,K,info);
+    
+    hold on
+    % fmax = n*c/(d*sin(theta));
+    % % or
+    fmax =    n   /   deltat ;
+    fmin = (2*n-1)/(2*deltat);
+    
+    for i = 1:length(fmin)
+        plot([fmin(i) fmin(i)], [15 50],'r--')
+        plot([fmax(i) fmax(i)], [15 50],'ro-')
+    end
+    
+    %% Interference 1 source with its first reflection at mic 1 (white noise):
+    
+    deltat = (distS2im_MicD - distS2_MicD)/c;
+
+    M = round(deltat * fs);
+    sig2 = [zeros(M-1,1); sig1(1:length(sig1)-M+1)];
+    
+    idx = find(t>=0);
+
+    y2 = sig1(idx)+alfa*sig2(idx);
+
+    figure;
+    subplot(3,1,1)
+    info.fs       = fs;
+    info.typeplot = 3;
+    info.bNewFigure = 0;
+    freqfft(y2,K,info);
+    xlim([20 fmaxPlot])
+    hold on;
+    
+    title('S_2 on distant mic')
+    
+    n2 = [1:10];
+    fmax2 = n2/deltat;
+    fmin2 = (2*n2-1)/(2*deltat);
+    
+    deltaf2 = fmin2(2)-fmin2(1);
+    
+    for i = 1:length(fmin2)
+        plot([fmin2(i) fmin2(i)], [15 50],'r--')
+        plot([fmax2(i) fmax2(i)], [15 50],'ro-')
+    end
+    
+    %% Interference 1 source with its first reflection at mic 1 (white noise):
+    
+    deltat = (distS1im_MicD - distS1_MicD)/c;
+
+    M = round(deltat * fs);
+    sig3 = [zeros(M-1,1); sig1(1:length(sig1)-M+1)];
+    
+    idx = find(t>=0);
+
+    y3 = sig1(idx)+alfa*sig3(idx);
+
+    subplot(3,1,2)
+    info.fs       = fs;
+    info.typeplot = 3;
+    info.bNewFigure = 0;
+    freqfft(y3,K,info);
+    xlim([20 fmaxPlot])
+    hold on;
+    
+    title('S_1 on distant mic')
+    
+    n2 = [1:10];
+    fmax3 = n2/deltat;
+    fmin3 = (2*n2-1)/(2*deltat);
+    deltaf3 = fmin3(2)-fmin3(1);
+    
+    for i = 1:length(fmin2)
+        plot([fmin3(i) fmin3(i)], [15 50],'r--')
+        plot([fmax3(i) fmax3(i)], [15 50],'ro-')
+    end
+    
+    %% Sum of all interfered signals:
+    
+    yt = (-2*sig1(idx) + y1 + y2 + y3)/3;
+    
+    subplot(3,1,3)
+    info.fs       = fs;
+    info.typeplot = 3;
+    info.bNewFigure = 0;
+    freqfft(yt,K,info);
+    xlim([20 fmaxPlot])
+    hold on;
+    
+    disp('')
+    
+end
+
+% Not tested Unix:
+bDoCalibration = 0;
 
 %% Calibration
 if bDoCalibration
@@ -236,11 +214,11 @@ if bDoCalibration
             corr_factor(j)     = From_dB(corr_factor_dB(j));
             
             [x fs] = Wavread([dir_audio files]);
-            y = corr_factor(j)*x;
+            y2 = corr_factor(j)*x;
             
             fileout = sprintf('%smeas-ac-mode-%.0f-%s-anechoic', output_dir,ac_mode(j),field_lbl{i});
             
-            Wavwrite(y, fs, fileout)
+            Wavwrite(y2, fs, fileout)
             
             disp('')
             
@@ -267,11 +245,11 @@ if bDoCalibration
             corr_factor(j)     = From_dB(corr_factor_dB(j));
             
             [x fs] = Wavread([dir_audio files]);
-            y = corr_factor(j)*x;
+            y2 = corr_factor(j)*x;
             
             fileout = sprintf('%smeas-ac-mode-%.0f-%s-reverberant', output_dir,ac_mode(j),field_lbl{i});
             
-            Wavwrite(y, fs, fileout)
+            Wavwrite(y2, fs, fileout)
             
             disp('')
             
@@ -297,11 +275,11 @@ if bDoCalibration
             corr_factor(j)     = From_dB(corr_factor_dB(j));
             
             [x fs] = Wavread([dir_audio_mod_ane files]);
-            y = corr_factor(j)*x;
+            y2 = corr_factor(j)*x;
             
             fileout = sprintf('%smodel-ac-mode-%.0f-%s-anechoic', output_dir,ac_mode(j),field_lbl{i});
             
-            Wavwrite(y, fs, fileout)
+            Wavwrite(y2, fs, fileout)
             
             disp('')
             
@@ -327,11 +305,11 @@ if bDoCalibration
             corr_factor(j)     = From_dB(corr_factor_dB(j));
             
             [x fs] = Wavread([dir_audio_modelled files]);
-            y = corr_factor(j)*x;
+            y2 = corr_factor(j)*x;
             
             fileout = sprintf('%smodel-ac-mode-%.0f-%s-reverberant', output_dir,ac_mode(j),field_lbl{i});
             
-            Wavwrite(y, fs, fileout)
+            Wavwrite(y2, fs, fileout)
             
             disp('')
             
