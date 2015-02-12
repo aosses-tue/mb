@@ -14,13 +14,13 @@ function r20150130_update
 % Last use on   : 02/02/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-bDiary = 0;
+bDiary = 1;
 Diary(mfilename,bDiary);
 
 bGetT   = 0; % Part 1
 bLoadFiles = 0; % Part 2
-bLearningCombFilter = 1; % Part 3
-bDoCalibration = 0;
+bLearningCombFilter = 0; % Part 3
+bDoCalibration = 1;
 % bSave   = 0; 
 
 paths   = Get_TUe_subpaths('db_voice_of_dragon');
@@ -230,14 +230,14 @@ if bDoCalibration
     field       = [1 2]; % 1 = distant mic; 2 = close mic 
     field_lbl   = {'dist','close'};
     
-    ac_mode     = [2 3 5];
+    ac_mode     = [2 3 4 5];
     ac_mode_idx = 1:length(ac_mode);
     
-    cal_level   = [60 75 82]; % ac mode 2, 3, 5
+    cal_level   = [60 75 78 82]; % ac mode 2, 3, 5
     delta_dB_far = [-6 0]; % distance distant mic = 2 * close mic
     
-    ver_anechoic = [2 1 1];     % ac-mode-5, take 1 = contaminated with ac mode 4
-    ver_reverberant = [1 2 3]; % ac-mode-5
+    ver_anechoic = [2 1 3 1];     % ac-mode-5, take 1 = contaminated with ac mode 4
+    ver_reverberant = [1 2 1 3]; % ac-mode-5
     
     freqs2cal   = [400 1250];
     

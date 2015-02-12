@@ -15,8 +15,8 @@ function y = l0HV20_20150205
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 n = 4; % input('geef aantal segmenten: ');
-x_coor = [0 0]; %input('geed x coordinaat oorsprong: ');
-y_coor = [0 0]; %input('geed y coordinaat oorsprong: ');
+x_coor = 0; %input('geed x coordinaat oorsprong: ');
+y_coor = 0; %input('geed y coordinaat oorsprong: ');
 r = 2;%input('geef de straal: ')
 plotPolygon(n,x_coor,y_coor,r)
 
@@ -25,7 +25,7 @@ disp('')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function plotPolygon(n,x,y,r)
 
-theta = 2*pi/n;
+theta = 2*pi/n; % 360 deg / n rotations
 m = [cos(theta) sin(theta); -sin(theta) cos(theta)];
 xx(1) = r;
 yy(1) = 0;

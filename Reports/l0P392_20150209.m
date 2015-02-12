@@ -37,7 +37,7 @@ quant_example2;
 % an SNR of approx. 30 dB
 quant_example3;
 
-insig1 = 'Track-2-L-excerpt-12.wav';
+insig1 = 'Track-2-L-excerpt-18.wav';
 
 outsig1 = [Delete_extension(insig1,'wav') '-quant-SNR-30-dB.wav'];
 quant_example3_s(insig1,outsig1,30);

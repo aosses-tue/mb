@@ -1,5 +1,5 @@
-function VoD_one_predicted_file_from_txt(filename)
-% function VoD_one_predicted_file_from_txt(filename)
+function VoD_one_predicted_file_from_txt(filename, dBSPL)
+% function VoD_one_predicted_file_from_txt(filename, dBSPL)
 %
 % 1. Description:
 %       Generate predicted Voice of the Dragon audio files. The data were 
@@ -9,17 +9,16 @@ function VoD_one_predicted_file_from_txt(filename)
 %       Tested cross-platform: No
 %
 % 3.1 Stand-alone example to generate all wav-files:
-%       VoD_predicted_files_from_txt;
+%       filename = 'D:\Databases\dir01-Instruments\Voice-of-dragon\03-Wav-files-predicted\01-Model\Data-new-reflections-corr\mode-1-v_1.txt';
+%       VoD_one_predicted_file_from_txt(filename);
 %
 % 3.2 Stand-alone example to generate Mode 2, near-field:
-%       do_modes    = 2;
-%       do_fields   = 2;
 %       VoD_predicted_files_from_txt(do_modes, do_fields);
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 27/05/2014
-% Last update on: 18/06/2014 % Update this date manually
-% Last use on   : 18/06/2014 % Update this date manually
+% Last update on: 12/02/2014 % Update this date manually
+% Last use on   : 12/02/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 bDiary = 0;
@@ -28,20 +27,25 @@ if bDiary
     Diary(mfilename)
 end
 
-info.bSave  = input([mfilename '.m: type 1 if you want to generate VoD data: ']);
+info = [];
+
+info  = Ensure_field(info,'bSave',1); %%input([mfilename '.m: type 1 if you want to generate VoD data: ']);
 paths.VoD   = Get_TUe_paths('db_voice_of_dragon');
 bDoCheckCompatibility = 0;
 
-dir_initial = [paths.VoD '03-Wav-files-predicted' delim '01-Model' delim 'Data' delim];
-
 if nargin < 1
+    dir_initial = [paths.VoD '03-Wav-files-predicted' delim '01-Model' delim 'Data' delim];
     [f1 f2] = uigetfile(dir_initial);
     filename = [f2 f1];
     dir_predicted = f2;
 end
 
+if nargin < 2
+    bCal = 0;
+    dBAtt = -20;
+end
+
 fs      = 10000; % known from Mathematica model
-dBSPL   = 65;
 
 if bDoCheckCompatibility
     
@@ -67,7 +71,12 @@ catch
 end
 
 tx      = (1:length(x))/fs;
-y       = setdbspl(x,dBSPL);
+if bCal
+    y = setdbspl(x,dBSPL);
+else
+    y = From_dB(dBAtt)*x;
+    disp('Signal not calibrated...')
+end
 
 if info.bSave
     if fs ~= 44100
