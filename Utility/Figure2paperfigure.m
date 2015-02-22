@@ -31,7 +31,7 @@ hM.I_FontName    = 'Arial';
 hM.I_Width       = 8;
 hM.I_Height      = 8;
 hM.I_TitleInAxis = 1;
-hM.I_Space       = [0.01,0.01];
+hM.I_Space       = [0.05,0.05];
 
 % hM.I_Ylim       = [-50,0]; % Uncomment for fixing the limits in the y-axis
 % hM.I_Xlim       = [0 24];

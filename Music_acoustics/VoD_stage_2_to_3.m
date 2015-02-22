@@ -18,7 +18,8 @@ bDiary = 1;
 Diary(mfilename,bDiary);
 
 if nargin < 1
-    directory = 'D:\Databases\dir01-Instruments\Voice-of-dragon\03-Wav-files-predicted\01-Model\Data-new-test-all-sources\Stage2\';
+    % directory = 'D:\Databases\dir01-Instruments\Voice-of-dragon\03-Wav-files-predicted\01-Model\Data-new-test-all-sources\Stage2\';
+    directory = 'D:\Databases\dir01-Instruments\Voice-of-dragon\03-Wav-files-predicted\01-Model\Data-sec-Harm\Stage2\';
 end
 
 opts.bExtension = 1;

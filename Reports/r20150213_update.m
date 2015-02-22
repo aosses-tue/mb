@@ -10,8 +10,8 @@ function r20150213_update
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 11/02/2015
-% Last update on: 11/02/2015 % Update this date manually
-% Last use on   : 11/02/2015 % Update this date manually
+% Last update on: 13/02/2015 % Update this date manually
+% Last use on   : 13/02/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 close all
@@ -102,159 +102,80 @@ if bCreateModelFiles
             
 end
 
+T = [0 0.6 0 0.3 0];
 if bAnalyseModelFiles
     
-    dir = 'D:\Databases\dir01-Instruments\Voice-of-dragon\03-Wav-files-predicted\01-Model\Data-new-test\Stage2\';
+    % dir = 'D:\Databases\dir01-Instruments\Voice-of-dragon\03-Wav-files-predicted\01-Model\Data-new-test\Stage2\';
     
-    % Ac. mode 2, far
-    files = {   [dir 'mode-1-v_1.wav'],
-                [dir 'mode-1-v_1-ane.wav'],
-                [dir 'mode-1-v_1-rev.wav']};
-	[xtot fs] = Wavread(files{1});
-    xane = Wavread(files{2});
-    xrev = Wavread(files{3});
-    xsum = xane + xrev;
+    % Added p, 13/02/2015:
+    dir = 'D:\Databases\dir01-Instruments\Voice-of-dragon\03-Wav-files-predicted\01-Model\Data-new-test2\';
     
-    t = ( 1:length(xtot) )/fs;
+    h = [];
+    for i = [2 4]
+        % Ac. mode 2, far
+        files = {   [dir 'Stage4\mode-' num2str(i-1) '-v_1-rev.wav'], ...
+                    [dir 'Stage3\mode-' num2str(i-1) '-v_1-s1r.wav'], ...
+                    [dir 'Stage3\mode-' num2str(i-1) '-v_1-s1m.wav'], ...
+                    [dir 'Stage3\mode-' num2str(i-1) '-v_1-s2r.wav'], ...
+                    [dir 'Stage3\mode-' num2str(i-1) '-v_1-s2m.wav']};
+
+        %[dir 'Stage4\mode-1-v_1.wav'],
+
+        [xtot fs] = Wavread(files{1});
+
+        x1r = Wavread(files{2});
+        x1m = Wavread(files{3});
+        x2r = Wavread(files{4});
+        x2m = Wavread(files{5});
+
+        xane = x1r + x2r;
+        xrev = x1m + x2m;
+
+        xsum = xane + xrev;
+
+        rmstot = rmsdb(xsum);
+        rmsane = rmsdb(xane);
+        rmsrev = rmsdb(xrev);
+
+        t = ( 1:length(xtot) )/fs;
+
+        ha = [];
+        figure;
+        subplot(3,1,1)
+        plot(t,xtot);
+        ha(end+1) = gca;
+        title(sprintf('Ac.mode %.0f, distant mic., reverberant condition',i))
+
+        subplot(3,1,2)
+        plot(t,xane);
+        ha(end+1) = gca;
+        title(sprintf('Direct sound, rel.level = %.2f dB',rmsane-rmstot));
+        ylabel('Amplitude')
+        
+        subplot(3,1,3)
+        plot(t,xrev);
+        ha(end+1) = gca;
+        title('Reflected')
+        title(sprintf('Reflected sound, rel.level = %.2f dB',rmsrev-rmstot));
+
+        xlabel('Time (s)')
+        % subplot(4,1,4)
+        % plot(t, abs(xsum-xtot) );
+        % ha(end+1) = gca;
+        % title('Error')
+
+        linkaxes(ha,'x')
+
+        xlim([0 4*T(i)])
+
+        h(end+1) = Figure2paperfigure(gcf);
+
+    end
     
-    ha = [];
-    figure;
-    subplot(4,1,1)
-    plot(t,xtot);
-    ha(end+1) = gca;
-    title('Total, Ac.mode 2, distant mic.')
-    
-    subplot(4,1,2)
-    plot(t,xane);
-    ha(end+1) = gca;
-    title('Direct')
-    
-    subplot(4,1,3)
-    plot(t,xrev);
-    ha(end+1) = gca;
-    title('Reflected')
-    
-    subplot(4,1,4)
-    plot(t, abs(xsum-xtot) );
-    ha(end+1) = gca;
-    title('Error')
-    
-    linkaxes(ha,'x')
-    
-    xlim([0 4*0.607])
-    
-    % Ac. mode 2, close mic
-    files = {   'D:\Databases\dir01-Instruments\Voice-of-dragon\03-Wav-files-predicted\01-Model\Data-new-test\Stage2\mode-1-v_2.wav',
-                'D:\Databases\dir01-Instruments\Voice-of-dragon\03-Wav-files-predicted\01-Model\Data-new-test\Stage2\mode-1-v_2-ane.wav',
-                'D:\Databases\dir01-Instruments\Voice-of-dragon\03-Wav-files-predicted\01-Model\Data-new-test\Stage2\mode-1-v_2-rev.wav'};
-	[xtot fs] = Wavread(files{1});
-    xane = Wavread(files{2});
-    xrev = Wavread(files{3});
-    xsum = xane + xrev;
-    
-    t = ( 1:length(xtot) )/fs;
-    
-    ha = [];
-    figure;
-    subplot(4,1,1)
-    plot(t,xtot);
-    ha(end+1) = gca;
-    title('Total, Ac.mode 2, close mic')
-    
-    subplot(4,1,2)
-    plot(t,xane);
-    ha(end+1) = gca;
-    title('Direct')
-    
-    subplot(4,1,3)
-    plot(t,xrev);
-    ha(end+1) = gca;
-    title('Reflected')
-    
-    subplot(4,1,4)
-    plot(t, abs(xsum-xtot) );
-    ha(end+1) = gca;
-    title('Error')
-    
-    linkaxes(ha,'x')
-    
-    xlim([0 4*0.607])
-    
-    % ac-mode 4
-    files = {   'D:\Databases\dir01-Instruments\Voice-of-dragon\03-Wav-files-predicted\01-Model\Data-new-test\Stage2\mode-3-v_1.wav',
-                'D:\Databases\dir01-Instruments\Voice-of-dragon\03-Wav-files-predicted\01-Model\Data-new-test\Stage2\mode-3-v_1-ane.wav',
-                'D:\Databases\dir01-Instruments\Voice-of-dragon\03-Wav-files-predicted\01-Model\Data-new-test\Stage2\mode-3-v_1-rev.wav'};
-    
-    [xtot fs] = Wavread(files{1});
-    xane = Wavread(files{2});
-    xrev = Wavread(files{3});
-    xsum = xane + xrev;
-    
-    t = ( 1:length(xtot) )/fs;
-    
-    ha = [];
-    figure;
-    subplot(4,1,1)
-    plot(t,xtot);
-    ha(end+1) = gca;
-    title('Total, Ac.mode 4')
-    
-    subplot(4,1,2)
-    plot(t,xane);
-    ha(end+1) = gca;
-    title('Direct')
-    
-    subplot(4,1,3)
-    plot(t,xrev);
-    ha(end+1) = gca;
-    title('Reflected')
-    
-    subplot(4,1,4)
-    plot(t, abs(xsum-xtot) );
-    ha(end+1) = gca;
-    title('Error')
-    
-    linkaxes(ha,'x')
-    
-    xlim([0 4*0.3])
-    
-    % Ac. mode 4, close
-    files = {   [dir 'mode-3-v_2.wav'],
-                [dir 'mode-3-v_2-ane.wav'],
-                [dir 'mode-3-v_2-rev.wav']};
-	[xtot fs] = Wavread(files{1});
-    xane = Wavread(files{2});
-    xrev = Wavread(files{3});
-    xsum = xane + xrev;
-    
-    t = ( 1:length(xtot) )/fs;
-    
-    ha = [];
-    figure;
-    subplot(4,1,1)
-    plot(t,xtot);
-    ha(end+1) = gca;
-    title('Total, Ac.mode 4, close mic.')
-    
-    subplot(4,1,2)
-    plot(t,xane);
-    ha(end+1) = gca;
-    title('Direct')
-    
-    subplot(4,1,3)
-    plot(t,xrev);
-    ha(end+1) = gca;
-    title('Reflected')
-    
-    subplot(4,1,4)
-    plot(t, abs(xsum-xtot) );
-    ha(end+1) = gca;
-    title('Error')
-    
-    linkaxes(ha,'x')
-    
-    xlim([0 4*0.3])
-    
+    acmode = [2 4];
+    for i = 1:length(h)
+        Saveas(h(i),sprintf('waveforms-ac-mode-%.0f',acmode(i)));
+    end
     
 end
 

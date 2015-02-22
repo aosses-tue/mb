@@ -39,7 +39,7 @@ end
 
 kkup(t(2))=kkup(t(2)-1); %cross-correlation coefficients of highest
                          %and lowest channel
-kkdown(1)=kkdown(2);     %are set to the value of the afjacent channel
+kkdown(1)=kkdown(2);     %are set to the value of the adjacent channel
 
 y_k=(kkup.*kkdown).^2; %according to roughness model of Daniel
 

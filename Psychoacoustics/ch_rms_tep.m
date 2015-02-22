@@ -1,13 +1,15 @@
 function [y, returnData] = ch_rms_tep(fout, f_abt, fs)
 % function [y, returnData] = ch_rms_tep(fout,f_abt,fs)
 %
-% Calculation of short term RMS levels with auditory temporal
-% window (Plack&Moore)
+% Calculation of short term RMS levels with auditory temporal window 
+% (Plack&Moore)
 %
 % erd=4ms, 
 % w=-51 dB
 % f_abt (envelope), default f_abt=500ms
 % fs(time signal), default fs = 44100 Hz
+%
+%       y - short term RMS levels
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Author        : Josef Chalupper (josef.chalupper@siemens.com)

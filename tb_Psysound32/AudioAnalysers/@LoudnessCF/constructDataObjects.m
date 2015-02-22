@@ -1,6 +1,10 @@
 function obj = constructDataObjects(obj, dataBuffer, TimePoints)
+% function obj = constructDataObjects(obj, dataBuffer, TimePoints)
+%
 %  CONSTRUCTDATAOBJECTS Constructs the appropriate data objects
 %
+% Edited by Alejandro Osses
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 N       = dataBuffer.N.get();
 Fl      = dataBuffer.Fl.get();
@@ -29,7 +33,7 @@ ts.Name          = 'Loudness';
 ts1=setuniformtime(ts.tsObj,'Interval',tPeriod);
 ts=set(ts,'time',get(ts1,'time'));
 output{end+1} = ts;
-% 
+
 % % format for TimeSeries
 % ts = createDataObject('tSeries', Fl);
 % ts.DataInfo.Unit = 'units';

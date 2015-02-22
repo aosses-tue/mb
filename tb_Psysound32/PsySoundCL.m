@@ -69,6 +69,11 @@ if ~isfield(option,'title')
     option = Ensure_field(option,'title',name2figname(filename));
 end
 option = Ensure_field(option,'colorbar_scale','Gray');
+option = ef(option,'bLoudnessContrained',0);
+option = ef(option,'zlim4assessment',[0 24]);
+
+bLoudnessContrained = option.bLoudnessContrained; % out of the struct to be visible by MATLAB
+zlim4assessment = option.zlim4assessment;
 
 if nargin ~= 1 & isnumeric(filename)
     x = filename;
@@ -108,10 +113,6 @@ if ~isfield(option,'calfile')
             tmp = Get_TUe_subpaths('db_speechmaterials');
             option.calfile = [tmp.allfiles_LISTf 'wivineruis.wav']; % SSN
             option.callevel = 65;
-        % case 99 % custom
-        %     option.calfile = filename;
-        %     option.calfile = [Get_TUe_paths('db_calfiles') 'track_03.wav']; %white noise, adjusted to AMT convention
-        %     option = Ensure_field(option,'callevel',70);
     end
 else
     if ~isfield(option,'callevel')
@@ -276,11 +277,7 @@ elseif nAnalyser == 11
     end
     
 end
-    
-if isfield(option,'trange')  
-    t = option.trange;
-end
-    
+       
 output.t = t;
 
 if exist('z','var')
@@ -435,7 +432,13 @@ switch nAnalyser
         
         % Loudness
         nParam = 1;
-        Data1 = get(tmpObj{1,nParam},'Data');
+        if bLoudnessContrained == 0
+            Data1 = get(tmpObj{1,nParam},'Data');
+        else
+            DataTmp = get(tmpObj{1,2},'Data'); % Main loudness
+            idxz = find( z>=zlim4assessment(1) & z<=zlim4assessment(2) );
+            Data1 = sum( (DataTmp(:,idxz))' );
+        end
         
         Data1(idx_dlt) = [];
         
@@ -444,7 +447,13 @@ switch nAnalyser
             plot(t,Data1)
             xlabel('Time (Seconds)')
             ylabel('Loudness (Sones)');
-            title(sprintf('Loudness - %s', option.title));
+            
+            if bLoudnessContrained == 0
+                title(sprintf('Loudness - %s', option.title));
+            else
+                title(sprintf('Loudness, z=[%.1f,%.f] Bark - %s', zlim4assessment(1),zlim4assessment(2),option.title));
+            end
+            
             grid on;
             h(end+1) = gcf;
             ha(end+1) = gca;
@@ -471,9 +480,16 @@ switch nAnalyser
         
         % Specific loudness
         nParam = 3;
-        Data3 = get(tmpObj{1,nParam},'Data');
+        if bLoudnessContrained == 0
+            Data3 = get(tmpObj{1,nParam},'Data');
+        else
+            DataTmp = get(tmpObj{1,nParam},'Data'); 
+            idxz = find( zspec>=zlim4assessment(1) & zspec<=zlim4assessment(2) );
+            Data3 = zeros(size(DataTmp));
+            Data3(:,idxz) = DataTmp(:,idxz);
+        end
         Data3(idx_dlt,:) = [];
-                
+        
         if option.bPlot
             figure;
             imagesc(t,zspec,Data3');
@@ -505,7 +521,14 @@ switch nAnalyser
         
         % Average specific loudness
         nParam = 5;
-        Data5 = get(tmpObj{1,nParam},'Data');
+        if bLoudnessContrained == 0
+            Data5 = get(tmpObj{1,nParam},'Data');
+        else
+            DataTmp = get(tmpObj{1,nParam},'Data'); % Main loudness
+            idxz = find( zspec>=zlim4assessment(1) & zspec<=zlim4assessment(2) );
+            Data5 = zeros(size(DataTmp));
+            Data5(:,idxz) = DataTmp(:,idxz);
+        end
         
         if option.bPlot
             figure;
@@ -519,7 +542,23 @@ switch nAnalyser
         end
         
         nParam = 6;
-        Data6 = get(tmpObj{1,nParam},'Data');
+        if bLoudnessContrained == 0
+            Data6 = get(tmpObj{1,nParam},'Data');
+        else
+            DataTmp = get(tmpObj{1,3},'Data'); % Main loudness
+            idxz = find( zspec>=zlim4assessment(1) & zspec<=zlim4assessment(2) );
+            
+            Loud = zeros(size(DataTmp));
+            Loud(:,idxz) = DataTmp(:,idxz);
+            
+            [r, c] = size(Loud);
+            Data6 = zeros(r, 1);
+            for i = 1:r
+              Data6(i) = sharpness_Fastl(Loud(i,:));
+            end
+               
+        end
+        
         Data6(idx_dlt) = [];
         
         if option.bPlot
@@ -534,12 +573,13 @@ switch nAnalyser
         end
         
         output.zspec = zspec;
-        output.DataLoud       = Data1; % Param 1: Loudness
-        output.DataMainLoud   = Data2; % Param 2: Main loudness - 3D
-        output.DataSpecLoud   = Data3; % Param 3: Specific loudness - 3D
-        output.DataAvMainLoud = Data4; % Param 4: Average Main loudness % not interesting by now
-        output.DataAvSpecLoud = Data5; % Param 5: Average specific loudness
-        output.DataSharp      = Data6; % Param 6: Sharpness
+        
+        output.Data1    = Data1; % Param 1: Loudness                    out.DataLoud
+        output.Data2    = Data2; % Param 2: Main loudness - 3D          out.DataMainLoud
+        output.Data3    = Data3; % Param 3: Specific loudness - 3D      out.DataSpecLoud
+        output.Data4    = Data4; % Param 4: Average Main loudness       out.DataAvMainLoud
+        output.Data5    = Data5; % Param 5: Average specific loudness   out.DataAvSpecLoud
+        output.Data6    = Data6; % Param 6: Sharpness                   out.DataSharp
         
     case 15
         
@@ -627,7 +667,6 @@ switch nAnalyser
         output.DataSpecFluct = DataSpecFluct;
         stats.fluct_tot = mean( DataFluct );
         % stats.fluct_tot = mean( 0.25*sum( DataSpecFluct' ) );
-        disp('')
 end
 
 output.nAnalyser = nAnalyser;

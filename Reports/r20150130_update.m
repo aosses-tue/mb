@@ -40,7 +40,7 @@ if bLoadFiles
 %     x1 = [];
 %     dir_1_ref       = paths.dir_measurements_cal{1};
 %     dir_6_maateraf  = paths.dir_measurements_cal{6};
-%   
+   
     f2fm = 'D:\Databases\dir01-Instruments\Voice-of-dragon\02-Wav-files\03-Wav-files-1-referentie\modus-1_v2-1filt.wav';
     f2cm = 'D:\Databases\dir01-Instruments\Voice-of-dragon\02-Wav-files\03-Wav-files-1-referentie\modus-1_v2-2filt.wav'; 
     f5fm = 'D:\Databases\dir01-Instruments\Voice-of-dragon\02-Wav-files\03-Wav-files-1-referentie\modus-4_v3-1filt.wav';
@@ -58,7 +58,7 @@ if bLoadFiles
 %             [dir_1_ref         'modus-3_v4-2filt-new.wav'], ...
 %             [dir_1_ref         'modus-4_v3-2filt-new.wav'] };
 %     f6 = [dir_6_maateraf    'meas-ac-mode-2-maat-eraf-close-2-filt.wav'];
-%     
+     
     [x2fm fs] = Wavread(f2fm);
     [x2cm fs] = Wavread(f2cm);
     [x2cp fs] = Wavread(f2cp);
@@ -236,7 +236,7 @@ if bDoCalibration
     cal_level   = [60 75 78 82]; % ac mode 2, 3, 5
     delta_dB_far = [-6 0]; % distance distant mic = 2 * close mic
     
-    ver_anechoic = [2 1 3 1];     % ac-mode-5, take 1 = contaminated with ac mode 4
+    ver_anechoic    = [2 1 3 1]; % ac-mode-5, take 1 = contaminated with ac mode 4
     ver_reverberant = [1 2 1 3]; % ac-mode-5
     
     freqs2cal   = [400 1250];

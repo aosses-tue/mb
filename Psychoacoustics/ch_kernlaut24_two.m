@@ -18,8 +18,8 @@ function out = ch_kernlaut24_two(rms, HL_ohc)
 % Created on    : 12/12/2000 (new version with comments and examples on 06/01/2007)
 % Downloaded on : 07/08/2014 (approx.)
 % Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
-% Last update on: 07/08/2014 % Update this date manually
-% Last use on   : 08/08/2014 % Update this date manually
+% Last update on: 18/02/2015 % Update this date manually
+% Last use on   : 18/02/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Normal hearing threshold:
@@ -28,13 +28,18 @@ thq = [42 18.5 11.5 8.3 6.7 5.5 4.8 4.3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3];
 thq = thq+HL_ohc;
 
 s = 10.^(0.22-0.005*[0.5:23.5])-1;
-k = 0.23;
+alpha = 0.23;
 out = zeros(length(rms(:,1)),24);  
+N0  = 0.04925;
 
 for i = 1:length(rms(:,1))
+    
    le=rms(i,:);
-   mp1= 0.04925*(1./s).^k.*10.^(0.1*k* thq);
-   mp2=(1-s +s.*10.^(0.1*(le-thq))).^k -1;
+   
+   % Chalupper2002, Equation 2:
+   mp1= N0*(1./s).^alpha.*10.^(0.1*alpha* thq);
+   mp2=(1-s +s.*10.^(0.1*(le-thq))).^alpha -1;
+   
    nm=mp1 .* mp2; 
 
    j=find(le <= thq | nm<0);   

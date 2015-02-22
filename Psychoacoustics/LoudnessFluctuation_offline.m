@@ -1,5 +1,5 @@
-function [h out] = LoudnessFluctuation_offline(fi1,stPlot,fs)
-% function [h out] = LoudnessFluctuation_offline(fi1,stPlot,fs)
+function [h out] = LoudnessFluctuation_offline(fi1,stPlot,fs,dBFS)
+% function [h out] = LoudnessFluctuation_offline(fi1,stPlot,fs,dBFS)
 %
 % 1. Description:
 %       Assesses loudness fluctuations for the audio files in fi1
@@ -12,9 +12,13 @@ function [h out] = LoudnessFluctuation_offline(fi1,stPlot,fs)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Original file : Do_fluct_20140930
 % Created on    : 22/01/2015
-% Last update on: 22/01/2015 % Update this date manually
-% Last use on   : 22/01/2015 % Update this date manually
+% Last update on: 16/02/2015 % Update this date manually
+% Last use on   : 16/02/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+if nargin < 4
+    dBFS = 100; % Zwicker's calibration
+end
 
 if nargin < 3
     fs = 44100;
@@ -28,8 +32,6 @@ stPlot = Ensure_field(stPlot,'color',{'b--','r-','ko-'});
 stPlot = Ensure_field(stPlot,'LineWidth',[2 1 1]);
 stPlot = Ensure_field(stPlot,'Title1','L_G_{max}');
 
-% Fluctuation strength
-dBFS = 100; % Zwicker's calibration
 ha = [];
 h = [];
 

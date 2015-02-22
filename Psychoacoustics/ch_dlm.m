@@ -100,9 +100,9 @@ smooth.Zfb = [];
     % Calculation of main loudness
     kern_l = [kern_l; ch_kernlaut24_two(fgrp_d, HL_ohc)];
     
-    % ii = 10; figure; plot(kern_l(:,ii)); % to visualise post-masking 
+  % ii = 10; figure; plot(kern_l(:,ii)); % to visualise post-masking 
   
-    % Calculation of forward masking (aka "post masking")
+  % Calculation of forward masking (aka "post masking")
   try
         kern_dyn = ch_post_maskn(kern_l, f_abt);
   catch

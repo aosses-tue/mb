@@ -5,16 +5,16 @@ function outs = Do_fluct(insig,fs,dBFS)
 %       Fluctuation implemented by Chalupper and provided to PsySound team.
 %       Audio files are calibrated to have 100 dB SPL for 0 dBFS rms. 
 %
-% 2. Additional info:
-%       Tested cross-platform: No
-%
-% 3. Stand-alone example:
+% 2. Stand-alone example:
 %       Do_fluct;
+% 
+% 3. Additional info:
+%       Tested cross-platform: No
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 22/08/2014
-% Last update on: 22/08/2014 % Update this date manually
-% Last use on   : 22/09/2014 % Update this date manually
+% Last update on: 16/02/2015 % Update this date manually
+% Last use on   : 16/02/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 3
@@ -54,24 +54,6 @@ if nargout == 0
     fmod = input('Give fmod value: ');
     FS = ( 0.008*sum(outs.le_max-outs.le_min) )/( fmod/4 + 4/fmod )
 end
-
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% figure;
-% subplot(3,1,1)
-% plot(To_dB(abs(amsigs(1,:))))
-% 
-% ha = gca;
-% 
-% subplot(3,1,2)
-% plot(To_dB(abs(amsigs(2,:))))
-% ha(end+1) = gca;
-% 
-% subplot(3,1,3)
-% plot(To_dB(abs(amsigs(3,:))))
-% ha(end+1) = gca;
-% 
-% linkaxes(ha, 'xy');
-% ylim([-50-20 -20])
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
