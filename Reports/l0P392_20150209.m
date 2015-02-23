@@ -2,6 +2,7 @@ function l0P392_20150209
 % function l0P392_20150209
 %
 % 1. Description:
+%	For lecture of the advanced perception course (Quantisation)
 %
 % 2. Stand-alone example:
 %

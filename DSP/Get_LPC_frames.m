@@ -1,24 +1,30 @@
-function y = Get_LPC_frames(x,fs,N,numframes)
-% function y = Get_LPC_frames(x,fs,N,numframes)
+function Get_LPC_frames(x,fs,N,numframes)
+% function Get_LPC_frames(x,fs,N,numframes)
 %
 % 1. Description:
 %       Plot formants using LPC. For the voice of the dragon, ideally put as
 %       input 1 or 2 cycles.
 % 
-% 2. Additional info:
-%       Tested cross-platform: No
-%
-% 3. Stand-alone example:
+% 2. Stand-alone example:
 %       filename= 'D:\Output\tmp-Audio\meas-ac-mode-5.wav';
 %       [x fs]  = Wavread(filename);
 %       N       = 4096;
 %       nframes = 10;
 %       Get_LPC_frames(x,fs,N,nframes);
 %
+%       filename= '~/Documenten/Databases/dir01-Instruments/Voice-of-dragon/03-Wav-files-predicted/04-Wav-files-calibrated-44.1kHz/modus-1-v_2filt.wav';
+%       [x fs]  = Wavread(filename);
+%       N       = 4096;
+%       nframes = 10;
+%       Get_LPC_frames(x,fs,N,nframes);
+%
+% 3. Additional info:
+%       Tested cross-platform: Yes
+% 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 09/09/2014
 % Last update on: 09/09/2014 % Update this date manually
-% Last use on   : 09/09/2014 % Update this date manually
+% Last use on   : 22/02/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 3
@@ -71,7 +77,7 @@ hM.I_Matrix      = [numframes/2,numframes/2];
 hM.I_FontSize    = 10; 
 hM.I_FontName    = 'Arial'; 
 hM.I_Width       = 8;
-hM.I_High        = 8;
+hM.I_Height      = 8;
 hM.I_TitleInAxis = 1;
 hM.I_Space       = [0.01,0.01];
 

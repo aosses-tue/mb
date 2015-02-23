@@ -2,21 +2,40 @@ function [ffreq out] = Get_LPC(x,fs,N)
 % function [ffreq out] = Get_LPC(x,fs,N)
 %
 % 1. Description:
-%       N - number of points for FFT plot
+%       Gets the LPC coefficients for the signal x, (sampling freq. of fs).
+%       The number of LPC coefficients is determined using the rule of the
+%       thumb Ncoeffs = 2+round(fs/1000);
 % 
-% 2. Additional info:
-%       Tested cross-platform: No
-%
-% 3. Stand-alone example:
+%       Inputs:
+%           x  - input signal
+%           fs - sampling frequency of the input signal
+%           N  - number of points for FFT plot
+%       Outputs:
+%           out - struct containing t, f, ncoeff, h_dB
+% 
+% 2. Stand-alone example:
 %       filename= 'D:\Output\tmp-Audio\meas-ac-mode-5.wav';
 %       [x fs]  = Wavread(filename);
 %       N = 4096; 
 %       Get_LPC(x,fs,N);
+%
+%       filename= '~/Documenten/Databases/dir01-Instruments/Voice-of-dragon/03-Wav-files-predicted/04-Wav-files-calibrated-44.1kHz/modus-1-v_2filt.wav';
+%       [x fs]  = Wavread(filename);
+%       N = 4096; 
+%       Get_LPC(x,fs,N);
+% 
+%       filename = '~/Documenten/Documenten-TUe/09-Training+activities/2015-Q3-Advanced-perception/College/rl001/rl001-car.wav'; 
+%       [x fs]  = Wavread(filename);
+%       N = 8192; 
+%       Get_LPC(x,fs,N);
+%
+% 3. Additional info:
+%       Tested cross-platform: Yes
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 09/09/2014
-% Last update on: 09/09/2014 % Update this date manually
-% Last use on   : 09/09/2014 % Update this date manually
+% Last update on: 22/02/2015 % Update this date manually
+% Last use on   : 22/02/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % get a section of vowel
@@ -40,7 +59,17 @@ ncoeff=2+round(fs/1000);	% rule of thumb for formant estimation
 a   = lpc(x,ncoeff);
 
 % plot frequency response
-[h,f]=freqz(1,a,N,fs);
+
+w = Get_window('hamming',length(x));
+Corr = 1;
+xw = Corr*x.*w;
+
+
+[hx,f]=freqz(xw,1,N,fs);
+[h ,f]=freqz(1 ,a,N,fs);
+
+x_dB = 20*log10(abs(hx)+eps);
+h_dB = 20*log10(abs(h) +eps);
 
 if nargout == 0
     
@@ -53,8 +82,10 @@ if nargout == 0
     ylabel('Amplitude');
     
     subplot(2,1,2);
-    plot(f,20*log10(abs(h)+eps));
-    legend('LP Filter');
+    plot(f,h_dB); hold on
+    plot(f,x_dB,'r');
+    
+    legend('LPC est.','x');
     xlabel('Frequency (Hz)');
     ylabel('Gain (dB)');
     
@@ -71,7 +102,7 @@ out.ncoeff = ncoeff;
 out.a = a;
 out.t = t;
 out.f = f;
-h_dB = 20*log10(abs(h)+eps);
+
 out.h_dB = h_dB;
                      
 if nargout == 0
