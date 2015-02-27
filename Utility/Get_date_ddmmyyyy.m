@@ -4,16 +4,16 @@ function y = Get_date_ddmmyyyy(b_with_time)
 % 1. Description:
 %       Returns current 'date' or 'date and time'
 % 
-% 2. Additional info:
-%   Tested cross-platform: No
-%
-% 3. Stand-alone example:
+% 2. Stand-alone example:
 %       Get_date_ddmmyyyy;
 % 
+% 3. Additional info:
+%   Tested cross-platform: Yes
+%
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
-% Created on : 30/6/2014
-% Last update: 30/6/2014 % Update this date manually
-% Last used  : 30/6/2014 % Update this date manually
+% Created on : 30/06/2014
+% Last update: 30/06/2014 % Update this date manually
+% Last used  : 25/02/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin == 0

@@ -6,17 +6,18 @@ function [h ha stats] = PsySoundCL_Figures(param,res1, res2, option)
 %       'param' can be:
 % 
 %       nAnalyser                           excerpt     stats
-%       1           - FFT                   PsySoundCL_Figures not working, probably one of the revisions was overwritten (see r20141007_Perception_day_TUe.m)
-%       10          - 'one-third-OB'        NO          NO
-%       10          - 'specific-loudness'   NO          NO
-%       11          - 'one-third-OB'        YES         NO
-%       12          - 'sharpness'           NO          NO
-%       12          - 'loudness'            NO          NO
-%       12          - 'specific-loudness'   YES         NO
-%       15          - 'roughness'           NO          YES
-%       15          - 'specific-roughness'  YES         YES
-%                   - 'average-power-spectrum' (L249, 29/01/2015)
-%                   - 'spectrogram'
+% (XX/XX/2015)      1       - FFT                   PsySoundCL_Figures not working, probably one of the revisions was overwritten (see r20141007_Perception_day_TUe.m)
+% (XX/XX/2015)     10       - 'one-third-OB'        NO          NO
+% (XX/XX/2015)     10       - 'specific-loudness'   NO          NO
+% (XX/XX/2015)        11    - 'one-third-OB'        YES         NO
+% (25/02/2015) L96  / 12    - 'sharpness'           NO          NO
+% (25/02/2015) L117 / 12    - 'loudness'            NO          NO
+% (25/02/2015) L417 / 12    - 'loudness-percentiles'
+% (XX/XX/2015)      / 12    - 'specific-loudness'   YES         NO
+% (05/02/2015) L475 / 15    - 'roughness'           NO          YES
+%       15                  - 'specific-roughness'  YES         YES
+% (29/01/2015) L249 /       - 'average-power-spectrum' 
+% (25/02/2015) L310 /       - 'spectrogram'
 % 
 % 2. Additional info:
 %       Tested cross-platform: Yes
@@ -108,7 +109,7 @@ if strcmp(param,'sharpness')
     if bLoudnessContrained == 0
         title(sprintf('Sharpness - %s', option.title));
     else
-        title(sprintf('Sharpness, z = (%.1f,%.f) [Bark] - %s', zlim4assessment(1),zlim4assessment(2),option.title));
+        title(sprintf('Sharpness, z = (%.1f,%.1f) [Bark] - %s', zlim4assessment(1),zlim4assessment(2),option.title));
     end
     grid on;
     h(end+1) = gcf;
@@ -130,7 +131,7 @@ elseif strcmp(param,'loudness')
     if bLoudnessContrained == 0
         title(sprintf('Loudness - %s', option.title));
     else
-        title(sprintf('Loudness, z = (%.1f,%.f) [Bark] - %s', zlim4assessment(1),zlim4assessment(2),option.title));
+        title(sprintf('Loudness, z = (%.1f,%.1f) [Bark] - %s', zlim4assessment(1),zlim4assessment(2),option.title));
     end
     grid on;
     
@@ -416,16 +417,18 @@ elseif strcmp(param,'specific-loudness')| strcmp(param,'average-specific-loudnes
     end
 elseif strcmp(param,'loudness-percentiles')
     
+    idx = find(res1.t(idx1) >= option.trange(1) & res1.t(idx1) <= option.trange(2));
+    
     N1 = 95;
     N2 = 50;
     N3 = 5;
-    nmax1    = ch_prctile(res1.Data3(idx1,:),N1);
-    nmean1   = ch_prctile(res1.Data3(idx1,:),N2);
-    nmin1    = ch_prctile(res1.Data3(idx1,:),N3);
+    nmax1    = ch_prctile(res1.Data3(idx,:),N1);
+    nmean1   = ch_prctile(res1.Data3(idx,:),N2);
+    nmin1    = ch_prctile(res1.Data3(idx,:),N3);
 
-    nmax2    = ch_prctile(res2.Data3(idx1,:),N1);
-    nmean2   = ch_prctile(res2.Data3(idx1,:),N2);
-    nmin2    = ch_prctile(res2.Data3(idx1,:),N3);
+    nmax2    = ch_prctile(res2.Data3(idx,:),N1);
+    nmean2   = ch_prctile(res2.Data3(idx,:),N2);
+    nmin2    = ch_prctile(res2.Data3(idx,:),N3);
              
     figure
     subplot(2,1,1)
@@ -438,9 +441,9 @@ elseif strcmp(param,'loudness-percentiles')
     ylabel('Specific loudness (Sones/Bark)')
     
     if bLoudnessContrained == 0
-        title( sprintf('Percentiles %.0f, %.0f, %0.f - %s %s',N3,N2,N1,option.label1,option.label1suffix));
+        title( sprintf('Percentiles %.0f, %.0f, %0.f, t =(%.1f,%.1f) [s] - %s %s',N3,N2,N1,option.trange(1),option.trange(2),option.label1,option.label1suffix));
     else
-        title( sprintf('Percentiles %.0f, %.0f, %0.f; z = (%.1f,%.1f) [Bark] - %s %s',N3,N2,N1,zlim4assessment(1),zlim4assessment(2),option.label1,option.label1suffix));
+        title( sprintf('Percentiles %.0f, %.0f, %0.f; z = (%.1f,%.1f) [Bark], t =(%.1f,%.1f) [s] - %s %s',N3,N2,N1,zlim4assessment(1),zlim4assessment(2),option.trange(1),option.trange(2),option.label1,option.label1suffix));
     end
     
     legend( sprintf('N%.0f=%.1f [sone]',N1,0.1*sum(nmax1) ), ...

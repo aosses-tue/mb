@@ -1,5 +1,5 @@
-function [t F0] = Get_F0_AC_praat(inputfile,outputfile, type)
-% function [t F0] = Get_F0_AC_praat(inputfile,outputfile, type)
+function [t F0 opts] = Get_F0_AC_praat(inputfile,outputfile, type)
+% function [t F0 opts] = Get_F0_AC_praat(inputfile,outputfile, type)
 %
 % 1. Description:
 %       Gets F0 contours using Praat Analyser by means of the autocorrelation
@@ -101,13 +101,38 @@ switch type
         octave_jump_cost = 0.35; % octaveJumpCost
         vUv_cost    = 0.14; % vUvCost 
         maxf0       = 1400;
-    
+        
+    case 4 % Alejandro Osses, TU/e
+        
+        framesize   = 30e-3;
+        framelen    = 25e-3; % hopsize: speechFrameLength
+        minf0       = round(3/framesize); % pitchFloor
+        numcand     = 15; % numCandidates
+        veryAccurate = 'yes'; % Set as constant
+        silence_thr = 0.01; % silenceThreshold
+        voicing_thr = 0.45; % voicingThreshold
+        octave_cost = 0.01; % octaveCost
+        octave_jump_cost = 0.35; % octaveJumpCost
+        vUv_cost    = 0.14; % vUvCost 
+        maxf0       = 1400;
 end
+
+opts.framesize   = framesize;
+opts.framelen    = framelen; 
+opts.minf0       = minf0; 
+opts.numcand     = numcand; 
+% veryAccurate = no 
+opts.silence_thr = silence_thr; 
+opts.voicing_thr = voicing_thr; 
+opts.octave_cost = octave_cost; 
+opts.octave_jump_cost = octave_jump_cost; 
+opts.vUv_cost   = vUv_cost; 
+opts.maxf0      = maxf0;
 
 if nargin < 3
     
     txt2disp = ['To pitch (ac)... '];
-    txt2disp = [txt2disp num2str(framelen) ' ' num2str(minf0) ' ' num2str(numcand) ' no '...
+    txt2disp = [txt2disp num2str(framelen) ' ' num2str(minf0) ' ' num2str(numcand) veryAccurate ...
                 num2str([silence_thr voicing_thr octave_cost octave_jump_cost vUv_cost maxf0])]
             
     disp(txt2disp)
@@ -128,7 +153,7 @@ if isunix
 else
     % command4system = [local_praat ' ' script]; % this command is used only to open Praat (run it then manually: Ctrl+R)
                                     % script      % in1:wav       % in2:txt        % in3                   % in4                % in5               % in6   % in7                      % in8
-    command4system = [local_praat ' ' script ' "' inputfile '" "' outputfile '" "' num2str(framelen) '" "' num2str(minf0) '" "' num2str(numcand) '" "no" "' num2str(silence_thr) '" "' num2str(voicing_thr) '" "' num2str(octave_cost) '" "' num2str(octave_jump_cost) '" "' num2str(vUv_cost) '" "' num2str(maxf0) '"'];
+    command4system = [local_praat ' ' script ' "' inputfile '" "' outputfile '" "' num2str(framelen) '" "' num2str(minf0) '" "' num2str(numcand) '" "' veryAccurate '" "' num2str(silence_thr) '" "' num2str(voicing_thr) '" "' num2str(octave_cost) '" "' num2str(octave_jump_cost) '" "' num2str(vUv_cost) '" "' num2str(maxf0) '"'];
 end
 
 disp([mfilename '.m: ' command4system])
@@ -136,6 +161,9 @@ disp([mfilename '.m: ' command4system])
 
 if nargout ~= 0
     info.F0max = maxf0;
+    info.F0max = 1400;
+    info.bPrint = 0;
+    info.time2compensate = -(3/opts.minf0)/2;
     [t F0] = Get_F0_praat_from_txt(outputfile, info); % F0max constrained to 1000 Hz
 end
 

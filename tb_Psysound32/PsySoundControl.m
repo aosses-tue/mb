@@ -248,6 +248,16 @@ else
             
             % Only loudness fluctuation:
             dBFS = lvl_m_30dBFS + 30 - calvalue;
+            
+            tinsig = ( 0:length(insig1)-1 )/fs1;
+            idx = find( tinsig>=options.trange(1) & tinsig<=options.trange(2) );
+            
+            if length(idx) ~= length(tinsig)
+                insig1 = insig1(idx);
+                insig2 = insig2(idx);
+                warning('Truncating insig, check if it is working properly when using a non-zero off-set');
+            end
+                
             [xx out_1] = LoudnessFluctuation_offline(insig1,[],fs,dBFS);
             [xx out_2] = LoudnessFluctuation_offline(insig2,[],fs,dBFS);
               
@@ -365,6 +375,7 @@ if nAnalyser ~= 21
 else
     if nAnalyser == 21
         
+        options.type = 4; % 40-ms frame length
         % Praat Analyser:
         [h(end+1:end+2)] = Get_waveforms_and_F0_praat(filename1,filename2,options);
         param{1} = 'time-series';
@@ -403,18 +414,24 @@ if options.bSave
             fndiary = [options.dest_folder_fig 'fig-log-analyser-' num2str(nAnalyser) '.txt'];
             diary(fndiary)
 
+            fprintf('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n');
+            fprintf('Date/time of processing: %s\n', Get_date_ddmmyyyy(1));
             fprintf('Output directory: %s\n'    ,options.dest_folder_fig);
             fprintf('Level ref. tone: %.1f dB\n',callevel);
             fprintf('File name 1: %s (gain = %.2f dB)\n',filename1,handles.audio.G1);
             fprintf('File name 2: %s (gain = %.2f dB)\n',filename2,handles.audio.G2);
             fprintf('Initial/final sample: %.0f, %.0f\n',sample_inf,sample_sup);
-
+            fprintf('trange = (%.3f, %.3f) [s]\n',options.trange(1),options.trange(2));
+            fprintf('label 1: %s',options.label1);
+            fprintf('label 2: %s',options.label2);
+            
             if bUsePsySound 
                 fprintf('Processed using PsySound \n');
             else
                 fprintf('Processed using m-files (not PsySound) \n');
             end
-
+            fprintf('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n');
+                
             diary off
         end
         % end Generating txt file
@@ -1805,3 +1822,20 @@ else
 end
 
 disp('')
+
+
+% --- Executes on button press in btnChange.
+function btnChange_Callback(hObject, eventdata, handles)
+% hObject    handle to btnChange (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+string1 = get(handles.txtFile1,'String');
+string2 = get(handles.txtFile2,'String');
+lbl1 = get(handles.txtLabel1,'String');
+lbl2 = get(handles.txtLabel2,'String');
+
+set(handles.txtFile1,'String',string2);
+set(handles.txtFile2,'String',string1);
+set(handles.txtLabel1,'String',lbl2);
+set(handles.txtLabel2,'String',lbl1);

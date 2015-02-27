@@ -93,13 +93,10 @@ if length(idx) > 0
     pause(1)
 end
 
-t = t - time2compensate;
+t = t + time2compensate;
 idx2delete      = find(t < 0);
 t(idx2delete)   = [];
 f0(idx2delete)  = [];
-if time2compensate ~= 0
-    disp([mfilename '.m: Compensating time in ' Num2Str(time2compensate) ' seconds'])
-end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end

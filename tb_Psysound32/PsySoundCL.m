@@ -426,10 +426,6 @@ switch nAnalyser
         
         zspec = get(tmpObj{1,5},'Freq');
         
-        for i = 1:length(tmpObj)
-            disp( get(tmpObj{1,i},'Name') );
-        end
-        
         % Loudness
         nParam = 1;
         if bLoudnessContrained == 0
@@ -451,7 +447,7 @@ switch nAnalyser
             if bLoudnessContrained == 0
                 title(sprintf('Loudness - %s', option.title));
             else
-                title(sprintf('Loudness, z=[%.1f,%.f] Bark - %s', zlim4assessment(1),zlim4assessment(2),option.title));
+                title(sprintf('Loudness, z=[%.1f,%.1f] Bark - %s', zlim4assessment(1),zlim4assessment(2),option.title));
             end
             
             grid on;
