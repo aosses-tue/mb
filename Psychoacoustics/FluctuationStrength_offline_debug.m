@@ -13,17 +13,6 @@ function [dataOut out] = FluctuationStrength_offline_debug(insig, Fs, N, options
 %             then the calculation will assume no contribution for all the �
 %             bands above Fs/2. 
 %
-% author : Matt Flax <flatmax @ http://www.flatmax.org> : Matt Flax is flatmax
-% March 2006 : For the psySoundPro project
-%
-% revised : Farhan Rizwi
-%           July '07
-%           Reformatted, copied and vectorised code from InitAll and Hweights 
-%           into the function space below. This allows us to use nested 
-%           functions effeciently.
-% contact for the original source code :
-% http://home.tm.tue.nl/dhermes/
-%
 % 2. Stand-alone example:
 %
 % 3. Additional info:
@@ -47,10 +36,6 @@ options = ef(options,'nSkipStart',0);
 
 nSkipStart = options.nSkipStart; % to correct time series, in case an analysis frame has been excluded
 
-N_hop       =   N/2; % 2048;
-warning('temporal hop size')
-insig   = insig( nSkipStart*N_hop+1:end );
-
 if nargin < 3
     N = 8192*4;
 end
@@ -59,6 +44,11 @@ if ~(Fs == 44100 | Fs == 40960 | Fs == 48000)
   warning(['Incorrect sample rate for this roughness algorithm. Please ' ...
            're-sample original file to be Fs=44100,40960 or 48000 Hz']);
 end
+
+N_hop   =   N/2; % 2048;
+warning('temporal hop size')
+insig   = insig( nSkipStart*N_hop+1:end );
+
 
 %% BEGIN InitAll %
 
@@ -346,12 +336,7 @@ for idx_j = 1:m_blocks
 
         etmp_fd(k,:)= etmp;
         ei(k,:)     = N*real(ifft(etmp));
-        % eiconv(k,:) = conv(ei(k,:),Hhann);
-        
         etmp_td(k,:)= abs(ei(k,:));
-        % etmp_td_test(k,:)= abs(eiconv(k,:));
-        
-        % h0test(k)   = mean(etmp_td_test(k,:));
         
         h0(k)       = mean(etmp_td(k,:));
         Fei(k,:)	= fft( etmp_td(k,:)-h0(k) ); % changes the phase but not the amplitude
@@ -367,9 +352,6 @@ for idx_j = 1:m_blocks
             if bDebug
                 optstm.fs = 44100;
                 [tmy tmydB1 ff1] = freqfft(ei(k,:)',N/2,optstm);
-
-                % optstm.fs = 44100;
-                % [tmy2 tmydB2 ff2] = freqfft(eiconv(k,:)',N/2,optstm);
 
                 optstm.fs = 44100;
                 [tmy3 tmydB3 ff3] = freqfft(Hhann,N/2,optstm);

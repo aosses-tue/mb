@@ -345,18 +345,6 @@ for k=1:1:47
     tmp = resample(exp1,Fs_red,Fs); % Added by AO
     hBPi_red(k,1:length(tmp)) = tmp; % RENAME to LP
     
-    % hBPi_red(k,:) = 2*real(ifft(Fei(k,:).*Hweight(1,:)));
-    
-    % K = N*2;
-    % f0 = (1:K)/K * Fs/2;
-    % figure(13);
-    % plot( f0, 20*log10(abs(freqz( exp1,1,K ))) )
-    % xlim([0 30])
-    
-    % % attempt on 10/11
-    % tmp = resample( hBPi(k,:),Fs_red,Fs);
-    % hBPi_red(k,1:length(tmp)) = tmp; % Added by AO
-    
     opts.fs = Fs_red;
     [tmpY,tmpYdB,tmpF] = freqfft(hBPi_red(k,:)',N/2,opts);
     
@@ -379,18 +367,6 @@ for k=1:1:47
             figure(6)
             plot(hBPi_red(k,:)'); hold on, grid on
             plot(yy,'r-')
-            
-            
-            % figure(7); 
-            % plot(freqs, 20*log10(abs(Fei(k,qb)))), hold on
-            % 
-            % opts.fs = Fs;
-            % [ytmp tmpYdB,ftmp] = freqfft(hBPi(k,:)',N/2,opts);
-            % 
-            % plot(ftmp,tmpYdB,'r')
-            % grid on
-            % xlabel('Frequency [Hz]')
-            % ylabel('Level [dB]')
             
         end
     end
@@ -430,13 +406,6 @@ if bDebug
     idx2plot = 14:22;
     t = repmat( (1:N)/Fs ,length(idx2plot),1);
     BandNumber = repmat( ((idx2plot)'), 1, N);
-
-    % figure(4);
-    % mesh( t,BandNumber,20*log10(abs(Fei(idx2plot,:))) )
-    % xlabel('Time [s]')
-    % ylabel('Band number')
-    % title('Band-pass signals')
-    % zlim([0 4000])
     
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
