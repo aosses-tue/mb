@@ -39,6 +39,12 @@ if nargout == 0
         Add_paths(misc_sub);
     end
     
+    if isfield(misc,'tb_NMTAddOns')
+        misc_sub = Get_TUe_subpaths('tb_NMTAddOns');
+        disp(['Adding paths under: tb_NMTAddOns'])
+        Add_paths(misc_sub);
+    end
+    
     if isfield(misc,'tb_Plot4papers_JU')
         misc_sub = Get_TUe_subpaths('tb_Plot4papers_JU');
         disp(['Adding paths under: tb_Plot4papers_JU'])

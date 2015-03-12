@@ -21,8 +21,8 @@ function misc = Get_TUe_subpaths(type)
 %
 % Programmed by Alejandro Osses, TUe, 2014
 % Created on    : 24/06/2014
-% Last update on: 28/01/2015
-% Last use on   : 28/01/2015
+% Last update on: 10/03/2015
+% Last use on   : 10/03/2015
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 path = Get_TUe_paths(type);
@@ -75,10 +75,20 @@ elseif strcmp(type,'tb_Loudness_v12')
     
 elseif strcmp(type,'tb_NMT')
     
+    misc.Filterbank        = [path 'Matlab' delim 'Filterbank' delim];
+    misc.FrontEnd          = [path 'Matlab' delim 'FrontEnd'   delim];
+    misc.FTM               = [path 'Matlab' delim 'FTM'        delim];
+    misc.Implant           = [path 'Matlab' delim 'Implant'    delim];
+    misc.LoudnessGrowth    = [path 'Matlab' delim 'LoudnessGrowth' delim];
     misc.Processing        = [path 'Matlab' delim 'Processing' delim]; % Ensure_field is here
     misc.Sequence          = [path 'Matlab' delim 'Sequence'   delim]; % Collate_into_sequence.m
+    misc.Strategy          = [path 'Matlab' delim 'Strategy'   delim]; 
     misc.Utility           = [path 'Matlab' delim 'Utility'    delim]; % From_dB; To_dB; Matlab_version.m
+
+elseif strcmp(type,'tb_NMTAddOns')
     
+    misc.Processing        = [path 'Sequence' delim]; 
+        
 elseif strcmp(type,'tb_Plot4papers_JU')
     
     misc.Utility           = [path 'Utility'        delim];

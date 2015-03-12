@@ -18,7 +18,8 @@ bDiary = 0;
 Diary(mfilename,bDiary);
 
 bDoRoughFig3        = 0;
-bDoRoughFig5        = 1;
+bDoRoughFig5        = 0;
+bDoFluct            = 1;
 bProcessDataFig3    = 1;
 bProcessDataFig5    = 1;
 
@@ -67,6 +68,24 @@ if bDoRoughFig5
     for j = 1:length(m_or_d)
         tmp = Generate_test_AMtone(fc,fmod,m_or_d(j),option,lvl,fs,dur,dur_ramp_ms,start_phase);
     end
+end
+
+if bDoFluct
+
+    lvl = 60;
+    fc  = 1000;
+    fmod = [0.5 1 2 4 8 16 32 50 70 90 110 130 150];
+    m_or_d = 100;
+    option = 'm';
+    fs = 44100;
+    dur = 4;
+    dur_ramp_ms = 20;
+    start_phase = 0;
+    
+    for j = 1:length(fmod)
+        tmp = Generate_test_AMtone(fc,fmod(j),m_or_d,option,lvl,fs,dur,dur_ramp_ms,start_phase);
+    end
+    
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

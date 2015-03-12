@@ -3,17 +3,17 @@ function f = Get_OB_freqs(BandsPerOctave)
 %
 % 1. Description:
 %   
-% 2. Additional info:
-%   Tested cross-platform: No
-%
-% 3. Stand-alone example:
+% 2. Stand-alone example:
 %       BandsPerOctave = 1; % Octave bands
 %       f = Get_OB_freqs(BandsPerOctave);
 % 
+% 3. Additional info:
+%   Tested cross-platform: No 
+% 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
-% Created on    : 3/7/2014
-% Last update on: 3/7/2014 % Update this date manually
-% Last used on  : 3/7/2014 % Update this date manually
+% Created on    : 03/07/2014
+% Last update on: 03/07/2014 % Update this date manually
+% Last used on  : 10/03/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin == 0
