@@ -1,26 +1,26 @@
 function varargout = PsySoundControl(varargin)
-% PSYSOUNDCONTROL MATLAB code for PsySoundControl.fig
-%      PSYSOUNDCONTROL, by itself, creates a new PSYSOUNDCONTROL or raises the existing
-%      singleton*.
+% function varargout = PsySoundControl(varargin)
 %
-%      H = PSYSOUNDCONTROL returns the handle to a new PSYSOUNDCONTROL or the handle to
-%      the existing singleton*.
+% 1. Description: 
+%       PSYSOUNDCONTROL MATLAB code for PsySoundControl.fig
+%      
+%       PSYSOUNDCONTROL, by itself, creates a new PSYSOUNDCONTROL or raises 
+%       the existing singleton*.
 %
-%      PSYSOUNDCONTROL('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in PSYSOUNDCONTROL.M with the given input arguments.
+%       H = PSYSOUNDCONTROL returns the handle to a new PSYSOUNDCONTROL or 
+%       the handle to the existing singleton*.
 %
-%      PSYSOUNDCONTROL('Property','Value',...) creates a new PSYSOUNDCONTROL or raises
-%      the existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before PsySoundControl_OpeningFcn gets called.  An
-%      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to PsySoundControl_OpeningFcn via varargin.
+%       PSYSOUNDCONTROL('CALLBACK',hObject,eventData,handles,...) calls the local
+%       function named CALLBACK in PSYSOUNDCONTROL.M with the given input arguments.
 %
-%      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
-%      instance to run (singleton)".
-%   
-%   Limitations (written by AO):
-%       - Roughness calculations using PsySound include first and last frame
-%       in the average value calculations. Use Roughness_offline.m
+%       PSYSOUNDCONTROL('Property','Value',...) creates a new PSYSOUNDCONTROL or raises
+%       the existing singleton*.  Starting from the left, property value pairs are
+%       applied to the GUI before PsySoundControl_OpeningFcn gets called.  An
+%       unrecognized property name or invalid value makes property application
+%       stop.  All inputs are passed to PsySoundControl_OpeningFcn via varargin.
+%
+%       *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
+%       instance to run (singleton)".
 % 
 %       Line    Stage                               Last updated on
 %       46      Initialisation                      16/02/2015
@@ -34,12 +34,11 @@ function varargout = PsySoundControl(varargin)
 % TO DO:
 %       2. SLM: problem at @Analyser/process, line 381. Object subclass is not readable 'AZ'
 %       3. Put save figures in other Button
-%       4. xlim axis, ylim axis
-% 
+%       
 % Edit the above text to modify the response to help PsySoundControl
 % Created on        : 16/01/2015
 % Last modified on  : 17/02/2015
-% Last used on      : 17/02/2015
+% Last used on      : 12/03/2015 % Remember to check compatibility with template_PsySoundCL.m
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Begin initialization code - DO NOT EDIT
@@ -97,6 +96,8 @@ varargout{1} = handles.output;
 % Executes on button press in calculate.
 
 function calculate_Callback(hObject, eventdata, handles)
+% function calculate_Callback(hObject, eventdata, handles)
+%
 % hObject    handle to calculate (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -296,6 +297,10 @@ ha      = [];
 for i = 1:7
     exp1 = sprintf('bPlotParam%.0f = get(handles.chParam%.0f,''value''); labelParam%.0f = get(handles.chParam%.0f,''string'');',i,i,i,i);
     eval( exp1 );
+    
+    % To generate automatically the script:
+    exp1 = sprintf('str.bPlotParam%.0f = get(handles.chParam%.0f,''value''); str.labelParam%.0f = get(handles.chParam%.0f,''string'');',i,i,i,i);
+    eval( exp1 );
 end
 
 %% Plots
@@ -411,9 +416,50 @@ if options.bSave
         
         % Generating txt/log-file, once per analyser:
         if i == 1
+            
+            options.tanalysis = [sample_inf-1 sample_sup-1]/fs;
+            
             fndiary = [options.dest_folder_fig 'fig-log-analyser-' num2str(nAnalyser) '.txt'];
             diary(fndiary)
 
+            p = Get_date;
+            str.functionname = sprintf('PS_CL_%s_%s',Num2str(nAnalyser),p.date4files); 
+            str.ifile = [Get_TUe_paths('MATLAB') 'template_PsySoundCL.m'];
+            str.bSave = bSave;
+            str.f1 = filename1;
+            str.f2 = filename2;
+            str.ofile = [Get_TUe_paths('MATLAB') str.functionname '.m'];
+            str.nSkipStart = nSkipStart;
+            str.nSkipEnd = nSkipEnd;
+            str.bUsePsySound = bUsePsySound;
+            str.fs = fs;
+            str.sample_inf = sample_inf;
+            str.sample_sup = sample_sup;
+            str.HopSize = HopSize;
+            str.toffset = toffset;
+            str.bGenerateExcerpt = options.bGenerateExcerpt;
+            str.tanalysis = options.tanalysis;
+            str.nAnalyser = nAnalyser;
+            str.label1 = options.label1;
+            str.label2 = options.label2;
+            str.SPLrange = options.SPLrange;
+            str.frange = options.frange;
+            str.zrange = options.zrange;
+            str.trange = options.trange;
+            str.bLoudnessContrained = options.bLoudnessContrained;
+            str.G1 = handles.audio.G1;
+            str.G2 = handles.audio.G2;
+            str.callevel = callevel;
+            str.bPercentiles = bPercentiles;
+
+            o2write = readfile_replace(str.ifile,str);
+
+            ofile = str.ofile;
+
+            fid=fopen(ofile, 'w'); 
+            fwrite(fid, o2write); 
+            fclose(fid);
+        
             fprintf('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n');
             fprintf('Date/time of processing: %s\n', Get_date_ddmmyyyy(1));
             fprintf('Output directory: %s\n'    ,options.dest_folder_fig);
@@ -434,7 +480,7 @@ if options.bSave
                 
             diary off
         end
-        % end Generating txt file
+        
     end
     
 else
@@ -1014,8 +1060,8 @@ filename2 = get(handles.txtFile2,'string');
 
 if strcmp(filename1,'')|strcmp(filename2,'')
     try
-        filename1 = 'D:\Databases\dir01-Instruments\Voice-of-dragon\02-Wav-files\2015-02-wav-files\02-calibrated\meas-ac-2-close-ane.wav'; %[dir_out 'tmp-cal' delim 'ref_loud.wav'];
-        filename2 = 'D:\Databases\dir01-Instruments\Voice-of-dragon\03-Wav-files-predicted\2015-02-wav-files\02-calibrated\model-ac-2-close-ane.wav'; % [dir_out 'tmp-cal' delim 'ref_rough.wav'];
+        filename1 = [Get_TUe_paths('db_voice_of_dragon') '02-Wav-files' delim '2015-02-wav-files' delim '02-calibrated' delim 'meas-ac-2-close-ane.wav'];
+        filename2 = [Get_TUe_paths('db_voice_of_dragon') '03-Wav-files-predicted' delim '2015-02-wav-files' delim '02-calibrated' delim 'model-ac-2-close-ane.wav'];
     catch
         warning('Enter you wav filenames...')
     end

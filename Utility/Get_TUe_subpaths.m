@@ -73,6 +73,10 @@ elseif strcmp(type,'tb_Loudness_v12')
     
     misc.WAV               = [path 'WAV' delim];
     
+elseif strcmp(type,'tb_Misc')
+    
+    misc.EnvelopeModels     = [path 'EnvelopeModels' delim];
+    
 elseif strcmp(type,'tb_NMT')
     
     misc.Filterbank        = [path 'Matlab' delim 'Filterbank' delim];

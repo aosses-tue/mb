@@ -13,7 +13,7 @@ function [h ha stats] = PsySoundCL_Figures(param,res1, res2, option)
 % (25/02/2015) L96  / 12    - 'sharpness'           NO          NO
 % (25/02/2015) L117 / 12    - 'loudness'            NO          NO
 % (25/02/2015) L417 / 12    - 'loudness-percentiles'
-% (XX/XX/2015)      / 12    - 'specific-loudness'   YES         NO
+% (01/03/2015) L345 / 12    - 'specific-loudness'   YES         NO
 % (05/02/2015) L475 / 15    - 'roughness'           NO          YES
 %       15                  - 'specific-roughness'  YES         YES
 % (29/01/2015) L249 /       - 'average-power-spectrum' 

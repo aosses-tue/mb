@@ -190,8 +190,12 @@ end
 
 set(hgcf, 'Units', obj.I_Unit);
 fpos = get(hgcf, 'Position');
-fpos(3:4) = [obj.I_Width obj.I_Height];
-% set(hgcf, 'Position', fpos);
+
+ratio = obj.I_Width/obj.I_Height;
+
+fpos(3) = [obj.I_Width*ratio];
+set(hgcf, 'Position', fpos);
+
 set(hgcf, 'Units', 'pixels');
 
 set(hgcf, 'PaperUnits', obj.I_Unit)

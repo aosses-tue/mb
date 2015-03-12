@@ -1,5 +1,5 @@
-function [STIs MTF_mean MTF_std outs] = Get_STI(insig,noise_name,fs,testSNRs)
-% function [STIs MTF_mean MTF_std outs] = Get_STI(insig,noise_name,fs,testSNRs)
+function [STIs MTF_mean MTF_std outs] = Get_STI(insig,noise_name,fs,testSNRs,SPL)
+% function [STIs MTF_mean MTF_std outs] = Get_STI(insig,noise_name,fs,testSNRs,SPL)
 %
 % File analysed step by step by Alejandro Osses
 % Adapted from: STI_and_SNRenv_DEMO.m
@@ -9,12 +9,21 @@ if nargin < 4
     testSNRs = -6:2:6; % The input SNRs
 end
 
-insig               = resample(insig,fs,22050);
+if nargin < 5
+    SPL     = 65; % The input SNRs
+end
+
+fsanalysis  = 22050;
+insig       = resample(insig,fsanalysis,fs);
+fs       	= fsanalysis;
+
 [noise fs_n bits]   = Wavread(noise_name); % Load the noise file
 
-if (fs_n~= fs)
-    noise   = resample(noise,fs ,fs_n);
+if fs_n~= fs
+    
+    noise   = resample(noise,fs,fs_n);
     fs_n    = fs;
+    
 end
 
 Ts  = 1/fs;
@@ -23,9 +32,7 @@ t   = 0:Ts:T;
 t   = t(1:end-1);
 N   = length(t);
 
-% scale the speech file to 65 dB SPL
-
-SPL = 65;
+% scale the speech file to SPL in dB
 speech  = insig/std(insig)*10^((SPL)/20);
 noise   = noise(1:N)';
 

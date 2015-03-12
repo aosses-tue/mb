@@ -7,6 +7,7 @@ tmax = 5; % just going to process 5 seconds
 nSents = 5; % use a number between 1 and 10, % number of concatenated sentences 
 
 bPart1 = 0;
+bPart2 = 1;
 
 fnoise1 = 'SSN_HINT_22kHz.wav';
 fnoise2 = 'SSN_HINT_modReduced_-20dB.wav';
@@ -38,6 +39,8 @@ grid on
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
 
+if bPart2
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Answer 4: How does the STI change as a function of the input SNR?
 load Danish_HINT_10sentence_samples_22kHz % sentences stored as sentenceArray{i} with i from 1 to 10
 fs = 22050;
@@ -92,6 +95,7 @@ legend('SSN', 'Mod-filtered SSN','Location','EastOutside');
 
 disp('')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+end
 
 function ymean = Get_values_OB(x,fs,AudioBands)
 

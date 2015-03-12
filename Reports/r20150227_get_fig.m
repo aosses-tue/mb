@@ -1,5 +1,5 @@
-function r20150227_update
-% function r20150227_update
+function [h ha] = r20150227_get_fig(acmode,bAne,fnameidx)
+% function [h ha] = r20150227_get_fig(acmode,bAne,fnameidx)
 %
 % 1. Description:
 %
@@ -14,46 +14,8 @@ function r20150227_update
 % Last use on   : 24/02/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-bDiary = 0;
-Diary(mfilename,bDiary);
-
-close all
-                % ac    N - anechoic    N - reverberant
-                % mode  5   50  95      5   50  95
-matrix4conv = [ 2       1.1  2.1  2.7     1.0  2.3     3.0; ... % measured
-                2       0.9  2.0  2.6     0.9  1.9     2.9;... % modelled
-                4       3.9  5.7  7.0     3.6  5.5     6.8;... % measured
-                4       3.1  5.4  7.8     3.1  5.0     7.6];   % modelled
-DR_ane = matrix4conv(:,4)-matrix4conv(:,2);
-DR_rev = matrix4conv(:,7)-matrix4conv(:,5);
-
-factor = 10; % 1 decimal
-matrix4latex = round( factor*[matrix4conv(:,[1 2:4]) DR_ane matrix4conv(:,[5:7]) DR_rev] )/factor;
-
-disp('%%%%%% Start copying here:')
-var2latex(matrix4latex);
-disp('%%%%%% End copying here: ')
-
-M       = [1.58 0 1.68];
-
-S2s     = [ 0.67 0 2.23];
-S2l     = [-0.67 0 2.23];
-
-d2 = [norm(S2s-M) norm(S2l-M)];
-
-S1      = [0 0 2.23];
-d1      = norm(S1-M);
-
-S1img   = [ 0    0 -2.23];
-S2imgs  = [ 0.67 0 -2.23];
-S2imgl  = [-0.67 0 -2.23];
-
-d2img   = [norm(S2imgs-M) norm(S2imgl-M)];
-d1img   = norm(S1img-M);
-
-acmode = 2;
-bAne = 1;
 bRev = ~bAne;
+ha = [];
 
 if ~isunix
     dir = 'D:\Documenten-TUe\01-Text\05-Doc-TUe\lx2015-06-01-Euronoise\Figures\';
@@ -73,9 +35,9 @@ switch acmode
     case 2
         fn = 424.4;
         xlimFFT     = [380 480];
-        ylimFFT     = [10 60];
+        ylimFFT     = [10 55];
         ylimLoud    = [.8 3.4];
-        xlimFluct   = [3 8.5];
+        xlimFluct   = [2.8 8.5];
         ylimFluctmax = [-1 2.5]; % diff
         ylimFluctmin = [-2 8]; % diff
         ylimF0      = [415 445];
@@ -94,7 +56,7 @@ switch acmode
         xlimFFT     = [750 950];
         ylimFFT     = [10 70];
         ylimLoud    = [2.5 7.5];
-        xlimFluct   = [6 9];
+        xlimFluct   = [5.8 9.2];
         ylimFluctmax = [-1.5 0]; % diff
         ylimFluctmin = [3.5 5]; % diff
         ylimF0      = [800 900];
@@ -119,7 +81,7 @@ fname = {   'fig-average-power-spectrum-analyser-01', ...   % 1. FFT
             'fig-loudness-fluctuation-min-analyser-12' };   % 5.
 
         
-for i = 1 % 1:length(fname)
+for i = fnameidx
     figname = [dir subdir1 fname{i}];
     openfig([figname '.fig']);
 
@@ -168,9 +130,6 @@ for i = 1 % 1:length(fname)
         
         set(ha(end-1),'YLim',ylimF0);
         set(ha(end)  ,'YLim',ylimF0diff);
-        % figure;
-        % plot(t/T4(1),y1), hold on
-        % plot(t/T4(2),y2,'r')
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     elseif strcmp(fname{i},'fig-loudness-analyser-12')
@@ -191,12 +150,6 @@ for i = 1 % 1:length(fname)
         
     end
         
-    Saveas(gcf,[figname '-f']);
-    
-end
-
-if bDiary
-	diary off
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,24 +1,24 @@
 function misc = Start_TUe
 % function misc = Start_TUe
 %
-% 1. Summary: 
-%       - Initialises AMS Toolbox
+% 1. Description: 
+%       - Initialises AMT Toolbox
 %       - Gives several directories coded in the struct 'misc'
 %
-% 2. Additional info:
-%   Tested cross-platform: Yes
-%
-% 3. Use:
+% 2. Use:
 %       If working connected to TUe server either physically or remotely, 
 %       set info.bOnline to 1 otherwise set it to 0
 % 
-% 4. Stand-alone example:
+% 3. Stand-alone example:
 %       Start_TUe;
 %
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% 4. Additional info:
+%   Tested cross-platform: Yes
+% 
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 01/05/2014
-% Last update on: 25/08/2014
-% Last use on   : 25/08/2014
+% Last update on: 12/03/2015
+% Last use on   : 12/03/2015
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 misc = Get_TUe_paths;
@@ -30,6 +30,12 @@ if nargout == 0
     if isfield(misc,'tb_Loudness_v12')
         misc_sub = Get_TUe_subpaths('tb_Loudness_v12');
         disp(['Adding paths under: tb_Loudness_v12'])
+        Add_paths(misc_sub);
+    end
+    
+    if isfield(misc,'tb_Misc')
+        misc_sub = Get_TUe_subpaths('tb_Misc');
+        disp(['Adding paths under: tb_Misc'])
         Add_paths(misc_sub);
     end
     
