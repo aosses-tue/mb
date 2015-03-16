@@ -17,7 +17,13 @@ function r20150313_update
 bDiary = 0;
 Diary(mfilename,bDiary);
 
+bPart1 = 0;
+bPart2 = 1;
+
 close all
+
+if bPart1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 path    = Get_TUe_paths('db_voice_of_dragon');
 dirm    = [path '02-Wav-files'           delim '2015-02-wav-files' delim '02-calibrated' delim];
@@ -81,14 +87,39 @@ for i = 8:14
 end
 legend(label1, label2)%,'Location','EastOutside');
 
-% xlabel('Input SNR (dB)')
-% ylabel('STI')
-% ylim([0 1])
-% xlim([-7 7])
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+end
 
-% grid on
+if bPart2
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-disp('')
+dir = 'D:\Documenten-TUe\02-Experiments\2015-APEX-my-experiments\Masking\dau1996b\';
+file1 = [dir 'dau1996b-3AFC-multi-results-AO.apr.xml'];
+file2 = [dir 'dau1996b-3AFC-multi-results-RK.apr.xml'];
+
+stim1 = [dir 'Stimuli' delim 'dau1996b_expI3_stim01-85.wav']; % Hanning (check this out)
+
+[x1 fs] = Wavread(stim1);
+t1 = ( 0:length(x1)-1 )/fs;
+
+figure;
+plot(t1,x1);
+
+opts.N4mean = 10;
+opts.bPlot = 0;
+[SRTs1 SRTdev1] = quick_staircases(file1,opts);
+[SRTs2 SRTdev2] = quick_staircases(file2,opts);
+
+stim_durations = [10 20 40 80 160 320];
+
+figure;
+errorbar(stim_durations, mean([85+SRTs1; 85+SRTs2]),std([85+SRTs1; 85+SRTs2]), 'o-');
+xlabel('Signal duration [ms]')
+ylabel('Masked threshold [dB SPL]')
+grid on
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+end
 
 if bDiary
 	diary off

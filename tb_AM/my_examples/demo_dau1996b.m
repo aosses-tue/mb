@@ -2,7 +2,8 @@ function outs = demo_dau1996b(options)
 % function outs = demo_dau1996b(options)
 %
 % 1. Description:
-%       Recreates simulations as presented in Dau1996b
+%       Recreates simulations as presented in Dau1996b. If stimuli are not
+%       found, then they are along this script generated.
 % 
 % 2. Stand-alone example:
 %       options.bSave = 1;
@@ -19,7 +20,7 @@ function outs = demo_dau1996b(options)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 07/10/2014
 % Last update on: 22/10/2014 % Update this date manually
-% Last use on   : 22/10/2014 % Update this date manually
+% Last use on   : 13/03/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin == 0
@@ -268,15 +269,15 @@ switch nExperiment
         stim_durations      = options.stim_durations;
         N_stim              = length(stim_durations);
         
-        infilename      = 'dau1996b_expI3_noisemasker'; % used in Exp 3
-        infilename1        = ['dau1996b_expI3_stim01-' num2str(options.dB_SPL)];
-        infilename2        = ['dau1996b_expI3_stim02-' num2str(options.dB_SPL)];
-        infilename3        = ['dau1996b_expI3_stim03-' num2str(options.dB_SPL)];
+        infilename          = 'dau1996b_expI3_noisemasker'; % used in Exp 3
+        infilename1         = ['dau1996b_expI3_stim01-' num2str(options.dB_SPL)];
+        infilename2         = ['dau1996b_expI3_stim02-' num2str(options.dB_SPL)];
+        infilename3         = ['dau1996b_expI3_stim03-' num2str(options.dB_SPL)];
 
         if N_stim > 3
-            infilename4        = ['dau1996b_expI3_stim04-' num2str(options.dB_SPL)];
-            infilename5        = ['dau1996b_expI3_stim05-' num2str(options.dB_SPL)];
-            infilename6        = ['dau1996b_expI3_stim06-' num2str(options.dB_SPL)];
+            infilename4     = ['dau1996b_expI3_stim04-' num2str(options.dB_SPL)];
+            infilename5     = ['dau1996b_expI3_stim05-' num2str(options.dB_SPL)];
+            infilename6     = ['dau1996b_expI3_stim06-' num2str(options.dB_SPL)];
         end
 
         try 
@@ -322,47 +323,17 @@ switch nExperiment
         if options.bGenerate
             
             nExperiment = 3;
-            [noise_onset, t_duration, t_silence_aft, t_total_duration] = Create_noise_dau1996_default(nExperiment);
+            outs = demo_dau1996b_gen_stim(nExperiment,options);
             
-            if options.bSave_noise == 1
-                innoise = Create_noise_dau1996(nExperiment,filename,options);
-            end
-            
-            % Generating the test tones
-            % Common stim params
-            onset   = noise_onset + 100e-3; % noise_onset is 0 by default
-            f       = 3000;
-            win     = 1; % 1 = Hanning window
-
-            % Stim 1
-            dur     = 10e-3;
-            [instim1, t1] = Create_sin4this_exp(f,0,dur,fs,win,onset,dB_SPL,t_total_duration);
-            Wavwrite(instim1,fs,filename1);
-
-            % Stim 2
-            dur     = 20e-3;
-            [instim2, t2] = Create_sin4this_exp(f,0,dur,fs,win,onset,dB_SPL,t_total_duration);
-            Wavwrite(instim2,fs,filename2);
-
-            % Stim 3
-            dur     = 40e-3;
-            [instim3, t3] = Create_sin4this_exp(f,0,dur,fs,win,onset,dB_SPL,t_total_duration);
-            Wavwrite(instim3,fs,filename3);
-
+            innoise = outs.innoise;
+            instim1 = outs.instim1;
+            instim2 = outs.instim2;
+            instim3 = outs.instim3;
             if N_stim > 3
-                dur     = stim_durations(4)*1e-3;
-                [instim4, t4] = Create_sin4this_exp(f,0,dur,fs,win,onset,dB_SPL,t_total_duration);
-                Wavwrite(instim4,fs,filename4);
-
-                dur     = stim_durations(5)*1e-3;
-                [instim5, t5] = Create_sin4this_exp(f,0,dur,fs,win,onset,dB_SPL,t_total_duration);
-                Wavwrite(instim5,fs,filename5);
-
-                dur     = stim_durations(6)*1e-3;
-                [instim6, t6] = Create_sin4this_exp(f,0,dur,fs,win,onset,dB_SPL,t_total_duration);
-                Wavwrite(instim6,fs,filename6);
+                instim4 = outs.instim4;
+                instim5 = outs.instim5;
+                instim6 = outs.instim6;
             end
-
         end
 
         opts.bPlot= bPlot; 

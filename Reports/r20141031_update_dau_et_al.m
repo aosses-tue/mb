@@ -24,13 +24,13 @@ close all
 options.dB_SPL_noise = 77;
 criterion_corr = 6.5;
 
-bDeterThres     = 1;
+bDeterThres     = 0;
 bIntRepr        = 0;
 
 options.method = 'dau1996a';
-bExpIA1 = 1; % Temporal position
+bExpIA1 = 0; % Temporal position
 bExpIA2 = 0; % Relative phase
-bExpIA3 = 0; % Signal integration
+bExpIA3 = 1; % Signal integration
 bExpIB0 = 0; % Forward masking
 bExpIC0 = 0; % Backward masking
 
