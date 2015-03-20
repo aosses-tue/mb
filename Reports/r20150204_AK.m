@@ -5,6 +5,9 @@ function r20150204_AK
 %       Little favour that Armin asked me to test the phase cancellation. 
 %       Two audio files were generated and presented to Armin presentially.
 % 
+%       Complex tone consisting of a sine tone with f0 = 6 Hz and its harmonics
+%       that lie between 2000 and 8000 Hz
+% 
 %       Some concepts:
 %           - Random phase
 %           - Lateral inhibition (at some point of the conversation)
@@ -14,7 +17,7 @@ function r20150204_AK
 %           nonlinearities that are better addressed by the Strube model.
 % 
 % 2. Stand-alone example:
-%       r20150204;
+%       r20150204_AK;
 % 
 % 3. Additional info:
 %       Tested cross-platform: No
@@ -22,7 +25,7 @@ function r20150204_AK
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 04/02/2015
 % Last update on: 04/02/2015 % Update this date manually
-% Last use on   : 04/02/2015 % Update this date manually
+% Last use on   : 16/03/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 bDiary = 0;
@@ -30,13 +33,13 @@ Diary(mfilename,bDiary);
 
 output_dir = [Get_TUe_paths('outputs') 'AK' delim];
 
-dur = 4;
-fs = 44100;
+dur = 4; % s
+fs = 44100; % Hz
 
 A = 0.005;
 f0 = 6;
-n_harm = ceil(2000/f0):floor(8000/f0);
-fn = f0*n_harm;
+n_harm = ceil(2000/f0):floor(8000/f0); % harmonics: multiples of f0
+fn = f0*n_harm; % harmonics
 
 a = -pi;
 b = pi;
@@ -45,8 +48,8 @@ random_phases = a + (b-a).*rand(length(fn),1);
 start_phase = pi/2; % starts in amplitude 1
 [y, t]  = Create_sin_phase(f0,start_phase, dur,fs);
 
-yh      = zeros(size(y));
-yh_rand = zeros(size(y));
+yh      = zeros(size(y)); % memory allocation
+yh_rand = zeros(size(y)); % memory allocation
 
 for i = 1:length(fn)
     ytmp  = Create_sin_phase(fn(i),start_phase,dur,fs);
@@ -56,7 +59,7 @@ for i = 1:length(fn)
 
 end
 
-yt = A*y+A*yh;
+yt      = A*y+A*yh;
 yt_rand = A*y+A*yh_rand;
 
 lvl = 70;
@@ -69,7 +72,16 @@ Wavwrite(yt_rand,fs,sprintf('%scos-f-phase-rand',output_dir));
 figure;
 plot(t,yt), grid on, hold on
 plot(t,yt_rand,'r')
+legend('phase-0','random phase')
+title('Cos tone + harmonics')
 
+K = 4096;
+figure;
+opts.fs = fs;
+freqfft(yt,K,opts); hold on
+[y ydB f] = freqfft(yt_rand,K,opts);
+plot(f,ydB,'r');
+legend('phase-0','random phase')
 
 if bDiary
 	diary off

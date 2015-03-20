@@ -12,27 +12,13 @@ function [onset, dur, t_sil_aft, t_total_duration] = Create_noise_dau1996_defaul
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 23/10/2014
-% Last update on: 23/10/2014 % Update this date manually
-% Last use on   : 27/10/2014 % Update this date manually
+% Last update on: 16/03/2015 % Update this date manually
+% Last use on   : 16/03/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    
 switch nTag
-    case 1
-        
-        onset       = 100e-3;
-        dur         = 300e-3;
-        t_sil_aft   = 200e-3;
-        t_total_duration = onset + dur + t_sil_aft; 
-        
-    case 2
-        
-        onset       = 100e-3;
-        dur         = 300e-3;
-        t_sil_aft   = 200e-3;
-        t_total_duration = onset + dur + t_sil_aft; 
-        
-    case 3
-        
+    case {1 2 3} % it uses the same noise
+                
         onset       = 0e-3;
         dur         = 600e-3;
         t_sil_aft   = 0e-3;

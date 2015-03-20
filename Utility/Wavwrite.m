@@ -10,9 +10,9 @@ function Wavwrite(x,fs,outputfilename)
 % 4. Stand-alone example:
 %
 % Programmed by Alejandro Osses, HIT, TU/e, the Netherlands, 2014
-% Created on: 13/5/2014
-% Last update: 13/5/2014 % Update this date manually
-% Last used: 27/5/2014 % Update this date manually
+% Created on    : 13/05/2014
+% Last update on: 13/05/2014 % Update this date manually
+% Last use on   : 16/03/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 wavwrite(x,fs,[outputfilename]);

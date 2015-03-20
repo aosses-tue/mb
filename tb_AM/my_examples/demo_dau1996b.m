@@ -28,7 +28,7 @@ if nargin == 0
     options = [];
 end
 
-options = Ensure_field(options, 'nExperiment',3); % Exp. 3 - signal integration
+options = Ensure_field(options, 'nExperiment',2); % Exp. 3 - signal integration
 options = Ensure_field(options, 'bSave', 0);
 options = Ensure_field(options, 'bPlot', 1); % just main plot
 options = Ensure_field(options, 'method','dau1996'); % dau1996  uses dau1996preproc
@@ -38,10 +38,11 @@ bPlot = 0; % This is for getting a lot of plots
 
 options = Ensure_field(options, 'dB_SPL'      , 85);
 options = Ensure_field(options, 'dB_SPL_noise', 77);
+options = Ensure_field(options, 'output_dir', Get_TUe_paths('outputs'));
+paths.outputs   = options.output_dir;
 
 h = []; % we initialise handle for Figures
-paths.outputs   = Get_TUe_paths('outputs');
-        
+
 %% II.A Deterministic maskers: simultaneous masking
 
 % Common parameters:
@@ -140,17 +141,16 @@ switch nExperiment
             eval(exp5);
             
         end
-        
+    
+    %% 2. Relative phase: 1kHz tone, onset = 115 ms, phase_i between 0 and 2*pi
     case 2
-    %% 2. Relative phase
-        % 1kHz tone, onset = 115 ms, phase_i between 0 and 2*pi
-        infilename          = 'dau1996b_expI1_noisemasker'; % used in Exp 1 and 2
+    
+        infilename          = 'dau1996b_expI_noisemasker'; % used in Exp 1 and 2
         infilename1        = ['dau1996b_expI2_stim-5ms-' num2str(options.dB_SPL) '-phase-0-pi'];
         opts.fc_idx         = 1000;
-        
-        options = Ensure_field(options,'test_phases',[0:2/8:2]);
+        options.test_phases = [0:2/8:2]; % times pi
         test_phases = options.test_phases;
-        
+
         N_conditions = length(test_phases);
         
         for i = 2:N_conditions
@@ -190,36 +190,28 @@ switch nExperiment
         if options.bGenerate
             
             nExperiment = 2;
-            [t_silence_bef, t_duration, t_silence_aft, t_total_duration] = Create_noise_dau1996_default(nExperiment);
+            outs = demo_dau1996b_gen_stim(nExperiment,options);
             
-            if options.bSave_noise == 1
-                innoise = Create_noise_dau1996(nExperiment,filename,options);
-            end
+            innoise = outs.innoise;
+            instim1 = outs.instim1;
+            instim2 = outs.instim2;
+            instim3 = outs.instim3;
+            instim4 = outs.instim4;
+            instim5 = outs.instim5;
+            instim6 = outs.instim6;
+            instim7 = outs.instim7;
+            instim8 = outs.instim8;
+            instim9 = outs.instim9;
+            t = ( 0:length(instim1)-1 )/fs;
             
-            % Generating the test tones
-
-            % Common stim params:
-            onset   = t_silence_bef + 115e-3; % temporarily onset equal to the one of the noise + 115 ms
-            f       = 1000;
-            win     = 1; % 1 = Hanning window
-
-            % Stim 1
-            dur     = 5e-3;
-            [instim1, t1] = Create_sin4this_exp(f,test_phases(1)*pi,dur,fs,win,onset,dB_SPL,t_total_duration);
-            Wavwrite(instim1,fs,filename1);
-
-            for i = 2:N_conditions
-                exp1 = sprintf('[instim%.0f, t%.0f] = Create_sin4this_exp(f,%.4f*pi,dur,fs,win,onset,dB_SPL,t_total_duration);',i,i,test_phases(i));
-                exp2 = sprintf('Wavwrite(instim%.0f,fs,filename%.0f);',i,i);
-                eval(exp1);
-                eval(exp2);
-            end
+            onset = 115e-3;
+            dur = 5e-3;
             
             nPlots = N_conditions + mod(N_conditions,2);
             figure;
             for i = 1:N_conditions
                 subplot( nPlots/2,2,i)
-                exp1 = sprintf('plot(t%.0f,instim%.0f); grid on',i,i);
+                exp1 = sprintf('plot(t,instim%.0f); grid on',i);
                 eval(exp1)
                 title(sprintf('initial phase=%.1f * pi',test_phases(i)))
                 xlim([onset-dur/4 onset+dur+dur/4]);
@@ -269,7 +261,7 @@ switch nExperiment
         stim_durations      = options.stim_durations;
         N_stim              = length(stim_durations);
         
-        infilename          = 'dau1996b_expI3_noisemasker'; % used in Exp 3
+        infilename          = 'dau1996b_expI_noisemasker'; % used in Exp 3
         infilename1         = ['dau1996b_expI3_stim01-' num2str(options.dB_SPL)];
         infilename2         = ['dau1996b_expI3_stim02-' num2str(options.dB_SPL)];
         infilename3         = ['dau1996b_expI3_stim03-' num2str(options.dB_SPL)];
@@ -569,23 +561,33 @@ switch nExperiment
         [noise_onset, noise_dur, t_silence_aft, t_total_duration] = Create_noise_dau1996_default(nExperiment);
         
         % noise_offset        = noise_onset + noise_dur;
-        test_dur            = 10e-3;
-        options             = Ensure_field(options,'test_onsets',noise_onset+[-100:30:-40,-20:4:20]*1e-3);
+        test_dur            = options.stim_durations*1e-3;
+        options             = Ensure_field(options,'test_onsets',noise_onset+ [-100:40:-20,-15:5:15]*1e-3); %[-100:30:-40,-20:4:20]*1e-3);
         test_onsets         = options.test_onsets;
+        N_conditions        = length(test_onsets);
+        
         opts.fc_idx         = 1000;
         
         stim_durations      = options.stim_durations;
-        N_stim              = length(stim_durations);
                 
         infilename          = 'dau1996b_expIB0_noisemasker';
-        infilename0        = ['dau1996b_expIB0_stim-10ms-' num2str(options.dB_SPL)];
+        infilename0         = ['dau1996b_expIB0_stim-10ms-' num2str(options.dB_SPL)];
+        infilename1         = [infilename0 '-1'];
+        for i = 2:N_conditions
+            exp1 = sprintf('infilename%.0f = [infilename0 ''-%.0f''];',i,i);
+            eval(exp1);
+        end
         
         try 
             [innoise fs] = Wavread([paths.outputs infilename  '.wav']);
             options.bSave_noise = 0;
             
             try
-                [instim0 fs] = Wavread([paths.outputs infilename0 '.wav']);
+                [instim1 fs] = Wavread([paths.outputs infilename1 '.wav']);
+                for i = 2:N_conditions
+                    exp1 = sprintf('[instim%.0f] = Wavread([paths.outputs infilename%.0f ''.wav'']);',i,i);
+                    eval(exp1);
+                end
                 options.bGenerate   = 0;
             catch
                 options.bGenerate   = 1;
@@ -612,38 +614,54 @@ switch nExperiment
                 innoise = Create_noise_dau1996(nExperiment,filename,options);
             end
             
-            %% Generating the test tones
-
-            onset   = t_silence_bef; % temporarily onset equal to the one of the noise
-            f       = 1000;
-            win     = 1; % 1 = Hanning window
-
-            % Stim 1
-            [instim0, t0] = Create_sin4this_exp(f,0,test_dur,fs,win,onset,dB_SPL,t_total_duration);
-            Wavwrite(instim0,fs,filename0);
+            options.bSave = 1;
+            outs = demo_dau1996b_gen_stim(nExperiment,options);
+            
+            instim1 = outs.instim1;
+            instim2 = outs.instim2;
+            instim3 = outs.instim3;
+            instim4 = outs.instim4;
+            instim5 = outs.instim5;
+            instim6 = outs.instim6;
+            instim7 = outs.instim7;
+            instim8 = outs.instim8;
+            instim9 = outs.instim9;
+            instim10 = outs.instim10;
+            % instim11 = outs.instim11;
+            % instim12 = outs.instim12;
+            % instim13 = outs.instim13;
+            % instim14 = outs.instim14;
+            
+            % %% Generating the test tones
+            % 
+            % onset   = t_silence_bef; % temporarily onset equal to the one of the noise
+            % f       = 1000;
+            % win     = 1; % 1 = Hanning window
+            % 
+            % % Stim 1
+            % [instim0, t0] = Create_sin4this_exp(f,0,test_dur,fs,win,onset,dB_SPL,t_total_duration);
+            % Wavwrite(instim0,fs,filename0);
             
         end
 
         opts.bPlot      = bPlot;
         
-        N_conditions = length(test_onsets);
+        %         if length(instim0) ~= length(innoise);
+        %             instim0 = [instim0; zeros(length(innoise)-length(instim0),1)];
+        %         end
         
         for i = 1:N_conditions
             
             time_offset = max( 50e-3, abs(min(test_onsets(i))) ); % samples to be added to both noise and stim
             tmp_noise = Gen_silence(               time_offset,fs);
-            tmp_insig = Gen_silence(test_onsets(i)+time_offset,fs);
-            N_added         = length(tmp_insig); 
+            % tmp_insig = Gen_silence(test_onsets(i)+time_offset,fs);
+            % N_added         = length(tmp_insig); 
             N_added_noise   = length(tmp_noise);
             
             tmp_innoise = [tmp_noise; innoise(1:end-N_added_noise)];
-            exp0 = sprintf('instim%.0f = [tmp_insig; instim0(1:end-N_added)];',i);
-            exp1 = sprintf('instim%.0f = [tmp_insig; instim0(1:end-N_added)];',i);
-            exp2 = sprintf('out_stim%.0f = Dau1996compare(tmp_innoise,instim%.0f,fs,opts);',i,i);
+            exp0 = sprintf('out_stim%.0f = Dau1996compare(tmp_innoise,instim%.0f,fs,opts);',i,i);
             
             eval(exp0);
-            eval(exp1);
-            eval(exp2);
             
             % % To plot stimuli uncomment the following lines (y-offset 
             % % introduced to better visualise the signals):
@@ -651,14 +669,14 @@ switch nExperiment
             % t = ( 1:length(instim1) )/fs; figure; plot(t,tmp_innoise+0.2,t,instim1-0.2)
             % t = ( 1:length(instim2) )/fs; figure; plot(t,tmp_innoise+0.2,t,instim2-0.2)
             
-            if N_conditions > 3 % remove fields to avoid 'out of memory'
-                
-                exp3 = sprintf('out_stim%.0f = Remove_field(out_stim%.0f,''outsig1'');',i,i);
-                exp4 = sprintf('out_stim%.0f = Remove_field(out_stim%.0f,''outsig2'');',i,i);
-                eval(exp3);
-                eval(exp4);
-                
-            end
+            %if N_conditions > 3 % remove fields to avoid 'out of memory'
+
+            exp3 = sprintf('out_stim%.0f = Remove_field(out_stim%.0f,''outsig1'');',i,i);
+            exp4 = sprintf('out_stim%.0f = Remove_field(out_stim%.0f,''outsig2'');',i,i);
+            eval(exp3);
+            eval(exp4);
+
+            %end
             
             exp5 = sprintf('outs.out_stim%.0f = out_stim%.0f;',i,i);
             eval(exp5);

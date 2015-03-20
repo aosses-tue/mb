@@ -25,7 +25,7 @@ for q	=	1:1:N;
 	Sig(q)	=	(1+(Mdept*sin(wstep*Fmod*q)))*sin(wstep*Fc*q);
 end
 
-Sig	=	Sig*db2amp(SPL-83)/mean(rms(Sig));
+Sig	=	Sig*db2amp(SPL-83)/mean(rms(Sig)); % -20 dBFS	<--> 60 dB SPL
 y	=	Sig;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -30,14 +30,14 @@ if nargin<5
 	N	=	8192;
 end
 
-Amp	=	db2amp(SPL-80);	% -20 dBFS	<--> 60 dB SPL
-wstep	=	2*pi/Fs;
-Sig	=	zeros(N,1);
-dw		=	0;
+Amp     = db2amp(SPL-80);	% -20 dBFS	<--> 60 dB SPL
+wstep	= 2*pi/Fs;
+Sig     = zeros(N,1);
+dw		= 0;
 
 for q	=	1:1:N;
-   dw			=	dw + wstep*( Fc + dF*sin(wstep*Fmod*q) );
-	Sig(q)	=	Amp*sin(dw);
+    dw      = dw + wstep*( Fc + dF*sin(wstep*Fmod*q) );
+	Sig(q)	= Amp*sin(dw);
 end
 
 y	=	Sig;

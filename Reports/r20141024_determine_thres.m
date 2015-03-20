@@ -1,34 +1,51 @@
-function r20141024_determine_thres(nStimuli)
-% function r20141024_determine_thres(nStimuli)
+function r20141024_determine_thres(nStimuli,pathaudio)
+% function r20141024_determine_thres(nStimuli,pathaudio)
 %
 % 1. Description:
 %
-% 2. Additional info:
-%       Tested cross-platform: No
-%
-% 3. Stand-alone example:
+% 2. Stand-alone example:
 %       nStimuli = 1; % determine thresholds for 10 ms test stimuli
 %       nStimuli = 2; % determine thresholds for  5 ms test stimuli
 %       r20141024_running_noise(nStimuli);
 % 
+% 3. Additional info:
+%       Tested cross-platform: No
+% 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 23/10/2014
 % Last update on: 27/10/2014 % Update this date manually
-% Last use on   : 27/10/2014 % Update this date manually
+% Last use on   : 19/03/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 bDiary = 0;
 Diary(mfilename,bDiary);
 
 % method = 'dau1996'; % with overshoot limiting
-method = 'dau1996'; % without overshoot limiting
+method = 'dau1996a'; % without overshoot limiting
 
 %% Reading and adjusting onset of test stimuli
 
+bNew = 1;
+bOld = ~bNew;
+
 lvl_ref = 85; 
 
-pathaudio = Get_TUe_paths('outputs');
-% pathaudio = 'D:\Output\';
+if bOld
+    if nargin < 2
+        pathaudio = Get_TUe_paths('outputs');
+    end
+end
+
+if bNew
+    
+    p = Get_date;
+    if nargin < 2
+        pathaudio = [Get_TUe_paths('outputs') mfilename p.date4files delim];
+        Mkdir(pathaudio);
+        %pathaudio = 'D:\Documenten-TUe\02-Experiments\2015-APEX-my-experiments\Masking\dau1996b\Stimuli\';
+    end
+    
+end
 
 if nargin == 0
     close all
@@ -40,25 +57,38 @@ switch nStimuli
         % test signals with onset at 100 ms
         % noise        with onset at   0 ms 
         lvl_dB  = [66 70 78 82];
-        filename_N      = [ pathaudio 'dau1996b_expI1_noisemasker.wav'];
-        filename_S1   = [ pathaudio 'dau1996b_expI1_stim-5ms-' num2str(lvl_dB(1)) '.wav'];
-        filename_S2   = [ pathaudio 'dau1996b_expI1_stim-5ms-' num2str(lvl_dB(2)) '.wav'];
-        filename_S3   = [ pathaudio 'dau1996b_expI1_stim-5ms-' num2str(lvl_dB(3)) '.wav'];
-        filename_S4   = [ pathaudio 'dau1996b_expI1_stim-5ms-' num2str(lvl_dB(4)) '.wav'];
-        filename_Sref = [ pathaudio 'dau1996b_expI1_stim-5ms-' num2str(lvl_ref) '.wav'];
-        onsetS        = [125]*1e-3; % fixed
-        durS          = 5e-3;
+        onsetS  = [125]*1e-3; % fixed
+        durS    = 5e-3;
+        
+        if bNew
+            filename_N    = [pathaudio 'dau1996b_expI_noisemasker.wav'];
+        end
+        
+        if bOld
+            
+            filename_N    = [pathaudio 'dau1996b_expI1_noisemasker.wav'];
+            filename_S1   = [pathaudio 'dau1996b_expI1_stim-5ms-' num2str(lvl_dB(1)) '.wav'];
+            filename_S2   = [pathaudio 'dau1996b_expI1_stim-5ms-' num2str(lvl_dB(2)) '.wav'];
+            filename_S3   = [pathaudio 'dau1996b_expI1_stim-5ms-' num2str(lvl_dB(3)) '.wav'];
+            filename_S4   = [pathaudio 'dau1996b_expI1_stim-5ms-' num2str(lvl_dB(4)) '.wav'];
+            filename_Sref = [pathaudio 'dau1996b_expI1_stim-5ms-' num2str(lvl_ref) '.wav'];
+            
+        end
         
     case 10 % check this experiment number
         lvl_dB  = [56 66 76 85];
-        filename_N      = [ pathaudio 'dau1996b_expIB0_noisemasker.wav'];
-        filename_S1   = [ pathaudio 'dau1996b_expIB0_stim-10ms-' num2str(lvl_dB(1)) '.wav'];
-        filename_S2   = [ pathaudio 'dau1996b_expIB0_stim-10ms-' num2str(lvl_dB(2)) '.wav'];
-        filename_S3   = [ pathaudio 'dau1996b_expIB0_stim-10ms-' num2str(lvl_dB(3)) '.wav'];
-        filename_S4   = [ pathaudio 'dau1996b_expIB0_stim-10ms-' num2str(lvl_dB(4)) '.wav'];
-        filename_Sref = [ pathaudio 'dau1996b_expIB0_stim-10ms-' num2str(lvl_ref) '.wav'];
-        onsetS        = [10]*1e-3;
-        durS          = 10e-3;
+        onsetS  = [10]*1e-3;
+        durS    = 10e-3;
+        
+        if bOld
+            filename_N    = [pathaudio 'dau1996b_expIB0_noisemasker.wav'];
+            filename_S1   = [pathaudio 'dau1996b_expIB0_stim-10ms-' num2str(lvl_dB(1)) '.wav'];
+            filename_S2   = [pathaudio 'dau1996b_expIB0_stim-10ms-' num2str(lvl_dB(2)) '.wav'];
+            filename_S3   = [pathaudio 'dau1996b_expIB0_stim-10ms-' num2str(lvl_dB(3)) '.wav'];
+            filename_S4   = [pathaudio 'dau1996b_expIB0_stim-10ms-' num2str(lvl_dB(4)) '.wav'];
+            filename_Sref = [pathaudio 'dau1996b_expIB0_stim-10ms-' num2str(lvl_ref) '.wav'];
+            
+        end
     
 end
 

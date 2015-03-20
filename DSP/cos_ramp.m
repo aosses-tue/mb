@@ -3,11 +3,11 @@ function ramp = cos_ramp(sig_len, fs, attack, release)
 %
 % Cos_ramp: Generates cosine ramp with raising/falling ramp at the
 % begninning/end (ramps have similar lengths)
- 
+%  
 % INPUT:
-% fs :      Guess what
+% fs     :  Sampling frequency
 % sig_len:  Length of signal (in samples)
-% attack:   Attack time of raising envelope (in ms)
+% attack :  Attack time of raising envelope (in ms)
 % release:  Release time of falling envelope (optional)
 %
 % OUTPUT:

@@ -1,38 +1,75 @@
-function r20141031_update_dau_et_al
-% function r20141031_update_dau_et_al
+function r20141031_update_dau_et_al(options)
+% function r20141031_update_dau_et_al(options)
 %
 % 1. Description:
-%
+%       Applies either the dau1996a or the dau1996 model. The dau1996a is the
+%       model as published in dau1996a (see Mendeley) which does not include
+%       overshoot limiting. The dau1996 includes overshoot limiting.
+%       Overshoot limitation was one of the proposed improvements, as stated
+%       in the paper, which is how the authors explained the differences between
+%       measured and predicted masking thresholds in the backward  masking
+%       coondition.
+% 
 % 2. Stand-alone example:
+%       % 2.1 Example:
 %       r20141031_update_dau_et_al;
 %
+%       % 2.2 Example:
+%       opts.method = 'dau1996';
+%       r20141031_update_dau_et_al(opts);
+% 
+%       % 2.3 Example:
+%       opts.method = 'dau1996a';
+%       r20141031_update_dau_et_al(opts);
+% 
 % 3. Additional info:
 %       Tested cross-platform: Yes
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 27/10/2014
-% Last update on: 27/10/2014 % Update this date manually
-% Last use on   : 27/10/2014 % Update this date manually
+% Last update on: 18/03/2015 % Update this date manually
+% Last use on   : 19/03/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 bDiary = 0;
 Diary(mfilename,bDiary);
 
+if nargin < 1
+    options = [];
+end
+
 close all
 
 % Common parameters:
 options.dB_SPL_noise = 77;
-criterion_corr = 6.5;
+criterion_corr  = 6.5; % Arbitrary number
 
 bDeterThres     = 0;
 bIntRepr        = 0;
 
-options.method = 'dau1996a';
-bExpIA1 = 0; % Temporal position
-bExpIA2 = 0; % Relative phase
-bExpIA3 = 1; % Signal integration
-bExpIB0 = 0; % Forward masking
-bExpIC0 = 0; % Backward masking
+% options = Ensure_field(options,'method','dau1996a'); % no overshoot limit
+options = Ensure_field(options,'method','dau1996'); % overshoot limit = 10
+
+options = Ensure_field(options,'bExpIA1',0); 
+options = Ensure_field(options,'bExpIA2',0); 
+options = Ensure_field(options,'bExpIA3',0); 
+options = Ensure_field(options,'bExpIB0',0); 
+options = Ensure_field(options,'bExpIC0',1); 
+
+options.criterion_corr = criterion_corr;
+
+bExpIA1 = options.bExpIA1; % Temporal position    L292 on 18/03/2015
+bExpIA2 = options.bExpIA2; % Relative phase       L366 on 18/03/2015
+bExpIA3 = options.bExpIA3; % Signal integration   L442 on 18/03/2015, tested OK
+bExpIB0 = options.bExpIB0; % Forward masking      L
+bExpIC0 = options.bExpIC0; % Backward masking     L613 on 18/03/2015, tested OK
+
+p = Get_date;
+pathaudio = [Get_TUe_paths('outputs') mfilename p.date4files delim];
+Mkdir(pathaudio);
+options.output_dir = pathaudio;
+
+output_dir = pathaudio; % everything stored in the same directory
 
 h = [];
 
@@ -49,12 +86,12 @@ if bIntRepr == 1
     
     lvl_dB = [56 76 85];
     
-    filename_N      = [ pathaudio 'dau1996b_expIIB0_noisemasker.wav'];
-    filename_Sinf   = [ pathaudio 'dau1996b_expIIB0_stim-10ms-' num2str(lvl_dB(1)) '.wav'];
-    filename_Sthr   = [ pathaudio 'dau1996b_expIIB0_stim-10ms-' num2str(lvl_dB(2)) '.wav'];
-    filename_Sref   = [ pathaudio 'dau1996b_expIIB0_stim-10ms-' num2str(lvl_dB(3)) '.wav'];
+    filename_N      = [pathaudio 'dau1996b_expIIB0_noisemasker.wav'];
+    filename_Sinf   = [pathaudio 'dau1996b_expIIB0_stim-10ms-' num2str(lvl_dB(1)) '.wav'];
+    filename_Sthr   = [pathaudio 'dau1996b_expIIB0_stim-10ms-' num2str(lvl_dB(2)) '.wav'];
+    filename_Sref   = [pathaudio 'dau1996b_expIIB0_stim-10ms-' num2str(lvl_dB(3)) '.wav'];
     
-    [insig_N  fs]   = Wavread(filename_N);
+    [insig_N  fs] = Wavread(filename_N);
     [insig_S1 fs] = Wavread(filename_Sinf);
     [insig_S2 fs] = Wavread(filename_Sthr);
 	[insig_S3 fs] = Wavread(filename_Sref);
@@ -477,23 +514,12 @@ for i = 1:length(SPL_test)
     
 end
 
-mue1 = mue(1,:);
-mue2 = mue(2,:);
-mue3 = mue(3,:);
+%% Decision making:
+ptmp = Get_date;
+filename_mat = [output_dir 'mue-' ptmp.date2print '.mat'];
+save(filename_mat,'mue','options');
 
-Threshold3(1) = interp1(mue1,SPL_test,criterion_corr);
-Threshold3(2) = interp1(mue2,SPL_test,criterion_corr);
-Threshold3(3) = interp1(mue3,SPL_test,criterion_corr);
-
-if N_conditions > 3
-    mue4 = mue(4,:);
-    mue5 = mue(5,:);
-    mue6 = mue(6,:);
-    
-    Threshold3(4) = interp1(mue4,SPL_test,criterion_corr);
-    Threshold3(5) = interp1(mue5,SPL_test,criterion_corr);
-    Threshold3(6) = interp1(mue6,SPL_test,criterion_corr);
-end
+Threshold3 = demo_dau1996b_decision(mue,SPL_test,criterion_corr);
 
 %% Saving figures
 figure;
@@ -502,16 +528,16 @@ xlabel('Signal duration [ms]')
 ylabel('Masked threshold [dB]')
 title(sprintf('%s. Criterion = %.1f', label_figure, criterion_corr))
 
-filename_Sref = [Get_TUe_paths('outputs') label_experiment '_Thres'];
+filename_Sref = [output_dir label_experiment '_Thres'];
 Saveas(gcf,filename_Sref);
 
 Thres_labels = [stim_durations; Threshold3];
 
-filename_Sref = [Get_TUe_paths('outputs') label_experiment '_Thres'];
+filename_Sref = [output_dir label_experiment '_Thres'];
 save(filename_Sref,'Threshold3');
 disp(['Variable saved as: ' filename_Sref '.mat']);
 
-filename_Sref = [Get_TUe_paths('outputs') label_experiment '_Thres_labels'];
+filename_Sref = [output_dir label_experiment '_Thres_labels'];
 save(filename_Sref,'Thres_labels');
 disp(['Variable saved as: ' filename_Sref '.mat']);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -597,7 +623,7 @@ disp(['Variable saved as: ' filename_Sref '.mat']);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
 
-%%
+%% Backward masking:
 if bExpIC0 == 1;
 
 Threshold = [];
@@ -612,7 +638,7 @@ noise_dur   = 200e-3;
 
 % SPL_test = 74;
 SPL_test = [10 16:10:76];
-test_onset_ref  = [-100:30:-40,-20:4:20]*1e-3;
+test_onset_ref  = [-100:40:-20,-15:5:15]*1e-3;
 % test_onset_ref  = [-30:10:10]*1e-3;
 
 options.test_onsets = noise_onset+test_onset_ref;
@@ -640,20 +666,20 @@ for i = 1:length(SPL_test)
     for j = 1:N_conditions
         exp1 = sprintf('template = outstest.out_stim%.0f.template_no_norm(:,idx);',j); % just to see whether it works
         exp2 = sprintf('mue(j,i) = optimaldetector(ir_stim%.0f,template);',j);
+        exp3 = sprintf('outstest = Remove_field(outstest,''out_stim%.0f'');',j); % Liberates a bit of memory after calculation
         eval(exp1);
         eval(exp2);
+        eval(exp3);
     end
     
 end
 
+%% Decision making:
+ptmp = Get_date;
+filename_mat = [output_dir 'mue-' ptmp.date2print '.mat'];
+save(filename_mat,'mue','options');
 
-
-for j = 1:N_conditions
-    exp1 = sprintf('mue%.0f = mue(%.0f,:);',j,j);
-    exp2 = sprintf('Threshold(%.0f) = interp1(mue%.0f,SPL_test,criterion_corr,''linear'',''extrap'');',j,j);
-    eval(exp1);
-    eval(exp2);    
-end
+Threshold = demo_dau1996b_decision(mue,SPL_test,criterion_corr);
 
 % Saving figures
 figure;
@@ -663,16 +689,16 @@ ylabel('Masked threshold [dB]')
 title(sprintf('%s. Criterion = %.1f',label_figure,criterion_corr))
 
 %
-filename_Sref = [Get_TUe_paths('outputs') label_experiment '_Thres'];
+filename_Sref = [output_dir label_experiment '_Thres'];
 Saveas(gcf,filename_Sref);
 
 Thres_labels = [test_onsets; Threshold];
 
-filename_Sref = [Get_TUe_paths('outputs') label_experiment '_Thres'];
+filename_Sref = [output_dir label_experiment '_Thres'];
 save(filename_Sref,'Threshold');
 disp(['Variable saved as: ' filename_Sref '.mat']);
 
-filename_Sref = [Get_TUe_paths('outputs') label_experiment '_Thres_labels'];
+filename_Sref = [output_dir label_experiment '_Thres_labels'];
 save(filename_Sref,'Thres_labels');
 disp(['Variable saved as: ' filename_Sref '.mat']);
 

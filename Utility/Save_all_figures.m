@@ -15,7 +15,7 @@ function Save_all_figures(Handles, outputdir)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 12/08/2014
 % Last update on: 26/11/2014 % Update this date manually
-% Last use on   : 26/11/2014 % Update this date manually
+% Last use on   : 20/03/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin == 0

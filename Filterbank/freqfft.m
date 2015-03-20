@@ -15,7 +15,7 @@ function [y ydB f] = freqfft(x,K,info)
 % Programmed by Alejandro Osses, TUe
 % Created on    : 08/05/2014
 % Last update on: 05/06/2014
-% Last used on  : 12/11/2014
+% Last use on   : 16/03/2015
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 3 % info does not exist

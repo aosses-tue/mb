@@ -15,37 +15,51 @@ function [innoise, fs] = Create_noise_dau1996(nTag,filename,options)
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 23/10/2014
-% Last update on: 23/10/2014 % Update this date manually
-% Last use on   : 23/10/2014 % Update this date manually
+% Last update on: 16/03/2015 % Update this date manually
+% Last use on   : 16/03/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-dB_SPL_noise    = options.dB_SPL_noise;
+SPL_noise       = options.dB_SPL_noise;
 fs              = options.fs;
 [t_silence_bef, t_duration, t_silence_aft] = Create_noise_dau1996_default(nTag);
 t_tmp           = 200e-3;
 Ntmp            = round(t_tmp*fs);
 
+dur             = t_silence_bef + t_duration + t_silence_aft;
 Nnoise          = round(fs*(t_duration+t_tmp));
 
-y   = wgn(Nnoise,1,1);
+Finf    = 20;
+Fsup    = 5000;
 
-y   =  y(:); % ensures it is a column vector
+method  = 0; 
 
-Wn = [20 5000]/(fs/2); % Normalised cutoff frequency        
-[b,a] = butter(2,Wn); % 8th-order
-tmp_y = filtfilt(b,a,y); % Linear-phase implementation
+switch method
+    case 0 % default: since 16/03/2015
+        
+        Fmod    = 4; % not important if Mdept is 0
+        Mdept   = 0;
+        dBFS    = 100;
+        SPL     = SPL_noise+3;
+        attack  = 0; % no cos_ramp
+        release = 0; % no cos_ramp
+        y = AM_random_noise(Finf,Fsup,SPL,dur,fs,Fmod,Mdept,dBFS);
+        y = cos_ramp(length(y), fs, attack, release);
+        
+    case 2  % this implementation introduced an emphasis either at the onset
+            % or at the offset of the white noise... (check it out)
+        y   = wgn(Nnoise,1,1);
+        y   =  y(:); % ensures it is a column vector
+        Wn = [Finf Fsup]/(fs/2); % Normalised cutoff frequency
+        [b,a] = butter(2,Wn); % 8th-order
+        tmp_y = filtfilt(b,a,y); % Linear-phase implementation
+        y = y(Ntmp+1:end);
+        tmp_y = tmp_y(Ntmp+1:end);
+        y   = setdbspl(tmp_y,SPL_noise);
+        attack = 25;
+        release = 25;
+        y = cos_ramp(length(y), fs, attack, release);
+end
 
-y = y(Ntmp+1:end);
-tmp_y = tmp_y(Ntmp+1:end);
-
-% TO DEBUG:
-% tt = (1:length(y))/fs; figure; plot(tt,y,tt,tmp_y); xlim([-0.1 0.2]), legend('bef filt','after filt')
-%
-% TO DEBUG, applying a cosine ramp:
-% yw = y; Ramp = rampup(5e-3*fs); L = length(Ramp); yw(1:L) = yw(1:L).*Ramp; tmp_yw = filtfilt(b,a,yw);
-% figure; plot(tt,y,tt,tmp_yw); xlim([-0.1 0.2]), legend('bef filt','after filt with ramp')
-
-y   = setdbspl(tmp_y,dB_SPL_noise);
 innoise = [Gen_silence(t_silence_bef,fs); y; Gen_silence(t_silence_aft,fs)]; % silence at the beginning and at the end
 
 options = Ensure_field(options,'bSave_noise',0);

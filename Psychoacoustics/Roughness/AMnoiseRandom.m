@@ -40,5 +40,11 @@ Sig     = Sig*db2amp(SPL-83)/mean(rms(Sig));
 
 y		= Sig;
 
+if nargout == 0
+    
+    filename = [Get_TUe_paths('outputs') sprintf('randomnoise-Fc-%.0f_BW-%.0f_Fmod-%.0f_Mdept-%.0f_SPL-%.0f',Fc,BW,Fmod,Mdept,SPL)];
+    Wavwrite(y,Fs,filename);
+    
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end

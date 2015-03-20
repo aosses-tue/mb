@@ -114,6 +114,7 @@ misc.Filterbank         = [misc.MATLAB   'Filterbank'      delim];
 misc.language           = 'NL'; % other possibilities: 'EN'
 misc.Localisation       = [misc.MATLAB   'Localisation'    delim];
 misc.praat_scripts      = [misc.MATLAB   'Praat'           delim];
+misc.PA_stim_generation = [misc.MATLAB   'PA_stim_generation' delim];
 misc.Psychoacoustics    = [misc.MATLAB   'Psychoacoustics' delim];
 misc.Reports            = [misc.MATLAB   'Reports'         delim];
 misc.Reports_KUL        = [misc.MATLAB   'Reports_KUL'     delim];
