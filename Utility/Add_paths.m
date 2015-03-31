@@ -2,19 +2,19 @@ function Add_paths(misc)
 % function Add_paths(misc)
 %
 % 1. Description:
-%   Add to path all directories specified in 'misc'
+%       Add to the MATLAB path all the directories specified in 'misc'
 % 
-% 2. Additional info:
-%   Tested cross-platform: No
-%
-% 3. Stand-alone example:
-%   misc = Get_TUe_paths;
-%   Add_paths(misc);
+% 2. Stand-alone example:
+%       misc = Get_TUe_paths;
+%       Add_paths(misc);
 %   
-% Programmed by Alejandro Osses, HIT, TU/e, the Netherlands, 2014
-% Created on: 13/5/2014
-% Last update: 13/5/2014 % Update this date manually
-% Last used: 13/5/2014 % Update this date manually
+% 3. Additional info:
+%       Tested cross-platform: No
+%
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
+% Created on    : 13/05/2014
+% Last update on: 13/05/2014 % Update this date manually
+% Last use on   : 31/03/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 fields = fieldnames(misc);

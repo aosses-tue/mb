@@ -2,7 +2,8 @@ function y = Resample2fs(directory,fs)
 % function y = Resample2fs(directory,fs)
 %
 % 1. Description:
-%
+%       To resample all wav files inside directory to a desired fs value
+% 
 % 2. Stand-alone example:
 %       directory = 'D:\Databases\dir01-Instruments\Voice-of-dragon\02-Wav-files\03-Wav-files-calibrated\';
 %       Resample2fs(directory);
@@ -13,7 +14,7 @@ function y = Resample2fs(directory,fs)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 19/01/2015
 % Last update on: 19/01/2015 % Update this date manually
-% Last use on   : 22/01/2015 % Update this date manually
+% Last use on   : 25/03/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 bDiary = 1;

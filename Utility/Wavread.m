@@ -5,15 +5,15 @@ function [y,Fs,bits,opt_ck] = Wavread(filename)
 %       Loads an audio file using audioread (available in MATLAB versions
 %       released after 2013). Otherwise use wavread.
 % 
-% 2. Additional info:
-%   Tested cross-platform: No
+% 2. Stand-alone example:
 %
-% 3. Stand-alone example:
-%
+% 3. Additional info:
+%       Tested cross-platform: No
+% 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 23/06/2014
 % Last update on: 13/08/2014 % Update this date manually
-% Last use on   : 13/08/2014 % Update this date manually
+% Last use on   : 31/03/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 try

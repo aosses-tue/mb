@@ -28,10 +28,10 @@ function misc = Get_TUe_paths(type)
 % % Example 2: to get directory where database of the voice of the dragon is:
 %       misc = Get_TUe_paths('db_voice_of_dragon');
 %
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 15/03/2014
-% Last update on: 12/03/2015
-% Last use on   : 12/03/2015
+% Last update on: 25/03/2015
+% Last use on   : 25/03/2015
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Alejandro's paths
@@ -102,7 +102,8 @@ else
     
 end
 
-misc.db_voice_of_dragon = [misc.Databases 'dir01-Instruments' delim 'Voice-of-dragon' delim];
+misc.db_instruments     = [misc.Databases 'dir01-Instruments' delim];
+misc.db_voice_of_dragon = [misc.db_instruments 'Voice-of-dragon' delim];
 misc.db_HRIR_Oldenburg  = [misc.Databases 'dir02-HRTFs'       delim 'Oldenburg'       delim];
 misc.db_fastl2007       = [misc.Databases 'dir04-Psychoacoustics' delim 'Fastl-and-Zwicker-2007' delim '03-Extracted-files' delim];
 misc.db_fastl2007_src   = [misc.Databases 'dir04-Psychoacoustics' delim 'Fastl-and-Zwicker-2007' delim '01-audio-files' delim 'Sound' delim];

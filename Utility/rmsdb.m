@@ -18,9 +18,9 @@ function y = rmsdb(x,fs,ti,tf)
 %   y = rmsdb(x,fs,ti,tf);
 %
 % Programmed by ExpORL, KU Leuven, Belgium
-% Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Last update on: 28/10/2014 % Update this date manually
-% Last use on   : 28/10/2014 % Update this date manually
+% Last use on   : 31/03/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if ischar(x)

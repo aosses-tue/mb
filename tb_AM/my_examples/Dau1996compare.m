@@ -10,10 +10,10 @@ function outs = Dau1996compare(insig1,insig2,fs,opts)
 % 3. Additional info:
 %       Tested cross-platform: Yes
 %
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 08/10/2014
 % Last update on: 24/10/2014 % Update this date manually
-% Last use on   : 24/10/2014 % Update this date manually
+% Last use on   : 24/03/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 h = [];

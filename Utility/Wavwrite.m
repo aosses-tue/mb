@@ -4,18 +4,21 @@ function Wavwrite(x,fs,outputfilename)
 % 1. Description:
 %       Write Microsoft WAVE (".wav") sound file
 % 
-% 2. Additional info:
-%   Tested cross-platform: No
+% 2. Stand-alone example:
 %
-% 4. Stand-alone example:
+% 3. Additional info:
+%       Tested cross-platform: No
 %
-% Programmed by Alejandro Osses, HIT, TU/e, the Netherlands, 2014
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 13/05/2014
-% Last update on: 13/05/2014 % Update this date manually
-% Last use on   : 16/03/2015 % Update this date manually
+% Last update on: 31/03/2015 % Update this date manually
+% Last use on   : 31/03/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-wavwrite(x,fs,[outputfilename]);
+try
+    audiowrite(outputfilename,x,fs);
+catch
+    wavwrite(x,fs,outputfilename);
+end
 
 disp([mfilename '.m: file ' outputfilename ' created'])
 try

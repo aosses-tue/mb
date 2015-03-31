@@ -1,8 +1,9 @@
 function h = demo_adaptloop
 % function h = demo_adaptloop
 %
-% Show the effect of adaptation: This script demonstrates the effect of 
-%   adaptation applied to a test signal with and without noise.
+% 1. Description:
+%       Show the effect of adaptation: This script demonstrates the effect 
+%       of adaptation applied to a test signal with and without noise.
 %
 %   The test signal is made of a sinosoidal ramp up and down between 0 and 1.
 %
@@ -29,7 +30,8 @@ function h = demo_adaptloop
 % Edited by Alejandro Osses, HTI, TU/e 2014
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-h = [];
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Signal generation:
 
 siglen  = 10000;
 fs      = 10000;
@@ -39,16 +41,22 @@ dB_SPL  = 65; % AO
 % minlvl equal to minlvl. For plotting purposes, we do the same explicitly.
 minlvl  = setdbspl(0);
 
-part=siglen/10;
+part    = siglen/10;
 
-insig=[zeros(2*part,1);
-       rampup(part);
-       ones(2*part,1);
-       rampdown(part);
-       zeros(4*part,1)];
+% Sig = Create_sin(500,part*10/fs,fs);
+
+insig   = [zeros(2*part,1); rampup(part); ones(2*part,1); rampdown(part); zeros(4*part,1)]; %.*Sig;
 
 insig   = max(insig,minlvl);
 insig   = setdbspl(insig,dB_SPL); % AO
+
+% Add a low level of noise
+insig_tmp=abs(insig+0.001*randn(siglen,1));
+insigN  = max(insig_tmp,minlvl);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 2. Some plot options:
+h = [];
 
 ymindB = -80;
 ymaxdB = -20;
@@ -56,6 +64,19 @@ ymaxdB = -20;
 yminMU = -250;
 ymaxMU =  950;
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 3. Output signals:
+sound(insig,fs);
+
+ALOut   = adaptloop(insig,fs,0); % The same as saying: adaptloop(insig,fs,0,'adt_dau')
+ALOut2  = adaptloop(insig,fs);
+
+
+ALOutN  = adaptloop(insigN,fs,0); % adaptloop(insigN,fs,0)
+ALOutN2 = adaptloop(insigN,fs);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 4. Plotting:
 figure;
 
 x=(0:siglen-1)/fs;
@@ -63,60 +84,51 @@ subplot(3,1,1);
 plot(x,20*log10(insig)); grid on
 title('Input signal');
 xlabel('time / s');
-ylabel('level [dB]');
-% ylabel('level / dB');
+ylabel('level [dB]'); % ylabel('level / dB');
 ha = gca;
 ylim([ymindB ymaxdB])
 
 subplot(3,1,2);
-plot(x,adaptloop(insig,fs,0)); grid on % plot(x,adaptloop(insig,fs,0,'adt_dau'));
+plot(x,ALOut); grid on % plot(x,adaptloop(insig,fs,0,'adt_dau'));
 title('Adaptation.');
 xlabel('time / s');
-ylabel('level [MU]');
-% ylabel('level / model units');
+ylabel('level [MU]'); % ylabel('level / model units');
 ha(end+1) = gca;
 ylim([yminMU ymaxMU])
 
 subplot(3,1,3);
-plot(x,adaptloop(insig,fs)); grid on
+plot(x,ALOut2); grid on
 title('Adaptation w. limiting.');
 ylabel('level [MU]');
 % ylabel('level / model units');
 xlabel('time / s');
 ha(end+1) = gca;
 ylim([yminMU ymaxMU])
-
-% Add a low level of noise
-insig=abs(insig+0.001*randn(siglen,1));
-insig=max(insig,minlvl);
 
 h(end+1) = gcf;
 
 figure;
 
 subplot(3,1,1);
-plot(x,20*log10(insig)); grid on
+plot(x,20*log10(insigN)); grid on
 title('Input signal with added Gaussian noise.');
-ylabel('level [dB]');
-% ylabel('level / dB');
+ylabel('level [dB]'); % ylabel('level / dB');
 xlabel('time / s');
 ha(end+1) = gca;
 ylim([ymindB ymaxdB])
 
 subplot(3,1,2);
-plot(x,adaptloop(insig,fs,0)); grid on
+plot(x,ALOutN); grid on
 title('Adaptation.');
-ylabel('level [MU]');
-% ylabel('level / model units');
+ylabel('level [MU]'); % ylabel('level / model units');
 xlabel('time / s');
 ha(end+1) = gca;
 ylim([yminMU ymaxMU])
 
 subplot(3,1,3);
-plot(x,adaptloop(insig,fs)); grid on
+plot(x,ALOutN2); grid on
 title('Adaptation w. limiting.');
-ylabel('level [MU]');
-% ylabel('level / model units');
+ylabel('level [MU]'); % ylabel('level / model units');
 xlabel('time / s');
 ha(end+1) = gca;
 ylim([yminMU ymaxMU])

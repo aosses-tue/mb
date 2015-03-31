@@ -15,13 +15,14 @@ function p = Ensure_field(p, field_name, default_value)
 % p:             Parameter struct.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%    Copyright: Cochlear Ltd
-%      $Change: 86418 $
-%    $Revision: #1 $
-%    $DateTime: 2008/03/04 14:27:13 $
-%      Authors: Brett Swanson
-%    Edited by: Alejandro Osses
-%  Last edited: 21/05/2014
+%      Copyright: Cochlear Ltd
+%        $Change: 86418 $
+%      $Revision: #1 $
+%      $DateTime: 2008/03/04 14:27:13 $
+% Authors       : Brett Swanson
+% Edited by     : Alejandro Osses
+% Last edited on: 21/05/2014
+% Last used on  : 31/03/2015
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if ~isfield(p, field_name)

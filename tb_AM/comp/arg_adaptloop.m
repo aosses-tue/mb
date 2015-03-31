@@ -8,17 +8,17 @@ function definput=arg_adaptloop(definput)
 % Downloaded on : 18/03/2014
 % Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Last update on: 22/10/2014 % Update this date manually
-% Last use on   : 22/10/2014 % Update this date manually
+% Last use on   : 24/03/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    definput.keyvals.limit=10;
-    definput.keyvals.minlvl=0;
-    definput.keyvals.tau=[0.005 0.050 0.129 0.253 0.500];
+definput.keyvals.limit=10;
+definput.keyvals.minlvl=0;
+definput.keyvals.tau=[0.005 0.050 0.129 0.253 0.500];
 
-    definput.groups.adt_dau       = {'tau',[0.005 0.050 0.129 0.253 0.500]};
-    definput.groups.adt_dau1996   = {'tau',[0.005 0.050 0.129 0.253 0.500],'limit',0}; % Added by AO
-    definput.groups.adt_breebaart = {'tau',linspace(0.005,0.5,5)};
-    definput.groups.adt_puschel   = {'tau',linspace(0.005,0.5,5),'limit',0};
+definput.groups.adt_dau       = {'tau',[0.005 0.050 0.129 0.253 0.500]};                % 0.005  0.050  0.129   0.253  0.500
+definput.groups.adt_dau1996   = {'tau',[0.005 0.050 0.129 0.253 0.500],'limit',0}; % AO % 0.005  0.050  0.129   0.253  0.500
+definput.groups.adt_breebaart = {'tau',linspace(0.005,0.5,5)};                          % 0.005  0.1288 0.2525  0.3762 0.5000
+definput.groups.adt_puschel   = {'tau',linspace(0.005,0.5,5),'limit',0};                % 0.005  0.1288 0.2525  0.3762 0.5000
 
 %   Url: http://amtoolbox.sourceforge.net/doc/comp/arg_adaptloop.php
 
@@ -37,3 +37,6 @@ function definput=arg_adaptloop(definput)
 %
 % You should have received a copy of the GNU General Public License
 % along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+end

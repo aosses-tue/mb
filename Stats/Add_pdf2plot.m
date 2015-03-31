@@ -20,9 +20,9 @@ function [PDF yi] = Add_pdf2plot(x, Handle)
 %   Add_pdf2plot(x);
 % 
 % Programmed by Alejandro Osses, HIT, TU/e, the Netherlands, 2014
-% Created on: 21/5/2014
-% Last update: 21/5/2014 % Update this date manually
-% Last used: 28/5/2014 % Update this date manually
+% Created on  : 21/05/2014
+% Last update : 21/05/2014 % Update this date manually
+% Last used on: 28/05/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 2

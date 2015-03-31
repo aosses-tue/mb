@@ -8,7 +8,7 @@ function status = Mkdir(folder)
 %
 % Programmed by Alejandro Osses, ExpORL, KULeuven, 2014
 % Last update on: 12/08/2014
-% Last use on   : 22/10/2014
+% Last use on   : 31/03/2015
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 bCreateFolder = ~isdir(folder);

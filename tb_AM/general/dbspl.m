@@ -1,7 +1,10 @@
 function y = dbspl(insig,varargin)
-%DBSPL RMS value of signal (in dB)
-%   Usage: y = dbspl(insig);
-%          y = dbspl(insig,'ac');
+% function y = dbspl(insig,varargin)
+% 
+% 1. Description:
+%       DBSPL RMS value of signal (in dB)
+%       Usage: y = dbspl(insig);
+%              y = dbspl(insig,'ac');
 %
 %   DBSPL(insig) computes the average SPL (sound pressure level) of the
 %   input signal measured in dB, using the convention that a pure tone at
@@ -49,8 +52,6 @@ function y = dbspl(insig,varargin)
 %     B. C. J. Moore. An Introduction to the Psychology of Hearing. Academic
 %     Press, 5th edition, 2003.
 %     
-%     
-%
 %   Url: http://amtoolbox.sourceforge.net/doc/general/dbspl.php
 
 % Copyright (C) 2009-2014 Peter L. Søndergaard and Piotr Majdak.
@@ -75,7 +76,6 @@ definput.keyvals.dim=[];
 definput.flags.mean={'noac','ac'};
 definput.keyvals.dboffset=100;
 [flags,kv]=ltfatarghelper({'dim','dboffset'},definput,varargin);
-
   
 % ------ Computation --------------------------
 
@@ -84,4 +84,5 @@ definput.keyvals.dboffset=100;
 % To get to the standard used in the toolbox.
 y = 20*log10( rms(insig,flags.mean) )+kv.dboffset;
 
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+end

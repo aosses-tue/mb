@@ -15,7 +15,6 @@ function Maximise_figure(h)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin == 0
-    figure;
     h = gcf;
 end
 

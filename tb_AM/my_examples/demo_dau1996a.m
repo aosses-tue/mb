@@ -20,8 +20,13 @@ if nargin == 0
     options = [];
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Plot save/options:
 options = Ensure_field(options, 'bSave', 0);
 options = Ensure_field(options, 'bPlot', 1);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Signal options:
 options = Ensure_field(options, 'dB_SPL', 77);
 options = Ensure_field(options, 'dB_SPL_test', 85);
 

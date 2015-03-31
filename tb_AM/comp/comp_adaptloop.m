@@ -67,36 +67,37 @@ mult = 100/(1-corr);
 % Apply minimum level to the input
 inoutsig = max(inoutsig,minlvl);
 
-% Determine steady-state levels. The values are repeated to fit the
-% number of input signals.
+% Determine steady-state levels. The values are repeated to fit the number of input signals.
 state=minlvl.^(1./(2.^((1:nloops))));    
 
 % Back up the value, because state is overwritten
 stateinit=state;
 
 if limit <=1 
-% No overshoot limitation
-
-  for w=1:nsigs
-    state=stateinit;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 1. No overshoot limitation
+    for w=1:nsigs
+      
+        state=stateinit;
     
-    for ii=1:siglen
-      tmp1=inoutsig(ii,w);
+        for ii=1:siglen
+            tmp1=inoutsig(ii,w);
       
-      % Compute the adaptation loops.
-      for jj=1:nloops
-        tmp1=tmp1/state(jj);
-        state(jj) = a1(jj)*state(jj) + b0(jj)*tmp1;         
-      end;    
+            % Compute the adaptation loops.
+            for jj=1:nloops
+                tmp1=tmp1/state(jj);
+                state(jj) = b0(jj)*tmp1 + a1(jj)*state(jj);         
+            end 
       
-      % store the result.
-      inoutsig(ii,w)=tmp1;
-    end;
+            % store the result.
+            inoutsig(ii,w)=tmp1;
+        end
   
-  end;
+    end
   
 else 
-% Overshoot Limitation.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 2. Overshoot Limitation.
   
   % Max. possible output value
   maxvalue = (1 - state.^2) * limit - 1;

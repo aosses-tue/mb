@@ -17,7 +17,7 @@ function var2latex(matrix, filename, varargin)
 % Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Original file: latex.m, programmed by  M. Koehler (koehler@in.tum.de)
 % Last update on: 19/06/2014
-% Last use on   : 19/06/2014
+% Last use on   : 31/03/2015
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 rowLabels   = [];

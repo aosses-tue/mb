@@ -2,7 +2,7 @@ function [outsig, fc, extra] = dau1996preproc(insig, fs, varargin);
 % function [outsig, fc, extra] = dau1996preproc(insig, fs, varargin);
 %
 % 1. Description:
-%       Auditory model from Dau et. al. 1996
+%       Auditory model from Dau et. al. 1996.
 % 
 %   Usage: [outsig, fc, extra] = dau1996preproc(insig,fs);
 %          [outsig, fc, extra] = dau1996preproc(insig,fs,...);
@@ -25,14 +25,14 @@ function [outsig, fc, extra] = dau1996preproc(insig, fs, varargin);
 %
 %   The Dau 1996 model consists of the following stages:
 %   
-%     1) a gammatone filter bank with 1-erb spaced filtes.
+%     1) a gammatone filter bank with 1-ERB spaced filtes.
 %
 %     2) an envelope extraction stage done by half-wave rectification
 %        followed by low-pass filtering to 1000 Hz.
 %
 %     3) an adaptation stage modelling nerve adaptation by a cascade of 5 loops.
 %
-%     4) a modulation low pass filter liming modulations to below 50 Hz.
+%     4) a modulation low pass filter liming modulations to below 8 Hz.
 %
 %   Any of the optinal parameters for AUDITORYFILTERBANK, IHCENVELOPE
 %   and ADAPTLOOP may be specified for this function. They will be passed
@@ -63,9 +63,9 @@ function [outsig, fc, extra] = dau1996preproc(insig, fs, varargin);
 %
 % Author        : Torsten Dau, Morten L. Jepsen, Peter L. Sondergaard
 % Downloaded on : 18/03/2014
-% Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Last update on: 15/10/2014 % Update this date manually
-% Last use on   : 22/10/2014 % Update this date manually
+% Last use on   : 24/03/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % ------ Warning, Strube model not used ----------
