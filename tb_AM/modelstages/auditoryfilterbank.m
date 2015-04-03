@@ -43,7 +43,7 @@ function [outsig, fc] = auditoryfilterbank(insig, fs, varargin)
 % Downloaded on : 18/03/2014
 % Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Last update on: 18/03/2014 % Update this date manually
-% Last use on   : 08/10/2014 % Update this date manually
+% Last use on   : 02/04/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % ------ Checking of input parameters ------------

@@ -1,24 +1,26 @@
-function y = AM_random_noise(Finf,Fsup,SPL,dur,Fs,Fmod,Mdept,dBFS)
-% function y = AM_random_noise(Finf,Fsup,SPL,dur,Fs,Fmod,Mdept,dBFS)
+function y = AM_random_noise_BW(Fc,BW,SPL,dur,Fs,Fmod,Mdept,dBFS)
+% function y = AM_random_noise_BW(Fc,BW,SPL,dur,Fs,Fmod,Mdept,dBFS)
 % 
 % 1. Description:
-%       Creates one frame of AM-'running' noise at Fs, N
-%       The input parameters are cutoff frequencies Finf and Fsup.
+%       Creates one frame of AM-'running' noise at Fs, N.
+%       The input parameters are centre frequency Fc and bandwidth BW
 % 
-%       See also: AM_random_noise_BW.m
+%       See also: AM_random_noise.m
 % 
 % 2.1 Example:
 %       Finf = 750;
 %       Fsup = 1250;
+%       BW = Fsup - Finf;
+%       Fc = (Finf + Fsup)/2;
 %       Fmod = 4;
 %       dur = 4;
 %       Mdept = 1;
 %       SPL = 70;
 %       Fs = 44100;
-%       y = AM_random_noise(Finf,Fsup,SPL,dur,Fs,Fmod,Mdept);
+%       y = AM_random_noise_BW(Fc,BW,SPL,dur,Fs,Fmod,Mdept);
 % 
 %       % If you want to store the output (Wav file):
-%       AM_random_noise(Finf,Fsup,SPL,dur,Fs,Fmod,Mdept);
+%       AM_random_noise_BW(Fc,BW,SPL,dur,Fs,Fmod,Mdept);
 % 
 % 2.2 Example:
 %       Fmod = 4;
@@ -26,16 +28,18 @@ function y = AM_random_noise(Finf,Fsup,SPL,dur,Fs,Fmod,Mdept,dBFS)
 %       Fs = 44100;
 %       Finf = 0;
 %       Fsup = Fs/2;
+%       BW = Fsup - Finf;
+%       Fc = (Finf + Fsup)/2;
 %       Mdept = 1;
 %       SPL = 70;
-%       y = AM_random_noise(Finf,Fsup,SPL,dur,Fs,Fmod,Mdept);
+%       y = AM_random_noise_BW(Fc,BW,SPL,dur,Fs,Fmod,Mdept);
 %       sound(y,Fs); 
 % 
 % Programmed/adapted by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Original file name: AMnoiseRandom.m (by Dik Hermes)
 % Created on    : 16/03/2015
 % Last update on: 16/03/2015 % Update this date manually
-% Last use on   : 01/04/2015 % Update this date manually
+% Last use on   : 16/03/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 8
@@ -63,15 +67,15 @@ if nargin < 3
 end
 
 if nargin < 2
-    Fsup = 0;
+    BW  = 100;
 end
 
 if nargin < 1
-    Finf = 0;
+    Fc = 1000;
 end
 
-BW      = Fsup-Finf;
-Fc      = BW/2;
+Fsup    = Fc + BW/2;
+Finf    = Fc - BW/2;
 
 N       = round(Fs*dur);
 Sig     = rand(N,1)-0.5; % non-calibrated white noise

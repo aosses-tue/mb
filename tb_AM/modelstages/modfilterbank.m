@@ -63,15 +63,14 @@ function [outsig,mfc] = modfilterbank(insig,fs,fc,varargin)
 definput.keyvals.mfc=[];
 [flags,kv]=ltfatarghelper({},definput,varargin);
 
-nfreqchannels=length(fc);
+nfreqchannels   = length(fc); % number of frequency channels of the auditory filterbank
+startmf         = 5; % fcm min = 5 Hz
 
 Q = 2;
 bw = 5;
 ex=(1+1/(2*Q))/(1-1/(2*Q));
 
 outsig=cell(nfreqchannels,1);
-
-startmf = 5;
 
 % second order modulation Butterworth LPF with a cut-off frequency of 2.5 Hz.
 [b_lowpass,a_lowpass] = butter(2,2.5/(fs/2));
@@ -105,12 +104,12 @@ for freqchannel=1:nfreqchannels
         mfc=[0 mfc tmp2*tmp];
 
         % --------- lowpass and modulation filter(s) ---
-        outsigblock = zeros(length(insig),length(mfc));
+        outsigblock = zeros(length(insig),length(mfc)); % memory allocation
         outsigblock(:,1) = filter(b_lowpass,a_lowpass,outtmp);
 
         for nmfc=2:length(mfc)
             w0 = 2*pi*mfc(nmfc)/fs;
-            if mfc(nmfc) < 10   % frequencies below 10 Hz.  - 8 Hz LPF to preserve modulation phase (confirm this AO!)
+            if mfc(nmfc) < 10   % frequencies below 10 Hz.  - 8 Hz LPF to preserve modulation phase
                 [b3,a3] = efilt(w0,2*pi*bw/fs);
             else
                 % frequencies above 10 Hz: 

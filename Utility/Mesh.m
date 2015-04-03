@@ -1,5 +1,5 @@
-function h = Mesh(t,f,z,info)
-% function h = Mesh(t,f,z,info)
+function h = Mesh(t,f,z,options)
+% function h = Mesh(t,f,z,options)
 %
 % 1. Description:
 %       It generates a 3D plot using a reduced time and frequency resolution. 
@@ -10,46 +10,52 @@ function h = Mesh(t,f,z,info)
 %       function of frequency. This plot is automatically closed, but it's
 %       being stored at 'outputs' directory.
 % 
-% 2. Additional info:
-%   Tested cross-platform: YES
-%  
-% 3. Stand-alone example:
+% 2. Stand-alone example:
 %       x = 0:.2:8;
 %       y = 0:10:5000;
 %       z = rand(length(y),length(x));
 %       Mesh(x,y,z);
 % 
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% 3. Additional info:
+%   Tested cross-platform: Yes
+% 
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 23/07/2014
 % Last update on: 21/08/2014 % Update this date manually
-% Last used on  : 21/08/2014 % Update this date manually
+% Last used on  : 02/04/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 4
-    info = [];
+    options = [];
 end
 
-info = Ensure_field(info,'bPlot3D',1);
-info = Ensure_field(info,'bPlot2D',~info.bPlot3D);
-info = Ensure_field(info,'title','');
-N = 10;
-M = 40;
-step_t = round(length(t)/N);
-step_f = round(length(f)/M);
+options = Ensure_field(options,'bPlot3D',1);
+options = Ensure_field(options,'bPlot2D',~options.bPlot3D);
+options = Ensure_field(options,'title','');
+options = Ensure_field(options,'step1',1);
+options = Ensure_field(options,'step2',1);
+
+step_t = options.step1;
+step_f = options.step2; % round(length(f)/M);
+
+N = round(length(t)/step_t);
+M = round(length(f)/step_f);
 
 [tm fm] = meshgrid(t(1:step_t:end),f(1:step_f:end));
 
 zm = z(1:step_f:end, :);
 zm = zm(:,1:step_t:end);
 
-if info.bPlot3D
-    mesh(tm,fm,zm)
+if options.bPlot3D
+    meshz(tm,fm,zm)
+    % plot3(tm,fm,zm)
+    
     xlabel('time')
     ylabel('frequency')
     zlabel('F(t,f)')
 end
  
-if info.bPlot2D
+if options.bPlot2D
     figure;
     tm = t(1:step_t:end);
     fm = f;
@@ -66,7 +72,7 @@ if info.bPlot2D
         
         if i == 1
             try
-                title(info.title);
+                title(options.title);
             end
         end
     end
@@ -76,23 +82,23 @@ if info.bPlot2D
     h.I_FontSize    = 10; 
     h.I_FontName    = 'Arial'; 
     h.I_Width       = 8;
-    h.I_High        = 8;
+    h.I_Height      = 8;
     h.I_TitleInAxis = 1;
     h.I_Space       = [0.01,0.01];
 
     try
-        dr = info.ylim(2)-info.ylim(1);
-        if info.ylim(2) < max(max(zm))
-            info.ylim(2) = max(max(zm)) + 5;
-            info.ylim(1) = info.ylim(2) - dr;
+        dr = options.ylim(2)-options.ylim(1);
+        if options.ylim(2) < max(max(zm))
+            options.ylim(2) = max(max(zm)) + 5;
+            options.ylim(1) = options.ylim(2) - dr;
         end
-        h.I_Ylim = info.ylim;
+        h.I_Ylim = options.ylim;
     catch
         h.I_Ylim = [-105,5]; % Uncomment for fixing the limits in the y-axis
     end
     
     try
-        h.I_Xlim = info.xlim;
+        h.I_Xlim = options.xlim;
     end
     
     % h.I_Xlim = [0,5];
@@ -105,7 +111,7 @@ if info.bPlot2D
 
     stName = Get_date;
     stName = stName.date2print;
-    Saveas(gcf,[Get_TUe_paths('outputs') mfilename '-' info.title '-' stName]);
+    Saveas(gcf,[Get_TUe_paths('outputs') mfilename '-' options.title '-' stName]);
     close;
     close;
 end

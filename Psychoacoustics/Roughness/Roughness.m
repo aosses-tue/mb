@@ -112,7 +112,7 @@ elseif strcmp(TopLevstr,'inpfile')
 		   	txt	=	{'only 1 frame to analyse','','','The roughness of the input signal is now being calculated','','','','(it might take a couple of minutes)'};
 			end
 			ShowTxt(txt);Roughness('Prog',1,0);			%show progressbar
-         save TmpMat.mat Barkno MinBf N2 a0 Bf MinExcdB N50 dFs Cf  N Ntop ei Fei N0 Ntop2 gzi Fs N01 TempIn h0 
+            save TmpMat.mat Barkno MinBf N2 a0 Bf MinExcdB N50 dFs Cf  N Ntop ei Fei N0 Ntop2 gzi Fs N01 TempIn h0 
 
      	 	if NoFrMax>1
      	    	NFtxt	=	uicontrol('style','text','string',num2str(NoFr),'position',[345 276 45 30],'fontsize',12,'BackgroundColor',Bcol,'ForegroundColor','white','fontweight','demi','HorizontalAlignment','left');
