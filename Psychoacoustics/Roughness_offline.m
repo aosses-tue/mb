@@ -25,6 +25,7 @@ function [dataOut out] = Roughness_offline(insig, Fs, N, options, CParams,bDebug
 %
 % 2. Stand-alone example:
 %           [insig fs] = Wavread('~/Documenten/MATLAB/outputs/tmp-cal/ref_rough.wav');
+%           [insig fs] = Wavread([Get_TUe_paths('outputs') 'ref_rough.wav']);
 %           [out outPsy] = Roughness_offline(insig,fs,8192,0);
 % 
 % 3. Additional info:
@@ -190,9 +191,18 @@ for idx_j = 1:m_blocks
     S1 = -27;
     S2 = zeros(1,sizL);
 
+    tmpF = [];
+    tmpT = [];
     for idx = 1:1:sizL;
         % Steepness of upper slope [dB/Bark] in accordance with Terhardt
         steep = -24-(230/freqs(idx))+(0.2*LdB(idx_L(idx)));
+        steepT = -24-(230/freqs(idx_L(idx)))+(0.2*LdB(idx_L(idx)));
+        
+        tmpF = [tmpF [freqs(idx);steep]];
+        tmpT = [tmpT [freqs(idx_L(idx));steepT]];
+        
+        if idx == 1     warning('to check formula');    end
+        
         if steep < 0
             S2(idx) = steep;
         end
