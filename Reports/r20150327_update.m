@@ -16,11 +16,12 @@ function r20150327_update
 
 close all
 
-bDiary = 0;
+bDiary = 1;
 Diary(mfilename,bDiary);
 
 bPart1 = 0; % Generation of audio files at the proper sampling rate
-bPart2 = 1; % Level conventions
+bPart2 = 0; % Dau1997
+bPart3 = 1; % Stimulus generation to determine variance of internal noise
 
 path = Get_TUe_paths('db_instruments');
 
@@ -72,7 +73,7 @@ if bPart2
     count = 1;
     figure;
     for Lpidx = Lp 
-        A = 0.5*pref*10^( Lpidx/20 ); % A producing 100 dB
+        A = 0.5*pref*10^( Lpidx/20 ); % A signal producing 100 dB
         insig = A*ones(fs*dur,1);
         
         [outsig outputLevel(count)] = Il_get_adaptloop( insig,fs );
@@ -103,9 +104,12 @@ if bPart2
     
     plot(Lp,Lp,'r--');
     
+    jnd61 = interp1(Lp,outputLevel,[60 61]);
+    jnd61 = diff(jnd61);
+    
     count = 1;
     for Lpidx = Lp +1
-        A = 0.5*pref*10^( Lpidx/20 ); % A producing 100 dB
+        A = 0.5*pref*10^( Lpidx/20 ); % A signal producing 100 dB
         insig = A*ones(fs*dur,1);
         
         [outsig outputLevelp1(count)] = Il_get_adaptloop( insig,fs );
@@ -141,8 +145,71 @@ if bPart2
     % legend('-100','-95','-90','-85','-80')
     % legend('-0','-50','-100')
 end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if bPart3
+    
+    bListen = 1;
+    bSaveWave = 1;
+    
+    %% Dau1997b, Fig. 7:
+    % Suprathreshold signal...
+
+    % Common parameters:
+    fs = 44100;
+    BW = 3; %[3 31 314];
+    % d = [-40];
+    mdept = 0;%d2m(d,'dau');
+    
+    % For BBN:
+    finf = 20;
+    fsup = 10000;
+    
+    fc_tone = 5000;
+    
+    SPL = 65;
+    SPLtest = SPL;
+    dur = 3;
+    fm  = 20;
+    
+    insig_BBN   = AM_random_noise(finf,fsup,SPL,dur,fs);
+    insig_NBN   = AM_random_noise_BW(fc_tone,BW,SPL,dur,fs,fm,mdept);
+    insig_test  = AM_sine(fc_tone,dur,fs,fm,mdept,SPLtest);
+
+    insig_NBN = [insig_NBN];
+    insig_test = [insig_test];
+
+    t = ( 0:length(insig_NBN)-1 )/fs;
+
+    if bListen == 1
+
+        sound(insig_BBN,fs);
+        
+        sound(insig_NBN,fs);
+
+        sound(insig_test,fs);
+    end
+    
+    if bSaveWave
+        fname = sprintf('%sBBN-BW-%.0f-SPL-%.0fdB',Get_TUe_paths('outputs'),fsup-finf,SPL);
+        Wavwrite(insig_BBN,fs,fname);
+        
+        fname = sprintf('%stest-fc-%.0f-SPL-%.0fdB',Get_TUe_paths('outputs'),fc_tone,SPLtest);
+        Wavwrite(insig_test,fs,fname);
+        
+        att = -20;
+        fname = sprintf('%sBBN-BW-%.0f-SPL-%.0fdB',Get_TUe_paths('outputs'),fsup-finf,SPL+att);
+        Wavwrite(From_dB(att)*insig_BBN,fs,fname)
+        
+        att = -40;
+        fname = sprintf('%sBBN-BW-%.0f-SPL-%.0fdB',Get_TUe_paths('outputs'),fsup-finf,SPL+att);
+        Wavwrite(From_dB(att)*insig_BBN,fs,fname)
+        
+    end
+
+    disp('')
+end
+    
 disp('')
 
 if bDiary

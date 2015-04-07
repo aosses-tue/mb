@@ -38,7 +38,8 @@ paths.outputs   = options.output_dir;
 
 h = []; % we initialise handle for Figures
 
-bListen = 1;
+bPlot3D = 0;
+bListen = 0;
 fs = 44100;
 
 %% Dau1997b, Fig. 7:
@@ -47,21 +48,27 @@ fs = 44100;
 % Common parameters:
 BW = 3; %[3 31 314];
 % d = [-40];
-mdept = 1;%d2m(d,'dau');
+mdept = 100;%d2m(d,'dau');
 
-fc = 5000;
-finf = fc-BW/2;
-fsup = fc+BW/2;
+fc_tone = 5000;
+finf = fc_tone-BW/2;
+fsup = fc_tone+BW/2;
 SPL = 65;
-dur = 4;
+SPLtest = SPL + 20;
+dur = 3;
 fm  = 20;
-insig_NBN   = AM_random_noise_BW(fc,BW,SPL,dur,fs,fm,mdept);
-insig_test  = AM_sine(fc,dur,fs,fm,mdept,SPL);
+insig_NBN   = AM_random_noise_BW(fc_tone,BW,SPL,dur,fs,fm,mdept);
+insig_test  = AM_sine(fc_tone,dur,fs,fm,mdept,SPLtest);
  
+insig_NBN = [insig_NBN; Gen_silence(1,fs)];
+insig_test = [insig_test; Gen_silence(1,fs)];
+
 t = ( 0:length(insig_NBN)-1 )/fs;
 
 if bListen == 1
     sound(insig_NBN,fs);
+    
+    sound(insig_test,fs);
 end
 
 %%
@@ -73,18 +80,41 @@ outsig2 = outsig2{1};
 
 opts.step1 = 1;
 opts.step2 = 1;
-figure;
-subplot(3,1,1)
-Mesh([1:12],t,outsig1,opts);
-ylabel('Time [s]')
-xlabel('Modulation filter');
-zlabel('[MU]')
 
-subplot(3,1,2)
-Mesh([1:12],t,outsig2,opts);
-ylabel('Time [s]')
-xlabel('Modulation filter');
-zlabel('[MU]')
+if bPlot3D
+    figure;
+    subplot(2,1,1)
+    Mesh([1:12],t,outsig1,opts);
+    ylabel('Time [s]')
+    xlabel('Modulation filter');
+    zlabel('[MU]')
+
+    subplot(2,1,2)
+    Mesh([1:12],t,outsig2,opts);
+    ylabel('Time [s]')
+    xlabel('Modulation filter');
+    zlabel('[MU]')
+else
+    idx2plot = 4
+    figure;
+    subplot(2,1,1)
+    plot(t,outsig1(:,idx2plot)); hold on
+    xlabel('Time [s]')
+    ylabel('[MU]')
+    
+    ha = gca;
+    % subplot(2,1,2)
+    plot(t,outsig2(:,idx2plot),'r');
+    % xlabel('Time [s]')
+    % ylabel('[MU]')
+    
+    subplot(2,1,2)
+    plot(t,outsig2(:,idx2plot)-outsig1(:,idx2plot));
+    
+    ha(end+1) = gca;
+    
+    linkaxes(ha,'x');
+end
 
 disp('')
 
