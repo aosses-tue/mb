@@ -1,47 +1,46 @@
 function R = roughcalc(signal, L, fs, winlength, dN, alpha, switches)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Auditory roughness estimation using several modules %
-%
-% Author: Ronnie Duisters %
-% Group: Human-Technology Interaction %
-% Department of Technology Management %
-% Eindhoven University of Technology %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% R = roughcalc(signal, L, fs, winlength, dN, alpha, switches)
+% function R = roughcalc(signal, L, fs, winlength, dN, alpha, switches)
+% 
+% 1. Description:
+%       Auditory roughness estimation using several modules %
 %
 % inputs:
-% signal input signal
-% L preferred input level in dB SPL (default = 60)
-% fs sample frequency in Hz (default = 48000)
-% winlength length of analysis window in s (default = 0.2)
-% dN sample interval to be processed by the
-% roughness extraction model
-% (default = [round(0.3*fs) round(0.5*fs)])
-% alpha roughness index (default = 1.6)
-% switches array selecting the preferred models
-% (default = [2213])
+%   signal  - input signal
+%   L       - preferred input level in dB SPL (default = 60)
+%   fs      - sample frequency in Hz (default = 48000)
+%   winlength - length of analysis window in s (default = 0.2)
+%   dN      - sample interval to be processed by the roughness extraction 
+%             model (default = [round(0.3*fs) round(0.5*fs)]) 
+%   alpha   - roughness index (default = 1.6)
+%   switches - array selecting the preferred models (default = [2213])
 %
 % outputs:
-% R roughness value
+%   R roughness value
 %
 % switches [a b c d]
-% a = middle ear filter:
-% 0 = no filter
-% 1 = Van Immerseel and Martens
-% 2 = Pflueger et al.
+%   a = middle ear filter:
+%   0 = no filter
+%   1 = Van Immerseel and Martens
+%   2 = Pflueger et al.
+% 
 % b = filterbank:
-% 1 = Gammatone filterbank
-% 2 = Gammachirp filterbank
+%   1 = Gammatone filterbank
+%   2 = Gammachirp filterbank
+% 
 % c = hair cell model:
-% 0 = no hair cell model
-% 1 = Van Immerseel and Martens hair cell model
-% 2 = Dau et al. adaptation model
-% 3 = Meddis hair cell model
+%   0 = no hair cell model
+%   1 = Van Immerseel and Martens hair cell model
+%   2 = Dau et al. adaptation model
+%   3 = Meddis hair cell model
+% 
 % d = Roughness model
-% 1 = SIM model I
-% 2 = SIM model II
-% 3 = modified Aures model (Jourdes)
+%   1 = SIM model I
+%   2 = SIM model II
+%   3 = modified Aures model (Jourdes)
+% 
+% Author: Ronnie Duisters, Human-Technology Interaction, Department of 
+%         Technology Management Eindhoven University of Technology
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 global numH7 denH7 numH14 denH14 numH30 denH30 numH36 denH36 numH66 denH66
 
@@ -76,24 +75,25 @@ end
 
 winlength = winlength * fs;
 wsize = round(min(length(signal), winlength));
-signal = signal(:)’; % make signal a row-vector
+signal = signal(:)'; % make signal a row-vector
 signal = signal(1:wsize);
 disp('adapting signal level...');
 
 signal = AdaptLevel(signal, L, switches);
-% outer and middle-ear filtering
+
+%% outer and middle-ear filtering
 if switches(1) == 1
     % outer and middle ear filter as used by Van Immerseel and Martens
-    disp(’filtering outer and middle ear...’);
-    wr=2*pi* 4e3;
+    disp('filtering outer and middle ear...');
+    wr=2*pi*4e3;
     num = wr^2;
     den = [1 0.33*wr wr^2];
     [num2, den2] = bilinear(num, den, fs);
     signal = filter(num2, den2, signal);
+    
 elseif switches(1) == 2
-    disp(’filtering outer and middle ear...’);
-    % Outer and middle ear combined bandpass filter
-    % (Pflueger, Hoeldrich, Riedler, Sep 1997)
+    disp('filtering outer and middle ear...');
+    % Outer and middle ear combined bandpass filter (Pflueger, Hoeldrich, Riedler, Sep 1997)
     % Highpass component
     b = 0.109*[1 1];
     a = [1 -2.5359 3.9295 -4.7532 4.7251 -3.5548 2.139 -0.9879 0.2836];
@@ -101,11 +101,12 @@ elseif switches(1) == 2
     d = [1 -2 1];
     c = [1 -2*0.95 0.95^2];
     signal = filter(conv(b, d), conv(a, c), signal);
+    
 else
     disp('no outer- and middle-ear filtering');
 end
 
-% auditory filterbanks
+%% Auditory filterbanks
 if switches(4) == 3
     erbres = 0.5;
     erbmax = 38;
@@ -123,6 +124,7 @@ if switches(2) == 1
     fcoefs = MakeERBFilters(fs, fc(length(fc):-1:1), 26, 1.019);
     fcoefs = fcoefs(Nch:-1:1,:);
     exc = ERBFilterBank(signal, fcoefs);
+    
 elseif switches(2) == 2
     % compressive gammachirp filterbank
     disp('performing gammachirp filtering...');
@@ -151,29 +153,32 @@ elseif switches(2) == 2
     end
 end
 
-% adaptation models
+%% Adaptation models
 if switches(3) == 1
     % hair cell model by Van Immerseel and Martens
     disp('applying vI&M hair cell model...');
-    y0 = 0.4472;
-    exc = max(exc + y0, 0);
-    fspont = 0.05e3;
-    fsat = 0.15e3;
-    r = 0.86;
-    tau1 = 8e-3;
-    tau2 = 40e-3;
-    num = [tau1-r*tau1+r*tau2 1];
-    den = [tau1*tau2 tau1+tau2 1];
+    y0      = 0.4472;
+    exc     = max(exc + y0, 0);
+    fspont  = 0.05e3;
+    fsat    = 0.15e3;
+    r       = 0.86;
+    tau1    = 8e-3;
+    tau2    = 40e-3;
+    num     = [tau1-r*tau1+r*tau2 1];
+    den     = [tau1*tau2 tau1+tau2 1];
     [num2, den2] = bilinear(num, den, fs);
+    
     for i = 1:length(exc(:,1)),
         q(i,:) = filter(num2, den2, exc(i,:));
         f(i,:) = (fsat * exc(i,:)) ./ (((sqrt(fsat/fspont) - 1) * ...
         sqrt(y0)) + sqrt(q(i,:))).^2;
     end
+    
     [bn, an] = butter(3, 600 / (fs / 2));
     exc=f;
     exc = filter(bn, an, exc);
     exc = max(exc-50, 0);
+    
 elseif switches(3) == 2
     % adaptation model by Dau et al.
     disp('applying Dau et al. adaptation model...');
@@ -181,16 +186,17 @@ elseif switches(3) == 2
     [bn, an] = butter(5, 770 / (fs / 2));
     exc = filter(bn, an, exc, [], 2);
     for i = 1:Nch,
-        f(i,:) = fadapt(exc(i,:)’, fs)’;
+        f(i,:) = fadapt(exc(i,:)', fs)';
     end
     exc=f;
     exc = max(exc, 0);
+    
 elseif switches(3) == 3
     % hair cell model by Meddis
     disp('applying Meddis hair cell model...');
     exc = max(exc, 0);
     exc = MeddisHairCell(exc, fs);
-    exc = max(exc-65, 0)
+    exc = max(exc-65, 0);
 else
     disp('no hair cell model');
 end

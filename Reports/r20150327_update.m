@@ -176,8 +176,8 @@ if bPart3
     insig_NBN   = AM_random_noise_BW(fc_tone,BW,SPL,dur,fs,fm,mdept);
     insig_test  = AM_sine(fc_tone,dur,fs,fm,mdept,SPLtest);
 
-    insig_NBN = [insig_NBN];
-    insig_test = [insig_test];
+    % insig_NBN = [insig_NBN];
+    % insig_test = [insig_test];
 
     t = ( 0:length(insig_NBN)-1 )/fs;
 
@@ -191,6 +191,7 @@ if bPart3
     end
     
     if bSaveWave
+        
         fname = sprintf('%sBBN-BW-%.0f-SPL-%.0fdB',Get_TUe_paths('outputs'),fsup-finf,SPL);
         Wavwrite(insig_BBN,fs,fname);
         
@@ -207,7 +208,6 @@ if bPart3
         
     end
 
-    disp('')
 end
     
 disp('')
