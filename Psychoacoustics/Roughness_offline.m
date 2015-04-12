@@ -24,9 +24,20 @@ function [dataOut out] = Roughness_offline(insig, Fs, N, options, CParams,bDebug
 % http://home.tm.tue.nl/dhermes/
 %
 % 2. Stand-alone example:
-%           [insig fs] = Wavread('~/Documenten/MATLAB/outputs/tmp-cal/ref_rough.wav');
-%           [insig fs] = Wavread([Get_TUe_paths('outputs') 'ref_rough.wav']);
+%       2.1 Unix-based example:
+%           [insig fs] = Wavread('~/Documenten/MATLAB/outputs/tmp-cal/ref_rough.wav'); % Unix-based
 %           [out outPsy] = Roughness_offline(insig,fs,8192,0);
+% 
+%       2.2 Multi-platform example, requires the ref_rough.wav file in the 
+%           appropriate folder:
+%           [insig fs] = Wavread([Get_TUe_paths('outputs') 'ref_rough.wav']); 
+%           [out outPsy] = Roughness_offline(insig,fs,8192,0);
+% 
+%       2.3 Impulse response:
+%           N = 8192;
+%           insig  = [zeros(N/2-1,1); 1; zeros(N/2,1)];
+%           fs = 44100;
+%           [out outPsy] = Roughness_offline(insig,fs,N,0);
 % 
 % 3. Additional info:
 %       Tested cross-platform: Yes
@@ -204,15 +215,18 @@ for idx_j = 1:m_blocks
         if idx == 1     warning('to check formula');    end
         
         if steep < 0
-            S2(idx) = steep;
+            S2(idx) = steepT;
+            if idx == 1     warning('Correction introduced by AO/RG');    end
         end
     end
 
-    whichZ	= zeros(2,sizL); % memory allocation
-    ExcAmp = zeros(sizL,47); % memory allocation
-    Slopes = zeros(sizL,47); % memory allocation
+    whichZ      = zeros(2,sizL);    % memory allocation
+    ExcAmp      = zeros(sizL,47);   % memory allocation
+    Slopes      = zeros(sizL,47);   % memory allocation
+    etmp_fd     = zeros(47,N);
+    etmpExc_fd  = zeros(47,N);
     
-    qd		= 1:1:sizL;
+    qd          = 1:1:sizL;
     whichZ(1,:)	= floor(2*Barkno(idx_L(qd)+N01)); % in which critical band each level above threshold is
     whichZ(2,:)	= ceil(2*Barkno(idx_L(qd)+N01));
 
@@ -237,7 +251,10 @@ for idx_j = 1:m_blocks
             end
         end
         % figure; plot((1:47)*.5, To_dB(Slopes(k,:))); xlabel('Critical-band rate [Bark]'); ylabel('Level [dB]'); title(num2str(k))
-        disp('')
+        if k == 17
+            disp('')
+        end
+        
     end
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -259,20 +276,8 @@ for idx_j = 1:m_blocks
             else
                 ExcAmp(N1tmp,k) = Slopes(l,k-1)/Lg(N1tmp);
             end
-            etmp(N2tmp) = ExcAmp(N1tmp,k)*TempIn(N2tmp); 
-            etmpExc(N2tmp) = ExcAmp(N1tmp,k);
-        end
-
-        if k == 17
-            if bDebug
-                figure(2); 
-                plot(freqs,20*log10(abs(etmp(qb)))) % figure; plot(freqs,20*log10(abs(etmpExc(qb)))), xlabel('Excitation pattern')
-                hold on; grid on
-                xlabel('Frequency [Hz]')
-                ylabel('Level [dB]')
-                title('Spectral components: Terhardt''s model')
-                xlim([900 1100])
-            end
+            etmp(N2tmp)     = ExcAmp(N1tmp,k)*TempIn(N2tmp); 
+            etmpExc(N2tmp)  = ExcAmp(N1tmp,k);
         end
 
         % etmp_fd  - excitation pattern in frequency domain
@@ -281,83 +286,23 @@ for idx_j = 1:m_blocks
         % Fei   - envelope in frequency domain, as function of fmod
         % h0    - DC component, average of half-wave rectified signal
 
-        etmp_fd(k,:)   = etmp;
+        etmp_fd(k,:)    = etmp;
+        etmpExc_fd(k,:) = etmpExc;
         ei(k,:)     = N*real(ifft(etmp));
         etmp_td(k,:)= abs(ei(k,:));
         h0(k)       = mean(etmp_td(k,:));
         Fei(k,:)	= fft( etmp_td(k,:)-h0(k) ); % changes the phase but not the amplitude
 
-        if bDebug
-            Fsnew       = Fs/2;
-            Nnew        = N/2;
-            eir         = resample(ei(k,:),Fsnew,Fs); % eir at Fs = 22050
-            etmpr       = abs(eir);
-            h0r(k)      = mean(etmpr);
-
-            % Feir(k,:)	= fft( etmpr-h0r(k) ,Nnew); % TEST
-            Feir(k,:)	= fft( etmpr-h0r(k) ,N); 
-            Hweightr(k,:) = Hweight(k,:); % resample( Hweight(k,:),Fsnew,Fs );
-
-            % hBPi  - band-pass filtered envelopes in time domain
-
-            [b,a] = butter(8,1000/Fs,'low');
-            [bred,ared] = butter(8,(Fsnew/2)/Fsnew,'low');
-            eirFS = filter(bred,ared,eir);
-            h0rFS(k) = mean(abs(eirFS));
-        end
-
         hBPi(k,:)	= 2*real(  ifft( Fei(k,:).*Hweight(k,:) )  );
         hBPrms(k)	= dw_rms(hBPi(k,:));
 
-        if bDebug
-            hBPi2 = filter(b,a,hBPi(k,:));
-            hBPrms2(k)	= dw_rms(hBPi2);
-
-            hBPi3(k,:)	= 2*real(  ifft( Feir(k,:).*Hweightr(k,:) ,N)  );
-            hBPi3(k,:)  = filter(bred,ared,hBPi3(k,:));
-            hBPrms3(k)	= dw_rms(hBPi3(k,:));
-        end
-
-        if k == 17
-            if bDebug
-
-                fidx_min = min(qb);
-                figure(3); 
-
-                Fei_dB = 20*log10(abs(Fei(k,:)));
-                plot(freqs, Fei_dB(qb),'LineWidth',1), hold on
-
-                opts.fs = Fs;
-                [ytmp tmpYdB,ftmp] = freqfft(hBPi(k,:)',N/2,opts);
-
-                plot(ftmp(fidx_min:end),tmpYdB(fidx_min:end),'r')
-                grid on
-                xlabel('Frequency [Hz]')
-                ylabel('Level [dB]')
-
-                opts.fs = Fs;
-                [ytmp tmpYdB2,ftmp] = freqfft(hBPi2',N/2,opts);
-                plot(ftmp(fidx_min:end),tmpYdB2(fidx_min:end),'m--')
-
-                opts.fs = Fsnew;
-                [ytmp tmpYdB3,ftmp3] = freqfft(hBPi3(k,:)',N/2,opts);
-                plot(ftmp3,tmpYdB3,'k--','LineWidth',1)
-
-                legend('Fei','hBPi','hBPi with LPF','hBPi with Fs_r_e_d + LPF')
-            end
-        end
-
         if h0(k)>0
+            
             mdept(k) = hBPrms(k)/h0(k);
-            if bDebug
-                mdept3(k) = hBPrms3(k)/h0r(k);
-            end
             if mdept(k)>1
                 mdept(k)=1;
             end
-            if bDebug
-                mdept3(k) = 1;
-            end
+            
         else
             mdept(k)=0;
         end
@@ -367,8 +312,32 @@ for idx_j = 1:m_blocks
     if bDebug
 
         % params for figures 4 and 5
-        idx2plot = 14:22; 
+        idx2plot = 1:47; 
 
+        k = idx2plot;
+        
+        %-- Figure 2: -----------------------------------------------------
+        figure(2); 
+        subplot(2,1,1)
+        plot(hz2bark(freqs),20*log10(abs(etmpExc_fd(k,qb))));
+        hold on, grid on
+        xlabel('Critical-band rate [Bark]')
+        ylabel('Excitation pattern')
+        title(sprintf('Excitation pattern (Terhardt''s model), band number %.0f-%.0f',min(k),max(k)))
+        ha = gca;
+
+        subplot(2,1,2)
+        plot(hz2bark(freqs),20*log10(abs(etmp_fd(k,qb)))) 
+        hold on; grid on
+        %xlabel('Frequency [Hz]')
+        xlabel('Critical-band rate [Bark]')
+        ylabel('Level [dB]')
+        title(sprintf('Critical-band filterbank (Terhardt''s model), band number %.0f-%.0f',min(k),max(k)))
+        %xlim([900 1100])
+        ha(end+1) = gca;
+        linkaxes(ha,'x')
+        
+        %-- Figure 4: -----------------------------------------------------
         % params just for figure 4
         idxq = find(freqs<1200 & freqs>800);
         L = length(idxq);
@@ -386,6 +355,7 @@ for idx_j = 1:m_blocks
         BandNumber = repmat( ((idx2plot)'), 1, N);
         t = repmat( (1:N)/Fs ,length(idx2plot),1);
 
+        %-- Figure 5: -----------------------------------------------------
         figure(5); 
         mesh( t,BandNumber,hBPi(idx2plot,:) )
         xlabel('Time [s]')
