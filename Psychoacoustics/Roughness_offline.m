@@ -3,7 +3,8 @@ function [dataOut out] = Roughness_offline(insig, Fs, N, options, CParams,bDebug
 %
 % 1. Description:
 %       Frame-based, off-line implementation of the roughness algorithm.
-%       Changes:
+% 
+%       Changes by AO:
 %           amp2db replaced by To_dB
 %           db2amp replaced by From_dB
 %           private rms renamed to dw_rms
@@ -14,30 +15,30 @@ function [dataOut out] = Roughness_offline(insig, Fs, N, options, CParams,bDebug
 % author : Matt Flax <flatmax @ http://www.flatmax.org> : Matt Flax is flatmax
 % March 2006 : For the psySoundPro project
 %
-% revised : Farhan Rizwi
-%           July '07
+% revised : Farhan Rizwi, July 2007
 %           Reformatted, copied and vectorised code from InitAll
 %           and Hweights into the function space below.  This
 %           allows us to use nested functions effeciently.
 %
 % contact for the original source code :
-% http://home.tm.tue.nl/dhermes/
+%           http://home.tm.tue.nl/dhermes/
 %
 % 2. Stand-alone example:
 %       2.1 Unix-based example:
 %           [insig fs] = Wavread('~/Documenten/MATLAB/outputs/tmp-cal/ref_rough.wav'); % Unix-based
-%           [out outPsy] = Roughness_offline(insig,fs,8192,0);
+%           [out outPsy] = Roughness_offline(insig,fs,8192);
 % 
 %       2.2 Multi-platform example, requires the ref_rough.wav file in the 
 %           appropriate folder:
 %           [insig fs] = Wavread([Get_TUe_paths('outputs') 'ref_rough.wav']); 
-%           [out outPsy] = Roughness_offline(insig,fs,8192,0);
+%           [out outPsy] = Roughness_offline(insig,fs,8192);
 % 
 %       2.3 Impulse response:
 %           N = 8192;
 %           insig  = [zeros(N/2-1,1); 1; zeros(N/2,1)];
 %           fs = 44100;
-%           [out outPsy] = Roughness_offline(insig,fs,N,0);
+%           bDebug = 1;
+%           [out outPsy] = Roughness_offline(insig,fs,N,[],[],bDebug);
 % 
 % 3. Additional info:
 %       Tested cross-platform: Yes
@@ -45,7 +46,7 @@ function [dataOut out] = Roughness_offline(insig, Fs, N, options, CParams,bDebug
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 10/11/2014
 % Last update on: 17/01/2015 % Update this date manually
-% Last use on   : 22/01/2015 % Update this date manually
+% Last use on   : 13/04/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 6
@@ -55,6 +56,8 @@ end
 if nargin < 5
     CParams = [];
     CParams.HopSize = 4096;
+else
+    CParams = Ensure_field(CParams,'HopSize',4096);
 end
 
 if nargin < 4
@@ -82,8 +85,7 @@ end
 % BEGIN InitAll %
 %%%%%%%%%%%%%%%%%
 
-Bark = Get_psyparams('Bark');
-    
+Bark    = Get_psyparams('Bark');
 Bark2   = [sort([Bark(:,2);Bark(:,3)]),sort([Bark(:,1);Bark(:,4)])];
 
 N0      = round(20*N/Fs)+1;
@@ -206,17 +208,15 @@ for idx_j = 1:m_blocks
     tmpT = [];
     for idx = 1:1:sizL;
         % Steepness of upper slope [dB/Bark] in accordance with Terhardt
-        steep = -24-(230/freqs(idx))+(0.2*LdB(idx_L(idx)));
-        steepT = -24-(230/freqs(idx_L(idx)))+(0.2*LdB(idx_L(idx)));
+        steep   = -24-(230/freqs(idx))       +(0.2*LdB(idx_L(idx))); % original from Dik's code
+        steepT  = -24-(230/freqs(idx_L(idx)))+(0.2*LdB(idx_L(idx)));
         
         tmpF = [tmpF [freqs(idx);steep]];
         tmpT = [tmpT [freqs(idx_L(idx));steepT]];
         
-        if idx == 1     warning('to check formula');    end
-        
-        if steep < 0
+        if steepT < 0
             S2(idx) = steepT;
-            if idx == 1     warning('Correction introduced by AO/RG');    end
+            if idx == 1     warning('Correction introduced by AO/RG. steep replaced by steepT');    end
         end
     end
 

@@ -1,21 +1,30 @@
-function out = Get_psyparams(param, algorithm)
-% function out = Get_psyparams(param, algorithm)
+function out = Get_psyparams(param)
+% function out = Get_psyparams(param)
 %
 % 1. Description:
+%       Loads fixed variables to be used in the Roughness (R) and Fluctuation
+%       Strength (FS) models.
+% 
+%       -----------------
 %               R   FS
+%       -----------------
 %       a0tab   yes yes
 %       Bark    yes yes
 %       gr      yes no
+%       -----------------
 % 
 % 2. Stand-alone example:
-%
+%       a0tab = Get_psyparams('a0tab');
+% 
 % 3. Additional info:
-%       Tested cross-platform: No
+%       Tested cross-platform: Yes
+% 
+%       see also Roughness_offline to use this script
 %
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 12/11/2014
 % Last update on: 12/11/2014 % Update this date manually
-% Last use on   : 12/11/2014 % Update this date manually
+% Last use on   : 13/04/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 switch param

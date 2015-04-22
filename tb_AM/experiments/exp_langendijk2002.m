@@ -1,5 +1,7 @@
 function output = exp_langendijk2002(varargin)
-%EXP_LANGENDIJK2002  Experiment from Langendijk & Bronkhorst (2002)
+% function output = exp_langendijk2002(varargin)
+% 
+%   EXP_LANGENDIJK2002  Experiment from Langendijk & Bronkhorst (2002)
 %   Usage: output = exp_langendijk2002(flag);
 %
 %   EXP_LANGENDIJK2002(flags) recreates figures from Langendijk &
@@ -59,9 +61,6 @@ function output = exp_langendijk2002(varargin)
 %   References:
 %     E. Langendijk and A. Bronkhorst. Contribution of spectral cues to human
 %     sound localization. J. Acoust. Soc. Am., 112:1583-1596, 2002.
-%     
-%     
-%
 %
 %   Url: http://amtoolbox.sourceforge.net/doc/experiments/exp_langendijk2002.php
 
@@ -97,7 +96,6 @@ if flags.do_missingflag
              sprintf('%s or %s',definput.flags.type{end-1},definput.flags.type{end})];
   error('%s: You must specify one of the following flags: %s.',upper(mfilename),flagnames);
 end;
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                               SETTINGS                                %
@@ -143,48 +141,49 @@ idb=1:2:length(dtfdata.targetb); % in order to get comparable likelihoods
 output = pb;
 
 if flags.do_plot
-  figure('Name',listener)
-  clf
-  % pdf plots with actual responses
-  subplot(2,3,1)
-  hold all;    
-  plotlangendijk2002(pb,dtfdata.pol,dtfdata.pol,'nocolorbar');
-  title(['Baseline']);    
-  h=plot( dtfdata.targetb, dtfdata.responseb, 'ko');
-  set(h, 'MarkerFaceColor','w');
+    figure('Name',listener)
+    clf
+    % pdf plots with actual responses
+    subplot(2,3,1)
+    hold all;    
+    plotlangendijk2002(pb,dtfdata.pol,dtfdata.pol,'nocolorbar');
+    title(['Baseline']);    
+    h=plot( dtfdata.targetb, dtfdata.responseb, 'ko');
+    set(h, 'MarkerFaceColor','w');
 
-  subplot(2,3,2)
-  hold all;
-  plotlangendijk2002(p2o,dtfdata.pol,dtfdata.pol,'nocolorbar');
-  title(['2-oct (4-16kHz)']);
-  h=plot( dtfdata.targetc, dtfdata.response2o, 'ko');
-  set(h, 'MarkerFaceColor','w');
+    subplot(2,3,2)
+    hold all;
+    plotlangendijk2002(p2o,dtfdata.pol,dtfdata.pol,'nocolorbar');
+    title(['2-oct (4-16kHz)']);
+    h=plot( dtfdata.targetc, dtfdata.response2o, 'ko');
+    set(h, 'MarkerFaceColor','w');
 
-  subplot(2,3,3)
-  hold all;
-  plotlangendijk2002(p1ol,dtfdata.pol,dtfdata.pol,'nocolorbar');
-  title(['1-oct (low: 4-8kHz)']);
-  h=plot( dtfdata.targetc, dtfdata.response1ol, 'ko');
-  set(h, 'MarkerFaceColor','w');
+    subplot(2,3,3)
+    hold all;
+    plotlangendijk2002(p1ol,dtfdata.pol,dtfdata.pol,'nocolorbar');
+    title(['1-oct (low: 4-8kHz)']);
+    h=plot( dtfdata.targetc, dtfdata.response1ol, 'ko');
+    set(h, 'MarkerFaceColor','w');
 
-  subplot(2,3,4)
-  hold all;
-  plotlangendijk2002(p1om,dtfdata.pol,dtfdata.pol,'nocolorbar');
-  title(['1-oct (middle: 5.7-11.3kHz)']);
-  h=plot( dtfdata.targetc, dtfdata.response1om, 'ko');
-  set(h, 'MarkerFaceColor','w');
+    subplot(2,3,4)
+    hold all;
+    plotlangendijk2002(p1om,dtfdata.pol,dtfdata.pol,'nocolorbar');
+    title(['1-oct (middle: 5.7-11.3kHz)']);
+    h=plot( dtfdata.targetc, dtfdata.response1om, 'ko');
+    set(h, 'MarkerFaceColor','w');
 
-  subplot(2,3,5)
-  hold all;
-  plotlangendijk2002(p1oh,dtfdata.pol,dtfdata.pol,'nocolorbar');
-  title(['1-oct (high: 8-16kHz)']);
-  h=plot( dtfdata.targetc, dtfdata.response1oh, 'ko');
-  set(h,'MarkerFaceColor','w')
+    subplot(2,3,5)
+    hold all;
+    plotlangendijk2002(p1oh,dtfdata.pol,dtfdata.pol,'nocolorbar');
+    title(['1-oct (high: 8-16kHz)']);
+    h=plot( dtfdata.targetc, dtfdata.response1oh, 'ko');
+    set(h,'MarkerFaceColor','w')
 
-  % likelihood statistic
-  subplot(2,3,6)
-  plotlangendijk2002likelihood(la,le,ci);
-  set(gca,'XLim',[0.5 5.5])
+    % likelihood statistic
+    subplot(2,3,6)
+    plotlangendijk2002likelihood(la,le,ci);
+    set(gca,'XLim',[0.5 5.5])
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
