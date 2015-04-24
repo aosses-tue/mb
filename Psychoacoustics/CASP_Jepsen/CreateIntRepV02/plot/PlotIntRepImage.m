@@ -24,6 +24,10 @@ if nargin < 3, error('not enough input arguments'); end
 
 % calculation of rms across time in every auditory and modulation filter
 IntRepImage = squeeze(sqrt(mean((IntRep.Y).^2)));
+
+IntRepImage(1,1)=300; % 220
+warning('Temporal variable assigned by AO');
+
 if length(freq1) > 1 && length(freq2) > 1
     figH7=figure;
     set(figH7,'Name','internal representation (energy is color encoded) across f_c and f_m','NumberTitle','off')

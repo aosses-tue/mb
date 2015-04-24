@@ -1,3 +1,6 @@
+function [info, cerbs] = getGFBCenterERBs(lowf, uppf, baseF, density)
+% function [info, cerbs] = getGFBCenterERBs(lowf, uppf, baseF, density)
+% 
 % gammaFB.m - applies gammatone auditory filterbank
 %
 % Usage: [inf, cerbs] = getGFBCenterERBs(lowf, uppf, density);
@@ -17,11 +20,11 @@
 % modified version
     % 09/01/12, C.T. Iben
 
-function [info, cerbs] = getGFBCenterERBs(lowf, uppf, baseF, density);
-% 09/01/12, ci: alignment of a filter around a certain frequency 
-% baseF = 1000;
+% 09/01/12, ci: alignment of a filter around a certain frequency baseF = 1000;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 tmp = freqtoerb([lowf baseF uppf]);
+ci = freqtoern(baseF); % added by AO
 
 if ( tmp(1) == tmp(3) )
 
@@ -29,15 +32,16 @@ if ( tmp(1) == tmp(3) )
 
 else 
 	
-	tmp2 = [0:density:100];
-	tmp2 = [-fliplr(tmp2) tmp2(2:end)]+tmp(2);
+	tmp2    = [0:density:100];
+	tmp2    = [-fliplr(tmp2) tmp2(2:end)]+ci;
 	
 	i_start = min(find(tmp2>=tmp(1)));
-	i_end = max(find(tmp2<=tmp(3)));
+	i_end   = max(find(tmp2<=tmp(3)));
 
-	cerbs = tmp2(i_start:i_end);
+	cerbs   = tmp2(i_start:i_end);
 end
 
 info = length(cerbs);
 
-% eof
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% EOF

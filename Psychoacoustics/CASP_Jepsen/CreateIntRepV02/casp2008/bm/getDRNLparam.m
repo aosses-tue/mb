@@ -40,19 +40,28 @@ NlinDRNLstruct(7).parname = 'LP_nlin_cutoff';
 NlinDRNLstruct(8).parname = 'nLPfilt_nlin';
 NlinDRNLparOut=NlinDRNLstruct;
 
-
-
 %% DRNL for normal hearing, Jepsen et al. (2008)
 % assign values
-linDRNLstruct(1).vals = 10^(-0.06762+1.01679*log10(CF)); % Hz, CF_lin
+kv.lin_gain = [4.20405  0.47909];
+kv.lin_fc   = [-0.06762 1.01679];
+kv.lin_bw   = [.03728   0.75];
+kv.lin_lp_cutoff = [-0.06762 1.01];
+
+% Parameters for the linear part ------------------------------------------
+linDRNLstruct(1).vals = 10^(kv.lin_fc(1) + kv.lin_fc(2)*log10(CF)); % Hz, CF_lin
 % 06/04/2011 CI: modified (this is 3 in Lopex-Poveda and Meddis (2001), table II)
+
 linDRNLstruct(2).vals = 2; % number of cascaded gammatone filters
-linDRNLstruct(3).vals = 10^(.03728+.75*log10(CF)); % Hz, BW_lin
-linDRNLstruct(4).vals = 10^(4.20405 -.47909*log10(CF)); %g
-linDRNLstruct(5).vals = 10^(-0.06762+1.01*log10(CF)); % Hz, LP_lin cutoff
-linDRNLstruct(6).vals = 4; % no. of cascaded LP filters
+linDRNLstruct(3).vals = 10^(kv.lin_bw(1)   + kv.lin_bw(2)  *log10(CF)); % Hz, BW_lin
+linDRNLstruct(4).vals = 10^(kv.lin_gain(1) - kv.lin_gain(2)*log10(CF)); %g
+
+linDRNLstruct(6).vals = 4; % no. of cascaded LP filters (used in both linear and non-linear parts
+linDRNLstruct(5).vals = 10^(kv.lin_lp_cutoff(1) + kv.lin_lp_cutoff(2)*log10(CF)); % Hz, LP_lin cutoff
+
+% Parameters for the non-linear part --------------------------------------
 NlinDRNLstruct(1).vals = 10^(-0.05252+1.01650*log10(CF)); % Hz, CF_nlin
 % 06/04/2011 CI: modified (this is 3 in Lopex-Poveda and Meddis (2001), table II)
+
 NlinDRNLstruct(2).vals = 2; % number of cascaded gammatone filters
 % 06/04/2011 CI: modified version from Morten (this is +.77*log10(CF)
 % in Lopex-Poveda and Meddis (2001), table II)
@@ -75,13 +84,12 @@ else
     % typo in paper?
 end
 NlinDRNLstruct(6).vals = 10^(-.60206); % c, compression coeff
-% 06/04/2011 CI: modified (this is 1.01650 in Lopex-Poveda and Meddis
-% (2001), table II)
-NlinDRNLstruct(7).vals = 10^(-0.05252+1.01*log10(CF)); % LP_nlincutoff
-% 31/05/2011 CI: modified (this is 3 in Lopex-Poveda and Meddis (2001),
-% table II)
-NlinDRNLstruct(8).vals = 1; % no. of cascaded LP filters in nlin path
+% 06/04/2011 CI: modified (this is 1.01650 in Lopex-Poveda and Meddis 2001), table II)
 
+NlinDRNLstruct(7).vals = 10^(-0.05252+1.01*log10(CF)); % LP_nlincutoff
+% 31/05/2011 CI: modified (this is 3 in Lopex-Poveda and Meddis (2001), table II)
+
+NlinDRNLstruct(8).vals = 1; % no. of cascaded LP filters in nlin path
 
 for k=1:6
     linDRNLparOut(k).vals = linDRNLstruct(k).vals;

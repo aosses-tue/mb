@@ -55,8 +55,8 @@ function [outsig, fc, mfc] = jepsen2008preproc(insig, fs, varargin);
 %     
 %
 %   Url: http://amtoolbox.sourceforge.net/doc/monaural/jepsen2008preproc.php
-
-% Copyright (C) 2009-2014 Peter L. Søndergaard and Piotr Majdak.
+% 
+% Copyright (C) 2009-2014 Peter L. Soendergaard and Piotr Majdak.
 % This file is part of AMToolbox version 0.9.5
 %
 % This program is free software: you can redistribute it and/or modify
@@ -71,13 +71,24 @@ function [outsig, fc, mfc] = jepsen2008preproc(insig, fs, varargin);
 %
 % You should have received a copy of the GNU General Public License
 % along with this program.  If not, see <http://www.gnu.org/licenses/>.
+% 
+% Examples:
+%       [insig,fs] = greasy;
+%       insig = resample(insig,44100,fs);
+%       fs = 44100;
+%       [outsig, fc, mfc] = jepsen2008preproc(insig, fs);
+% 
+% Author        : Torsten Dau, Morten Loeve Jepsen, Peter L. Soendergaard
+% Downloaded on : 18/03/2014
+% Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
+% Last update on: 22/04/2015 % Update this date manually
+% Last use on   : 22/04/2015 % Update this date manually
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%   AUTHOR : Torsten Dau, Morten Løve Jepsen, Peter L. Søndergaard
-  
 % ------ Checking of input parameters ------------
 
-error(['This code of this function is incorrect. Please see the description ' ...
-       'in the help text.']
+warning(['This code of this function is incorrect. Please see the description ' ...
+       'in the help text.'])
 
 if nargin<2
   error('%s: Too few input arguments.',upper(mfilename));
@@ -92,25 +103,41 @@ if ~isnumeric(fs) || ~isscalar(fs) || fs<=0
 end;
 
 definput.import={'drnl','ihcenvelope','adaptloop'};
-definput.importdefaults={'jepsen2008'};
+% definput.importdefaults={'jepsen2008'};
+definput.importdefaults={'jepsen2008','ihc_jepsen','adt_dau'}; % Added by AO
 definput.keyvals.subfs=[];
 
 [flags,keyvals]  = ltfatarghelper({'flow','fhigh'},definput,varargin);
 
 % ------ do the computation -------------------------
 
-%% Headphone filter
-hp_fir = headphonefilter(fs);
-outsig = filter(hp_fir,1,insig);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% avoid truncation errors due to resampling: COPIED FROM CASP ALGO.
+IntRep.resampleFac = 4;
+IntRep.resampleLen = floor(length(insig) / IntRep.resampleFac);
+IntRep.fs = fs / IntRep.resampleFac;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%% DRNL and compensation for middle-ear
-[outsig, fc] = drnl(outsig, fs, 'argimport',flags,keyvals);
-outsig = gaindb(outsig,50);
+%% 1. Headphone filter (outer ear)
+%       Typical human headphone-to-eardrum gain. 
+%       insig is assumed to be in [Pa]
 
-%% 'haircell' envelope extraction
+hp_fir = headphonefilter(fs);       % Getting the filter coefficients at fs
+outsig = filter(hp_fir,1,insig);    % Applying the FIR filter
+
+%% 2. DRNL and compensation for middle-ear (middle ear)
+
+% [outsig, fc] = drnl(outsig, fs, 'argimport',flags,keyvals);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+[outsig, fc] = drnl_CASP(outsig, fs, 'argimport',flags,keyvals,IntRep);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% 3. 'haircell' envelope extraction
 outsig = ihcenvelope(outsig,fs,'argimport',flags,keyvals);
 
-%% Expansion stage
+outsig = gaindb(outsig,50); % moved by AO from line after DRNL filterbank
+
+%% 4. Expansion stage
 outsig = outsig.^2;
 
 %% non-linear adaptation loops
@@ -119,3 +146,5 @@ outsig = adaptloop(outsig,fs,'argimport',flags,keyvals);
 %% Modulation filterbank
 [outsig,mfc] = modfilterbank(outsig,fs,fc);
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+end

@@ -1,15 +1,18 @@
+function out = drnl(x,CF,fs)
+% function out = drnl(x,CF,fs)
+% 
 % script for pemo preprocessing using an implementation of the dual
 % resonance nonlinear (DRNL) filter (Lopez-Poveda, meddis 2001)
 % The filter models the BM non-linearity
-% Author: Morten Løve Jepsen, 2.nov 2005
+% Author: Morten Loeve Jepsen, 2.nov 2005
 %
 % usage: out = drnl(x,CF,fs)
-
-function out = drnl(x,CF,fs)
+% Original file: 'D:\MATLAB_git\Psychoacoustics\CASP_Jepsen\CreateIntRepV02\casp2008\bm\drnl.m'
 
 [linDRNLpar,nlinDRNLpar] = getDRNLparam(CF);
-
-[GTlin_b,GTlin_a] = coefGtDRNL(linDRNLpar(5).vals,linDRNLpar(3).vals,1,fs); %get GT filter coeffs
+                             %(fc                , BW               ,fs) 
+[GTlin_b,GTlin_a] = coefGtDRNL(linDRNLpar(5).vals,linDRNLpar(3).vals,fs); %get GT filter coeffs
+                             %(fc                ,fs)
 [LPlin_b,LPlin_a] = coefLPDRNL(linDRNLpar(5).vals,fs); % get LP filter coeffs
 
 y_lin = x.*linDRNLpar(4).vals; % Apply linear gain
@@ -24,7 +27,7 @@ end
 % end of linear part %%%%%%%%%%%%%%%%%%%%%%%
 
 % Non-linear part%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[GTnlin_b,GTnlin_a] = coefGtDRNL(nlinDRNLpar(7).vals,nlinDRNLpar(3).vals,1,fs); %get GT filter coeffs
+[GTnlin_b,GTnlin_a] = coefGtDRNL(nlinDRNLpar(7).vals,nlinDRNLpar(3).vals,fs); %get GT filter coeffs
 [LPnlin_b,LPnlin_a] = coefLPDRNL(nlinDRNLpar(7).vals,fs); % get LP filter coeffs
 
 y_nlin = x;
@@ -63,5 +66,6 @@ end
 
 out = (y_lin + y_nlin);
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %eof
 

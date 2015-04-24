@@ -1,6 +1,9 @@
 function [outsig, fc] = drnl(insig,fs,varargin)
-%DRNL  Dual Resonance Nonlinear Filterbank
-%   Usage: outsig = drnl(insig,fs);
+% function [outsig, fc] = drnl(insig,fs,varargin)
+% 
+%   1. Description:
+%           DRNL  Dual Resonance Nonlinear Filterbank
+%           Usage: outsig = drnl(insig,fs);
 %
 %   DRNL(insig,fs) computes the Dual Resonance Non-Linear (DRNL)
 %   filterbank of the input signal insig sampled at fs Hz with channels
@@ -132,7 +135,7 @@ function [outsig, fc] = drnl(insig,fs,varargin)
 %
 %   Url: http://amtoolbox.sourceforge.net/doc/modelstages/drnl.php
 
-% Copyright (C) 2009-2014 Peter L. Søndergaard and Piotr Majdak.
+% Copyright (C) 2009-2014 Peter L. Sondergaard and Piotr Majdak.
 % This file is part of AMToolbox version 0.9.5
 %
 % This program is free software: you can redistribute it and/or modify
@@ -148,10 +151,10 @@ function [outsig, fc] = drnl(insig,fs,varargin)
 % You should have received a copy of the GNU General Public License
 % along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-% AUTHOR: Morten Løve Jepsen
+% AUTHOR: Morten Love Jepsen
   
 % Bugfixes by Marton Marschall 9/2008 and Katarina Egger 2011
-% Cleanup by Peter L. Søndergaard.
+% Cleanup by Peter L. Sondergaard.
 %
 % In comparison to the original code, the gammatone filters are computed
 % by convolving the filter coefficients, instead of performing multiple
@@ -207,22 +210,22 @@ insig=gaindb(insig,dboffset-100);
 
 %% Apply the middle-ear filter
 if flags.do_middleear
-  me_fir = middleearfilter(fs);
-  insig = filter(me_fir,1,insig);  
+    me_fir = middleearfilter(fs);
+    insig = filter(me_fir,1,insig);  
 end;
 
 if flags.do_jepsenmiddleear
-  me_fir = middleearfilter(fs,'jepsenmiddleear');
-  insig = filter(me_fir,1,insig);
+    me_fir = middleearfilter(fs,'jepsenmiddleear');
+    insig = filter(me_fir,1,insig);
 end;
 
-%% ---------------- main loop over center frequencies
+%% ---------------- main loop over centre frequencies
 
 % Handle the compression limiting in the broken-stick non-linearity
 if ~isempty(kv.compresslimit)
-  fclimit=min(fc,kv.compresslimit);
+    fclimit=min(fc,kv.compresslimit);
 else
-  fclimit=fc;
+    fclimit=fc;
 end;
 
 % Sanity checking, some center frequencies may go above the Nyquest
@@ -231,100 +234,99 @@ end;
 
 for ii=1:nchannels
 
-  % -------- Setup channel dependant definitions -----------------
-
-  lin_fc        = polfun(kv.lin_fc,fc(ii));
-  lin_bw        = polfun(kv.lin_bw,fc(ii));
-  lin_lp_cutoff = polfun(kv.lin_lp_cutoff,fc(ii));
-  lin_gain      = polfun(kv.lin_gain,fc(ii));
-  
-  nlin_fc_before = polfun(kv.nlin_fc_before,fc(ii));
-  nlin_fc_after  = polfun(kv.nlin_fc_after,fc(ii));
-  
-  nlin_bw_before = polfun(kv.nlin_bw_before,fc(ii));
-  nlin_bw_after  = polfun(kv.nlin_bw_after,fc(ii));
-  
-  nlin_lp_cutoff = polfun(kv.nlin_lp_cutoff,fc(ii));
-  
-  % Expand a and b using the (possibly) limited fc
-  nlin_a = polfun(kv.nlin_a,fclimit(ii));
-
-  % b [(m/s)^(1-c)]
-  nlin_b = polfun(kv.nlin_b,fclimit(ii));
-      
-  nlin_c = polfun(kv.nlin_c,fc(ii));
-  
-  % Compute gammatone coefficients for the linear stage
-  [GTlin_b,GTlin_a] = gammatone(lin_fc,fs,kv.lin_ngt,lin_bw/audfiltbw(lin_fc),'classic');
-  
-  % Compute coefficients for the linear stage lowpass, use 2nd order
-  % Butterworth.
-  [LPlin_b,LPlin_a] = butter(2,lin_lp_cutoff/(fs/2));
-
-  % Compute gammatone coefficients for the non-linear stage
-  %[GTnlin_b_before,GTnlin_a_before] = coefGtDRNL(nlin_fc_before,nlin_bw_before,...
-  %                                               kv.nlin_ngt_before,fs);
-  [GTnlin_b_before,GTnlin_a_before] = gammatone(nlin_fc_before,fs,kv.nlin_ngt_before,...
-                                                nlin_bw_before/audfiltbw(nlin_fc_before),'classic');
-
-  [GTnlin_b_after,GTnlin_a_after] = gammatone(nlin_fc_after,fs,kv.nlin_ngt_after,...
-                                                nlin_bw_after/audfiltbw(nlin_fc_after),'classic');
-
-  % Compute coefficients for the non-linear stage lowpass, use 2nd order
-  % Butterworth.
-  [LPnlin_b,LPnlin_a] = butter(2,nlin_lp_cutoff/(fs/2));
-
-  % -------------- linear part --------------------------------
-
-  if flags.do_bothparts || flags.do_linonly
-    % Apply linear gain
-    y_lin = insig.*lin_gain; 
+    % -------- Setup channel dependant definitions ------------------------
+    % Params to be used in the linear part:
+    lin_gain        = polfun(     kv.lin_gain, fc(ii)); % Linear gain
+    lin_fc          = polfun(       kv.lin_fc, fc(ii));
+    lin_bw          = polfun(       kv.lin_bw, fc(ii));
+    lin_lp_cutoff   = polfun(kv.lin_lp_cutoff, fc(ii));
     
-    % Gammatone filtering
-    y_lin = filter(GTlin_b,GTlin_a,y_lin);    
-    
-    % Multiple LP filtering
-    for jj=1:kv.lin_nlp
-      y_lin = filter(LPlin_b,LPlin_a,y_lin);
-    end;
-  else
-    y_lin = zeros(size(insig));
-  end;
+    % Params to be used in the non-linear part:
+    nlin_fc_before  = polfun(kv.nlin_fc_before, fc(ii));
+    nlin_fc_after   = polfun( kv.nlin_fc_after, fc(ii));
 
-  % -------------- Non-linear part ------------------------------
+    nlin_bw_before  = polfun(kv.nlin_bw_before,fc(ii));
+    nlin_bw_after   = polfun(kv.nlin_bw_after,fc(ii));
 
-  if flags.do_bothparts || flags.do_nlinonly
-    
-    % GT filtering before
-    y_nlin = filter(GTnlin_b_before,GTnlin_a_before,insig);
-    
-    % Broken stick nonlinearity
-    if kv.nlin_d~=1
-      % Just to save some flops, make this optional.
-      y_nlin = sign(y_nlin).*min(nlin_a*abs(y_nlin).^kv.nlin_d, ...
-                                 nlin_b*(abs(y_nlin)).^nlin_c);
+    nlin_lp_cutoff  = polfun(kv.nlin_lp_cutoff,fc(ii));
+
+    % Expand a and b using the (possibly) limited fc
+    nlin_a  = polfun(kv.nlin_a,fclimit(ii));
+
+    % b [(m/s)^(1-c)]
+    nlin_b  = polfun(kv.nlin_b,fclimit(ii));
+
+    nlin_c  = polfun(kv.nlin_c,fc(ii));
+
+    % -------- Filter design using parameters just defined ----------------
+    % Compute gammatone coefficients for the linear stage
+    [GTlin_b,GTlin_a]   = gammatone(lin_fc,fs,kv.lin_ngt,lin_bw/audfiltbw(lin_fc),'classic');
+
+    % Compute coefficients for the linear stage lowpass, use 2nd order
+    % Butterworth.
+    [LPlin_b,LPlin_a]   = butter(2,lin_lp_cutoff/(fs/2));
+
+    % Compute gammatone coefficients for the non-linear stage
+    %[GTnlin_b_before,GTnlin_a_before] = coefGtDRNL(nlin_fc_before,nlin_bw_before,...
+    %                                               kv.nlin_ngt_before,fs);
+    [GTnlin_b_before,GTnlin_a_before]   = gammatone(nlin_fc_before,fs,kv.nlin_ngt_before,...
+                                                    nlin_bw_before/audfiltbw(nlin_fc_before),'classic');
+
+    [GTnlin_b_after,GTnlin_a_after]     = gammatone(nlin_fc_after,fs,kv.nlin_ngt_after,...
+                                                    nlin_bw_after/audfiltbw(nlin_fc_after),'classic');
+
+    % Compute coefficients for the non-linear stage lowpass, use 2nd order
+    % Butterworth.
+    [LPnlin_b,LPnlin_a]     = butter(2,nlin_lp_cutoff/(fs/2));
+
+    % -------------- linear part ------------------------------------------
+    if flags.do_bothparts || flags.do_linonly
+        % Apply linear gain
+        y_lin = insig.*lin_gain; 
+
+        % Gammatone filtering
+        y_lin = filter(GTlin_b,GTlin_a,y_lin);    
+
+        % Multiple LP filtering
+        for jj=1:kv.lin_nlp
+            y_lin = filter(LPlin_b,LPlin_a,y_lin);
+        end;
     else
-      y_nlin = sign(y_nlin).*min(nlin_a*abs(y_nlin), ...
-                                 nlin_b*(abs(y_nlin)).^nlin_c);
+        y_lin = zeros(size(insig));
     end;
-    
-    % GT filtering after
-    y_nlin = filter(GTnlin_b_after,GTnlin_a_after,y_nlin);
-    
-    % then LP filtering
-    for jj=1:kv.nlin_nlp
-      y_nlin = filter(LPnlin_b,LPnlin_a,y_nlin);
+
+    % -------------- Non-linear part ------------------------------
+    if flags.do_bothparts || flags.do_nlinonly
+
+        % GT filtering before
+        y_nlin = filter(GTnlin_b_before,GTnlin_a_before,insig);
+
+        % Broken stick nonlinearity
+        if kv.nlin_d~=1
+            % Just to save some flops, make this optional.
+            y_nlin = sign(y_nlin).*min(nlin_a*abs(y_nlin).^kv.nlin_d, ...
+                                       nlin_b*(abs(y_nlin)).^nlin_c);
+        else
+            y_nlin = sign(y_nlin).*min(nlin_a*abs(y_nlin), ...
+                                       nlin_b*(abs(y_nlin)).^nlin_c);
+        end;
+
+        % GT filtering after
+        y_nlin = filter(GTnlin_b_after,GTnlin_a_after,y_nlin);
+
+        % then LP filtering
+        for jj=1:kv.nlin_nlp
+            y_nlin = filter(LPnlin_b,LPnlin_a,y_nlin);
+        end;
+    else
+        y_nlin = zeros(size(insig));
     end;
-  else
-    y_nlin = zeros(size(insig));
-  end;
-  
-  outsig(:,ii,:) = reshape(y_lin + y_nlin,siglen,1,nsigs);    
+
+    outsig(:,ii,:) = reshape(y_lin + y_nlin,siglen,1,nsigs);    
     
 end;
- 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function outpar=polfun(par,fc)
   %outpar=10^(par(1)+par(2)*log10(fc));
   outpar=10^(par(1))*fc^par(2);
-
-

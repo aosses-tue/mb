@@ -28,6 +28,12 @@
 %       model = 'casp';
 %       DemoMain(model);
 % 
+%       [insig , fs] = greasy;
+%       insig = resample(greasy,44100,fs); fs = 44100; % converting to fs = 44100 Hz
+%       model = 'casp';
+%       pmode = 'IntRepImage'; 
+%       DemoMain(model,pmode,insig);
+% 
 % version 1.0
 %   20/01/2013, C.T. Iben
 % version 2.0
@@ -46,7 +52,13 @@ fprintf('Tool is running with %s in plotmodus %s with signal %s\n',model,pmode,w
 startupDemoMain; % name changed by AO startup was shadowed by my startup file
 
 %% load input signal
-[x, fs] = Wavread(wav);
+if ischar(wav)
+    [x, fs] = Wavread(wav);
+else
+    x = wav;
+    fs = 44100;
+    warning('Assuming fs = 44100 Hz, check this...')
+end
 
 %% runs preprocessing of the specified model and calculates the internal representation
 switch model
@@ -61,10 +73,10 @@ end
 %% plots output of pre-processing stages and/or internal representation of the input signal please browse PlotIntRepMain.m for details
 PlotIntRepMain(IntRep, BM, MF, fs, pmode)
 
-%% assigns structure IntRep to workspace
-assignin('base','IntRep',IntRep);
-assignin('base','BM',BM);
-assignin('base','MF',MF);
-disp('Model structures IntRep, BM and MF now in current workspace available')
+% %% assigns structure IntRep to workspace
+% assignin('base','IntRep',IntRep);
+% assignin('base','BM',BM);
+% assignin('base','MF',MF);
+% disp('Model structures IntRep, BM and MF now in current workspace available')
 
 % eof

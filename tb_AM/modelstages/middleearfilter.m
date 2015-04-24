@@ -74,7 +74,7 @@ function b = middleearfilter(fs,varargin)
 % You should have received a copy of the GNU General Public License
 % along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-%   AUTHOR: Peter L. Søndergaard, Katharina Egger
+%   AUTHOR: Peter L. Sondergaard, Katharina Egger
 
 %% ------ Check input options --------------------------------------------
 
@@ -209,9 +209,7 @@ if flags.do_jepsenmiddleear
   end;      
   
 end;
-  
-  
-  
+    
 % if flags.do_plot
 %     % Manually calculate the frequency response
 %     fmid = abs(fftreal(b));
@@ -223,5 +221,3 @@ end;
 %     xlabel('Frequency (kHz)');
 %     ylabel('FIR middleearfilter');
 % end
-
-

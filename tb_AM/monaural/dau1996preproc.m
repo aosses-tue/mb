@@ -61,6 +61,12 @@ function [outsig, fc, extra] = dau1996preproc(insig, fs, varargin);
 %
 %   Url: http://amtoolbox.sourceforge.net/doc/monaural/dau1996preproc.php
 %
+% Examples:
+%       [insig,fs] = greasy;
+%       insig = resample(insig,44100,fs);
+%       fs = 44100;
+%       [outsig, fc] = dau1996preproc(insig, fs);
+% 
 % Author        : Torsten Dau, Morten L. Jepsen, Peter L. Sondergaard
 % Downloaded on : 18/03/2014
 % Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015

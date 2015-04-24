@@ -1,14 +1,17 @@
 function definput=arg_ihcenvelope(definput)
- 
-  definput.flags.ihctype={'nodefault','ihc_bernstein','ihc_breebaart','ihc_dau','hilbert', ...
-                    'ihc_lindemann','ihc_meddis'};
+% function definput=arg_ihcenvelope(definput)
+%
+% 'ihc_jepsen added by AO'
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+  definput.flags.ihctype={'nodefault','ihc_bernstein','ihc_breebaart','ihc_dau', ...
+                          'hilbert','ihc_lindemann','ihc_meddis','ihc_jepsen'};
 
   definput.keyvals.minlvl=[];
 
-%
 %   Url: http://amtoolbox.sourceforge.net/doc/comp/arg_ihcenvelope.php
 
-% Copyright (C) 2009-2014 Peter L. Søndergaard and Piotr Majdak.
+% Copyright (C) 2009-2014 Peter L. Soendergaard and Piotr Majdak.
 % This file is part of AMToolbox version 0.9.5
 %
 % This program is free software: you can redistribute it and/or modify

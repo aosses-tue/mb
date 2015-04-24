@@ -69,44 +69,43 @@ tau5=0.500;			%last
 b01=1/(tau1*Fs);		%b0 from RC-lowpass recursion relation y(n)=b0*x(n)+a1*y(n-1)
 a11=exp(-b01);			%a1 coefficient of the upper IIR-filter
 b01=1-a11;
-tmp21=sqrt(minValue);		%from steady-state relation
+tmp21=sqrt(minValue);   %from steady-state relation
 %---------------------------------------------------------------
 % second adaption loop
 b02=1/(tau2*Fs);		%b0 from RC-lowpass recursion relation y(n)=b0*x(n)+a1*y(n-1)
 a12=exp(-b02);			%a1 coefficient of the upper IIR-filter
 b02=1-a12;
-tmp22=minValue^(1/4);		%from steady-state relation
+tmp22=minValue^(1/4);	%from steady-state relation
 %---------------------------------------------------------------
 % third adaption loop
 b03=1/(tau3*Fs);		%b0 from RC-lowpass recursion relation y(n)=b0*x(n)+a1*y(n-1)
 a13=exp(-b03);			%a1 coefficient of the upper IIR-filter
 b03=1-a13;
-tmp23=minValue^(1/8);		%from steady-state relation
+tmp23=minValue^(1/8);	%from steady-state relation
 %---------------------------------------------------------------
 % forth adaption loop
 b04=1/(tau4*Fs);		%b0 from RC-lowpass recursion relation y(n)=b0*x(n)+a1*y(n-1)
 a14=exp(-b04);			%a1 coefficient of the upper IIR-filter
 b04=1-a14;
-tmp24=minValue^(1/16);		%from steady-state relation
+tmp24=minValue^(1/16);	%from steady-state relation
 %---------------------------------------------------------------
 % fifth adaption loop
 b05=1/(tau5*Fs);		%b0 from RC-lowpass recursion relation y(n)=b0*x(n)+a1*y(n-1)
 a15=exp(-b05);			%a1 coefficient of the upper IIR-filter
 b05=1-a15;
-tmp25=minValue^(1/32);		%from steady-state relation
+tmp25=minValue^(1/32);	%from steady-state relation
 %---------------------------------------------------------------
 % overall lowpass-filter
 %b0l=1/(taul*Fs);		%b0 from RC-lowpass recursion relation y(n)=b0*x(n)+a1*y(n-1)
 %a1l=exp(-b0l);			%a1 coefficient of the upper IIR-filter
 %b0l=1-a1l;
-%tmp_l=0;			%from steady-state relation
-
+%tmp_l=0;               %from steady-state relation
 
 corr = minValue^(1/32);		% to get a range from 0 to 100 model units
 
 mult = 100/(1-corr);
 %  mult = 100/(1.2*(1-corr)); % after expansion,DRNL, we need to compensate for
-% "m" is added or altered by morten 26. jun 2006
+% "m" is added or altered by Morten 26. jun 2006
 if limit <=1 % m, no limitation
     
     for i=1:len
@@ -243,4 +242,5 @@ else    % m, now limit
     end
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % eof

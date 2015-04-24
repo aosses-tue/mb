@@ -1,19 +1,23 @@
 function definput=arg_drnl(definput)
- 
+% function definput=arg_drnl(definput)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   
-  definput.keyvals.flow=80;
-  definput.keyvals.fhigh=8000;
-  definput.keyvals.basef=[];
-  definput.keyvals.bwmul=1;
+  definput.keyvals.flow     = 80;
+  definput.keyvals.fhigh    = 8000;
+  definput.keyvals.basef    = [];
+  definput.keyvals.bwmul    = 1;
 
   % parameters according to Lopez-Poveda and Meddis 2001
-  definput.keyvals.lin_ngt = 2; 
-  definput.keyvals.lin_nlp = 4; 
-  definput.keyvals.lin_fc = [-0.06762 1.01679];
-  definput.keyvals.lin_bw = [  .03728 .78563];
+  %% Linear part:
+  definput.keyvals.lin_ngt  = 2; % Number of Gammatone filters
+  definput.keyvals.lin_nlp  = 4; % Number of LP filters
+  definput.keyvals.lin_fc   = [-0.06762 1.01679];
+  definput.keyvals.lin_bw   = [  .03728 .78563];
   definput.keyvals.lin_gain = [4.20405 -.47909];
   definput.keyvals.lin_lp_cutoff = [-0.06762 1.01679 ];
   
+  %% Non-linear part:
   definput.keyvals.nlin_ngt_before = 3;
   definput.keyvals.nlin_ngt_after = [];
   definput.keyvals.nlin_nlp = 3;
@@ -31,11 +35,11 @@ function definput=arg_drnl(definput)
   definput.keyvals.compresslimit = [];
   
   definput.flags.middleear={'middleear','nomiddleear','jepsenmiddleear'};
-  
   definput.flags.path = {'bothparts','linonly','nlinonly'};
+  definput.flags.ihctype = {'ihc_jepsen'}; % Added by AO
 
   % This parameter set is not supported anymore, as there is no evince as
-  % to whether or not this is actually the dataset that whas used in the paper.  
+  % to whether or not this is actually the dataset that was used in the paper.  
   definput.groups.jepsen2008={...
       'lin_bw',          [ .03728   .75 ],...
       'lin_lp_cutoff',   [-0.06762 1.01 ],...  
@@ -48,7 +52,7 @@ function definput=arg_drnl(definput)
 %
 %   Url: http://amtoolbox.sourceforge.net/doc/comp/arg_drnl.php
 
-% Copyright (C) 2009-2014 Peter L. Søndergaard and Piotr Majdak.
+% Copyright (C) 2009-2014 Peter L. Soendergaard and Piotr Majdak.
 % This file is part of AMToolbox version 0.9.5
 %
 % This program is free software: you can redistribute it and/or modify

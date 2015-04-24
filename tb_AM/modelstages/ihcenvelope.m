@@ -45,6 +45,8 @@ function inoutsig = ihcenvelope(inoutsig,fs,varargin)
 %                      Lindemann (1986a) paper.
 %
 %     'ihc_meddis'     Use the Meddis inner hair cell model.
+% 
+%     'ihc_jepsen'     As used by Jepsen et al. 2008
 %
 %     'minlvl'         Set all values in the output equal to minlvl.
 %                      This ensures that the output is non-negative and
@@ -113,14 +115,14 @@ if flags.do_nodefault
 end;
 
 if flags.do_ihc_bernstein
-  % The computational trick mentioned in the Bernstein paper is used
-  % here: Instead of raising the envelope to power .23 and combine with its
-  % TFS, we raise it to power -.77, and combine with the original
-  % signal. In this way we avoid computing the fine structure.
-  inoutsig=max(abs(hilbert(inoutsig)).^(-.77).*inoutsig,0).^2;
-  cutofffreq=425;
-  [b, a] = butter(2, cutofffreq*2/fs);
-  inoutsig = filter(b,a, inoutsig);
+    % The computational trick mentioned in the Bernstein paper is used
+    % here: Instead of raising the envelope to power .23 and combine with its
+    % TFS, we raise it to power -.77, and combine with the original
+    % signal. In this way we avoid computing the fine structure.
+    inoutsig=max(abs(hilbert(inoutsig)).^(-.77).*inoutsig,0).^2;
+    cutofffreq=425;
+    [b, a] = butter(2, cutofffreq*2/fs);
+    inoutsig = filter(b,a, inoutsig);
 end;
 
 %% Breebaart2001a
@@ -135,28 +137,36 @@ end;
 
 %% Dau1996a,b Dau1997b,c
 if flags.do_ihc_dau
-  inoutsig = max( inoutsig, 0 ); % Half wave rectification
-  cutofffreq=1000;
-  [b, a] = butter(2, cutofffreq*2/fs);
-  inoutsig = filter(b,a, inoutsig); % LPF
+    inoutsig    = max( inoutsig, 0 ); % Half wave rectification
+    cutofffreq  = 1000;
+    [b, a]      = butter(2, cutofffreq*2/fs);
+    inoutsig    = filter(b,a, inoutsig); % LPF
 end;
 
 %%
 if flags.do_hilbert
-  inoutsig = abs(hilbert(inoutsig));
+    inoutsig = abs(hilbert(inoutsig));
 end;
 
 %%
 if flags.do_ihc_lindemann
-  inoutsig = max( inoutsig, 0 );
-  cutofffreq=800;
-  [b, a] = butter(1, cutofffreq*2/fs);
-  inoutsig = filter(b,a, inoutsig);
+    inoutsig = max( inoutsig, 0 );
+    cutofffreq=800;
+    [b, a] = butter(1, cutofffreq*2/fs);
+    inoutsig = filter(b,a, inoutsig);
 end;
 
 %%
 if flags.do_ihc_meddis
   inoutsig = comp_meddishaircell(inoutsig, fs);
+end;
+
+%% Jepsen2008
+if flags.do_ihc_jepsen % Added by AO
+    inoutsig    = max( inoutsig, 0 ); % Half wave rectification
+    cutofffreq  = 1000;
+    [b, a]      = butter(1, cutofffreq*2/fs); % Lp.b1, Lp.a1: see CaspPreProcInit.m L39
+    inoutsig    = filter(b,a, inoutsig); % LPF
 end;
 
 %%

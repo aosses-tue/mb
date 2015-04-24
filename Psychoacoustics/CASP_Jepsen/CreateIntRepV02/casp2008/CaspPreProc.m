@@ -76,15 +76,19 @@ IntRep.Y = zeros(IntRep.resampleLen,BM.NrChannels,MF.NrChannels);
 % stage1: Outer-Middle ear filter
 xStapes = OuterMiddleFilter(IntRep.x);
 
+tmp = [];
+
 for ChannelNr = 1:BM.NrChannels		% drnl filter loop
     % stage2: drnl filterbank
     y = drnl(xStapes',BM.CenterFreqs(ChannelNr),fs)';
     IntRep.BM(:,ChannelNr) = y;
     
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % stage3: haircell model
-    y = max(y,0); %hwr
+    y = max(y,0); % HWR: half wave rectification
     y = filter(Lp.b1,Lp.a1,y);
     IntRep.hc(:,ChannelNr) = y;
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     % linear gain to fit ADloop operating point
     y = y*10^(50/20);
@@ -94,8 +98,11 @@ for ChannelNr = 1:BM.NrChannels		% drnl filter loop
     
     % stage5: adaptation loops
     y = max(y,1e-5);
-    y = nlal_lim(y,fs,0,1e-5);
+    y = nlal_lim(y,fs,10,1e-5); % Limit 0
+    warning('Overshoot changed to 10 by AO, according what it is said in Jepsen 2008')
     IntRep.adapt(:,ChannelNr) = y;
+    
+    tmp = [tmp y];
     
     % downsampling
     y = resample(y,1,IntRep.resampleFac);
@@ -116,9 +123,6 @@ for ChannelNr = 1:BM.NrChannels		% drnl filter loop
     IntRep.Y(:,ChannelNr,1:length(MF.CenterFreq)) = y;
 end
 
-% eof
-
-
-
-
-
+disp('')
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% EOF

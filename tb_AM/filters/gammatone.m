@@ -9,6 +9,8 @@ function [b,a,delay,z,p,k]=gammatone(fc,fs,varargin)
 %      fs    : sampling rate in Hz.
 %      n     :  filter order.
 %      beta  :  bandwidth of the filter.
+%      betamul: betamul times BW of fc, i.e., audfiltbw(fc) determines the
+%               bandwidth beta of the filter
 %
 %   Output parameters:
 %      b     :  nominator coefficients.
@@ -82,10 +84,11 @@ function [b,a,delay,z,p,k]=gammatone(fc,fs,varargin)
 %     auditory filterbank based on the gammatone function. APU report, 2341,
 %     1988.
 %     
-%
 %   Url: http://amtoolbox.sourceforge.net/doc/filters/gammatone.php
+%   AUTHOR : Stephan Ewert, Peter L. Soendergaard
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Copyright (C) 2009-2014 Peter L. Søndergaard and Piotr Majdak.
+% Copyright (C) 2009-2014 Peter L. Soendergaard and Piotr Majdak.
 % This file is part of AMToolbox version 0.9.5
 %
 % This program is free software: you can redistribute it and/or modify
@@ -100,8 +103,7 @@ function [b,a,delay,z,p,k]=gammatone(fc,fs,varargin)
 %
 % You should have received a copy of the GNU General Public License
 % along with this program.  If not, see <http://www.gnu.org/licenses/>.
-  
-%   AUTHOR : Stephan Ewert, Peter L. Søndergaard
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % ------ Checking of input parameters ---------
   
@@ -159,9 +161,7 @@ if flags.do_allpole
 
   if flags.do_real
 
-    warning(['FIXME: The real-valued allpole filters are not scaled ' ...
-             'correctly.']);
-    
+    warning(['FIXME: The real-valued allpole filters are not scaled correctly.']);
     
     b=zeros(nchannels,1);
     a=zeros(nchannels,2*n+1);
@@ -349,4 +349,5 @@ else
 
 end;
 
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+end
