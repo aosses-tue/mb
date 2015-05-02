@@ -31,7 +31,6 @@
 %  
 % Alex Petrov, December 2006
 % 
-% //
 % Downloaded on: 08/10/2014 
 % Downloaded from: https://sccn.ucsd.edu/svn/software/eeglab/functions/miscfunc/dprime.m
 % ==============================================================================

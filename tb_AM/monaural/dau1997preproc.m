@@ -39,11 +39,11 @@ function [outsig, fc, mfc, extra] = dau1997preproc(insig, fs, varargin)
 %
 %   References: dau1997mapI dau1997mapII
 %
-% Author        : Torsten Dau, Morten L. Jepsen, Peter L. Søndergaard
+% Author        : Torsten Dau, Morten L. Jepsen, Peter L. Soendergaard
 % Downloaded on : 18/03/2014
-% Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
-% Last update on: 07/10/2014 % Update this date manually
-% Last use on   : 07/10/2014 % Update this date manually
+% Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
+% Last update on: 29/04/2015 % Update this date manually
+% Last use on   : 29/04/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % ------ Checking of input parameters ------------
@@ -74,15 +74,15 @@ definput.keyvals.subfs=[];
 [outsig, fc]            = auditoryfilterbank(insig,fs,'argimport',flags,keyvals);
 
 extra.insig             = insig;
-extra.out01_filterbank  = outsig; 
+extra.out_filterbank    = outsig; 
 
 % 'haircell' envelope extraction
 outsig                  = ihcenvelope(outsig,fs,'argimport',flags,keyvals);
-extra.out02_ihc         = outsig;
+extra.out_ihc           = outsig;
 
 % non-linear adaptation loops (model units, MU)
 outsig                  = adaptloop(outsig,fs,'argimport',flags,keyvals);
-extra.out03_adaptloop   = outsig;
+extra.out_adaptloop     = outsig;
 
 % Modulation filterbank
 [outsig,mfc] = modfilterbank(outsig,fs,fc);

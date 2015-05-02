@@ -1,5 +1,5 @@
-function [outsig, fc, extra] = dau1996preproc(insig, fs, varargin);
-% function [outsig, fc, extra] = dau1996preproc(insig, fs, varargin);
+function [outsig, fc, extra] = dau1996preproc_1Ch(insig, fs, fc, varargin);
+% function [outsig, fc, extra] = dau1996preproc_1Ch(insig, fs, fc, varargin);
 %
 % 1. Description:
 %       Auditory model from Dau et. al. 1996.
@@ -67,7 +67,7 @@ function [outsig, fc, extra] = dau1996preproc(insig, fs, varargin);
 %       fs = 44100;
 %       [outsig, fc] = dau1996preproc(insig, fs);
 % 
-% Author        : Torsten Dau, Morten L. Jepsen, Peter L. Sondergaard
+% Author        : Torsten Dau, Morten L. Jepsen, Peter L. Soendergaard
 % Downloaded on : 18/03/2014
 % Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Last update on: 15/10/2014 % Update this date manually
@@ -104,6 +104,8 @@ definput.keyvals.subfs=[];
 
 % ------ do the computation -------------------------
 
+keyvals.flow    = fc;
+keyvals.fhigh   = fc;
 % Apply the auditory filterbank
 [outsig, fc] = auditoryfilterbank(insig,fs,'argimport',flags,keyvals);
 extra.out_filterbank  = outsig; 

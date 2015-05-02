@@ -1,6 +1,12 @@
 function ACF = crosscorrelation(data1, data2)
 % CROSSCORRELATION Finds the cross-correlation of two time signals' data
-
+% 
+% 3. Stand-alone example:
+%       data1 = wgn(1,100,1); % 100 element white noise
+%       data2 = wgn(1,100,1); % 100 element white noise
+%       CF = crosscorrelation(data1,data2);
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 lagCount = round(length(data1)/2);
 
 nFFT =  2^(nextpow2(length(data1)) + 1);

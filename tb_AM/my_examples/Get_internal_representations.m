@@ -1,9 +1,8 @@
-function [outsig, fc, t, opts] = Get_internal_representations(insig,fs,model,var)
-% function [outsig, fc, t, opts] = Get_internal_representations(insig,fs,model,var)
+function [outsig, fc, t, opts] = Get_internal_representations(insig,fs,model,opts)
+% function [outsig, fc, t, opts] = Get_internal_representations(insig,fs,model,opts)
 %
 % 1. Description:
-%       var - sigma of the internal noise
-%       opts.idx - indexes of bands with larger average values (largest, second largest, third largest)
+%       LvNoise - level of the internal noise
 % 
 % 2. Stand-alone example:
 %       [insig t]   = Create_sin; % default sine tone
@@ -17,11 +16,11 @@ function [outsig, fc, t, opts] = Get_internal_representations(insig,fs,model,var
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 22/10/2014
-% Last update on: 30/10/2014 % Update this date manually
-% Last use on   : 30/03/2015 % Update this date manually
+% Last update on: 29/04/2015 % Update this date manually
+% Last use on   : 29/04/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if nargin < 4
-    var = 1e-5;
+    opts = [];
 end
 
 if nargin < 3
@@ -33,28 +32,60 @@ if nargin < 2
 end
 
 if strcmp(model,'dau1996a') % No overshoot limit
-    [outsig fc] = dau1996apreproc(insig,fs);
+    [outsig fc outint] = dau1996apreproc(insig,fs);
 end
 
 if strcmp(model,'dau1996') % Overshoot limit
-    [outsig fc] = dau1996preproc(insig,fs);
+    [outsig fc outint] = dau1996preproc(insig,fs);
 end
 
-opts = [];
+if strcmp(model,'dau1997') 
+    [outsig fc mf outint] = dau1997preproc(insig,fs);
+end
+
+% if strcmp(model,'jepsen2008') 
+%     [outsig fc] = jepsen2008preproc(insig,fs);
+% end
+
+opts    = Ensure_field(opts,'bAddNoise',1);
+opts    = Ensure_field(opts,'sigma',0);
+
+bAddNoise   = opts.bAddNoise;
+sigma       = opts.sigma;
+mu          = 0;
 
 t = ( 1:size(outsig,1) )/fs;
 
 N = size(outsig,1);
 M = size(outsig,2);
 
-var = max(var,1e-5);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Internal noise:
+% var = max(var,1e-5);
+% yn = wgn(N,1, To_dB(var) );
 
-yn = wgn(N,1, To_dB(var) );
+dBFS    = 100;
 
-outsig = outsig + repmat(yn,1,M);
+if bAddNoise
+    for i = 1:M
+        
+        yn = normrnd(mu,sigma,N,1);
+        var(i) = std(yn);
+        IntNoise(:,i) = yn;
+    end
+    
+    fprintf('Internal noise with RMS of %.2f [dB]\n', mean( rmsdb(IntNoise) ));
+    outsig = outsig + IntNoise;
+end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-idx2avg = size(outsig,1)/10; % the last tenth of the array
+if nargout == 0
+    idx2avg = size(outsig,1)/10; % the last tenth of the array
+else
+    idx2avg = size(outsig,1); 
+end
+    
 tmp = outsig(end-idx2avg+1:end,:);
 tmp = rms(tmp);
 idx(1) = find(  tmp == max( (tmp) )  );
@@ -66,6 +97,7 @@ tmp(idx(2)) = 0;
 idx(3) = find(  tmp == max( (tmp) )  );
 
 opts.idx = idx;
+opts.outint = outint;
 
 if nargout == 0
     
@@ -74,6 +106,7 @@ if nargout == 0
     legend(     num2str(fc(idx(1))), ...
                 num2str(fc(idx(2))), ...
                 num2str(fc(idx(3))) );
+	title('Three frequency bands with more energy')
     
 end
     

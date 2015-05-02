@@ -3,8 +3,8 @@ function [outsig, fc, mfc, extra] = dau1997preproc_1Ch(insig, fs, fc, varargin)
 %
 % 1. Description:
 %       Auditory model from Dau et. al. 1997
-%       Usage:  [outsig, fc] = dau1997preproc_1Ch(insig,fs);
-%               [outsig, fc] = dau1997preproc_1Ch(insig,fs,...);
+%       Usage:  [outsig, fc] = dau1997preproc_1Ch(insig,fs,fc);
+%               [outsig, fc] = dau1997preproc_1Ch(insig,fs,fc...);
 %
 %   Input parameters:
 %     insig  : input acoustic signal.
