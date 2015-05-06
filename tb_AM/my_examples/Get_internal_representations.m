@@ -48,7 +48,7 @@ end
 % end
 
 opts    = Ensure_field(opts,'bAddNoise',1);
-opts    = Ensure_field(opts,'sigma',0);
+opts    = Ensure_field(opts,'sigma',10);
 
 bAddNoise   = opts.bAddNoise;
 sigma       = opts.sigma;
