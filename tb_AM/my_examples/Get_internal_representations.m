@@ -17,7 +17,7 @@ function [outsig, fc, t, opts] = Get_internal_representations(insig,fs,model,opt
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 22/10/2014
 % Last update on: 29/04/2015 % Update this date manually
-% Last use on   : 29/04/2015 % Update this date manually
+% Last use on   : 08/05/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if nargin < 4
     opts = [];
@@ -48,7 +48,9 @@ end
 % end
 
 opts    = Ensure_field(opts,'bAddNoise',1);
-opts    = Ensure_field(opts,'sigma',10);
+if opts.bAddNoise == 1
+    opts    = Ensure_field(opts,'sigma',10);
+end
 
 bAddNoise   = opts.bAddNoise;
 sigma       = opts.sigma;
@@ -63,8 +65,6 @@ M = size(outsig,2);
 %% Internal noise:
 % var = max(var,1e-5);
 % yn = wgn(N,1, To_dB(var) );
-
-dBFS    = 100;
 
 if bAddNoise
     for i = 1:M
@@ -85,18 +85,23 @@ if nargout == 0
 else
     idx2avg = size(outsig,1); 
 end
-    
-tmp = outsig(end-idx2avg+1:end,:);
-tmp = rms(tmp);
-idx(1) = find(  tmp == max( (tmp) )  );
-tmp(idx(1)) = 0;
+   
+try
+    tmp = outsig(end-idx2avg+1:end,:);
+    tmp = rms(tmp);
+    idx(1) = find(  tmp == max( (tmp) )  );
+    tmp(idx(1)) = 0;
 
-idx(2) = find(  tmp == max( (tmp) )  );
-tmp(idx(2)) = 0;
+    idx(2) = find(  tmp == max( (tmp) )  );
+    tmp(idx(2)) = 0;
 
-idx(3) = find(  tmp == max( (tmp) )  );
+    idx(3) = find(  tmp == max( (tmp) )  );
 
-opts.idx = idx;
+    opts.idx = idx;
+catch
+    warning('Look at this script...');
+end
+
 opts.outint = outint;
 
 if nargout == 0

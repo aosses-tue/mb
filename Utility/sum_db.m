@@ -1,29 +1,35 @@
-function [y ymean] = sum_db(x,floor_dB)
-% function [y ymean] = sum_db(x,floor_dB)
+function [Y ymean] = sum_db(X,floor_dB)
+% function [Y ymean] = sum_db(X,floor_dB)
 %
 % 1. Description:
-%   dB sum
+%       Y [dB] (related to a pressure of y [Pa]) is obtained by combining 
+%       Xn SPL levels (with a pressure of xn [Pa]) in such a way that y is:
+%           y = sqrt(sum(x.^2))
 % 
-% 2. Additional info:
+%       see also sum_dB_arit.m
+% 
+% 2. Stand-alone example:
+%       X = [60 60];
+%       Y = sum_db(X); % expected result: 63 dB
+% 
+% 3. Additional info:
 %   Tested cross-platform: No
-%
-% 3. Stand-alone example:
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 06/06/2014
-% Last update on: 06/06/2014 % Update this date manually
-% Last use on   : 10/03/2015 % Update this date manually
+% Last update on: 06/05/2015 % Update this date manually
+% Last use on   : 06/05/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-x2 = 10.^(x/10); % Anti-log squared
+x2 = 10.^(X/10); % Anti-log squared
 
-y       =  10*log10( sum(x2) );
+Y       =  10*log10( sum(x2) );
 
 if nargout > 1
         
-    K = size(x,2);
+    K = size(X,2);
     for i = 1:K
-        idx = find(x(:,i)>floor_dB);
+        idx = find(X(:,i)>floor_dB);
         N = length(idx);
         ymean(i) =  10*log10(1/N * sum(x2(:,i)) );
     end

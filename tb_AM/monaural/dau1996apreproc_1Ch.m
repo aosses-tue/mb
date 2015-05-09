@@ -59,15 +59,8 @@ function [outsig, fc, outs] = dau1996apreproc_1Ch(insig, fs, fc, varargin);
 % Downloaded on : 18/03/2014
 % Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Last update on: 15/10/2014 % Update this date manually
-% Last use on   : 24/03/2015 % Update this date manually
+% Last use on   : 08/05/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% ------ Warning, Strube model not used ----------
-time_pause = 0.1;
-disp([mfilename '.m: the code of this function is incorrect, because it uses a GM filterbank instead of the Strube one, be aware of this...'])
-
-disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
-pause(time_pause)
 
 % ------ Checking of input parameters ------------
 
