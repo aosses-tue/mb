@@ -1,5 +1,5 @@
-function r20150501_update
-% function r20150501_update
+function outs = r20150501_update(opts)
+% function outs = r20150501_update(opts)
 %
 % 1. Description:
 %
@@ -17,21 +17,30 @@ function r20150501_update
 bDiary = 0;
 Diary(mfilename,bDiary);
 
-bPart1 = 0;
-bPart2 = 0; % Determining the noise deviation: Weber's approach
-bPart3 = 1; % Determining the noise deviation: Weber's approach
-bPart4 = 1;
+if nargin == 0
+    opts = [];
+end
+outs = [];
+
+opts = ef(opts,'bPart1',0);
+opts = ef(opts,'bPart2',0);
+opts = ef(opts,'bPart3',1);
+opts = ef(opts,'bPart4',1);
+
+bPart1 = opts.bPart1;
+bPart2 = opts.bPart2; % Determining the noise deviation: Weber's approach
+bPart3 = opts.bPart3; % Determining the noise deviation: Weber's approach
+bPart4 = opts.bPart4;
 
 % Common parameters:
 close all
-model = 'dau1996a';
-fs  = 44100;
+model   = 'dau1996a';
+fs      = 44100;
 
-Delta = 1/fs;
-t = ( 1:44100 )/fs;
-S = ones(length(t),1);
+Delta   = 1/fs;
+t       = ( 1:44100 )/fs;
+S       = ones(length(t),1);
 sum( Delta*(S.*S) );
-
 
 if bPart1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -230,7 +239,7 @@ testJND     = [1.6 1.1 .7]; %[2:-stepJND:.8 0]; % 0.8:stepJND:1.0; % dB
 % testJND     = [1.5 1.1 1 .9 .75 0]; 
 testLevels  = 60*ones(size(testJND)); % Level test tone
 
-sigmaValues = [0  20  30  35];
+sigmaValues = [0  1  10  20];
 sigmaTimes  = [1 100 100 100];
 
 f       = 1000; 
@@ -308,6 +317,16 @@ P4  = percentile(diff4,crit);
 
 bigP = [P1;P2;P3;P4]; 
 
+idx_n = 3;
+
+Criterion   = []; %P3(idx_n);
+txt = sprintf('Criterion = interp1(testJND,P%.0f,0.95);',idx_n);
+eval(txt);
+
+
+outs.PC = P3;
+outs.idx_n = idx_n;
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
 
@@ -316,18 +335,19 @@ if bPart4
 % Same as 3, but now it looks for a threshold in levels other than 60 dB SPL:
 
 if ~bPart3
-    error('Set bPart3 first');
+    if ~isfield(opts,'Criterion')
+        error('Set bPart3 first');
+    else
+        Criterion = opts.Criterion;
+    end
 end
 
-idx_n = 3;
-Criterion   = []; %P3(idx_n);
-txt = sprintf('Criterion = interp1(testJND,P%.0f,0.95);',idx_n);
-eval(txt);
+opts        = ef(opts,'testLevel',80);
+testLevel   = opts.testLevel;
 
 sigma       = sigmaValues(idx_n);
 times       = sigmaTimes(idx_n);
-% testJND     = [1 .82      .6  0]; %[0.95 .82]; % 0.8:stepJND:1.0; % dB
-testLevels  = 100*ones(size(testJND));
+testLevels  = testLevel*ones(size(testJND));
 
 for idx = 1:length(testJND) 
 

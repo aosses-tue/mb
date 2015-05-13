@@ -1,10 +1,21 @@
-function r20150306_update_experiments
-% function r20150306_update_experiments
+function r20150306_update_experiments(dir_results)
+% function r20150306_update_experiments(dir_results)
 %
 % 1. Description:
-%
+%       Files needed:
+%           bDoRoughFig3 	- No APEX file needed
+%           bDoRoughFig5    - No APEX file needed
+%           bDoFluct        - No APEX file needed
+%           bProcessDataFig3- Daniel1997_Fig3_multiprocedure01-AO.apr.xml
+%           bProcessDataFig5- Daniel1997_Fig5-AO-1.apr.xml
+%   
+%       The APEX result files should be inside the dir_results folder
+% 
 % 2. Stand-alone example:
-%
+%           % Windows example, Alejandro's computer:
+%           dir_results = 'D:\Documenten-TUe\02-Experiments\2015-APEX-my-experiments\Roughness\';
+%           r20150306_update_experiments(dir_results);
+% 
 % 3. Additional info:
 %       Tested cross-platform: No
 %
@@ -14,12 +25,21 @@ function r20150306_update_experiments
 % Last use on   : 05/03/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+if nargin < 1
+    if ~isunix % windows
+        dir_results = 'D:\Documenten-TUe\02-Experiments\2015-APEX-my-experiments\Roughness\';
+    else % linux, mac
+        dir_results = uigetdir(pwd,'Choose a directory where APEX result files could be found...');
+        dir_results = [dir_results delim];
+    end
+end
+
 bDiary = 0;
 Diary(mfilename,bDiary);
 
 bDoRoughFig3        = 0;
 bDoRoughFig5        = 0;
-bDoFluct            = 1;
+bDoFluct            = 0;
 bProcessDataFig3    = 1;
 bProcessDataFig5    = 1;
 
@@ -96,7 +116,7 @@ if bProcessDataFig3
     % fileres = 'D:\Documenten-TUe\02-Experiments\2015-APEX-my-experiments\Experiments\Roughness\Daniel1997_Fig3_multiprocedure01-AO.apr.xml';
     % answers_options = [0 25 50 75 100 125 150 175 200];
     
-    fileres = 'D:\Documenten-TUe\02-Experiments\2015-APEX-my-experiments\Experiments\Roughness\Daniel1997_Fig3_multiprocedure01-AO.apr.xml'
+    fileres = [dir_results 'Daniel1997_Fig3_multiprocedure01-AO.apr.xml'];
     answers_options = [0 25 50 75 100 125 150 175 200];
     
     script = 'apexresult.xsl';
@@ -187,7 +207,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if bProcessDataFig5
     
-    fileres = 'D:\Documenten-TUe\02-Experiments\2015-APEX-my-experiments\Experiments\Roughness\Daniel1997_Fig5-AO-1.apr.xml'
+    fileres = [dir_results 'Daniel1997_Fig5-AO-1.apr.xml'];
     script = 'apexresult.xsl';
     answers_options = 0:25:200;
     
