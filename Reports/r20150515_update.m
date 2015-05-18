@@ -18,21 +18,23 @@ bDiary = 0;
 Diary(mfilename,bDiary);
 tic
 
-stepJND     = .05;
-testJND     = .5:stepJND:1.8;
+stepJND     = .2;
+testJND     = .6:stepJND:1.2;
 % sigmaValues = [1 5 10 20:2:30 40 50]; % MU
-sigmaValues = [0 1 5 10]; % MU
+% sigmaValues = [0 1 5 10]; % MU
+sigmaValues = [0 0.1 0.5]; % MU
 Nsigma      = length(sigmaValues);
 % testLevels  = [20 40 60 80 100];
-testLevels  = [20 60 100];
+testLevels  = 80; % [20 60 100];
 Nlevels     = length(testLevels);
 Ntimes      = 100; % 100 calculations for each condition
 
 JNDcalc     = nan(Nlevels,Nsigma);
-
+f = 3000;
 for i = 1:Nsigma
     
     opts = [];
+    opts.f = f;
     opts.bPart3 = 1;
     opts.bPart4 = 0;
     opts.sigma  = sigmaValues(i);

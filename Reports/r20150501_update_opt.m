@@ -24,6 +24,8 @@ opts = ef(opts,'bPart4',1);
 
 opts = Ensure_field(opts,'sigma',30);
 opts = Ensure_field(opts,'sigmaTimes',100);
+opts = Ensure_field(opts,'f',1000);
+f = opts.f;
 
 bPart3 = opts.bPart3; % Determining the noise deviation: Weber's approach
 bPart4 = opts.bPart4;
@@ -32,7 +34,7 @@ sigmaValues = opts.sigma;
 sigmaTimes  = opts.sigmaTimes;
 
 % Common parameters:
-close all
+% close all
 model   = 'dau1996a';
 fs      = 44100;
 idx_compare = round(1*fs):round(2*fs);
@@ -48,10 +50,9 @@ if bPart3
 %   - No suprathreshold signal
 %   - No template used
 
-testJND     = [0.9 1.0]; 
+testJND     = 1.0; 
 testLevels  = 60*ones(size(testJND)); % Level test tone
 
-f       = 1000; 
 dur     = 4; % in seconds
 
 y       = .5*Create_sin(f,dur,fs,0);
@@ -86,17 +87,20 @@ for idx = 1:length(testJND)
     sigma = sigmaValues;
 
     for idx_times = 1:sigmaTimes
-        yn1 = normrnd(mu,sigma,N,1);
+        yn1 = normrnd(mu,sigma,N,1); 
         yn2 = normrnd(mu,sigma,N,1);
 
         RMTc_n  = RMTc  + yn1;
         RMTc2_n = RMTc2 + yn2;
 
-        difference(count_row,idx) = 1/fs*sum(RMTc2_n(idx_compare) - RMTc_n(idx_compare)); % current difference
+        diffVector                  = RMTc2_n(idx_compare) - RMTc_n(idx_compare);
+        difference(count_row,idx) = 1/fs*sum(diffVector); % current difference
+        
+        % figure; plot(diffVector);
+        
         count_row = count_row + 1;
 
     end
-
     
 end
 
@@ -108,7 +112,7 @@ idCum = cumsum(sigmaTimes);
 crit    = 70.7; % percentage correct
 P3      = percentile(difference,crit);
 
-Criterion = interp1(testJND,P3,0.95);
+Criterion = P3; % interp1(testJND,P3,0.95);
 
 outs.f  = f;
 outs.PC = P3;
@@ -171,17 +175,27 @@ for idx = 1:length(testJND)
         RMTc_n  = RMTc  + yn1;
         RMTc2_n = RMTc2 + yn2;
 
-        diff80(count_row,idx) = 1/fs*sum(RMTc2_n(idx_compare) - RMTc_n(idx_compare)); % current difference
+        diffVector                = RMTc2_n(idx_compare) - RMTc_n(idx_compare);
+        diffTest(count_row,idx)   = 1/fs*sum(diffVector); % current difference
+        
+        if idx_times == 1
+            
+            [PDF1 yi1] = Probability_density_function(RMTc_n(idx_compare),100);figure; plot(yi1,PDF1), hold on; 
+            title(sprintf('sigma=%.4f',sigma))
+            [PDF2 yi2] = Probability_density_function(RMTc2_n(idx_compare),100);plot(yi2,PDF2,'r')
+            
+        end
+        
         count_row = count_row + 1;
 
     end
     
 end
 
-M0dB = mean( diff80(:,end) );
-P3new  = percentile(diff80,crit);
+M0dB = mean( diffTest(:,end) );
+P3new  = percentile(diffTest,crit);
 
-amount = sum(diff80<=Criterion);
+amount = sum(diffTest<=Criterion);
 
 % to avoid problems with interpolation...
 idx2delete = find(diff(P3new)==0);
