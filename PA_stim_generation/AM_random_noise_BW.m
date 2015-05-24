@@ -78,7 +78,7 @@ Fsup    = Fc + BW/2;
 Finf    = Fc - BW/2;
 
 N       = round(Fs*dur);
-Sig     = rand(N,1)-0.5; % non-calibrated white noise
+Sig     = rand(N,1)-0.5; % non-calibrated white noise, with amplitudes from -0.5 to 0.5
 dF		= Fs/N;
 wstep	= 2*pi/Fs;
 

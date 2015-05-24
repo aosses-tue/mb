@@ -45,7 +45,7 @@ function inoutsig = setdbspl(inoutsig,lvl,varargin)
 % 
 %   See also: dbspl
 % 
-%   Author: Peter L. Søndergaard, 2009
+%   Author: Peter L. Soendergaard, 2009
 %   Comments edited by: Alejandro Osses, a.osses@tue.nl
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

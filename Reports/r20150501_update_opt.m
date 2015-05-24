@@ -25,19 +25,22 @@ opts = ef(opts,'bPart4',1);
 opts = Ensure_field(opts,'sigma',30);
 opts = Ensure_field(opts,'sigmaTimes',100);
 opts = Ensure_field(opts,'f',1000);
+opts = Ensure_field(opts,'bDebug',0);
+
 f = opts.f;
 
 bPart3 = opts.bPart3; % Determining the noise deviation: Weber's approach
 bPart4 = opts.bPart4;
+bDebug = opts.bDebug;
 
 sigmaValues = opts.sigma;
 sigmaTimes  = opts.sigmaTimes;
 
 % Common parameters:
 % close all
-model   = 'dau1996a';
+model   = 'dau1996';
 fs      = 44100;
-idx_compare = round(1*fs):round(2*fs);
+idx_compare = round(2*fs):round(3*fs);
 Delta   = 1/fs;
 t       = ( 1:44100 )/fs;
 S       = ones(length(t),1);
@@ -69,7 +72,13 @@ for idx = 1:length(testJND)
     
     lvl2    = subtract_dB( lvl1, testJND(idx) );
     SMTc2   = Il_create_tone(ytmp,fs,lvl2);
-        
+    
+    if bDebug
+        lvlTarget = sum_dB_arit([lvl1 lvl2]);
+        Mat = round(100*[lvlTarget lvl1 lvl2])/100;
+        var2latex(Mat);
+    end
+    
     % sound(SMTc ,fs)
     % sound(SMTc2,fs)
 
@@ -96,8 +105,22 @@ for idx = 1:length(testJND)
         diffVector                  = RMTc2_n(idx_compare) - RMTc_n(idx_compare);
         difference(count_row,idx) = 1/fs*sum(diffVector); % current difference
         
-        % figure; plot(diffVector);
-        
+        if bDebug
+            figure; plot(diffVector);
+            
+            %M = 1000;
+            Mmin = floor(min(RMTc_n));
+            Mmax = ceil(max(RMTc2_n));
+            
+            Centres = Mmin-1:Mmax+1;
+            [PDF1 yi1] = Probability_density_function(RMTc_n,Centres);
+            [PDF2 yi2] = Probability_density_function(RMTc2_n,Centres);
+            
+            figure; 
+            plot(yi1,PDF1, yi2,PDF2); grid on 
+            xlim([lvl1-15 lvl1+15]);
+            ylim([0 1]);
+        end
         count_row = count_row + 1;
 
     end
@@ -152,7 +175,20 @@ for idx = 1:length(testJND)
     
     lvl2    = subtract_dB( lvl1, testJND(idx) );
     SMTc2   = Il_create_tone(ytmp,fs,lvl2);
-        
+    
+    if bDebug
+        lvlTarget = sum_dB_arit([lvl1 lvl2]);
+        Mat = round(100*[lvlTarget lvl1 lvl2])/100;
+        var2latex(Mat);
+    end
+    
+    absThres_at_f = absolutethreshold(f);
+    
+    if lvl2 < absThres_at_f
+        warning('Test level below absolute threshold...')
+        pause(5);
+    end
+    
     % sound(SMTc ,fs)
     % sound(SMTc2,fs)
 
@@ -178,14 +214,32 @@ for idx = 1:length(testJND)
         diffVector                = RMTc2_n(idx_compare) - RMTc_n(idx_compare);
         diffTest(count_row,idx)   = 1/fs*sum(diffVector); % current difference
         
-        if idx_times == 1
-            
-            [PDF1 yi1] = Probability_density_function(RMTc_n(idx_compare),100);figure; plot(yi1,PDF1), hold on; 
-            title(sprintf('sigma=%.4f',sigma))
-            [PDF2 yi2] = Probability_density_function(RMTc2_n(idx_compare),100);plot(yi2,PDF2,'r')
-            
-        end
+        if bDebug
+                        
+            if idx_times == 1
+                
+                % figure; plot(diffVector);
+                
+                %M = 1000;
+                Mmin = floor(min(RMTc_n));
+                Mmax = ceil(max(RMTc2_n));
+
+                Centres = Mmin-1:1/16:Mmax+1;
+
+                [PDF1 yi1 stats1] = Probability_density_function(RMTc_n(idx_compare),Centres);
+                figure; plot(yi1,PDF1), hold on; 
+                title(sprintf('Target level = %.1f dB, sigma=%.4f',sum_dB_arit([lvl1 lvl2]), sigma))
+                [PDF2 yi2 stats2] = Probability_density_function(RMTc2_n(idx_compare),Centres);
+                plot(yi2,PDF2,'r')
+                grid on
+                xlim([lvl1-15 lvl1+5]);
+                ylim([0 1])
+                dprime = ( stats2.mean - stats1.mean )/stats1.std;
+                
+                fprintf('dprime = %.4f, noise normal = %s, noise+test normal = %s\n',dprime,stats1.bNormal,stats2.bNormal);
+            end
         
+        end
         count_row = count_row + 1;
 
     end
@@ -198,11 +252,13 @@ P3new  = percentile(diffTest,crit);
 amount = sum(diffTest<=Criterion);
 
 % to avoid problems with interpolation...
-idx2delete = find(diff(P3new)==0);
-P3new(idx2delete) = [];
-testJND(idx2delete) = [];
-
+% idx2delete = find(diff(P3new)==0);
+% P3new(idx2delete) = [];
+% testJND(idx2delete) = [];
+ 
 tmp = interp1(P3new,testJND,Criterion);
+% tmp = P3new;
+outs.JNDrecognised = 100-amount;
 outs.JNDcurrent = tmp;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

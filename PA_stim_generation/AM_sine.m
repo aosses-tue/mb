@@ -8,6 +8,14 @@ function y = AM_sine(fc,dur,fs,fmod,Mdept,SPL,dBFS)
 %       dur = 4;
 %       fs = 44100;
 %       AM_sine(fc,dur,fs);
+%
+%       fc  = 1000;
+%       dur = 4;
+%       fs  = 44100;
+%       fmod = 4; % Hz
+%       Mdept = 1;
+%       SPL = 70;
+%       y   = AM_sine(fc,dur,fs,fmod,Mdept,SPL);
 % 
 % 3. Additional info:
 %       Tested cross-platform: No
@@ -15,12 +23,12 @@ function y = AM_sine(fc,dur,fs,fmod,Mdept,SPL,dBFS)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 02/04/2015
 % Last update on: 02/04/2015 % Update this date manually
-% Last use on   : 02/04/2015 % Update this date manually
+% Last use on   : 20/05/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% if nargin < 7
-%     dBFS = 100;
-% end
+if nargin < 7
+    dBFS = 100;
+end
 
 if nargin < 6
     SPL = 65;
@@ -48,9 +56,8 @@ sig = Create_sin(fc,dur,fs,0);
 option = 'm';
 start_phase = pi/2; % begin in maximum. Use -pi/2 to begin in minimum
 y = ch_am(sig,fmod,Mdept,option,fs,start_phase);
-    
-% RMS = 65-100;
-y = setdbspl(y,SPL);
+
+y = setdbspl(y,SPL-3,dBFS); % same than applying calibration factor: cal = From_dB(-dBFS)*( From_dB(SPL-3)/mean(rms(y)) );
 
 if nargout == 0
     

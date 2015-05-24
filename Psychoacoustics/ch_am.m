@@ -77,7 +77,6 @@ end
 t = (0:1/fs:((len-1)/fs))';   % Zeitvektor
 t = t(:,ones(1,size(sig,2))); % scalar expansion, falls sig Matrix ist
 
-warning([mfilename '.m: Check Envelope correction according to Schone1979...'])
 % env=amp((1 + m * sin(2*pi*fmod*t+start_phase)),-korr);
 env = (1 + m * sin(2*pi*fmod*t+start_phase)       );
 env = env/max(abs(env));

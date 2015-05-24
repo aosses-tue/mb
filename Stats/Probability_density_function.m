@@ -1,5 +1,5 @@
-function [y centres] = Probability_density_function(x,N)
-% function [y centres] = Probability_density_function(x,N)
+function [y centres stats] = Probability_density_function(x,N)
+% function [y centres stats] = Probability_density_function(x,N)
 %
 % 1. Description:
 %   Probability density function of 'x'. The factor cal ensures that the 
@@ -23,12 +23,30 @@ if nargin < 2
     N = 50;
 end
 
-[p centres] = hist(x,N);
+if length(N) == 1
+    [p centres] = hist(x,N);
+else
+    centres = N;
+    p = hist(x,centres);
+end
 
 dStep   = centres(2)-centres(1);
 cal     = 1/(dStep * sum(p));
 
 y = cal * p;
+
+if nargout > 2
+    idx = min(find(y == max(y))); % in case two maximum values are found, the minimum index (arbitrary) is chosen
+    % stats.mean  = centres(idx);
+    stats.mean  = mean(x);
+    stats.std   = std(x);
+    
+    if kstest( (x-mean(x))/std(x) )
+        stats.bNormal = 'no';
+    else
+        stats.bNormal = 'yes';
+    end
+end
 
 if nargout == 0
     
