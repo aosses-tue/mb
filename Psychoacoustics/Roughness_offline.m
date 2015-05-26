@@ -1,5 +1,5 @@
-function [dataOut out] = Roughness_offline(insig, Fs, N, options, CParams,bDebug)
-% function [dataOut out] = Roughness_offline(insig, Fs, N, options, CParams,bDebug)
+function [R dataOut out] = Roughness_offline(insig, Fs, N, options, CParams,bDebug)
+% function [R dataOut out] = Roughness_offline(insig, Fs, N, options, CParams,bDebug)
 %
 % 1. Description:
 %       Frame-based, off-line implementation of the roughness algorithm.

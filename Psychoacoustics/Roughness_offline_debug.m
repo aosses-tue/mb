@@ -28,12 +28,12 @@ function dataOut = Roughness_offline_debug(dataIn, Fs, N, bDebug)
 % 2. Stand-alone example:
 %
 % 3. Additional info:
-%       Tested cross-platform: No
+%       Tested cross-platform: Yes
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 10/11/2014
 % Last update on: 21/11/2014 % Update this date manually
-% Last use on   : 21/11/2014 % Update this date manually
+% Last use on   : 25/05/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 4
