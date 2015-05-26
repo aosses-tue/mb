@@ -46,7 +46,7 @@ function [R dataOut out] = Roughness_offline(insig, Fs, N, options, CParams,bDeb
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 10/11/2014
 % Last update on: 17/01/2015 % Update this date manually
-% Last use on   : 13/04/2015 % Update this date manually
+% Last use on   : 27/05/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 6
@@ -125,7 +125,6 @@ MinExcdB = interp1(HTres(:,1),HTres(:,2),Barkno(k));
 % Initialize constants and variables
 zi      = 0.5:0.5:23.5;
 zb      = sort([Bf(1,:),Cf(1,:)]);
-MinBf   = MinExcdB(zb);
 Chno    = 47;
 ei      = zeros(Chno,N);
 Fei     = zeros(Chno,N);
@@ -162,7 +161,7 @@ m_blocks    =   size(insig_buf,2);
 ri          =   zeros(m_blocks,Chno);
 
 Window      = blackman(N, 'periodic') .* 1.8119;
-dBcorr      = 81; % originally = 80
+dBcorr      = 80;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for idx_j = 1:m_blocks
@@ -182,113 +181,31 @@ for idx_j = 1:m_blocks
     N2		=	N/2;
     q		=	1:1:N;
     qb		=	N0:1:Ntop;
-    freqs	=	(qb+1)*Fs/N;
     hBPi	=	zeros(Chno,N);
     hBPrms	=	zeros(1,Chno);
     mdept	=	zeros(1,Chno);
     ki		=	zeros(1,Chno-2);
     
-    % Calculate Excitation Patterns
     TempIn  = dataIn*AmpCal;
     [rt,ct] = size(TempIn);
     [r,c]   = size(a0);
     if rt~=r; TempIn=TempIn'; end
 
-    TempIn	=	a0.*fft(TempIn);
-    Lg		=	abs(TempIn(qb));
-    LdB		=	To_dB(Lg);
-    idx_L	=	find(LdB>MinExcdB); % index of levels above threshold
-    sizL	=	length(idx_L);
-
-    % steepness of slopes (Terhardt)
-    S1 = -27;
-    S2 = zeros(1,sizL);
-
-    tmpF = [];
-    tmpT = [];
-    for idx = 1:1:sizL;
-        % Steepness of upper slope [dB/Bark] in accordance with Terhardt
-        steep   = -24-(230/freqs(idx))       +(0.2*LdB(idx_L(idx))); % original from Dik's code
-        steepT  = -24-(230/freqs(idx_L(idx)))+(0.2*LdB(idx_L(idx)));
-        
-        tmpF = [tmpF [freqs(idx);steep]];
-        tmpT = [tmpT [freqs(idx_L(idx));steepT]];
-        
-        if steepT < 0
-            S2(idx) = steepT;
-            if idx == 1     warning('Correction introduced by AO/RG. steep replaced by steepT');    end
-        end
-    end
-
-    whichZ      = zeros(2,sizL);    % memory allocation
-    ExcAmp      = zeros(sizL,47);   % memory allocation
-    Slopes      = zeros(sizL,47);   % memory allocation
-    etmp_fd     = zeros(47,N);
-    etmpExc_fd  = zeros(47,N);
-    
-    qd          = 1:1:sizL;
-    whichZ(1,:)	= floor(2*Barkno(idx_L(qd)+N01)); % in which critical band each level above threshold is
-    whichZ(2,:)	= ceil(2*Barkno(idx_L(qd)+N01));
-
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % For each freq component with a level above threshold. One excitation 
-    % pattern for each frequency component:
-    for k=1:1:sizL 
-        Ltmp = LdB(idx_L(k)); 
-        Btmp = Barkno(idx_L(k)+N01);
-
-        for l = 1:1:whichZ(1,k) % lower slope S1, from 1 to lower limit of CBk
-            Stemp = (S1*(Btmp-(l*0.5)))+Ltmp;
-            if Stemp>MinBf(l)
-                Slopes(k,l)=From_dB(Stemp);
-            end
-        end
-        
-        for l = whichZ(2,k):1:47 % higher slope S2, from higher limit of CBk to 47
-            Stemp =	(S2(k)*((l*0.5)-Btmp))+Ltmp;
-            if Stemp>MinBf(l)
-                Slopes(k,l)=From_dB(Stemp);
-            end
-        end
-        % figure; plot((1:47)*.5, To_dB(Slopes(k,:))); xlabel('Critical-band rate [Bark]'); ylabel('Level [dB]'); title(num2str(k))
-        if k == 17
-            disp('')
-        end
-        
-    end
+    FreqIn	= a0.*fft(TempIn);
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    for k=1:1:47 % each critical band k
-
-        etmp    = zeros(1,N);
-        etmpExc = zeros(1,N);
-        
-        for l=1:1:sizL % each level above threshold
-
-            N1tmp = idx_L(l);
-            N2tmp = N1tmp + N01;
-            if (whichZ(1,l) == k)
-                ExcAmp(N1tmp, k) = 1;
-            elseif (whichZ(2,l) == k)
-                ExcAmp(N1tmp, k) = 1;
-            elseif (whichZ(2,l) > k)
-                ExcAmp(N1tmp,k) = Slopes(l,k+1)/Lg(N1tmp);
-            else
-                ExcAmp(N1tmp,k) = Slopes(l,k-1)/Lg(N1tmp);
-            end
-            etmp(N2tmp)     = ExcAmp(N1tmp,k)*TempIn(N2tmp); 
-            etmpExc(N2tmp)  = ExcAmp(N1tmp,k);
-        end
-
+    % Critical-band filterbank - Terhardt:
+    [ei, etmp_fd, etmpExc_fd] = Terhardt_filterbank(FreqIn,Fs,N,qb,MinExcdB,Barkno,N01,zb);
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    % ei = zeros(  )
+    for k=1:1:47
         % etmp_fd  - excitation pattern in frequency domain
         % etmp  - excitation patterns in time domain (after L242)
         % ei    - excitation patterns in time domain
         % Fei   - envelope in frequency domain, as function of fmod
         % h0    - DC component, average of half-wave rectified signal
 
-        etmp_fd(k,:)    = etmp;
-        etmpExc_fd(k,:) = etmpExc;
-        ei(k,:)     = N*real(ifft(etmp));
         etmp_td(k,:)= abs(ei(k,:));
         h0(k)       = mean(etmp_td(k,:));
         Fei(k,:)	= fft( etmp_td(k,:)-h0(k) ); % changes the phase but not the amplitude
