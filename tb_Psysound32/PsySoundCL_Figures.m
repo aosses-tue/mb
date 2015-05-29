@@ -422,13 +422,29 @@ elseif strcmp(param,'loudness-percentiles')
     N1 = 95;
     N2 = 50;
     N3 = 5;
-    nmax1    = ch_prctile(res1.Data3(idx,:),N1);
-    nmean1   = ch_prctile(res1.Data3(idx,:),N2);
-    nmin1    = ch_prctile(res1.Data3(idx,:),N3);
+    f_abt = 1/2e-3; % 2 ms sampling period
+    
+    bFilter = 1;
+    
+    if bFilter
+        [b, a] = ch_int_tp(f_abt);
 
-    nmax2    = ch_prctile(res2.Data3(idx,:),N1);
-    nmean2   = ch_prctile(res2.Data3(idx,:),N2);
-    nmin2    = ch_prctile(res2.Data3(idx,:),N3);
+        zfa1 = [];
+        zfa2 = [];
+        [res1.Data3int, zfa1] = filter(b,a, res1.Data3,zfa1);
+        [res2.Data3int, zfa2] = filter(b,a, res2.Data3,zfa2);
+    else
+        res1.Data3int = res1.Data3;
+        res2.Data3int = res2.Data3;
+    end
+    
+    nmax1    = ch_prctile(res1.Data3int(idx,:),N1);
+    nmean1   = ch_prctile(res1.Data3int(idx,:),N2);
+    nmin1    = ch_prctile(res1.Data3int(idx,:),N3);
+
+    nmax2    = ch_prctile(res2.Data3int(idx,:),N1);
+    nmean2   = ch_prctile(res2.Data3int(idx,:),N2);
+    nmin2    = ch_prctile(res2.Data3int(idx,:),N3);
              
     figure
     subplot(2,1,1)

@@ -1,12 +1,13 @@
 function [ns_t,lautheit_t]=flankenlautheit_t24(kernlautheit_t)
 % [ns_t,lautheit_t]=flankenlautheit_t24(kernlautheit_t)
+% 
 % Calculates loudness based on DIN 45631 / ISO 532 B (Zwicker)
 % kernlautheit_t is a row vector (1x24) representing the main loudnesses
 %
 % Author: Josef Chalupper (josef.chalupper@siemens.com)
 % original version: 12.12.2000
 % new version (with comments and examples): 6.1.2007
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Definition of constants and variables
 

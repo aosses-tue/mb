@@ -170,7 +170,7 @@ for idx_j = 1:m_blocks
     dataIn = insig_buf(:,idx_j);
     
     dataIn = dataIn .*Window;
-    AmpCal = From_dB(dBcorr)*2/(N*mean(blackman(N, 'periodic'))); 
+    AmpCal = From_dB(dBcorr)*2/(N*mean(blackman(N, 'periodic'))); % cal to get magnitude spectrum to the power spectrum L
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

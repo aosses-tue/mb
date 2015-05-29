@@ -1,5 +1,5 @@
-function [h ha] = r20150227_get_fig(acmode,bAne,fnameidx)
-% function [h ha] = r20150227_get_fig(acmode,bAne,fnameidx)
+function [h ha] = r20150528_get_fig(acmode,bAne,fnameidx)
+% function [h ha] = r20150528_get_fig(acmode,bAne,fnameidx)
 %
 % 1. Description:
 %
@@ -13,61 +13,66 @@ function [h ha] = r20150227_get_fig(acmode,bAne,fnameidx)
 % Last update on: 24/02/2015 % Update this date manually
 % Last use on   : 28/05/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%           F0
+% 2 ane     OK
+% 2 rev     OK
+% 4 ane     OK
+% 4 rev     OK
 
 bRev = ~bAne;
 ha = [];
 
 if ~isunix
-    dir = 'D:\Documenten-TUe\01-Text\05-Doc-TUe\lx2015-06-01-Euronoise\Figures\';
+    dir = 'D:\Documenten-TUe\01-Text\70-Presentaties-TUe\20150603-Euronoise\Figures\';
+end
+
+if acmode == 2 & bRev == 1
+    bAuto = [];
 else
-    dir = ['~/Documenten/Documenten-TUe/01-Text/05-Doc-TUe/lx2015-06-01-Euronoise/Figures/' ];
+    bAuto = '-auto';
 end
 
 if bAne
-    subdir1 = sprintf('ac-%0.f-dist-ane-meas-model%s',acmode,delim);
+    subdir1 = sprintf('ac-%0.f-dist-ane-meas-model%s%s',acmode,bAuto,delim);
 end
 
 if bRev
-    subdir1 = sprintf('ac-%0.f-dist-rev-meas-model%s',acmode,delim);
+    subdir1 = sprintf('ac-%0.f-dist-rev-meas-model%s%s',acmode,bAuto,delim);
 end
 
 switch acmode
     case 2
         fn = 424.4;
-        xlimFFT     = [380 480];
-        ylimFFT     = [10 55];
         ylimLoud    = [.8 3.4];
         xlimFluct   = [2.8 8.5];
         ylimFluctmax = [-1 2.5]; % diff
         ylimFluctmin = [-2 8]; % diff
-        ylimF0      = [415 445];
+        ylimF0      = [410.1 448];
         ylimF0diff  = [-8 5];
         
         if bRev % then reverberant 
             tlims = [3.132 4.214]; % 2 periods
-            xdeltaF0 = -0.06;
+            xdeltaF0 = 0;
         end
         if bAne
             tlims = [0.124 1.202];
-            xdeltaF0 = 0.16;
+            xdeltaF0 = 0; %0.16;
         end
     case 4
         fn = 851.8;
-        xlimFFT     = [750 950];
-        ylimFFT     = [10 70];
         ylimLoud    = [2.5 7.5];
         xlimFluct   = [5.8 9.2];
         ylimFluctmax = [-1.5 0]; % diff
         ylimFluctmin = [3.5 5]; % diff
-        ylimF0      = [800 900];
-        ylimF0diff  = [-10 10];
+        ylimF0      = [815 890];
+        ylimF0diff  = [-8 5];
         if bRev % then reverberant 
             tlims = [3.37 4.056]; % 2 periods
-            xdeltaF0 = 0.04;
+            xdeltaF0 = 0;
         end
         if bAne
             tlims = [2.698 3.324];
-            xdeltaF0 = -0.06;
+            xdeltaF0 = 0;
         end
 end
 
@@ -90,15 +95,7 @@ for i = fnameidx
     opts = get_p_fig(h,fname{i}); % we suppose data are synchronised
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    if strcmp(fname{i},'fig-average-power-spectrum-analyser-01')
-        
-        xlim(xlimFFT);
-        ylim(ylimFFT);
-        
-        CheckPlotLims(gca);
-        
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    elseif strcmp(fname{i},'fig-fundamental-frequency-analyser-21')
+    if strcmp(fname{i},'fig-fundamental-frequency-analyser-21')
 
         tfm = opts.tfm;
         tfp = opts.tfp;
@@ -122,9 +119,15 @@ for i = fnameidx
             f0p = [f0p(abs(deltasamp):end) nan(1,abs(deltasamp)-1)];
         end
         
-        if acmode == 2 & bRev == 1
-            yoffsetF0 = -7;
-            f0m = f0m+yoffsetF0;
+        if bRev == 1
+            if acmode == 2 
+                yoffsetF0 = -7;
+                f0m = f0m+yoffsetF0;
+            end
+            if acmode == 4 
+                yoffsetF0 = 5;
+                f0m = f0m+yoffsetF0;
+            end
         end
         [h ha] = Plot_fundamental_frequency(tfm,f0m,tfp,f0p,options,stPlot);
         

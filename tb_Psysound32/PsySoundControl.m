@@ -37,8 +37,8 @@ function varargout = PsySoundControl(varargin)
 %       
 % Edit the above text to modify the response to help PsySoundControl
 % Created on        : 16/01/2015
-% Last modified on  : 17/02/2015
-% Last used on      : 12/03/2015 % Remember to check compatibility with template_PsySoundCL.m
+% Last modified on  : 28/05/2015
+% Last used on      : 28/05/2015 % Remember to check compatibility with template_PsySoundCL.m
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Begin initialization code - DO NOT EDIT
@@ -450,7 +450,9 @@ if options.bSave
             str.G1 = handles.audio.G1;
             str.G2 = handles.audio.G2;
             str.callevel = callevel;
-            str.bPercentiles = bPercentiles;
+            try
+                str.bPercentiles = bPercentiles;
+            end
 
             o2write = readfile_replace(str.ifile,str);
 
@@ -492,9 +494,11 @@ end
 
 if ~bUsePsySound
     
-    disp('...deleting temporal audio file');
-    delete( fname1_excerpt );
-    delete( fname2_excerpt );
+    try
+        delete( fname1_excerpt );
+        delete( fname2_excerpt );
+        disp('...deleting temporal audio file...');
+    end
     
 end
 

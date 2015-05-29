@@ -1,5 +1,5 @@
-function r20150227_get_paper_plots
-% function r20150227_get_paper_plots
+function r20150528_get_paper_plots
+% function r20150528_get_paper_plots
 %
 % 1. Description:
 %       Produces figures as added into the Euro-noise conference paper
@@ -9,7 +9,7 @@ function r20150227_get_paper_plots
 % 3. Additional info:
 %       Tested cross-platform: Yes
 %
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 24/02/2015
 % Last update on: 28/05/2015 % Update this date manually
 % Last use on   : 28/05/2015 % Update this date manually
@@ -22,83 +22,50 @@ Diary(mfilename,bDiary);
 if isunix
     outputdir = '~/Documenten/Documenten-TUe/01-Text/05-Doc-TUe/lx2015-06-01-Euronoise/Figures/output/';
 else
-    outputdir = 'D:\Documenten-TUe\01-Text\05-Doc-TUe\lx2015-06-01-Euronoise\Figures\output-new\';
+    outputdir = 'D:\Documenten-TUe\01-Text\70-Presentaties-TUe\20150603-Euronoise\Figures\output-new\';
 end
 
-bFig2 = 0;
-bFig3 = 1;
-bFig4 = 0;
-bFig5 = 0;
-bFig6 = 0;
+bFig3 = 0;
+bFig4 = 0; 
+bFig5 = 0; 
+bFig6 = 1; 
 
-plotOptions.I_FontSize = 14;
+plotOptions.I_FontSize = 24;
 plotOptions.I_Width  = 10;
 plotOptions.I_Height = 8;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Figure 2.a, 2.b
-if bFig2 == 1
-    fnameidx = 1;
-
-    acmode = 2;
-
-    % FFT
-    h = r20150227_get_fig(acmode,1,fnameidx);
-    title( '(a)' );
-    hf = Figure2paperfigureT(h,1,1,plotOptions);
-    name = sprintf('%.0f-ac-mode-%.0f-ane',fnameidx,acmode);
-    Saveas(hf,sprintf('%s%s',outputdir,name),'epsc');
-
-    h = r20150227_get_fig(acmode,0,fnameidx);
-    title( '(b)' );
-    hf = Figure2paperfigureT(h,1,1,plotOptions);
-    name = sprintf('%.0f-ac-mode-%.0f-rev',fnameidx,acmode);
-    Saveas(hf,sprintf('%s%s',outputdir,name),'epsc');
-
-    % Figure 2.c, 2.d
-
-    acmode = 4;
-    h = r20150227_get_fig(acmode,1,fnameidx);
-    title( '(c)' );
-    hf = Figure2paperfigureT(h,1,1,plotOptions);
-    name = sprintf('%.0f-ac-mode-%.0f-ane',fnameidx,acmode);
-    Saveas(hf,sprintf('%s%s',outputdir,name),'epsc');
-
-    h = r20150227_get_fig(acmode,0,fnameidx);
-    title( '(d)' );
-    hf = Figure2paperfigureT(h,1,1,plotOptions);
-    name = sprintf('%.0f-ac-mode-%.0f-rev',fnameidx,acmode);
-    Saveas(hf,sprintf('%s%s',outputdir,name),'epsc');
-end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Figure 3
 if bFig3
+   
     plotOptsFig3 = plotOptions;
-    plotOptsFig3.I_Width    = 14;
-    plotOptsFig3.I_FontSize = 28;
+    plotOptsFig3.I_Width    = 16;
+    plotOptsFig3.I_Height   = 18;
+    plotOptsFig3.I_FontSize = 24;
     
     fnameidx = 2;
 
     acmode = 2;
 
     % F0
-    h = r20150227_get_fig(acmode,1,fnameidx);
+    h = r20150528_get_fig(acmode,1,fnameidx);
     hs = subplot(2,1,1);
-    title('(a)')
-    xlabel('Time [s]')
+    title('(a) Anechoic')
     hs = subplot(2,1,2);
-    delete(hs);
-    hf = Figure2paperfigureT(h,1,1,plotOptsFig3);
+    title('\Delta F0')
+    xlabel('Time [s]')
+    hf = Figure2paperfigureT(h,2,1,plotOptsFig3);
     name = sprintf('%.0f-ac-mode-%.0f-ane',fnameidx,acmode);
     Saveas(hf,sprintf('%s%s',outputdir,name),'epsc');
     
-    h = r20150227_get_fig(acmode,0,fnameidx);
+    h = r20150528_get_fig(acmode,0,fnameidx);
     hs = subplot(2,1,1);
-    title('(b)')
-    xlabel('Time [s]')
+    title('(b) Reverberant')
     hs = subplot(2,1,2);
-    delete(hs);
-    hf = Figure2paperfigureT(h,1,1,plotOptsFig3);
+    title('\Delta F0')
+    xlabel('Time [s]')
+    
+    hf = Figure2paperfigureT(h,2,1,plotOptsFig3);
     name = sprintf('%.0f-ac-mode-%.0f-rev',fnameidx,acmode);
     Saveas(hf,sprintf('%s%s',outputdir,name),'epsc');
     
@@ -106,23 +73,23 @@ if bFig3
     acmode = 4;
 
     % F0
-    h = r20150227_get_fig(acmode,1,fnameidx);
+    h = r20150528_get_fig(acmode,1,fnameidx);
     hs = subplot(2,1,1);
-    title('(c)')
-    xlabel('Time [s]')
+    title('(c) Anechoic')
     hs = subplot(2,1,2);
-    delete(hs);
-    hf = Figure2paperfigureT(h,1,1,plotOptsFig3);
+    xlabel('Time [s]')
+    title('\Delta F0')
+    hf = Figure2paperfigureT(h,2,1,plotOptsFig3);
     name = sprintf('%.0f-ac-mode-%.0f-ane',fnameidx,acmode);
     Saveas(hf,sprintf('%s%s',outputdir,name),'epsc');
     
-    h = r20150227_get_fig(acmode,0,fnameidx);
+    h = r20150528_get_fig(acmode,0,fnameidx);
     hs = subplot(2,1,1);
-    title('(d)')
-    xlabel('Time [s]')
+    title('(d) Reverberant')
     hs = subplot(2,1,2);
-    delete(hs);
-    hf = Figure2paperfigureT(h,1,1,plotOptsFig3);
+    title('\Delta F0')
+    xlabel('Time [s]')
+    hf = Figure2paperfigureT(h,2,1,plotOptsFig3);
     name = sprintf('%.0f-ac-mode-%.0f-rev',fnameidx,acmode);
     Saveas(hf,sprintf('%s%s',outputdir,name),'epsc');
 end
@@ -133,15 +100,16 @@ if bFig4
 
     acmode = 2;
 
-    % FFT
-    h = r20150227_get_fig(acmode,1,fnameidx);
-    title( '(a)' );
+    h = r20150528_get_fig(acmode,1,fnameidx);
+    title( '(a) Anechoic' );
+    xlabel('Time [s]')
     hf = Figure2paperfigureT(h,1,1,plotOptions);
     name = sprintf('%.0f-ac-mode-%.0f-ane',fnameidx,acmode);
     Saveas(hf,sprintf('%s%s',outputdir,name),'epsc');
 
-    h = r20150227_get_fig(acmode,0,fnameidx);
-    title( '(b)' );
+    h = r20150528_get_fig(acmode,0,fnameidx);
+    title( '(b) Reverberant' );
+    xlabel('Time [s]')
     hf = Figure2paperfigureT(h,1,1,plotOptions);
     name = sprintf('%.0f-ac-mode-%.0f-rev',fnameidx,acmode);
     Saveas(hf,sprintf('%s%s',outputdir,name),'epsc');
@@ -149,14 +117,16 @@ if bFig4
     % Figure 2.c, 2.d
 
     acmode = 4;
-    h = r20150227_get_fig(acmode,1,fnameidx);
-    title( '(c)' );
+    h = r20150528_get_fig(acmode,1,fnameidx);
+    title( '(c) Anechoic' );
+    xlabel('Time [s]')
     hf = Figure2paperfigureT(h,1,1,plotOptions);
     name = sprintf('%.0f-ac-mode-%.0f-ane',fnameidx,acmode);
     Saveas(hf,sprintf('%s%s',outputdir,name),'epsc');
 
-    h = r20150227_get_fig(acmode,0,fnameidx);
-    title( '(d)' );
+    h = r20150528_get_fig(acmode,0,fnameidx);
+    title( '(d) Reverberant' );
+    xlabel('Time [s]')
     hf = Figure2paperfigureT(h,1,1,plotOptions);
     name = sprintf('%.0f-ac-mode-%.0f-rev',fnameidx,acmode);
     Saveas(hf,sprintf('%s%s',outputdir,name),'epsc');
@@ -165,67 +135,28 @@ end
 % Figure 5
 
 plotOptsFig56 = [];
-plotOptsFig56 = ef(plotOptsFig56,'I_FontSize', 18);
+plotOptsFig56 = ef(plotOptsFig56,'I_FontSize', 24);
 plotOptsFig56 = ef(plotOptsFig56,'I_Width'   , 15);
-title_LG = 'Level L_G [dB]';
-acmodeYLim2 = [11 53];
-acmodeYLim4 = [31 73];
+title_LG = 'L_G [dB]';
+acmodeYLim4 = [36    76];
 
 if bFig5
+    
     fnameidx = 4; % CB-max
-
-    acmode = 2;
-    
-    % option.bScale = 0;
-    % option.Format = 'epsc';
-    
-    close all
-    h = r20150227_get_fig(acmode,1,fnameidx); 
-    title('(e)');
-        
-    figHandles = get(h,'Children');
-    ha = figHandles(4);
-    set(ha,'YLim',acmodeYLim2);
-    ht = get(ha,'Title');
-    set(ht,'String','(a)');
-    hl = get(ha,'Xlabel');
-    set(hl,'String',[]);
-    hl = get(ha,'Ylabel');
-    set(hl,'String',title_LG);
-    
-    hf = Figure2paperfigureT2(h,2,1,plotOptsFig56);
-    name = sprintf('%.0f-ac-mode-%.0f-ane',fnameidx,acmode);
-    saveas(hf,sprintf('%s%s',outputdir,name),'epsc');
-    
-    close all
-    h = r20150227_get_fig(acmode,0,fnameidx);
-    title('(f)');
-        
-    figHandles = get(h,'Children');
-    ha = figHandles(4);
-    set(ha,'YLim',acmodeYLim2);
-    ht = get(ha,'Title');
-    set(ht,'String','(b)');
-    hl = get(ha,'Xlabel');
-    set(hl,'String',[]);
-    hl = get(ha,'Ylabel');
-    set(hl,'String',title_LG);
-    
-    hf = Figure2paperfigureT2(h,2,1,plotOptsFig56);
-    name = sprintf('%.0f-ac-mode-%.0f-rev',fnameidx,acmode);
-    saveas(hf,sprintf('%s%s',outputdir,name),'epsc');
 
     % ac-mode 4
     acmode = 4;
     
     close all
-    h = r20150227_get_fig(acmode,1,fnameidx); 
-    title('(g)');
+    h = r20150528_get_fig(acmode,1,fnameidx); 
+    title('\Delta L_{Gmax}');
+    ylim([-1.4 0.4])
+    
     figHandles = get(h,'Children');
     ha = figHandles(4);
     set(ha,'YLim',acmodeYLim4);
     ht = get(ha,'Title');
-    set(ht,'String','(c)');
+    set(ht,'String','Anechoic');
     hl = get(ha,'Xlabel');
     set(hl,'String',[]);
     hl = get(ha,'Ylabel');
@@ -236,14 +167,15 @@ if bFig5
     saveas(hf,sprintf('%s%s',outputdir,name),'epsc');
     
     close all
-    h = r20150227_get_fig(acmode,0,fnameidx);
-    title('(h)');
+    h = r20150528_get_fig(acmode,0,fnameidx);
+    title('\Delta L_{Gmax}');
+    ylim([-1.4 0.4])
         
     figHandles = get(h,'Children');
     ha = figHandles(4);
     set(ha,'YLim',acmodeYLim4);
     ht = get(ha,'Title');
-    set(ht,'String','(d)');
+    set(ht,'String','Reverberant');
     hl = get(ha,'Xlabel');
     set(hl,'String',[]);
     hl = get(ha,'Ylabel');
@@ -258,58 +190,17 @@ end
 if bFig6
     fnameidx = 5; % CB-min
 
-    acmode = 2;
-    
-    % option.bScale = 0;
-    % option.Format = 'epsc';
-
-    close all
-    h = r20150227_get_fig(acmode,1,fnameidx); 
-    title('(e)');
-        
-    figHandles = get(h,'Children');
-    ha = figHandles(4);
-    set(ha,'YLim',acmodeYLim2);
-    ht = get(ha,'Title');
-    set(ht,'String','(a)');
-    hl = get(ha,'Xlabel');
-    set(hl,'String',[]);
-    hl = get(ha,'Ylabel');
-    set(hl,'String',title_LG);
-    
-    hf = Figure2paperfigureT2(h,2,1,plotOptsFig56);
-    name = sprintf('%.0f-ac-mode-%.0f-ane',fnameidx,acmode);
-    saveas(hf,sprintf('%s%s',outputdir,name),'epsc');
-    
-    close all
-    h = r20150227_get_fig(acmode,0,fnameidx);
-    title('(f)');
-        
-    figHandles = get(h,'Children');
-    ha = figHandles(4);
-    set(ha,'YLim',acmodeYLim2);
-    ht = get(ha,'Title');
-    set(ht,'String','(b)');
-    hl = get(ha,'Xlabel');
-    set(hl,'String',[]);
-    hl = get(ha,'Ylabel');
-    set(hl,'String',title_LG);
-    
-    hf = Figure2paperfigureT2(h,2,1,plotOptsFig56);
-    name = sprintf('%.0f-ac-mode-%.0f-rev',fnameidx,acmode);
-    saveas(hf,sprintf('%s%s',outputdir,name),'epsc');
-
     % ac-mode 4
     acmode = 4;
     
     close all
     h = r20150227_get_fig(acmode,1,fnameidx); 
-    title('(g)');
+    title('\Delta L_{Gmin}');
     figHandles = get(h,'Children');
     ha = figHandles(4);
     set(ha,'YLim',acmodeYLim4);
     ht = get(ha,'Title');
-    set(ht,'String','(c)');
+    set(ht,'String','Anechoic');
     hl = get(ha,'Xlabel');
     set(hl,'String',[]);
     hl = get(ha,'Ylabel');
@@ -321,13 +212,13 @@ if bFig6
     
     close all
     h = r20150227_get_fig(acmode,0,fnameidx);
-    title('(h)');
+    title('\Delta L_{Gmin}');
         
     figHandles = get(h,'Children');
     ha = figHandles(4);
     set(ha,'YLim',acmodeYLim4);
     ht = get(ha,'Title');
-    set(ht,'String','(d)');
+    set(ht,'String','Reverberant');
     hl = get(ha,'Xlabel');
     set(hl,'String',[]);
     hl = get(ha,'Ylabel');

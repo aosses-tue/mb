@@ -25,7 +25,7 @@ function [N, main_N, spec_N] = ch_dlm(sig, HL, k)
 % Created on    : 12/12/2000
 % Edited on     : 06/01/2007 (new version with comments and examples)
 % Downloaded on : 07/08/2014 (approx.)
-% Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Last update on: 07/08/2014 % Update this date manually
 % Last use on   : 21/08/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
