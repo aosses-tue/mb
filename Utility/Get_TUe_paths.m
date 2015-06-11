@@ -135,6 +135,7 @@ misc.tb_Plot4papers_JU  = [misc.MATLAB   'tb_Plot4papers_JU' delim]; % Developed
 misc.tb_Psysound32      = [misc.MATLAB   'tb_Psysound32'   delim];
 misc.tb_SP15            = [misc.MATLAB   'tb_SP15'         delim];
 misc.tb_SP15AddOns      = [misc.MATLAB   'tb_SP15_AddOns'  delim];
+misc.FluctuationStrength_TestTones = [misc.outputs 'FS_test_tones' delim]; % temporal folder
 
 misc.tb_APEX            = [misc.MATLAB   'tb_APEX'         delim];
 misc.tb_APEX_AddOns     = [misc.MATLAB   'tb_APEX_AddOns'  delim];

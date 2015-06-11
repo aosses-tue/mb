@@ -10,7 +10,7 @@ function hOutput = Figure2paperfigureT(nHandle,numRows,numCols,plotOpts)
 % 3. Additional info:
 %       Tested cross-platform: Yes
 % 
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 26/09/2014
 % Last update on: 28/02/2015 % Update this date manually
 % Last use on   : 28/02/2015 % Update this date manually
