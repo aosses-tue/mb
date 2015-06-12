@@ -1,5 +1,5 @@
-function a3testacstimuli(savefilename, path, ncols)
-% function a3testacstimuli(savefilename, path, ncols)
+function a3testacstimuli(savefilename, path, ncols, opts)
+% function a3testacstimuli(savefilename, path, ncols, opts)
 % 
 % 1. Description:
 %       Creates an APEX3 experiment file that can present any of the .wav
@@ -11,9 +11,23 @@ function a3testacstimuli(savefilename, path, ncols)
 %       the APEX MATLAB toolbox
 % 
 % 2. Stand-alone example (Windows example):
+%   % 2.1 Windows example (no calibration tone):
 %       path = 'D:\Output\Daniel1997_test_20141126\'; 
 %       savefilename = 'test-XML.xml';
 %       a3testacstimuli(savefilename, path,3);
+% 
+%   % 2.2 Windows example (calibration tone):
+%       path = 'D:\Output\Daniel1997_test_20141126\'; 
+%       savefilename = 'test-XML.xml';
+%       opts.bCalTone = 1;
+%       a3testacstimuli(savefilename, path,3,opts);
+% 
+%   % 2.3 Windows example (calibration tone):
+%       path = 'D:\Output\Daniel1997_test_20141126\'; 
+%       savefilename = 'test-XML.xml';
+%       opts.bCalTone = 1;
+%       opts.presentation = 'diotic';
+%       a3testacstimuli(savefilename, path,3,opts);
 % 
 % Programmed by the APEX3 team
 % Created on    : 2013-2014
@@ -21,6 +35,28 @@ function a3testacstimuli(savefilename, path, ncols)
 % Last update on: 11/06/2015 % Update this date manually
 % Last use on   : 11/06/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+if nargin < 4
+    opts = [];
+end
+
+if nargin < 3
+    ncols = 3;
+end
+
+if nargin < 2
+    try
+        path = uigetdir(Get_TUe_paths('outputs'),'Please choose a folder containing one or more wav files');
+    catch
+        path = uigetdir(pwd,'Please choose a folder containing one or more wav files');
+    end
+    path = [path delim];
+end
+
+opts = Ensure_field(opts,'bCalTone',0);
+opts = Ensure_field(opts,'presentation','monaural');
+bCalTone = opts.bCalTone;
+presentation = opts.presentation;
 
 experiment.trials='';
 experiment.screen='';
@@ -50,8 +86,20 @@ for f=1:length(files)
     buttons{f}=filename_noext;
 end
 
-if nargin < 3
-    ncols = 3;
+if bCalTone == 0
+    experiment.calstimulus = a3stimulus_empty('calstimulus');
+else
+    disp('Select a file to use as the calibration tone: ')
+    for i = 1:length(files)
+        fprintf('(Press %.0f) %s\n',i,files(i).name);
+    end
+    idxcal = input('Enter your choice: ');
+    
+    filename=files(idxcal).name;
+    filename_noext=filename(1:end-4);
+    datablock=['d' filename_noext];
+    
+    experiment.calstimulus = a3stimulus('calstimulus', datablock);
 end
 
 nrows = ceil(length(buttons)/ncols);
@@ -63,8 +111,13 @@ buttons = transpose( reshape(buttons, ncols, nrows) ); % trick to get [1 2 3; 4 
 experiment.buttonlayout = a3buttonlayout(buttons, 1,2);
 experiment.buttongroup  = a3buttongroup(buttons);
 
-result=readfile_replace('a3testacstimuli.xml',experiment);
-% result=readfile_replace('a3testacstimuli-TF-20131029.xml',experiment);
+switch presentation
+    case 'monaural'
+        result=readfile_replace('a3testacstimuli.xml',experiment);
+        % result=readfile_replace('a3testacstimuli-TF-20131029.xml',experiment);
+    case 'diotic'
+        result=readfile_replace('a3testacstimuli-diotic.xml',experiment);
+end
 
 fid=fopen([path savefilename],'w');
 if (fid==-1)

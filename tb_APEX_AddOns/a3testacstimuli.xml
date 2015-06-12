@@ -7,7 +7,7 @@
 <!--  
 Training procedure for acoustic stimuli 'a3testacstimuli':
           Description: 
-Template to generate a training procedure in APEX 3. Run the MATLAB script a3testacstimuli.m specifying as input parameter the path where the audio files are
+Template to generate a training procedure in APEX 3, monaural presentation (left channel). Run the MATLAB script a3testacstimuli.m specifying as input parameter the path where the audio files are
 
     % Programmed by APEX3 team, 
     % Adapted by Alejandro Osses V., HTI, TU/e, the Netherlands, 2015
@@ -90,12 +90,8 @@ Template to generate a training procedure in APEX 3. Run the MATLAB script a3tes
   <stimuli>
       <fixed_parameters/>
    $$stimuli$$
-   <stimulus id="calstimulus">
-     <datablocks></datablocks>
-   </stimulus>
+   $$calstimulus$$
   </stimuli>
-
-
   
     <connections>
       <connection>
