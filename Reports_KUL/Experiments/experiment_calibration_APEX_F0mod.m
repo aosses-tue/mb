@@ -8,7 +8,6 @@ function apex=experiment_calibration_APEX_F0mod(p, targetpath, filename)
 
 % filename = wav-file name of calibration tone
 
-q = p.score;
 p = Ensure_field(p,'speechmaterial_uri',[]);
 
 switch p.speechmaterial
@@ -36,19 +35,19 @@ switch p.speechmaterial
         profile='VlMatrix_ltass'; 
         cal_stim_id = 'gain0';
         filename=[p.speechmaterial_uri 'VlMatrixnoise_ltass.wav'];
+    case 'EsMatrix'
+        calibrationlevel=60;
+        siglevel=50;
+        profile='VlMatrix_ltass'; 
+        cal_stim_id = 'gain0';
+        filename=[p.speechmaterial_uri 'VlMatrixnoise_ltass.wav'];    
     otherwise
         warning('Default speech material...')
         calibrationlevel=90; % play calibration signal at 90dBSPL
         siglevel=60;
-        profile=sprintf('score_%d', q.calibration);
-        cal_stim_id = 'soundcardgainL';
-        filename=[p.speechmaterial_uri 'sin_1kHz_' num2str(siglevel-q.calibration) 'dBFS.wav'];
-end
-
-% transcorr = score_ig2reag(1000,[0],'none');
-
-if (nargin<3)
-    
+        profile=sprintf('score_%d', p.calibration);
+        cal_stim_id = 'gain0';
+        filename=[p.speechmaterial_uri 'sin_1kHz_' num2str(siglevel-p.calibration) 'dBFS.wav'];
 end
 
 fs  = 44100;

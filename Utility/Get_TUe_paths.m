@@ -57,7 +57,7 @@ if isunix
     misc.Databases          = ['~/Documenten/Databases' delim];
 
     misc.db_speechmaterials_local = '/media/Elements/orl-wrk-0089/Documenten/Speech_material_from_x-drive/';
-    misc.db_speechmaterials = ['/home/' misc.username '/x/speechmaterials/'];
+    misc.db_speechmaterials = ['~/Documenten/Databases/dir03-Speech' delim]; % Old path: ['~/x/speechmaterials/'];
     misc.ex_APEX_results    = ['~/Documenten/Meas/Meas/Experiments/Results_XML/'];
     misc.lx_Templates       = ['~/Documenten/Documenten-TUe/01-Text/00-Templates' delim];
     misc.lx_Text            = ['~/Documenten/Documenten-TUe/01-Text/05-Doc-TUe'   delim];
@@ -119,6 +119,7 @@ misc.PA_stim_generation = [misc.MATLAB   'PA_stim_generation' delim];
 misc.Psychoacoustics    = [misc.MATLAB   'Psychoacoustics' delim];
 misc.Reports            = [misc.MATLAB   'Reports'         delim];
 misc.Reports_KUL        = [misc.MATLAB   'Reports_KUL'     delim];
+misc.Speech             = [misc.MATLAB   'Speech'          delim];
 misc.Music_acoustics    = [misc.MATLAB   'Music_acoustics' delim];
 misc.pl_Classes         = [misc.MATLAB_KUL 'Classes'       delim]; % Matthias' classes to plot
 misc.Simulink           = [misc.MATLAB_KUL 'Simulink_XPC'  delim];

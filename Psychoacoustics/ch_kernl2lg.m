@@ -12,9 +12,9 @@ function lg = ch_kernl2lg(kernl,HL_ohc,HL_ihc,fg)
 % Created on    : 12/12/2000
 % Edited on     : 06/02/2007 (new version with comments and examples)
 % Downloaded on : 07/08/2014 (approx.)
-% Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Last update on: 07/08/2014 % Update this date manually
-% Last use on   : 23/09/2014 % Update this date manually
+% Last use on   : 29/05/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if (nargin==1)

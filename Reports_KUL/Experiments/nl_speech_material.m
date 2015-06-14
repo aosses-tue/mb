@@ -9,7 +9,14 @@ function [m,path,dBFS,noisefile,info]=nl_speech_material(name, reread)
 %   info.speechmaterial_dirlists -  folder where all the speech material 
 %                                   (wav files are)
 %
+% 
+% Example:
+%       name = 'VlMatrix';
+%       reread = 0;
+%       [m,path,dBFS,noisefile,info]=nl_speech_material(name, reread);  
+% 
 % Adapted from oz_speech_materials by Alejandro Osses, ExpORL
+% Last use on: 14/06/2015
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 info = [];
@@ -164,13 +171,18 @@ nLists      = 26;
 nSentences  = 10;
 txt_file    = 'VlMatrixBasisList.txt';
 m = cell(1,nLists,nSentences);
-pa=getpaths;
+try
+    info.path = Get_TUe_paths('db_speechmaterials');
+catch
+    pa = getpaths; % Tom's configuration
+    info.path = pa.speechmaterials;
+end
 
-info.path = pa.speechmaterials;
 info.uri = 'dutch/Matrix/';
 info.speechmaterial_dirlists = '';
 
-vlmatrixpath=[pa.local_speechmaterials info.uri]; % x-Drive, ExpORL
+% vlmatrixpath=[pa.local_speechmaterials info.uri]; % x-Drive, ExpORL
+vlmatrixpath=[info.path info.uri]; % x-Drive, ExpORL
 
 fid=fopen([vlmatrixpath txt_file]);
 
@@ -194,13 +206,15 @@ while 1
     sentnr=sentnr+1;
     s=struct;
     s.text = tokens{1}{1};
-    s.keywords = tokens{1}{2};      % fixme
+    s.keywords = tokens{1}{2};
     filename = Get_VlMatrix_wav_filename(s.text);
     s.file = [filename '.wav'];
     m{1,listnr,sentnr}=s;
 end
 
 fclose(fid);
+
+disp('');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [m,listpath,info]=listf_l
