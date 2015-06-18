@@ -32,7 +32,7 @@ if (nargin<2)
 end
 
 mpath=fileparts(mfilename('fullpath'));
-cachefile=[mpath '/es_speech_material.mat'];
+cachefile=[mpath delim 'es_speech_material.mat'];
 if (~reread && exist(cachefile, 'file'))
     load(cachefile);
     
@@ -52,6 +52,7 @@ switch name
         [m,path,info]=esmatrix_l;
         dBFS = -27; % you can confirm with rmsdb('noisevalue')
         noisefile = 'EsMatrixnoise_ltass.wav';
+        info.other_noise_white = 'genwhitenoise_AO20150618.wav';
     otherwise 
         error('Invalid material');
 end
@@ -102,7 +103,7 @@ catch
     info.path = pa.speechmaterials;
 end
 
-info.uri = 'spanish/Matrix/';
+info.uri = ['spanish' delim 'Matrix' delim];
 info.speechmaterial_dirlists = '';
 
 % vlmatrixpath=[pa.local_speechmaterials info.uri]; % x-Drive, ExpORL

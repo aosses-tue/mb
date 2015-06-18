@@ -1,5 +1,5 @@
-function y = Get_filenames(directory, exp2filter, extra)
-% function y = Get_filenames(directory, exp2filter, extra)
+function [y ypd] = Get_filenames(directory, exp2filter, extra)
+% function [y ypd] = Get_filenames(directory, exp2filter, extra)
 %
 % 1. Description:
 %   Get file names using a filter specified by exp2filter. The y-variable 
@@ -43,9 +43,11 @@ end
 
 for i = 1:length(ytmp)
     if extra.bExtension 
-        y{i} = ytmp(i).name;
+        y{i}   = ytmp(i).name;
+        ypd{i} = [directory delim ytmp(i).name];
     else
-        y{i} = Delete_extension( ytmp(i).name, 'wav');
+        y{i} = Delete_extension( y{i}, 'wav');
+        ypd{i} = Delete_extension( ypd{i}, 'wav');
     end
 end
 

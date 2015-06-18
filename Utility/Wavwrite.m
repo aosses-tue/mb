@@ -1,5 +1,5 @@
-function Wavwrite(x,fs,outputfilename)
-% function Wavwrite(x,fs,outputfilename)
+function Wavwrite(x,fs,outputfilename, varargin)
+% function Wavwrite(x,fs,outputfilename, varargin)
 % 
 % 1. Description:
 %       Write Microsoft WAVE (".wav") sound file
@@ -11,13 +11,23 @@ function Wavwrite(x,fs,outputfilename)
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 13/05/2014
-% Last update on: 31/03/2015 % Update this date manually
-% Last use on   : 31/03/2015 % Update this date manually
+% Last update on: 18/06/2015 % Update this date manually
+% Last use on   : 18/06/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-try
-    audiowrite(outputfilename,x,fs);
-catch
-    wavwrite(x,fs,outputfilename);
+if nargin <= 3
+    try
+        audiowrite(outputfilename,x,fs);
+    catch
+        wavwrite(x,fs,outputfilename);
+    end
+elseif nargin == 4
+    nbits = outputfilename;
+    outputfilename = varargin{1};
+    try
+        audiowrite(outputfilename,x,fs,'BitsPerSample',nbits);
+    catch
+        wavwrite(x,fs,nbits,filename);
+    end
 end
 
 disp([mfilename '.m: file ' outputfilename ' created'])

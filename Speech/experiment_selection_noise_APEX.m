@@ -1,8 +1,10 @@
-function apex=experiment_calibration_APEX_F0mod(p, targetpath, filename)
-% function apex=experiment_calibration_APEX_F0mod(p, targetpath, filename)
+function apex = experiment_selection_noise_APEX(p)
+% function apex = experiment_selection_noise_APEX(p)
 %
 % Returns calibration signal and apex experiment XML code 
 %
+% Original file: experiment_calibration_APEX_F0mod.m
+% Created on: 18/06/2015
 % Adapted from score_calibration by Alejandro Osses
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -17,30 +19,37 @@ switch p.speechmaterial
         % siglevel=64;
         cal_stim_id = 'gain0';
         filename=[p.speechmaterial_uri 'weightednoise_nosilence28.4.wav'];
+        warning('Fix noise as VlMatrix and EsMatrix')
     case 'LISTf'
         calibrationlevel=60;
         siglevel=64;
         profile='spin-LISTvrouw_ltass';
         cal_stim_id = 'gain0';
-        filename=[p.speechmaterial_uri 'noise/wivineruis.wav'];
+        filename=[p.speechmaterial_uri 'noise' delim 'wivineruis.wav'];
+        warning('Fix noise as VlMatrix and EsMatrix')
     case 'LISTm'
         calibrationlevel=60;
         siglevel=64;
         profile='spin-LISTman_ltass';
         cal_stim_id = 'gain0';
-        filename=[p.speechmaterial_uri 'noise/jwruis.wav'];
+        filename=[p.speechmaterial_uri 'noise' delim 'jwruis.wav'];
+        warning('Fix noise as VlMatrix and EsMatrix')
     case 'VlMatrix'
+        p = Ensure_field(p,'noisefile','VlMatrixnoise_ltass.wav');    
         calibrationlevel=60;
         siglevel=50;
         profile='VlMatrix_ltass'; 
         cal_stim_id = 'gain0';
-        filename=[p.speechmaterial_uri 'VlMatrixnoise_ltass.wav'];
+        filename=[p.speechmaterial_uri p.noisefile];
+        warning('Fix noise as VlMatrix and EsMatrix')
     case 'EsMatrix'
+        p = Ensure_field(p,'noisefile','EsMatrixnoise_ltass.wav');    
         calibrationlevel=60;
         siglevel=50;
         profile='EsMatrix_ltass'; 
         cal_stim_id = 'gain0';
-        filename=[p.speechmaterial_uri 'EsMatrixnoise_ltass.wav'];    
+        filename=[p.speechmaterial_uri p.noisefile]; 
+        warning('Fix noise as VlMatrix and EsMatrix')
     otherwise
         warning('Default speech material...')
         calibrationlevel=90; % play calibration signal at 90dBSPL
@@ -48,6 +57,7 @@ switch p.speechmaterial
         profile=sprintf('score_%d', p.calibration);
         cal_stim_id = 'gain0';
         filename=[p.speechmaterial_uri 'sin_1kHz_' num2str(siglevel-p.calibration) 'dBFS.wav'];
+        warning('Fix noise as VlMatrix and EsMatrix')
 end
 
 fs  = 44100;
