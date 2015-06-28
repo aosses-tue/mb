@@ -238,21 +238,26 @@ for idx_j = 1:m_blocks
     % definition of gzi
     if switches(2) == 1
         if switches(3) == 1 % gammatone,
-            Rmax = [0 0.35 0.8 0.99 1 0.75 0.57 0.53 0.42]; % Van Immerseel & Martens
+            fc4gz   = [0 125  250 500  1000 2000 4000 8000 16000];
+            Rmax    = [0 0.35 0.8 0.99 1    0.75 0.57 0.53 0.42]; % Van Immerseel & Martens
         elseif switches(3) == 2 | switches(3) == 10 
-            Rmax = [0 0.3 1 1 1 0.64 0.49 0.51 0.45]; % gammatone, Dau et al.
+            gzitmp  = Get_psyparams('gr-ERB');
+            fc4gz   = audtofreq( gzitmp(1,:),'erb' );
+            Rmax    = gzitmp(2,:);
         elseif switches(3) == 3
+            fc4gz   = [0 125  250 500  1000 2000 4000 8000 16000];
             Rmax = [0 0.35 0.8 0.9 1 0.65 0.47 0.43 0.32]; % gammatone, Meddis
         end
     end
-    fc4gz   = [0 125 250 500 1e3 2e3 4e3 8e3 16e3];
-    ERBrate = freqtoaud(fc4gz,'erb'); %2 * 21.4 .* log10(4.37 * fc / 1000 + 1);
-    gzzi = Get_psyparams('gr');
     
+    ERBrate = freqtoaud(fc4gz,'erb'); %2 * 21.4 .* log10(4.37 * fc / 1000 + 1);
     gzi     = interp1(ERBrate, Rmax, erbr, 'cubic');
     
-    figure;
-    plot(gzzi(1,:),gzzi(2,:))
+    % figure;
+    % plot(eb  ,gzzi(2,:)), hold on
+    % plot(erbr,gzi,'r'); grid on
+    % xlabel('Frequency [ERB]')
+    
     % calculate specific roughness ri
     ri(idx_j,1:7)     = (gzi(1:7)     .* mdepth(1:7)     .* ki(1:7)).^2;
     ri(idx_j,8:Nch-3) = (gzi(8:Nch-3) .* mdepth(8:Nch-3) .* ki(6:Nch-5) .* ki(8:Nch-3)).^2;

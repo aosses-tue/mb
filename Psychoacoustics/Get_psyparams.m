@@ -87,6 +87,15 @@ switch param
                 0,0.35,0.7,0.7,1.1,1.25,1.26,1.18,1.08,1,0.66,0.46,0.38,0.3];
         out = gr;
         
+    case 'gr-ERB'
+        % BarkNo  0     1   2   3   4   5   6   7   8     9     10
+        %	 11     12  13  14  15  16  17  18  19  20  21  22  23  24 
+        gr = [  0,1,2.5,4.9,6.5,8,9,10,11,11.5,13,17.5,21,24;
+                0,0.35,0.7,0.7,1.1,1.25,1.26,1.18,1.08,1,0.66,0.46,0.38,0.3];
+        fb      = audtofreq( gr(1,:) ,'bark');
+        erbb    = freqtoaud( fb      ,'erb' );
+        gr(1,:) = erbb;
+        out = gr;
     case 'HTres' %Make list of minimum excitation (Hearing Treshold)
         HTres= [	0		130
                     0.01    70
