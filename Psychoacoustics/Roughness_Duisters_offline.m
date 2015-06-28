@@ -71,11 +71,15 @@ switches(2) = 1; % or 2
 switches(3) = 2; % 2 or 10
 switches(4) = 3; % or 1, 3
 
+if nargin < 3
+    N = 8192;
+end
+
 if nargin < 5
     CParams = [];
-    CParams.HopSize = 4096;
+    CParams.HopSize = N/2;
 else
-    CParams = Ensure_field(CParams,'HopSize',4096);
+    CParams = Ensure_field(CParams,'HopSize',N/2); % 4096
 end
 
 if nargin < 4
@@ -88,10 +92,7 @@ nSkipStart  = options.nSkipStart; % to correct time series, in case an analysis 
 N_hop   = CParams.HopSize;
 insig   = insig( nSkipStart*N_hop+1:end );
  
-if nargin < 3
-    N = 8192;
-end
- 
+
 try
     fir_hweight; % just to check whether all folders are in the MATLAB path
 catch
@@ -246,7 +247,12 @@ for idx_j = 1:m_blocks
     end
     fc4gz   = [0 125 250 500 1e3 2e3 4e3 8e3 16e3];
     ERBrate = freqtoaud(fc4gz,'erb'); %2 * 21.4 .* log10(4.37 * fc / 1000 + 1);
+    gzzi = Get_psyparams('gr');
+    
     gzi     = interp1(ERBrate, Rmax, erbr, 'cubic');
+    
+    figure;
+    plot(gzzi(1,:),gzzi(2,:))
     % calculate specific roughness ri
     ri(idx_j,1:7)     = (gzi(1:7)     .* mdepth(1:7)     .* ki(1:7)).^2;
     ri(idx_j,8:Nch-3) = (gzi(8:Nch-3) .* mdepth(8:Nch-3) .* ki(6:Nch-5) .* ki(8:Nch-3)).^2;
@@ -260,20 +266,23 @@ end
 % Create a cell array to return
 dataOut{1}  = R;
 dataOut{2}  = ri;
-out.t       = transpose(tn/fs);
+% out.t       = transpose(tn/fs);
  
 nParam      = 1;
-out.Data1   = transpose(R);
-out.name{nParam} = 'Roughness';
-out.param{nParam} = strrep( lower( out.name{nParam} ),' ','-');
 
-nParam      = 2;
-out.Data2   = ri;
-out.name{nParam} = 'Specific roughness';
-out.param{nParam} = strrep( lower( out.name{nParam} ),' ','-');
-out.fi      = fc;
-out.erbi    = erbr;
-out.exc     = exc;
-out.nAnalyser = 15;
+if nargout >= 3
+    out.Data1   = transpose(R);
+    out.name{nParam} = 'Roughness';
+    out.param{nParam} = strrep( lower( out.name{nParam} ),' ','-');
+
+    nParam      = 2;
+    out.Data2   = ri;
+    out.name{nParam} = 'Specific roughness';
+    out.param{nParam} = strrep( lower( out.name{nParam} ),' ','-');
+    out.fi      = fc;
+    out.erbi    = erbr;
+    out.exc     = exc;
+    out.nAnalyser = 15;
+end
 
 end
