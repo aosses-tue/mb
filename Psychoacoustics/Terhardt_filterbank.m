@@ -11,7 +11,7 @@ function [ei, etmp_fd etmpExc_fd] = Terhardt_filterbank(TempIn,Fs,N,qb,MinExcdB,
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 26/05/2015
 % Last update on: 26/05/2015 % Update this date manually
-% Last use on   : 26/05/2015 % Update this date manually
+% Last use on   : 25/06/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 freqs	= (qb+1)*Fs/N;

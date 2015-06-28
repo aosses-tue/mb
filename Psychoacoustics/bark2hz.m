@@ -2,7 +2,8 @@ function f = bark2hz(z)
 % function f = bark2hz(z)
 %
 % 1. Description:
-%
+%       Converts from Bark to Hertz. The minimum frequency value to be converted
+%       is the equivalent to 10 Hz (approximation of 9.8431 Hz) = 0.0972 Bark
 % 2. Additional info:
 %       Tested cross-platform: No
 %
@@ -17,7 +18,7 @@ function f = bark2hz(z)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 f0 = 1000;
-k = -16:12;
+k = -20:12;
 f = f0*2.^(k/3); 
 
 zt = hz2bark(f);

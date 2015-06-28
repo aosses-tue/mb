@@ -24,7 +24,7 @@ function out = Get_psyparams(param)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 12/11/2014
 % Last update on: 12/11/2014 % Update this date manually
-% Last use on   : 13/04/2015 % Update this date manually
+% Last use on   : 26/06/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 switch param

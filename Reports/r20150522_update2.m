@@ -2,7 +2,10 @@ function r20150522_update2(f)
 % function r20150522_update2(f)
 %
 % 1. Description:
-%
+%       Run first r20150522_update to generate the mat file 
+%       'JNDcalculation-all-1000'. This script just displays those results
+%       in tex-format.
+% 
 % 2. Stand-alone example:
 %
 % 3. Additional info:

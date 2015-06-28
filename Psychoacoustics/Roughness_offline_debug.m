@@ -2,38 +2,29 @@ function dataOut = Roughness_offline_debug(dataIn, Fs, N, bDebug)
 % function dataOut = Roughness_offline_debug(dataIn, Fs, N, bDebug)
 %
 % 1. Description:
-%       Off-line implementation of the roughness algorithm.
-%       Corrections by AO:
+%       Off-line implementation of the roughness algorithm. It implements 
+%       the algorithm using only one N-length frame.
 % 
-%           ExcAmp(N1tmp, k) changed by ExcAmp(l, k) - this optimises the 
-%           memory allocation reserved for ExpAmp
-% 
-%       Changes:
+%       Some changes respect to the Dik's implementation:
 %           amp2db replaced by To_dB
 %           db2amp replaced by From_dB
 %           private rms renamed to dw_rms
 %
-% author : Matt Flax <flatmax @ http://www.flatmax.org> : Matt Flax is flatmax
-% March 2006 : For the psySoundPro project
+% Modified by:  Alejandro Osses,
+%               Matt Flax <flatmax @ http://www.flatmax.org> in March 2006 (psySoundPro project)
 %
-% revised : Farhan Rizwi
-%           July '07
-%           Reformatted, copied and vectorised code from InitAll
-%           and Hweights into the function space below.  This
-%           allows us to use nested functions effeciently.
-%
-% contact for the original source code :
-% http://home.tm.tue.nl/dhermes/
+% Contact for the original source code:
+%       http://home.tm.tue.nl/dhermes/
 %
 % 2. Stand-alone example:
 %
 % 3. Additional info:
 %       Tested cross-platform: Yes
 %
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 10/11/2014
 % Last update on: 21/11/2014 % Update this date manually
-% Last use on   : 25/05/2015 % Update this date manually
+% Last use on   : 28/06/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 4
@@ -102,13 +93,15 @@ gzi    = zeros(1,47);
 h0     = zeros(1,47);
 k      = 1:1:47;
 gzi(k) = sqrt(interp1(gr(1,:)',gr(2,:)',k/2));
-    
-% calculate a0
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Calculates a0
 a0tab =	Get_psyparams('a0tab');
 
 a0    = ones(1,N);
 k     = (N0:1:Ntop);
 a0(k) = From_dB(interp1(a0tab(:,1),a0tab(:,2),Barkno(k)));
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%
 % END InitAll %
@@ -124,7 +117,7 @@ Hweight = Get_Hweight_roughness(N,Fs);
 %% Stage 1, BEGIN: RoughBody
 
 Window = blackman(N, 'periodic') .* 1.8119;
-dBcorr = 80+2.72; % correction assuming that (90 dB = 0 dBFS, rms)
+dBcorr = 80+2.72; % correction assuming that (80 dB = 0 dBFS, rms)
 
 dataIn = dataIn .*Window;
 AmpCal = From_dB(dBcorr)*2/(N*mean(blackman(N, 'periodic'))); 

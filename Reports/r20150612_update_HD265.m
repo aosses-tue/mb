@@ -1,8 +1,10 @@
-function y = r20150612_update_HD265(x)
-% function y = r20150612_update_HD265(x)
+function r20150612_update_HD265
+% function r20150612_update_HD265
 %
 % 1. Description:
-%
+%       Automatic generation of APEX experiments using the stimuli inside
+%       the folder 'path'
+% 
 % 2. Stand-alone example:
 %
 % 3. Additional info:

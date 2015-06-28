@@ -1,5 +1,5 @@
-function [R dataOut out] = Roughness_Duisters_offline(insig, Fs, N, options, CParams, bDebug)
-% function [R dataOut out] = Roughness_Duisters_offline(insig, Fs, N, options, CParams, bDebug)
+function [R dataOut out] = Roughness_Duisters_offline(insig, fs, N, options, CParams)
+% function [R dataOut out] = Roughness_Duisters_offline(insig, fs, N, options, CParams)
 %
 % 1. Description:
 %       Frame-based, off-line implementation of the roughness algorithm.
@@ -28,25 +28,48 @@ function [R dataOut out] = Roughness_Duisters_offline(insig, Fs, N, options, CPa
 %           [insig fs] = Wavread([Get_TUe_paths('outputs') 'ref_rough.wav']); 
 %           [out outPsy] = Roughness_Duisters_offline(insig,fs,8192);
 % 
-%       2.3 Impulse response:
+%       2.3 60-dB sine tone:
+%           f = 1000;
+%           fs = 44100;
+%           lvl = 60;
+%           insig = Create_sin(f,8192/fs,fs);
+%           insig = setdbspl(insig,lvl);
+%           [out outPsy] = Roughness_Duisters_offline(insig,fs,8192);
+% 
+%       2.4 Impulse response:
 %           N = 8192;
 %           insig  = [zeros(N/2-1,1); 1; zeros(N/2,1)];
 %           fs = 44100;
-%           bDebug = 1;
-%           [out outPsy] = Roughness_Duisters_offline(insig,fs,N,[],[],bDebug);
+%           [out outPsy] = Roughness_Duisters_offline(insig,fs,N);
 % 
 % 3. Additional info:
 %       Tested cross-platform: Yes
 %
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 27/05/2015
 % Last update on: 27/05/2015 % Update this date manually
-% Last use on   : 27/05/2015 % Update this date manually
+% Last use on   : 28/06/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if nargin < 6
-    bDebug = 0;
-end
+% switches(1)
+%       -  1
+%       -* 2: This is the default
+%
+% switches(2) - Defines the auditory filterbank
+%       -* 1: Gammatone, this is the default
+%       -  2: Gamma chirp, not enabled yet
+% 
+% switches(3) - Defines an adaptation model
+%       -* 3: Dau et al. 
+% 
+% switches(4) - Defines the resolution of the auditory filterbank + Roughness model to be used
+%       -  1
+%       -* 3: Aures
+
+switches(1) = 2;
+switches(2) = 1; % or 2
+switches(3) = 2; % 2 or 10
+switches(4) = 3; % or 1, 3
 
 if nargin < 5
     CParams = [];
@@ -59,9 +82,8 @@ if nargin < 4
     options = [];
 end
 
-options = ef(options,'nSkipStart',0);
-
-nSkipStart = options.nSkipStart; % to correct time series, in case an analysis frame has been excluded
+options     = ef(options,'nSkipStart',0);
+nSkipStart  = options.nSkipStart; % to correct time series, in case an analysis frame has been excluded
  
 N_hop   = CParams.HopSize;
 insig   = insig( nSkipStart*N_hop+1:end );
@@ -70,286 +92,188 @@ if nargin < 3
     N = 8192;
 end
  
-if ~(Fs == 44100 | Fs == 40960 | Fs == 48000)
-  error(['Incorrect sample rate for this roughness algorithm. Please ' ...
-         're-sample original file to be Fs=44100,40960 or 48000 ' ...
-         'Hz']);
+try
+    fir_hweight; % just to check whether all folders are in the MATLAB path
+catch
+    warning('Temporal adjustment to add proper folders')
+    misc.path = [Get_TUe_paths('MATLAB') 'Psychoacoustics' delim 'Roughness_Duisters' delim];
+    Add_paths(misc);
 end
- 
+
 %%%%%%%%%%%%%%%%%
 % BEGIN InitAll %
 %%%%%%%%%%%%%%%%%
-% 
-% Bark    = Get_psyparams('Bark');
-% Bark2   = [sort([Bark(:,2);Bark(:,3)]),sort([Bark(:,1);Bark(:,4)])];
-% 
-% N0      = round(20*N/Fs)+1;
-% N01     = N0-1;
-% N50     = round(50*N/Fs)-N0+1;
-% N2      = N/2+1;
-% Ntop	= round(20000*N/Fs)+1;
-% Ntop2	= Ntop-N0+1;
-% dFs     = Fs/N;
-% 
-% % Make list with Barknumber of each frequency bin
-% Barkno      = zeros(1,N2);
-% f           = N0:1:Ntop;
-% Barkno(f)   = interp1(Bark2(:,1),Bark2(:,2),(f-1)*dFs);
-% 
-% % Make list of frequency bins closest to Cf's
-% Cf = ones(2,24);
-% for a=1:1:24
-%   Cf(1,a)=round(Bark((a+1),2)*N/Fs)+1-N0;
-%   Cf(2,a)=Bark(a+1,2);
-% end
-% %Make list of frequency bins closest to Critical Band Border frequencies
-% Bf = ones(2,24);
-% Bf(1,1)=round(Bark(1,3)*N/Fs);
-% for a=1:1:24
-%   Bf(1,a+1)=round(Bark((a+1),3)*N/Fs)+1-N0;
-%   Bf(2,a)=Bf(1,a)-1;
-% end
-% Bf(2,25)=round(Bark((25),3)*N/Fs)+1-N0;
-% 
-% %Make list of minimum excitation (Hearing Treshold)
-% HTres = Get_psyparams('HTres');
-% 
-% k = (N0:1:Ntop);
-% MinExcdB = interp1(HTres(:,1),HTres(:,2),Barkno(k));
-%   
-% % Initialize constants and variables
-% zi      = 0.5:0.5:23.5;
-% zb      = sort([Bf(1,:),Cf(1,:)]);
-% Chno    = 47;
-% ei      = zeros(Chno,N);
-% Fei     = zeros(Chno,N);
-% 
-% gr = Get_psyparams('gr');
-% 
-% gzi    = zeros(1,Chno);
-% h0     = zeros(1,Chno);
-% k      = 1:1:Chno;
-% gzi(k) = sqrt(interp1(gr(1,:)',gr(2,:)',k/2));
-%     
-% % calculate a0
-% a0tab =	Get_psyparams('a0tab');
-% 
-% a0    = ones(1,N);
-% k     = (N0:1:Ntop);
-% a0(k) = From_dB(interp1(a0tab(:,1),a0tab(:,2),Barkno(k)));
-% 
-% %%%%%%%%%%%%%%%
-% % END InitAll %
-% %%%%%%%%%%%%%%%
- 
+
 % BEGIN Hweights:
-[numH7, denH7, numH14, denH14, numH30, denH30, numH36, denH36, numH66, denH66] = fir_hweight(Fs);
+[numH7, denH7, numH14, denH14, numH30, denH30, numH36, denH36, numH66, denH66] = fir_hweight(fs);
 
 % END Hweights 
 % %%%%%%%%%%%%%%%%
  
-% Calibration:
-dBcorr  = 80;
-dB      = 60;
-insig   = transpose( AdaptLevel(insig',dB-dBcorr) ); % RMS -20 dBFS = 60 dB
-% switches(3) = 1;
-% insig = transpose( AdaptLevel(insig',dB-dBcorr), switches ); % RMS -50 dBFS = 60 dB
+insig = transpose(insig); % Transposing, just to follow Ronnies' nomenclature
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% outer and middle-ear filtering
+if     switches(1) == 1
+% outer and middle ear filter as used by Van Immerseel and Martens
+    disp('filtering outer and middle ear...');
+    wr=2*pi* 4e3;
+    num = wr^2;
+    den = [1 0.33*wr wr^2];
+    [num2, den2] = bilinear(num, den, fs);
+    insig = filter(num2, den2, insig);
+    
+elseif switches(1) == 2
+    disp('filtering outer and middle ear...');
+    % Outer and middle ear combined bandpass filter
+    % (Pflueger, Hoeldrich, Riedler, Sep 1997)
+    % Highpass component
+    b = 0.109*[1 1];
+    a = [1 -2.5359 3.9295 -4.7532 4.7251 -3.5548 2.139 -0.9879 0.2836];
+    % Lowpass component
+    d = [1 -2 1];
+    c = [1 -2*0.95 0.95^2];
+    num2 = conv(b, d);
+    den2 = conv(a, c);
+    insig = filter(num2, den2, insig);
+else
+    disp('no outer- and middle-ear filtering');
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Loading defaults:
+
+% auditory filterbanks
+if     switches(4) == 1
+    defin4.import={'auditoryfilterbank_Duisters1'}; % ERB 1:  1:  40
+elseif switches(4) == 3 % This one was the default apparently
+    defin4.import={'auditoryfilterbank_Duisters3'}; % ERB 0.5:0.5:38
+end
+[flags4,keyvals4]  = ltfatarghelper({'flow','fhigh'},defin4,{});
+ 
+if     switches(3) == 2
+    defin3.import           = {'ihcenvelope','adaptloop'}; 
+    defin3.importdefaults   = {'ihc_breebaart','adt_dau1996'};  % ihc_breebaart (has a cuttoff of 770 Hz)
+                                                                % adt_dau1996 it does not have limitation
+elseif switches(3) == 10
+    defin3.import           = {'ihcenvelope','adaptloop'}; 
+    defin3.importdefaults   = {'ihc_breebaart','adt_dau'};  % ihc_breebaart (has a cuttoff of 770 Hz)
+                                                            % adt_dau, lim = 10
+end
+
+[flags3,keyvals3]  = ltfatarghelper({'minlvl'},defin3,{});
 
 %% Stage 1, BEGIN: RoughBody
- 
-insig_buf   =   buffer(insig, N, N-N_hop,'nodelay');
-m_blocks    =   size(insig_buf,2);
 
-% ri          = zeros(m_blocks,Chno);
-Window      = blackman(N, 'periodic') .* 1.8119;
+% auditory filterbanks
+if switches(2) == 1
+    [inoutsig, fc] = auditoryfilterbank(insig,fs,'argimport',flags4,keyvals4);
+    erbr = freqtoaud(fc,'erb');
+    Nch  = length(erbr);
+end
+
+% inner hair cells + adaptation models
+if switches(3) == 2
+    inoutsig        = ihcenvelope(inoutsig,fs,'argimport',flags3,keyvals3);
+    inoutsig        =   adaptloop(inoutsig,fs,'argimport',flags3,keyvals3);
+end
+inoutsig = squeeze( inoutsig );
+
+m_blocks = floor(length(insig)/N_hop) - 1;
+ri       = zeros(m_blocks,Nch); % Memory allocation
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for idx_j = 1:m_blocks
  
-    tn(idx_j) = (idx_j-1 + nSkipStart)*N_hop; % sample number to determine time
-    dataIn = insig_buf(:,idx_j);
-     
-    dataIn = dataIn .*Window;
-    AmpCal = From_dB(dBcorr)*2/(N*mean(blackman(N, 'periodic'))); % cal to get magnitude spectrum to the power spectrum L
-    % AmpCal = 2/(N*mean(blackman(N, 'periodic'))); 
-     
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- 
-    % Calibration between wav-level and loudness-level (assuming
-    % blackman window and FFT will follow)
-% 
-%     Cal	 	=	0.25;
-%     N2		=	N/2;
-%     q		=	1:1:N;
-%     qb		=	N0:1:Ntop;
-%     hBPi	=	zeros(Chno,N);
-%     hBPrms	=	zeros(1,Chno);
-%     mdept	=	zeros(1,Chno);
-%     ki		=	zeros(1,Chno-2);
+    Ni = (idx_j - 1) * N_hop + 1;
+    Nf = Ni+N-1;
     
-    TempIn  = dataIn*AmpCal;
-    [rt,ct] = size(TempIn);
-%     [r,c]   = size(a0);
-%     if rt~=r; TempIn=TempIn'; end
-% 
-%     FreqIn	= a0.*fft(TempIn);
-%     
-%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%     % Critical-band filterbank - Terhardt:
-%     [ei, etmp_fd, etmpExc_fd] = Terhardt_filterbank(FreqIn,Fs,N,qb,MinExcdB,Barkno,N01,zb);
-%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%     
-%     % ei = zeros(  )
-%     for k=1:1:47
-%         % etmp_fd  - excitation pattern in frequency domain
-%         % etmp  - excitation patterns in time domain (after L242)
-%         % ei    - excitation patterns in time domain
-%         % Fei   - envelope in frequency domain, as function of fmod
-%         % h0    - DC component, average of half-wave rectified signal
-% 
-%         etmp_td(k,:)= abs(ei(k,:));
-%         h0(k)       = mean(etmp_td(k,:));
-%         Fei(k,:)	= fft( etmp_td(k,:)-h0(k) ); % changes the phase but not the amplitude
-% 
-%         hBPi(k,:)	= 2*real(  ifft( Fei(k,:).*Hweight(k,:) )  );
-%         hBPrms(k)	= dw_rms(hBPi(k,:));
-% 
-%         if h0(k)>0
-%             
-%             mdept(k) = hBPrms(k)/h0(k);
-%             if mdept(k)>1
-%                 mdept(k)=1;
-%             end
-%             
-%         else
-%             mdept(k)=0;
-%         end
-% 
-%     end
-% 
-%     if bDebug
-% 
-%         % params for figures 4 and 5
-%         idx2plot = 1:47; 
-% 
-%         k = idx2plot;
-%         
-%         %-- Figure 2: -----------------------------------------------------
-%         figure(2); 
-%         subplot(2,1,1)
-%         plot(hz2bark(freqs),20*log10(abs(etmpExc_fd(k,qb))));
-%         hold on, grid on
-%         xlabel('Critical-band rate [Bark]')
-%         ylabel('Excitation pattern')
-%         title(sprintf('Excitation pattern (Terhardt''s model), band number %.0f-%.0f',min(k),max(k)))
-%         ha = gca;
-% 
-%         subplot(2,1,2)
-%         plot(hz2bark(freqs),20*log10(abs(etmp_fd(k,qb)))) 
-%         hold on; grid on
-%         %xlabel('Frequency [Hz]')
-%         xlabel('Critical-band rate [Bark]')
-%         ylabel('Level [dB]')
-%         title(sprintf('Critical-band filterbank (Terhardt''s model), band number %.0f-%.0f',min(k),max(k)))
-%         %xlim([900 1100])
-%         ha(end+1) = gca;
-%         linkaxes(ha,'x')
-%         
-%         %-- Figure 4: -----------------------------------------------------
-%         % params just for figure 4
-%         idxq = find(freqs<1200 & freqs>800);
-%         L = length(idxq);
-%         freqsm = repmat(freqs(idxq),length(idx2plot),1);
-%         BandNumber = repmat( ((idx2plot)'), 1, L);
-% 
-%         figure(4);
-%         mesh( freqsm,BandNumber,20*log10(abs(etmp_fd(idx2plot,idxq))) )
-%         xlabel('Frequency [Hz]')
-%         ylabel('Band number')
-%         zlabel('Level [dB]')
-%         title('Excitation patterns')
-% 
-%         % params just for figure 5
-%         BandNumber = repmat( ((idx2plot)'), 1, N);
-%         t = repmat( (1:N)/Fs ,length(idx2plot),1);
-% 
-%         %-- Figure 5: -----------------------------------------------------
-%         figure(5); 
-%         mesh( t,BandNumber,hBPi(idx2plot,:) )
-%         xlabel('Time [s]')
-%         ylabel('Band number')
-%         title('Band-pass signals')
-%         zlim([-4000 4000])
-% 
-%     end
-% 
-%     % find cross-correlation coefficients
-%     for k=1:1:45
-%         
-%         cfac	=	cov(hBPi(k,:),hBPi(k+2,:));
-%         den	=	diag(cfac);
-%         den	=	sqrt(den*den');
-%         if den(2,1)>0
-%             ki(k)	=	cfac(2,1)/den(2,1);
-%         else
-%             ki(k)	=	0;
-%         end
-%         
-%     end
-% 
-%     % Calculate specific roughness ri and total roughness R
-%     ri(idx_j,1)     =	(gzi(1)*mdept(1)*ki(1))^2;
-%     ri(idx_j,2)     =	(gzi(2)*mdept(2)*ki(2))^2;
-%     for k           = 3:1:45
-%         ri(idx_j,k)	=	(gzi(k)*mdept(k)*ki(k-2)*ki(k))^2;
-%     end
-%     ri(idx_j,46)	=	( gzi(46)*mdept(46)*ki(44) )^2;
-%     ri(idx_j,47)	=	( gzi(47)*mdept(47)*ki(45) )^2;
-%     R(idx_j)        =	Cal*sum(ri(idx_j,:));
-% 
-%     SPL(idx_j) = mean(rms(dataIn));
-%     if SPL(idx_j) > 0
-%         SPL(idx_j) = To_dB(SPL(idx_j))+dBcorr+3; % -20 dBFS <--> 60 dB SPL
-%     else
-%         SPL(idx_j) = -400;
-%     end
-%     
-%     if bDebug
-%         figure; 
-%         plot(ri(1,:),'r'), hold on
-%         plot(mdept,'b-')
-%         plot(ki,'k')
-%         plot(gzi,'g--')
-%         grid on
-%         
-%         legend('r_i','mdepth','cc','gzi')
-%     end
+    tn(idx_j) = Ni-1; % sample number to determine time
+    
+    if switches(4) == 3
+        
+        if idx_j == 1
+            disp('extracting roughness...');
+            % adapted Aures model
+        end
+        exc = transpose( inoutsig );
+        
+        % calculation of the DC values
+        etmp = abs(exc);
+        s0 = kron(ones(1, length(exc)), mean(etmp, 2));
+        excd = etmp - s0;
+        
+        % Weighting filtering
+        sBP(1:11,:)  = filter( numH7,  denH7, excd( 1:11,Ni:Nf), [], 2);
+        sBP(12:28,:) = filter(numH14, denH14, excd(12:28,Ni:Nf), [], 2);
+        sBP(29:36,:) = filter(numH30, denH30, excd(29:36,Ni:Nf), [], 2);
+        sBP(37:65,:) = filter(numH36, denH36, excd(37:65,Ni:Nf), [], 2);
+        sBP(66:76,:) = filter(numH66, denH66, excd(66:76,Ni:Nf), [], 2);
+        
+        sBPrms = rmsDik(sBP);
+        rexc = rmsDik(exc);
+        maxi = max(rexc);
+        if maxi > 0
+            calib = rexc / maxi;
+        else
+            calib = 0;
+        end
+        % modulation depth estimation
+        for k = 1:Nch,
+            % calibration factor
+            if s0(k) > 0
+                mdepth(k) = sBPrms(k) / s0(k);
+                mdepth(k) = mdepth(k) * calib(k);
+            else
+                mdepth(k) = 0;
+            end
+            % calculation of the shifted cross correlation factor
+            if k < Nch - 1,
+                amount = 0.003 * fs;
+                ki(k) = shiftcov(sBP(k,:), sBP(k+2,:), amount);
+            end
+        end
+    end
+    
+    % definition of gzi
+    if switches(2) == 1
+        if switches(3) == 1 % gammatone,
+            Rmax = [0 0.35 0.8 0.99 1 0.75 0.57 0.53 0.42]; % Van Immerseel & Martens
+        elseif switches(3) == 2 | switches(3) == 10 
+            Rmax = [0 0.3 1 1 1 0.64 0.49 0.51 0.45]; % gammatone, Dau et al.
+        elseif switches(3) == 3
+            Rmax = [0 0.35 0.8 0.9 1 0.65 0.47 0.43 0.32]; % gammatone, Meddis
+        end
+    end
+    fc4gz   = [0 125 250 500 1e3 2e3 4e3 8e3 16e3];
+    ERBrate = freqtoaud(fc4gz,'erb'); %2 * 21.4 .* log10(4.37 * fc / 1000 + 1);
+    gzi     = interp1(ERBrate, Rmax, erbr, 'cubic');
+    % calculate specific roughness ri
+    ri(idx_j,1:7)     = (gzi(1:7)     .* mdepth(1:7)     .* ki(1:7)).^2;
+    ri(idx_j,8:Nch-3) = (gzi(8:Nch-3) .* mdepth(8:Nch-3) .* ki(6:Nch-5) .* ki(8:Nch-3)).^2;
+    ri(idx_j,Nch-2)   = (gzi(Nch-2)    * mdepth(Nch-2)    * ki(Nch-4))^2;
+    ri(idx_j,Nch-1)   = (gzi(Nch-1)    * mdepth(Nch-1)    * ki(Nch-3))^2;
+    ri(idx_j,Nch)     = (gzi(Nch)      * mdepth(Nch)      * ki(Nch-2))^2;
+    R(idx_j)          = sum(ri(idx_j,1:Nch));
      
 end
-% 
-% % Create a cell array to return
-% dataOut{1} = R;
-% dataOut{2} = ri;
-% dataOut{3} = SPL;
-% 
-% out.t       = transpose(tn/Fs);
-% out.z       = transpose(zi);
-% 
-% nParam      = 1;
-% out.Data1   = transpose(R);
-% output.name{nParam} = 'Roughness';
-% output.param{nParam} = strrep( lower( output.name{nParam} ),' ','-');
-% 
-% nParam      = 2;
-% out.Data2   = ri;
-% output.name{nParam} = 'Specific roughness';
-% output.param{nParam} = strrep( lower( output.name{nParam} ),' ','-');
-% 
-% output.nAnalyser = 15;
-% 
-% out.stats.rough_tot = mean( out.Data1 );
-% 
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-% % END: RoughBody
+ 
+% Create a cell array to return
+dataOut{1}  = R;
+dataOut{2}  = ri;
+out.t       = transpose(tn/fs);
+ 
+nParam      = 1;
+out.Data1   = transpose(R);
+out.name{nParam} = 'Roughness';
+out.param{nParam} = strrep( lower( out.name{nParam} ),' ','-');
+
+nParam      = 2;
+out.Data2   = ri;
+out.name{nParam} = 'Specific roughness';
+out.param{nParam} = strrep( lower( out.name{nParam} ),' ','-');
+out.fi      = fc;
+out.erbi    = erbr;
+out.exc     = exc;
+out.nAnalyser = 15;
 
 end

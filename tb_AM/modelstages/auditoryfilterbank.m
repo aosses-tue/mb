@@ -39,11 +39,11 @@ function [outsig, fc] = auditoryfilterbank(insig, fs, varargin)
 %
 %   Url: http://amtoolbox.sourceforge.net/doc/modelstages/auditoryfilterbank.php
 % 
-% Author        : Peter L. Søndergaard
+% Author        : Peter L. Soendergaard
 % Downloaded on : 18/03/2014
 % Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Last update on: 18/03/2014 % Update this date manually
-% Last use on   : 02/04/2015 % Update this date manually
+% Last use on   : 28/06/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % ------ Checking of input parameters ------------

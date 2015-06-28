@@ -1,18 +1,17 @@
-function definput=arg_ihcenvelope(definput)
-% function definput=arg_ihcenvelope(definput)
+function definput=arg_auditoryfilterbank_Duisters3(definput)
+% function definput=arg_auditoryfilterbank_Duisters3(definput)
 %
-% 'ihc_jepsen added by AO'
-%
-% Last update on: 28/06/2015 % Update this manually
-% Last use on   : 28/06/2015 % Update this manually
+% Last used on: 27/06/2015
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-  definput.flags.ihctype={'nodefault','ihc_bernstein','ihc_breebaart','ihc_dau', ...
-                          'hilbert','ihc_lindemann','ihc_meddis','ihc_jepsen'};
+flow    = audtofreq( 0.5,'erb');
+fhigh   = audtofreq(38.0,'erb');
+definput.keyvals.flow   = flow;
+definput.keyvals.fhigh  = fhigh;
+definput.keyvals.basef  = [];
+definput.keyvals.bwmul  = 0.5;
 
-  definput.keyvals.minlvl=[];
-
-%   Url: http://amtoolbox.sourceforge.net/doc/comp/arg_ihcenvelope.php
+%   Url: http://amtoolbox.sourceforge.net/doc/comp/arg_auditoryfilterbank.php
 
 % Copyright (C) 2009-2014 Peter L. Soendergaard and Piotr Majdak.
 % This file is part of AMToolbox version 0.9.5
@@ -29,4 +28,3 @@ function definput=arg_ihcenvelope(definput)
 %
 % You should have received a copy of the GNU General Public License
 % along with this program.  If not, see <http://www.gnu.org/licenses/>.
-

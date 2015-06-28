@@ -3,12 +3,9 @@ function [R dataOut out] = Roughness_offline(insig, Fs, N, options, CParams,bDeb
 %
 % 1. Description:
 %       Frame-based, off-line implementation of the roughness algorithm.
+%       This version is intended to be compatible with AMT toolbox, then the
+%       calibration criterion is set to 0 dBFS = 100 dB.
 % 
-%       Changes by AO:
-%           amp2db replaced by To_dB
-%           db2amp replaced by From_dB
-%           private rms renamed to dw_rms
-%       
 %       Outputs:
 %           out - has the same format as in the PsySound toolbox
 % 
@@ -31,7 +28,9 @@ function [R dataOut out] = Roughness_offline(insig, Fs, N, options, CParams,bDeb
 %       2.2 Multi-platform example, requires the ref_rough.wav file in the 
 %           appropriate folder:
 %           [insig fs] = Wavread([Get_TUe_paths('outputs') 'ref_rough.wav']); 
-%           [out outPsy] = Roughness_offline(insig,fs,8192);
+%           [R outPsy out] = Roughness_offline(insig,fs,8192);
+%           figure; plot(out.t,R); grid on;
+%           xlabel('Time [s]'); ylabel('Roughness [asper]');
 % 
 %       2.3 Impulse response:
 %           N = 8192;
@@ -42,11 +41,12 @@ function [R dataOut out] = Roughness_offline(insig, Fs, N, options, CParams,bDeb
 % 
 % 3. Additional info:
 %       Tested cross-platform: Yes
+%       See also Roughness_offline_debug.m
 %
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 10/11/2014
-% Last update on: 17/01/2015 % Update this date manually
-% Last use on   : 27/05/2015 % Update this date manually
+% Last update on: 25/06/2015 % Update this date manually
+% Last use on   : 28/06/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 6
@@ -136,12 +136,14 @@ h0     = zeros(1,Chno);
 k      = 1:1:Chno;
 gzi(k) = sqrt(interp1(gr(1,:)',gr(2,:)',k/2));
     
-% calculate a0
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Calculates a0
 a0tab =	Get_psyparams('a0tab');
 
 a0    = ones(1,N);
 k     = (N0:1:Ntop);
 a0(k) = From_dB(interp1(a0tab(:,1),a0tab(:,2),Barkno(k)));
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%
 % END InitAll %
@@ -161,7 +163,7 @@ m_blocks    =   size(insig_buf,2);
 ri          =   zeros(m_blocks,Chno);
 
 Window      = blackman(N, 'periodic') .* 1.8119;
-dBcorr      = 80;
+dBcorr      = 80+2.72;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for idx_j = 1:m_blocks
@@ -308,7 +310,7 @@ for idx_j = 1:m_blocks
 
     SPL(idx_j) = mean(rms(dataIn));
     if SPL(idx_j) > 0
-        SPL(idx_j) = To_dB(SPL(idx_j))+dBcorr+3; % -20 dBFS <--> 60 dB SPL
+        SPL(idx_j) = To_dB(SPL(idx_j))+dBcorr+3; % -20 dBFS <--> 70 dB SPL
     else
         SPL(idx_j) = -400;
     end

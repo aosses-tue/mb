@@ -79,7 +79,7 @@ function inoutsig = ihcenvelope(inoutsig,fs,varargin)
 %
 %   Url: http://amtoolbox.sourceforge.net/doc/modelstages/ihcenvelope.php
 %
-% Copyright (C) 2009-2014 Peter L. Søndergaard and Piotr Majdak.
+% Copyright (C) 2009-2014 Peter L. Soendergaard and Piotr Majdak.
 % This file is part of AMToolbox version 0.9.5
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
@@ -115,10 +115,10 @@ if flags.do_nodefault
 end;
 
 if flags.do_ihc_bernstein
-    % The computational trick mentioned in the Bernstein paper is used
-    % here: Instead of raising the envelope to power .23 and combine with its
-    % TFS, we raise it to power -.77, and combine with the original
-    % signal. In this way we avoid computing the fine structure.
+    % The computational trick mentioned in the Bernstein paper is used here: 
+    % Instead of raising the envelope to power .23 and combine with its TFS, 
+    % we raise it to power -.77, and combine with the original signal. In 
+    % this way we avoid computing the fine structure.
     inoutsig=max(abs(hilbert(inoutsig)).^(-.77).*inoutsig,0).^2;
     cutofffreq=425;
     [b, a] = butter(2, cutofffreq*2/fs);
@@ -128,7 +128,8 @@ end;
 %% Breebaart2001a
 if flags.do_ihc_breebaart
   inoutsig = max( inoutsig, 0 );
-  cutofffreq=2000;
+  cutofffreq=2000;  % cascade butter filters with fcut = 2000 Hz is equivalent
+                    % to 770 Hz
   [b, a] = butter(1, cutofffreq*2/fs);
   for ii=1:5
     inoutsig = filter(b,a, inoutsig);

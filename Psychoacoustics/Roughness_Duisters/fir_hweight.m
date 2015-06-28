@@ -19,7 +19,7 @@ function [numH7, denH7, numH14, denH14, numH30, denH30, numH36, denH36, numH66, 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin == 0
-    Fs = 44100;
+    return;
 end
 
 % Degree of the filter

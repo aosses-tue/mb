@@ -1,23 +1,41 @@
-function r20141126_roughness_validation
-% function r20141126_roughness_validation
+function r20141126_roughness_validation(options)
+% function r20141126_roughness_validation(options)
 %
 % 1. Description:
 %       Implement and validate the model of Roughness (off-line).
 %       Run this script first setting bCreate to 1
+%       Calibration: RMS of -30 dBFS corresponds to an average level of 60 dB
 % 
 % 2. Stand-alone example:
-%       r20141126_roughness_validation;
+%       options.bDiary = 0; % To generate log-file
+%       options.bCreate = 0; % Set to 1 if you want to generate the test signals
+%       options.bDoExp0 = 1; % Fastl2007, Fig. 11.1. Daniel1997, Fig.5. 
+%                            % (Only the first 8192 samples are used)
+%       r20141126_roughness_validation(options);
 % 
 % 3. Additional info:
 %       Tested cross-platform: No
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 25/11/2014
-% Last update on: 27/11/2014 % Update this date manually
-% Last use on   : 27/11/2014 % Update this date manually
+% Last update on: 25/06/2015 % Update this date manually
+% Last use on   : 25/06/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-bDiary = 1;
+if nargin == 0
+    options = [];
+end
+options = ef(options,'bDiary', 0);
+
+options = ef(options,'bDoExp0',1);
+options = ef(options,'bDoExp1',0);
+options = ef(options,'bDoExp2',0);
+options = ef(options,'bDoExp3',0);
+options = ef(options,'bDoExp4',0);
+options = ef(options,'bDoExp5',0);
+options = ef(options,'bDoExp6',0);
+
+bDiary = options.bDiary;
 Diary(mfilename,bDiary);
 
 close all
@@ -36,8 +54,7 @@ h = [];
 
 N           = 8192;
 bDebug      = 0;
-
-bCreate     = 0;
+bCreate     = options.bCreate;
 
 if bCreate
     
@@ -55,13 +72,13 @@ if bCreate
     
 end
 
-bDoExp0 = 0; % Fastl2007, Fig. 11.1. Daniel1997, Fig.5
-bDoExp1 = 1;
-bDoExp2 = 1;
-bDoExp3 = 1;
-bDoExp4 = 1;
-bDoExp5 = 1;
-bDoExp6 = 1; % FM tones Daniel1997, Fig.9
+bDoExp0 = options.bDoExp0; % Fastl2007, Fig. 11.1. Daniel1997, Fig.5
+bDoExp1 = options.bDoExp1;
+bDoExp2 = options.bDoExp2;
+bDoExp3 = options.bDoExp3;
+bDoExp4 = options.bDoExp4;
+bDoExp5 = options.bDoExp5;
+bDoExp6 = options.bDoExp6; % FM tones Daniel1997, Fig.9
 
 ExpNo = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

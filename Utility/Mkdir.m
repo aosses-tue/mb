@@ -8,7 +8,7 @@ function status = Mkdir(folder)
 %
 % Programmed by Alejandro Osses, ExpORL, KULeuven, 2014
 % Last update on: 12/08/2014
-% Last use on   : 31/03/2015
+% Last use on   : 26/06/2015
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 bCreateFolder = ~isdir(folder);
@@ -16,11 +16,13 @@ bCreateFolder = ~isdir(folder);
 if bCreateFolder == 1
     mkdir(folder);
     disp(['Directory ' folder 'created successfully...'])
+    status = 1;
 else
-    warning('Directory not created, it already exists, you might be overwriting files');
+    if nargout == 1
+        warning('Directory not created, it already exists, you might be overwriting files');
+    end
+    status = 0;
 end
-
-status = bCreateFolder;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end

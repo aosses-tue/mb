@@ -1,16 +1,19 @@
 function freq = note2freq(test,bRounded)
 % function freq = note2freq(test, bRounded)
 % 
-% test is a structure with two fields:
-%	test.note (char)
-% 	test.octave (int)
-% freq is the frequency in Hz related to the tone defined by test. 
-% For example, if test.note is 'A', and test.octave is 4 then freq will be 440 (Hz)
+% 1. Description:
+%       test is a structure with two fields:
+%           test.note (char)
+%           test.octave (int)
+%       freq is the frequency in Hz related to the tone defined by test. 
+%       For example, if test.note is 'A', and test.octave is 4 then freq 
+%       will be 440 (Hz)
 %
-% Example:
+% 2. Stand-alone example:
 %   test.note = 'A'; 
 %   test.octave = 4; 
 %   note2freq(test);
+% 
 % Programmed by Matthias M.
 % Original location: ../matthias/src/Matlab/Misc/note2freq.m
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -53,7 +53,8 @@ if strcmp(model,'dau1996a') % No overshoot limit
 end
 
 if strcmp(model,'dau1996') % Overshoot limit
-    [outsig  fc] = dau1996preproc_1Ch(insig,fs,fc);
+    warning('Here there is a temporal change')
+    [outsig  fc] = dau1996preproc_1Ch_test(insig,fs,fc);
     try
         [outsig2 fc] = dau1996preproc_1Ch(insig2,fs,fc);
         [outsig3 fc] = dau1996preproc_1Ch(insig3,fs,fc);
