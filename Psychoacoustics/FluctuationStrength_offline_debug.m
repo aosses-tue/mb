@@ -4,24 +4,19 @@ function [dataOut out] = FluctuationStrength_offline_debug(insig, Fs, N, options
 % 1. Description:
 %       Frame-based, off-line implementation of the Fluctuation Strength 
 %       algorithm based. The algorithm was adapted from the Roughness model.
-% 
-%       Changes introduced by AO:
-%           - amp2db replaced by To_dB
-%           - db2amp replaced by From_dB
-%           - private rms renamed to dw_rms
-%           - Compatible with any Fs. If you use Fs smaller than 44.100 Hz, 
-%             then the calculation will assume no contribution for all the �
-%             bands above Fs/2. 
+%       Comments on this implementation: cross-correlation seems not to be 
+%       working properly
 %
 % 2. Stand-alone example:
-%
+%       r20141126_fluctuation;
+% 
 % 3. Additional info:
 %       Tested cross-platform: Yes
 %
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 10/11/2014
 % Last update on: 18/11/2014 % Update this date manually
-% Last use on   : 18/01/2015 % Update this date manually
+% Last use on   : 29/06/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 5

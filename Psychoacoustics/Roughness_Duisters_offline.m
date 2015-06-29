@@ -47,29 +47,39 @@ function [R dataOut out] = Roughness_Duisters_offline(insig, fs, N, options, CPa
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 27/05/2015
-% Last update on: 27/05/2015 % Update this date manually
-% Last use on   : 28/06/2015 % Update this date manually
+% Last update on: 29/06/2015 % Update this date manually
+% Last use on   : 29/06/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% switches(1)
-%       -  1
-%       -* 2: This is the default
+% switches(1) - Outer-, Middle- ear transmission
+%       -  1: Van Immerseel
+%       -* 2: Pfueger. This is the default
 %
 % switches(2) - Defines the auditory filterbank
 %       -* 1: Gammatone, this is the default
 %       -  2: Gamma chirp, not enabled yet
 % 
 % switches(3) - Defines an adaptation model
-%       -* 3: Dau et al. 
+%       -* 2: Dau et al. 
+%       - 10: same as 2, but with limitation of 10
+%       - 12: same as 2, but gzi is determined as in Aures
 % 
 % switches(4) - Defines the resolution of the auditory filterbank + Roughness model to be used
 %       -  1
 %       -* 3: Aures
 
-switches(1) = 2;
-switches(2) = 1; % or 2
-switches(3) = 2; % 2 or 10
-switches(4) = 3; % or 1, 3
+if nargin < 4
+    options = [];
+end
+
+options = ef(options,'switches',[2 1 2 3]);
+
+switches = options.switches;
+
+% switches(1) = 2;
+% switches(2) = 1; % or 2
+% switches(3) = 2; % 2 or 10
+% switches(4) = 3; % or 1, 3
 
 if nargin < 3
     N = 8192;
@@ -80,10 +90,6 @@ if nargin < 5
     CParams.HopSize = N/2;
 else
     CParams = Ensure_field(CParams,'HopSize',N/2); % 4096
-end
-
-if nargin < 4
-    options = [];
 end
 
 options     = ef(options,'nSkipStart',0);
@@ -128,15 +134,18 @@ elseif switches(1) == 2
     disp('filtering outer and middle ear...');
     % Outer and middle ear combined bandpass filter
     % (Pflueger, Hoeldrich, Riedler, Sep 1997)
-    % Highpass component
+    % Low-pass component:
     b = 0.109*[1 1];
     a = [1 -2.5359 3.9295 -4.7532 4.7251 -3.5548 2.139 -0.9879 0.2836];
-    % Lowpass component
+    % High-pass component
     d = [1 -2 1];
     c = [1 -2*0.95 0.95^2];
     num2 = conv(b, d);
     den2 = conv(a, c);
     insig = filter(num2, den2, insig);
+    if fs ~= 48000
+        warning('Pflueger''s outer-ear discrete approximation validated only for 48 kHz')
+    end
 else
     disp('no outer- and middle-ear filtering');
 end
@@ -151,7 +160,7 @@ elseif switches(4) == 3 % This one was the default apparently
 end
 [flags4,keyvals4]  = ltfatarghelper({'flow','fhigh'},defin4,{});
  
-if     switches(3) == 2
+if     switches(3) == 2 | switches(3) == 12
     defin3.import           = {'ihcenvelope','adaptloop'}; 
     defin3.importdefaults   = {'ihc_breebaart','adt_dau1996'};  % ihc_breebaart (has a cuttoff of 770 Hz)
                                                                 % adt_dau1996 it does not have limitation
@@ -173,7 +182,7 @@ if switches(2) == 1
 end
 
 % inner hair cells + adaptation models
-if switches(3) == 2
+if switches(3) == 2 | switches(3) == 10 | switches(3) == 12
     inoutsig        = ihcenvelope(inoutsig,fs,'argimport',flags3,keyvals3);
     inoutsig        =   adaptloop(inoutsig,fs,'argimport',flags3,keyvals3);
 end
@@ -240,13 +249,16 @@ for idx_j = 1:m_blocks
         if switches(3) == 1 % gammatone,
             fc4gz   = [0 125  250 500  1000 2000 4000 8000 16000];
             Rmax    = [0 0.35 0.8 0.99 1    0.75 0.57 0.53 0.42]; % Van Immerseel & Martens
-        elseif switches(3) == 2 | switches(3) == 10 
-            gzitmp  = Get_psyparams('gr-ERB');
-            fc4gz   = audtofreq( gzitmp(1,:),'erb' );
-            Rmax    = gzitmp(2,:);
+        elseif switches(3) == 2 
+            fc4gz   = [0 125  250 500  1000 2000 4000 8000 16000];
+            Rmax    = [0 0.3 1 1 1 0.64 0.49 0.51 0.45];
         elseif switches(3) == 3
             fc4gz   = [0 125  250 500  1000 2000 4000 8000 16000];
-            Rmax = [0 0.35 0.8 0.9 1 0.65 0.47 0.43 0.32]; % gammatone, Meddis
+            Rmax    = [0 0.35 0.8 0.9 1 0.65 0.47 0.43 0.32]; % gammatone, Meddis
+        elseif switches(3) == 12 | switches(3) == 10 
+            gzitmp  = Get_psyparams('gr-ERB');
+            fc4gz   = audtofreq( gzitmp(1,:),'erb' );
+            Rmax    = gzitmp(2,:); 
         end
     end
     
@@ -284,6 +296,7 @@ if nargout >= 3
     out.Data2   = ri;
     out.name{nParam} = 'Specific roughness';
     out.param{nParam} = strrep( lower( out.name{nParam} ),' ','-');
+    out.t_ri    = transpose(tn/fs); 
     out.fi      = fc;
     out.erbi    = erbr;
     out.exc     = exc;

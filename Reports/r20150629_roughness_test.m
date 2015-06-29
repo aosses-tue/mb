@@ -11,8 +11,8 @@ function r20150629_roughness_test
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 28/06/2015
-% Last update on: 28/06/2015 % Update this date manually
-% Last use on   : 28/06/2015 % Update this date manually
+% Last update on: 29/06/2015 % Update this date manually
+% Last use on   : 29/06/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 close all
@@ -38,6 +38,13 @@ files = {   'rough_ref.wav', ... % 1
 
 N = 8192;
 fc = [1000 125 8000];
+                        % 1 2  3 4
+% Duisters_opts.switches = [1 1 2 3];
+Duisters_opts.switches = [1 1 12 3];
+% Duisters_opts.switches = [2 1 12 3]; THIS IS THE BEST SO FAR
+% Duisters_opts.switches = [2 1 2 3]; % Problems at low and high frequencies
+% Duisters_opts.switches = [2 1 10 3]; % Worst at low but better at high frequencies
+
 for i = 1:3
 
     [xref fs]= Wavread([dir_files files{i,1}]); xref = From_dB(-10)*xref;
@@ -46,39 +53,52 @@ for i = 1:3
     [x3 fs] = Wavread([dir_files files{i,4}]); x3 = From_dB(-10)*x3;
     [x4 fs] = Wavread([dir_files files{i,5}]); x4 = From_dB(-10)*x4;
 
-    Rref    = Roughness_offline(xref(1:N),fs);
+    xref = resample(xref,48000,fs);
+    x1 = resample(x1,48000,fs);
+    x2 = resample(x2,48000,fs);
+    x3 = resample(x3,48000,fs);
+    x4 = resample(x4,48000,fs);
+    fs = 48000;
+    
+    Rref      = Roughness_offline(xref(1:N),fs);
     R(i,1)    = Roughness_offline(x1(1:N),fs);
     R(i,2)    = Roughness_offline(x2(1:N),fs);
     R(i,3)    = Rref;
     R(i,4)    = Roughness_offline(x3(1:N),fs);
     R(i,5)    = Roughness_offline(x4(1:N),fs);
 
-    RDref   = Roughness_Duisters_offline(xref(1:N),fs);
+    idx = 3;
+    RDref   = Roughness_Duisters_offline(xref(1:2*N),fs,N,Duisters_opts);
     if i == 1
-        R0 = RDref;
+        try
+            R0 = RDref(idx);
+            R0first = RDref(1);
+        catch
+            R0 = RDref(1);
+        end
     end
-    RD(i,1)   = Roughness_Duisters_offline(x1(1:N),fs);
-    RD(i,2)   = Roughness_Duisters_offline(x2(1:N),fs);
-    RD(i,3)   = RDref;
-    RD(i,4)   = Roughness_Duisters_offline(x3(1:N),fs);
-    RD(i,5)   = Roughness_Duisters_offline(x4(1:N),fs);
-
-    RDref2  = Roughness_Duisters_offline(xref(1:2*N),fs,2*N);
-    if i == 1
-        R02 = RDref2;
-    end
-    RD2(i,1)  = Roughness_Duisters_offline(x1(1:2*N),fs,2*N);
-    RD2(i,2)  = Roughness_Duisters_offline(x2(1:2*N),fs,2*N);
-    RD2(i,3)  = RDref2;
-    RD2(i,4)  = Roughness_Duisters_offline(x3(1:2*N),fs,2*N);
-    RD2(i,5)  = Roughness_Duisters_offline(x4(1:2*N),fs,2*N);
+    RD_tmp  = Roughness_Duisters_offline(x1(1:2*N),fs,N,Duisters_opts);
+    RD(i,1)   = RD_tmp(idx); RDfirst(i,1) = RD_tmp(1);
+    
+    RD_tmp    = Roughness_Duisters_offline(x2(1:2*N),fs,N,Duisters_opts);
+    RD(i,2)   = RD_tmp(idx); RDfirst(i,2) = RD_tmp(1);
+    
+    RD(i,3)   = RDref(idx); RDfirst(i,3) = RDref(1);
+    
+    RD_tmp    = Roughness_Duisters_offline(x3(1:2*N),fs,N,Duisters_opts);
+    RD(i,4)   = RD_tmp(idx); RDfirst(i,4) = RD_tmp(1);
+    
+    RD_tmp    = Roughness_Duisters_offline(x4(1:2*N),fs,N,Duisters_opts);
+    RD(i,5)   = RD_tmp(idx); RDfirst(i,5) = RD_tmp(1);
 
     fmodtest = [30 50 70 100 150];
     figure; % Daniel1997, Fig 3.c
-    plot(fmodtest,R(i,:), fmodtest,RD(i,:)/R0, fmodtest,RD2(i,:)/R02);
-    legend('Daniel','Duisters','Duisters longer')
+    plot(fmodtest,R(i,:), fmodtest,RD(i,:)/R0); %, fmodtest,RD2(i,:)/R02);
+    legend('Daniel','Duisters')%,'Duisters longer')
     title(['f_c=' num2str(fc(i)) ' [Hz]'])
 end
+RD = RD / R0;
+RDfirst = RDfirst / R0first;
 
 if bDiary
 	diary off

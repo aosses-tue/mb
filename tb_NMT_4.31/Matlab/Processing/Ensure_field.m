@@ -1,5 +1,5 @@
-function p = Ensure_field(p, field_name, default_value)
-% function p = Ensure_field(p, field_name, default_value)
+function [p bStatus] = Ensure_field(p, field_name, default_value)
+% function [p bStatus] = Ensure_field(p, field_name, default_value)
 %
 % Ensure that a struct field exists, else give it a default value.
 % If the field existed in the input p, then the output p is identical.
@@ -7,12 +7,13 @@ function p = Ensure_field(p, field_name, default_value)
 % function p = Ensure_field(p, field_name, default_value);
 % 
 % Inputs:
-% p:             Parameter struct.
-% field_name:    Name of field (string).
-% default_value: Value to set field to if field does not exist in p.
+%   p:             Parameter struct.
+%   field_name:    Name of field (string).
+%   default_value: Value to set field to if field does not exist in p.
 %
 % Outputs:
-% p:             Parameter struct.
+%   p:             Parameter struct.
+%   bStatus:       1 if field was assigned, 0 if not
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %      Copyright: Cochlear Ltd
@@ -21,14 +22,20 @@ function p = Ensure_field(p, field_name, default_value)
 %      $DateTime: 2008/03/04 14:27:13 $
 % Authors       : Brett Swanson
 % Edited by     : Alejandro Osses
-% Last edited on: 21/05/2014
-% Last used on  : 31/03/2015
+% Last edited on: 29/06/2015
+% Last used on  : 29/06/2015
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if ~isfield(p, field_name)
 	p = setfield(p, field_name, default_value);
-    disp([mfilename '.m: Struct field ''' field_name ''' assigned'])
+    bStatus = 1;
+    if nargout == 1
+        disp([mfilename '.m: Struct field ''' field_name ''' assigned'])
+    end
+else
+    bStatus = 0;
 end
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end

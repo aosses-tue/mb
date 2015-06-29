@@ -1,28 +1,27 @@
-function [FS, afiles] = r20141126_fluctuation(N_blocks)
-% function [FS, afiles] = r20141126_fluctuation(N_blocks)
+function [FS, afiles] = r20141126_fluctuation
+% function [FS, afiles] = r20141126_fluctuation
 %
 % 1. Description:
+%       Validation procedure applied to a fluctuation strength algorithm:
+%       FluctuationStrength_offline_debug.m.
+%       Chnge manually the boolean variables bDoExp0-7 to one if you want 
+%       recreate the plot published in Fastl2007, Chapter 10. 
 % 
 % 2. Stand-alone example:
-%       r20141107_fluctuation;
+%       r20141126_fluctuation;
 % 
 % 3. Additional info:
 %       Tested cross-platform: Yes
 %
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 25/11/2014
 % Last update on: 25/11/2014 % Update this date manually
-% Last use on   : 25/11/2014 % Update this date manually
+% Last use on   : 29/06/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-if nargin == 0
-    N_blocks = 1;
-    close all
-end
 
 pathaudio_src = [Get_TUe_data_paths('db_Fastl2007')];
 pathaudio   = [Get_TUe_paths('outputs') 'Fastl2007_test_20141126' delim];
-pathaudio_D = [Get_TUe_paths('outputs') 'Daniel1997_test_20141126' delim];
+% pathaudio_D = [Get_TUe_paths('outputs') 'Daniel1997_test_20141126' delim];
 pathfigures = [Get_TUe_paths('outputs') 'Figures-20141126'      delim];
 Mkdir(pathfigures);
 
@@ -59,6 +58,9 @@ bDoExp5 = 0; % Fastl2007, Fig.10.5
 bDoExp6 = 0; % Fastl2007, Fig.10.6
 bDoExp7 = 0; % Fastl2007, Fig.10.7
 
+bUseScript1 = 0;            % FluctuationStrength_offline_debug
+bUseScript2 = ~bUseScript1; % FluctuationStrength_Garcia_offline
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if bDoExp0
     
@@ -69,11 +71,17 @@ if bDoExp0
     [x Fs] = Wavread(filename);
 
     starti = 1;
-    insig = x(starti:starti + N-1);
-
-    out = FluctuationStrength_offline_debug(insig,Fs,N, bDebug); %No padding needed for off-line version
-    FS0(1) = out{1};
-
+    if bUseScript1
+        insig = x(starti:starti + N-1);
+        out = FluctuationStrength_offline_debug(insig,Fs,N, bDebug); %No padding needed for off-line version
+        FS0(1) = out{1};
+    elseif bUseScript2
+        N = 264600;
+        insig = x(starti:starti + N-1);
+        warning('I am using a new N value')
+        out = FluctuationStrength_Garcia_offline(insig,Fs,N);
+    end
+       
     disp(sprintf('Exp 0: FS=%.3f [vacils]\t test signal: %s\n',out{1},name2figname(filenames{1})));
 
 end
