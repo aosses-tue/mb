@@ -28,3 +28,6 @@ In case git pull failes, that means you have edited some of the late committed f
 	Apply again the changes manually from the copy-pasted document into the just updated document from the repository
 VIM:
 	- To close window press ESC (make sure we are out of edition mode) then type in the command line :wq
+
+Moving files within the repository
+	git mv file folder-where-i-want-to-move-the-file

@@ -2,13 +2,17 @@ function [y outs] = Generate_test_AMtone(fc,fmod,m_or_d,option,lvl,fs,dur,dur_ra
 % function [y outs] = Generate_test_AMtone(fc,fmod,m_or_d,oprion,lvl,fs,dur,dur_ramp_ms,start_phase)
 %
 % 1. Description:
-%
+%       Generates a test AM tone (y-waveform) according to the specified 
+%       input parameters. The struct outs contains metadata: filename to be
+%       used.
+% 
 % 2. Stand-alone example:
-%
+%       Generate_test_AMtone; % uses the default input parameters
+% 
 % 3. Additional info:
 %       Tested cross-platform: No
 %
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 05/03/2015
 % Last update on: 05/03/2015 % Update this date manually
 % Last use on   : 05/03/2015 % Update this date manually

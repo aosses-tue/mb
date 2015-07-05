@@ -2,8 +2,11 @@ function y = r20150608_test_stimuli
 % function y = r20150608_test_stimuli
 %
 % 1. Description:
+%       It generates the test stimuli to be used in the periodic verification
+%       (calibration) of the auditoryLab
 %
 % 2. Stand-alone example:
+%       r20150608_test_stimuli;
 %
 % 3. Additional info:
 %       Tested cross-platform: No

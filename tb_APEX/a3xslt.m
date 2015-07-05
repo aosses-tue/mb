@@ -1,5 +1,5 @@
-function a3xslt(in,xsl,out);
-%XSLT6p1 - XSLT implementation for MATLAB 6.1
+function a3xslt(in,xsl,out)
+% function a3xslt(in,xsl,out)
 %
 % xslt6p1(xml_in,xsl_in,html_out)
 %
@@ -7,6 +7,21 @@ function a3xslt(in,xsl,out);
 %
 % The versions of xerces.jar and saxon.jar which ship with MATLAB 6.1
 % must be on your classpath
+%
+% See also: a3localsettings.m
+% 
+% Created by the APEX3 Team
+% Edited by Alejandro Osses V., HTI, TU/e, the Netherlands, 2014-2015
+% Created in    : 2013-2014
+% Last update on: 01/07/2015 % Update this date manually
+% Last use on   : 01/07/2015 % Update this date manually
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+if isunix
+    if in(1) == '~'
+        error('Please specify the input filename considering the full path, i.e., use ''/home/alejandro/Documents/..'' instead of ''~/Documents/..''');
+    end
+end
 
 % get absolute path
 if (in(1)~=delim && in(2)~=':')
@@ -15,7 +30,6 @@ end
 if (xsl(1)~=delim && xsl(2)~=':')
     xsl=which(xsl);
 end
-
 
 if (~exist(in))
     error(['Input xml file not found: ' in]);
@@ -37,9 +51,8 @@ streamout = javax.xml.transform.stream.StreamResult(out);
 transformer.setParameter('target', 'parser');
 
 transformer.transform(streamin,streamout);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-%%%%%%%%%%%%%%%%%%%
 function url = i_url(filename)
 
 %filename = which(filename);
@@ -50,4 +63,3 @@ else
     extra='/';
 end
 url = [ 'file://' extra strrep(filename,'\','/') ];
-

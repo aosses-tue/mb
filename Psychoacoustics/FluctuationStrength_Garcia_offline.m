@@ -47,6 +47,9 @@ for iFrame = 1:nFrames
 
     % Excitation patterns
     tempIn  = window .* x';
+    
+    SPL(iFrame) = rmsdb(insig)+100;
+    
     tempIn  = params.a0 .* fft(tempIn);
     Lg      = abs(tempIn(params.qb));
     LdB     = To_dB(Lg);
@@ -97,7 +100,7 @@ for iFrame = 1:nFrames
     hBPi    = zeros(params.Chno,N);
     hBPrms  = zeros(1,params.Chno);
     mdept	= zeros(1,params.Chno);
-    Hweight = Test_Hweight;
+    Hweight = Test_Hweight(N);
 
     for k = 1:1:47
         etmp = zeros(1,N);
@@ -124,6 +127,9 @@ for iFrame = 1:nFrames
         h0(k)		= mean(etmp);
         Fei(k,:)	= fft(etmp - h0(k));
         hBPi(k,:)   = 2 * real(ifft(Fei(k,:) .* Hweight));
+        if k == 1
+            warning('rmsDik duplicated, fix this')
+        end
         hBPrms(k)   = rmsDik(hBPi(k,:));
 
         if h0(k) > 0
@@ -137,7 +143,7 @@ for iFrame = 1:nFrames
     end
 
     ki = zeros(1,params.Chno - 2);
-    ri = zeros(1,params.Chno);
+    fi = zeros(1,params.Chno);
 
     % Find cross-correlation coefficients
     for k=1:1:45
@@ -153,21 +159,30 @@ for iFrame = 1:nFrames
     end
 
     % Uses test gzi parameter
-    gzi = Test_gzi;
+    gzi = Test_gzi(N);
 
     % Calculate specific roughness ri and total roughness R
-    ri(1) = (gzi(1) * mdept(1) * ki(1)) ^ 2;
-    ri(2) = (gzi(2) * mdept(2) * ki(2)) ^ 2;
+    fi(1) = (gzi(1) * mdept(1) * ki(1)) ^ 2;
+    fi(2) = (gzi(2) * mdept(2) * ki(2)) ^ 2;
 
     for k = 3:1:45
-        ri(k) = (gzi(k) * mdept(k) * ki(k - 2) * ki(k)) ^ 2;
+        fi(k) = (gzi(k) * mdept(k) * ki(k - 2) * ki(k)) ^ 2;
     end
 
-    ri(46) = (gzi(46) * mdept(46) * ki(44)) ^ 2;
-    ri(47) = (gzi(47) * mdept(47) * ki(45)) ^ 2;
+    fi(46) = (gzi(46) * mdept(46) * ki(44)) ^ 2;
+    fi(47) = (gzi(47) * mdept(47) * ki(45)) ^ 2;
 
-    FS(iFrame) = params.Cal * sum(ri);
+    FS(iFrame) = params.Cal * sum(fi);
 end
+
+dataOut{1} = FS;
+%dataOut{2} = fi;
+dataOut{3} = SPL;
+
+nParam      = 1;
+out.Data1   = transpose(FS);
+output.name{nParam} = 'Fluctuation strength';
+output.param{nParam} = strrep( lower( output.name{nParam} ),' ','-');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end

@@ -49,14 +49,14 @@ if bCreate
     
 end
 
-bDoExp0 = 1; % Reference
-bDoExp1 = 0; % Fastl2007, Fig.10.1
-bDoExp2 = 1; % Fastl2007, Fig.10.2
-bDoExp3 = 0; % Fastl2007, Fig.10.3
-bDoExp4 = 0; % Fastl2007, Fig.10.4
-bDoExp5 = 0; % Fastl2007, Fig.10.5
-bDoExp6 = 0; % Fastl2007, Fig.10.6
-bDoExp7 = 0; % Fastl2007, Fig.10.7
+bDoExp0 = 0; % Reference
+bDoExp1 = 0; % Fastl2007, Fig.10.1, var param: fmod
+bDoExp2 = 0; % Fastl2007, Fig.10.2, var param: SPL
+bDoExp3 = 1; % Fastl2007, Fig.10.3
+bDoExp4 = 1; % Fastl2007, Fig.10.4
+bDoExp5 = 1; % Fastl2007, Fig.10.5
+bDoExp6 = 1; % Fastl2007, Fig.10.6
+bDoExp7 = 1; % Fastl2007, Fig.10.7
 
 bUseScript1 = 0;            % FluctuationStrength_offline_debug
 bUseScript2 = ~bUseScript1; % FluctuationStrength_Garcia_offline
@@ -79,11 +79,12 @@ if bDoExp0
         N = 264600;
         insig = x(starti:starti + N-1);
         warning('I am using a new N value')
+        insig = From_dB(-10)*insig;
         out = FluctuationStrength_Garcia_offline(insig,Fs,N);
     end
        
     disp(sprintf('Exp 0: FS=%.3f [vacils]\t test signal: %s\n',out{1},name2figname(filenames{1})));
-
+    % Exp 0: FS=1.081 [vacils]	 test signal: ref-fluct
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -106,9 +107,14 @@ if bDoExp1
             starti = 1;
             insig = x(starti:starti + N-1);
             
-            out = FluctuationStrength_offline_debug(insig, Fs, N, bDebug);
+            if bUseScript1
+                out = FluctuationStrength_offline_debug(insig, Fs, N, bDebug);
+            elseif bUseScript2
+                insig = From_dB(-10)*insig;
+                out = FluctuationStrength_Garcia_offline(insig,Fs,N);
+            end
             FS1(k,j) = out{1};
-        
+            
             disp(sprintf('Exp 1: FS=%.3f [vacils]\t test signal: %s\n',out{1},name2figname(filenames{k})))
         end
         
@@ -145,7 +151,12 @@ if bDoExp2
             
             insig = From_dB(d_dB(j))*x(starti:starti + N-1);
            
-            out = FluctuationStrength_offline_debug(insig,Fs,N, bDebug); %No padding needed for off-line version
+            if bUseScript1
+                out = FluctuationStrength_offline_debug(insig,Fs,N, bDebug); %No padding needed for off-line version
+            elseif bUseScript2
+                insig = From_dB(-10)*insig;
+                out = FluctuationStrength_Garcia_offline(insig,Fs,N);
+            end
             FS2(k,j) = out{1};
         
             disp(sprintf('Exp 2: FS=%.3f [aspers]\t test signal: %s\n',out{1},name2figname(filenames{k})))
@@ -182,7 +193,12 @@ if bDoExp3
 
         insig = x(starti:starti + N-1);
 
-        out = FluctuationStrength_offline_debug(insig,Fs,N, bDebug); %No padding needed for off-line version
+        if bUseScript1
+            out = FluctuationStrength_offline_debug(insig,Fs,N, bDebug); %No padding needed for off-line version
+        elseif bUseScript2
+            insig = From_dB(-10)*insig;
+            out = FluctuationStrength_Garcia_offline(insig,Fs,N);
+        end
         FS3(k,1) = out{1};
 
         disp(sprintf('Exp 3.1: FS=%.3f [aspers]\t test signal: %s\n',out{1},name2figname(filenames)))
@@ -204,9 +220,14 @@ if bDoExp3
         [x Fs]      = Wavread(filename);
         starti      = 1;
             
-        insig   = x(starti:starti + N-1);
+        insig       = x(starti:starti + N-1);
 
-        out     = FluctuationStrength_offline_debug(insig,Fs,N, bDebug); %No padding needed for off-line version
+        if bUseScript1
+            out     = FluctuationStrength_offline_debug(insig,Fs,N, bDebug); %No padding needed for off-line version
+        elseif bUseScript2
+            insig   = From_dB(-10)*insig;
+            out     = FluctuationStrength_Garcia_offline(insig,Fs,N);
+        end
         FS3(k,2) = out{1};
 
         disp(sprintf('Exp 3.2: FS=%.3f [aspers]\t test signal: %s\n',out{1},name2figname(filenames)))
@@ -240,7 +261,13 @@ if bDoExp4
             
         insig = x(starti:starti + N-1);
 
-        out = FluctuationStrength_offline_debug(insig,Fs,N, bDebug); %No padding needed for off-line version
+        if bUseScript1
+            out = FluctuationStrength_offline_debug(insig,Fs,N, bDebug); %No padding needed for off-line version
+        elseif bUseScript2
+            insig = From_dB(-10)*insig;
+            out = FluctuationStrength_Garcia_offline(insig,Fs,N);
+        end
+            
         FS4(k) = out{1};
 
         disp(sprintf('Exp 4.1: FS=%.3f [aspers]\t test signal: %s\n',out{1},name2figname(filenames)))
@@ -268,7 +295,12 @@ if bDoExp4
             
         insig = x(starti:starti + N-1);
 
-        out = FluctuationStrength_offline_debug(insig,Fs,N, bDebug); %No padding needed for off-line version
+        if bUseScript1
+            out = FluctuationStrength_offline_debug(insig,Fs,N, bDebug); %No padding needed for off-line version
+        elseif bUseScript2
+            insig = From_dB(-10)*insig;
+            out = FluctuationStrength_Garcia_offline(insig,Fs,N);
+        end
         FS4_2(k) = out{1};
 
         disp(sprintf('Exp 4.2: FS=%.3f [aspers]\t test signal: %s\n',out{1},name2figname(filenames)))
@@ -301,7 +333,12 @@ if bDoExp5
 
         starti = 1;
         insig = x(starti:starti + N-1);
-        out = FluctuationStrength_offline_debug(insig,Fs,N, bDebug); %No padding needed for off-line version
+        if bUseScript1
+            out = FluctuationStrength_offline_debug(insig,Fs,N, bDebug); %No padding needed for off-line version
+        elseif bUseScript2
+            insig = From_dB(-10)*insig;
+            out = FluctuationStrength_Garcia_offline(insig,Fs,N);
+        end
 
         FS5(j)  = out{1};
 
@@ -336,7 +373,12 @@ if bDoExp6
         starti = 1;
         insig = x(starti:starti + N-1);
 
-        out = FluctuationStrength_offline_debug(insig,Fs,N, bDebug); %No padding needed for off-line version
+        if bUseScript1
+            out = FluctuationStrength_offline_debug(insig,Fs,N, bDebug); %No padding needed for off-line version
+        elseif bUseScript2
+            insig = From_dB(-10)*insig;
+            out = FluctuationStrength_Garcia_offline(insig,Fs,N);
+        end
         FS6(j) = out{1};
 
         disp(sprintf('Exp 6: FS=%.3f [vacils]\t test signal: %s\n',out{1},name2figname(filenames{j})))
@@ -377,7 +419,12 @@ if bDoExp7
         starti = 1;
         insig = x(starti:starti + N-1);
 
-        out = FluctuationStrength_offline_debug(insig,Fs,N, bDebug); %No padding needed for off-line version
+        if bUseScript1
+            out = FluctuationStrength_offline_debug(insig,Fs,N, bDebug); %No padding needed for off-line version
+        elseif bUseScript2
+            insig = From_dB(-10)*insig;
+            out = FluctuationStrength_Garcia_offline(insig,Fs,N);
+        end
         FS7(j) = out{1};
 
         disp(sprintf('Exp 6: FS=%.3f [vacils]\t test signal: %s\n',out{1},name2figname(filenames{j})))

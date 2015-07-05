@@ -1,18 +1,31 @@
 function [results,parameters,general] = a3getresults(filename,script,forcetransform)
 % function [results,parameters,general] = a3getresults(filename,script,forcetransform)
 %
-% get results from an APEX3 result file
-% transform first if necessary (check implementation on windows)
+% 1. Description:
+%       Get results from an APEX3 result file transform first if necessary 
+%       (check implementation on windows)
 %
-% % Example:
-% % filename = '/home/alejandro/Documenten/Meas/Meas/Experiments/Results_XML/ci-Jan_Leys/20131007-PR/PR_Ref_104_UW_ACE-LB-ACE-JL.apr';
-% % filename = '/home/alejandro/Documenten/Meas/Meas/Experiments/Results_XML/ci-Romain_Peeters/20130924-PR/PR_Ref_104_UW_ACE-LB-ACE-RP-mod.apr';
-% % filename = '/home/alejandro/Documenten/Meas/Meas/Experiments/Results_XML/ci-Patrick_Meul/20131001-PR/PR_Ref_104_UW_ACE-LB-ACE-PM.apr';
-% [file1,file2]=uigetfile('*.*','Select an APEX result file'); 
-% filename = [file2 file1];
-% script = 'apexresult.xsl';
-% forcetransform = 1;
-% [results,parameters,general] = a3getresults(filename,script,forcetransform);
+% 2. Stand-alone examples:
+% % 2.1. Example at ExpORL, KUL:
+%       filename = '/home/alejandro/Documenten/Meas/Meas/Experiments/Results_XML/ci-Jan_Leys/20131007-PR/PR_Ref_104_UW_ACE-LB-ACE-JL.apr';
+%       forcetransform = 1;
+%       [results,parameters,general] = a3getresults(filename,script,forcetransform);
+%
+% % 2.2. Generic example (it should be cross-platform):
+%       [file1,file2]=uigetfile('*.*','Select an APEX result file'); 
+%       filename = [file2 file1];
+%       script = 'apexresult.xsl';
+%       forcetransform = 1;
+%       [results,parameters,general] = a3getresults(filename,script,forcetransform);
+% 
+% 3. Additional info:
+%       Tested cross-platform: Yes
+% 
+% Created by: APEX 3 Team
+% Edited by: Alejandro Osses V., HTI, TU/e, the Netherlands, 2014-2015
+% Last edited on: 01/07/2015 (only formatting)
+% Last use on   : 01/07/2015
+% Last update on: 01/07/2015
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if (nargin<2)
@@ -73,6 +86,9 @@ if (nargout>2)
         end
     end
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% EOF
 
 function name=escapefieldname_l(name)
 name = regexprep(name, ' ', '_');
