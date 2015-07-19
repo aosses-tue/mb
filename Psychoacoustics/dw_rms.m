@@ -1,6 +1,9 @@
 function y = dw_rms(x)
-% rms value of array x
-
+% function y = dw_rms(x)
+% 
+%  1. Description:
+%       RMS value of array x
+% 
 % This file belongs to the roughness algorithm
 % contact for the original source code :
 % http://home.tm.tue.nl/dhermes/

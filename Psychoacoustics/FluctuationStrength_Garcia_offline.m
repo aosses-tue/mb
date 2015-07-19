@@ -11,6 +11,7 @@ function [dataOut out] = FluctuationStrength_Garcia_offline(insig, fs, N, optsDe
 %           fs  - should be an input parameter
 %           N   - should be an input parameter
 %           Too difficult to change N!
+%           gzi - where was it taken from?
 % 
 % 2. Stand-alone example:
 %       r20141126_fluctuation;
@@ -300,21 +301,21 @@ for iFrame = 1:nFrames
     gzi = Test_gzi(N);
 
     % Calculate specific roughness ri and total roughness R
-    fi(1) = (gzi(1) * mdept(1) * ki(1)) ^ 2;
-    fi(2) = (gzi(2) * mdept(2) * ki(2)) ^ 2;
+    fi(iFrame,1) = (gzi(1) * mdept(1) * ki(1)) ^ 2;
+    fi(iFrame,2) = (gzi(2) * mdept(2) * ki(2)) ^ 2;
 
     for k = 3:1:45
-        fi(k) = (gzi(k) * mdept(k) * ki(k - 2) * ki(k)) ^ 2;
+        fi(iFrame,k) = (gzi(k) * mdept(k) * ki(k - 2) * ki(k)) ^ 2;
     end
 
-    fi(46) = (gzi(46) * mdept(46) * ki(44)) ^ 2;
-    fi(47) = (gzi(47) * mdept(47) * ki(45)) ^ 2;
+    fi(iFrame,46) = (gzi(46) * mdept(46) * ki(44)) ^ 2;
+    fi(iFrame,47) = (gzi(47) * mdept(47) * ki(45)) ^ 2;
 
-    FS(iFrame) = params.Cal * sum(fi);
+    FS(iFrame) = params.Cal * sum(fi(iFrame,:));
 end
 
 dataOut{1} = FS;
-%dataOut{2} = fi;
+dataOut{2} = fi;
 dataOut{3} = SPL;
 
 nParam      = 1;
