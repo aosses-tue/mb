@@ -6,18 +6,18 @@ function outs = Generate_reference_sounds_Zwicker2007(options)
 % 
 %       1. Reference sound
 % 
-% 2. Additional info:
-%       Tested cross-platform: Yes
-%
-% 3. Stand-alone example:
+% 2. Stand-alone example:
 %       % To generate roughness files:
 %       options.bDoFluct = 0;
 %       options.bDoRough = 1;
 %       Generate_reference_sounds_Zwicker2007(options);
 % 
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% 3. Additional info:
+%       Tested cross-platform: Yes
+% 
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 14/08/2014
-% Last update on: 14/11/2014 % Update this date manually
+% Last update on: 13/07/2015 % Update this date manually
 % Last use on   : 25/11/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -87,8 +87,7 @@ sig500 = Create_sin(fc500,dur,Fs,0);
 
 if bDoLoud
     lvl = 40;
-    lvlAMT  = lvl + 10; % Zwicker's correction
-    y = setdbspl(sig,lvlAMT);
+    y = setdbspl(sig,lvl);
 
     if bDoZeroPadding
         yzero = Zero_padding(y,dur_zero_samples/Fs,Fs);
@@ -110,19 +109,12 @@ if bDoFluct
     m       = 100;
     option  = 'm';
     lvlref  = 60;
-    lvl     = 70;
     
     start_phase = -pi/2; % pi/2;
     y = ch_am(sig,fmod,m,option,Fs,start_phase);
     
-    lvlAMT  = lvlref + 10; % Zwicker's correction
+    y = setdbspl(y,lvlref);
     
-    if bPsySound
-        y = setdbspl(y,lvlAMT);
-    else
-        y = setdbspl(y,lvlref);
-    end
-
     if bDoRamp
         ramp2apply = cos_ramp(length(y),Fs,dur_ramp_ms);
         y       = ramp2apply'.*y;
@@ -155,18 +147,12 @@ if bDoFluct
     
     for k = 1:length(m)
         
-        lvlAMT  = lvl + 10;
         y  = ch_am(sig    ,fmod,m(k),option,Fs,start_phase);
         yT = ch_am(sigTone,fmod,m(k),option,Fs,start_phase);
         
-        if bPsySound
-            y = setdbspl(y,lvlAMT);
-            yT = setdbspl(yT,lvlAMT);
-        else
-            y = setdbspl(y,lvl);
-            yT = setdbspl(yT,lvl);
-        end
-
+        y  = setdbspl(y,lvl);
+        yT = setdbspl(yT,lvl);
+        
         if bDoRamp
             ramp2apply = cos_ramp(length(y),Fs,dur_ramp_ms);
             y    = ramp2apply'.*y;
@@ -202,17 +188,12 @@ if bDoFluct
     %   Fig. 10.4.a: AM tones
     for k = 1:length(fc) 
         
-        lvlAMT = lvl + 10;
         sig = Create_sin(fc(k),dur,Fs,0);
         
         y  = ch_am(sig,fmod,d,option,Fs,start_phase);
         
-        if bPsySound
-            y = setdbspl(y,lvlAMT);
-        else
-            y = setdbspl(y,lvl);
-        end
-
+        y = setdbspl(y,lvl);
+        
         if bDoRamp
             ramp2apply = cos_ramp(length(y),Fs,dur_ramp_ms);
             y    = ramp2apply'.*y;
@@ -235,7 +216,6 @@ if bDoFluct
     
     for k = 1:length(fc)
         
-        lvlAMT  = lvl + 10;
         yfm     = fm(fc(k), dur, Fs, fmod, deltaf);
 
         if bDoRamp
@@ -243,11 +223,8 @@ if bDoFluct
             yfm     = ramp2apply'.*yfm;
         end
 
-        if bPsySound
-            yfm = setdbspl(yfm,lvlAMT);
-        else
-            yfm = setdbspl(yfm,lvl);
-        end
+        yfm = setdbspl(yfm,lvl);
+        
         filename = [pathoutput 'fluct_test_fc_' Num2str(fc(k),4) '_FM_dev_' Num2str(deltaf,3) '_fmod_' Num2str(floor(fmod),3) 'Hz_' num2str(lvl) '_dBSPL'];
         Wavwrite(yfm   ,Fs,filename);
         outs.filename{end+1} = filename;
@@ -262,7 +239,6 @@ if bDoFluct
     
     for k = 1:length(deltaf)
         
-        lvlAMT  = lvl + 10;
         yfm     = fm(fc, dur, Fs, fmod, deltaf(k));
 
         if bDoRamp
@@ -270,11 +246,7 @@ if bDoFluct
             yfm     = ramp2apply'.*yfm;
         end
 
-        if bPsySound
-            yfm = setdbspl(yfm,lvlAMT);
-        else
-            yfm = setdbspl(yfm,lvl);
-        end
+        yfm = setdbspl(yfm,lvl);
         
         if bDoZeroPadding
             y = Zero_padding(y,dur_zero_samples/Fs,Fs);
@@ -307,12 +279,7 @@ if bDoRough
     start_phase = pi/2;
     y    = ch_am(sig   ,fmod,m,option,Fs,start_phase);
     
-    lvlAMT  = lvl + 10; % Zwicker's correction
-    if bPsySound
-        y    = setdbspl(y   ,lvlAMT);
-    else
-        y    = setdbspl(y   ,lvl);
-    end
+    y    = setdbspl(y   ,lvl);
     
     if bDoZeroPadding
         y = Zero_padding(y,dur_zero_samples/Fs,Fs);
@@ -358,13 +325,8 @@ if bDoRough
             
             y    = ch_am(sigt  ,fmod,m,option,Fs,start_phase);
 
-            lvlAMT  = lvl + 10; % Zwicker's correction
-            if bPsySound
-                y    = setdbspl(y   ,lvlAMT);
-            else
-                y    = setdbspl(y   ,lvl);
-            end
-
+            y    = setdbspl(y   ,lvl);
+            
             if bDoZeroPadding
                 y = Zero_padding(y,dur_zero_samples/Fs,Fs);
             end
@@ -407,7 +369,6 @@ if bDoRough
     
     for k = 1:length(deltaf)
         
-        lvlAMT  = lvl + 10;
         yfm     = fm(fc, dur, Fs, fmod, deltaf(k));
 
         if bDoRamp
@@ -415,11 +376,7 @@ if bDoRough
             yfm     = ramp2apply'.*yfm;
         end
 
-        if bPsySound
-            yfm = setdbspl(yfm,lvlAMT);
-        else
-            yfm = setdbspl(yfm,lvl);
-        end
+        yfm = setdbspl(yfm,lvl);
         
         if bDoZeroPadding
             y = Zero_padding(y,dur_zero_samples/Fs,Fs);

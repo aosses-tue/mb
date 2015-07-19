@@ -4,16 +4,16 @@ function outs = Generate_reference_sounds(options)
 % 1. Description:
 %       Generates reference and/or test tones for psychoacoustic metrics
 % 
-% 2. Additional info:
-%       Tested cross-platform: Yes
-%
-% 3. Stand-alone example:
+% 2. Stand-alone example:
 %       % To generate roughness files:
 %       options.bDoFluct = 0;
 %       options.bDoRough = 1;
 %       Generate_reference_sounds(options);
 % 
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% 3. Additional info:
+%       Tested cross-platform: Yes
+% 
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 14/08/2014
 % Last update on: 26/11/2014 % Update this date manually
 % Last use on   : 07/01/2014 % Update this date manually
@@ -72,10 +72,6 @@ sig = Create_sin(fc,dur,fs,0);
 fc1500  = 1500;
 T1500   = 1/fc1500;
 sig1500 = Create_sin(fc1500,dur,fs,0);
-
-% fc500  = 500;
-% T500   = 1/fc500;
-% sig500 = Create_sin(fc500,dur,fs,0);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 1. Loudness
@@ -241,9 +237,9 @@ if bDoRough
     
     lvlAMT  = lvl + 10; % Zwicker's correction
     if bPsySound
-        y    = setdbspl(y   ,lvlAMT);
+        y    = setdbspl(y,lvlAMT);
     else
-        y    = setdbspl(y   ,lvl);
+        y    = setdbspl(y,lvl);
     end
     
     if bDoZeroPadding
@@ -255,80 +251,6 @@ if bDoRough
         y = ramp2apply'.*y;
         disp('Ramp applied')
     end
-    
-    % if bSave
-    %     filename = [Get_TUe_paths('outputs') 'ref_rough'];
-    %     Wavwrite(y,fs,filename);
-    %     outs.filename{end+1} = filename;
-    % end
-    
-    % fmod_test = [30 50 70 100 150];
-    % for k = 1:length(fmod_test)
-    %     y    = ch_am(sig   ,fmod_test(k),m,option,fs,start_phase);
-    % 
-    %     lvlAMT  = lvl + 10; % Zwicker's correction
-    % 
-    %     if bPsySound
-    %         y    = setdbspl(y   ,lvlAMT);
-    %     else
-    %         y    = setdbspl(y   ,lvl);
-    %     end
-    % 
-    %     if bDoRamp
-    %         ramp2apply = cos_ramp(length(y),fs,dur_ramp_ms);
-    %         y = ramp2apply'.*y;
-    %         disp('Ramp applied')
-    %     end
-    % 
-    %     if bDoZeroPadding
-    %         y = Zero_padding(y,dur_zero_samples/fs,fs);
-    %     end
-    % 
-    %     if bSave
-    %         filename = [Get_TUe_paths('outputs') 'test_rough_fc_' Num2str(fc   ,4) '_AM_m_' Num2str(m,3) '_fmod_' Num2str(fmod_test(k),3) 'Hz'];
-    %         Wavwrite(y   ,fs, filename);
-    %         outs.filename{end+1} = filename;
-    %     end
-    % 
-    % end
-    % 
-    % % Modulated tones:
-    % for k = 10:20:170
-    %     fmod = k;
-    %     y       = ch_am(sig,fmod,m,option,fs,start_phase);
-    %     y125    = ch_am(sig125,fmod,m,option,fs,start_phase);
-    %     y500    = ch_am(sig500,fmod,m,option,fs,start_phase);
-    % 
-    %     lvlAMT  = lvl + 10; % Zwicker's correction
-    %     if bPsySound
-    %         y    = setdbspl(y   ,lvlAMT);
-    %         y125 = setdbspl(y125,lvlAMT);
-    %         y500 = setdbspl(y500,lvlAMT);
-    %     else
-    %         y    = setdbspl(y   ,lvl);
-    %         y125 = setdbspl(y125,lvl);
-    %         y500 = setdbspl(y500,lvl);
-    %     end
-    % 
-    %     if bDoRamp
-    %         y    = ramp2apply'.*y;
-    %         y125 = ramp2apply'.*y125;
-    %         y500 = ramp2apply'.*y500;
-    %     end
-    % 
-    %     filename = [Get_TUe_paths('outputs') 'test_rough_fc_' Num2str(fc   ,4) '_AM_m_' Num2str(m,3) '_fmod_' Num2str(fmod,3) 'Hz_' num2str(lvl) '_dBSPL'];
-    %     Wavwrite(y   ,fs,filename);
-    %     outs.filename{end+1} = filename;
-    % 
-    %     filename = [Get_TUe_paths('outputs') 'test_rough_fc_' Num2str(fc125,4) '_AM_m_' Num2str(m,3) '_fmod_' Num2str(fmod,3) 'Hz_' num2str(lvl) '_dBSPL'];
-    %     Wavwrite(y125,fs,filename);
-    %     outs.filename{end+1} = filename;
-    % 
-    %     filename = [Get_TUe_paths('outputs') 'test_rough_fc_' Num2str(fc500,4) '_AM_m_' Num2str(m,3) '_fmod_' Num2str(fmod,3) 'Hz_' num2str(lvl) '_dBSPL'];
-    %     Wavwrite(y500,fs,filename);
-    %     outs.filename{end+1} = filename;
-    % 
-    % end
 
     %% 4.3 FM tones
     % Daniel1997, Fig.9

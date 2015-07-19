@@ -1,10 +1,10 @@
-function [FS, afiles] = r20141126_fluctuation
-% function [FS, afiles] = r20141126_fluctuation
+function [FS, afiles] = r20141126_fluctuation(options)
+% function [FS, afiles] = r20141126_fluctuation(options)
 %
 % 1. Description:
 %       Validation procedure applied to a fluctuation strength algorithm:
 %       FluctuationStrength_offline_debug.m.
-%       Chnge manually the boolean variables bDoExp0-7 to one if you want 
+%       Change manually the boolean variables bDoExp0-7 to one if you want 
 %       recreate the plot published in Fastl2007, Chapter 10. 
 % 
 % 2. Stand-alone example:
@@ -15,12 +15,36 @@ function [FS, afiles] = r20141126_fluctuation
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 25/11/2014
-% Last update on: 25/11/2014 % Update this date manually
-% Last use on   : 29/06/2015 % Update this date manually
+% Last update on: 14/07/2015 % Update this date manually
+% Last use on   : 14/07/2015 % Update this date manually
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+if nargin == 0
+    options = [];
+end
+options = ef(options,'bDiary', 0);
+
+options = ef(options,'bDoExp0',1);
+options = ef(options,'bDoExp1',0);
+options = ef(options,'bDoExp2',0);
+options = ef(options,'bDoExp3',0);
+options = ef(options,'bDoExp4',0);
+options = ef(options,'bDoExp5',0);
+options = ef(options,'bDoExp6',0);
+options = ef(options,'bDoExp7',0);
+
+options = Ensure_field(options,'bCreate',0);
+
+bDiary = options.bDiary;
+Diary(mfilename,bDiary);
+
+optsDebug.all = 1;
+optsDebug.ki = 1;
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 pathaudio_src = [Get_TUe_data_paths('db_Fastl2007')];
-pathaudio   = [Get_TUe_paths('outputs') 'Fastl2007_test_20141126' delim];
+pathaudio   = [Get_TUe_paths('outputs') 'Fastl2007_FS_test_20141126' delim];
 % pathaudio_D = [Get_TUe_paths('outputs') 'Daniel1997_test_20141126' delim];
 pathfigures = [Get_TUe_paths('outputs') 'Figures-20141126'      delim];
 Mkdir(pathfigures);
@@ -31,7 +55,7 @@ N           = 8192*4;%*20; % FluctuationStrength_offline_debug, max dim = 8192*1
 bDebug      = 0;
 count_afiles = 1;
 
-bCreate     = 0;
+bCreate     = options.bCreate;
 
 if bCreate
     
@@ -49,14 +73,14 @@ if bCreate
     
 end
 
-bDoExp0 = 0; % Reference
-bDoExp1 = 0; % Fastl2007, Fig.10.1, var param: fmod
-bDoExp2 = 0; % Fastl2007, Fig.10.2, var param: SPL
-bDoExp3 = 1; % Fastl2007, Fig.10.3
-bDoExp4 = 1; % Fastl2007, Fig.10.4
-bDoExp5 = 1; % Fastl2007, Fig.10.5
-bDoExp6 = 1; % Fastl2007, Fig.10.6
-bDoExp7 = 1; % Fastl2007, Fig.10.7
+bDoExp0 = options.bDoExp0; % Reference
+bDoExp1 = options.bDoExp1; % Fastl2007, Fig.10.1, var param: fmod
+bDoExp2 = options.bDoExp2; % Fastl2007, Fig.10.2, var param: SPL
+bDoExp3 = options.bDoExp3; % Fastl2007, Fig.10.3
+bDoExp4 = options.bDoExp4; % Fastl2007, Fig.10.4
+bDoExp5 = options.bDoExp5; % Fastl2007, Fig.10.5
+bDoExp6 = options.bDoExp6; % Fastl2007, Fig.10.6
+bDoExp7 = options.bDoExp7; % Fastl2007, Fig.10.7
 
 bUseScript1 = 0;            % FluctuationStrength_offline_debug
 bUseScript2 = ~bUseScript1; % FluctuationStrength_Garcia_offline
@@ -80,7 +104,7 @@ if bDoExp0
         insig = x(starti:starti + N-1);
         warning('I am using a new N value')
         insig = From_dB(-10)*insig;
-        out = FluctuationStrength_Garcia_offline(insig,Fs,N);
+        out = FluctuationStrength_Garcia_offline(insig,Fs,N,optsDebug);
     end
        
     disp(sprintf('Exp 0: FS=%.3f [vacils]\t test signal: %s\n',out{1},name2figname(filenames{1})));
@@ -441,6 +465,10 @@ if bDoExp7
     
     h(end+1) = gcf;
     
+end
+
+if bDiary
+	diary off
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

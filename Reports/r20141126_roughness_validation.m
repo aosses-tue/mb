@@ -1,5 +1,5 @@
-function r20141126_roughness_validation(options)
-% function r20141126_roughness_validation(options)
+function outs = r20141126_roughness_validation(options)
+% function outs = r20141126_roughness_validation(options)
 %
 % 1. Description:
 %       Implement and validate the model of Roughness (off-line).
@@ -12,14 +12,18 @@ function r20141126_roughness_validation(options)
 %       options.bDoExp0 = 1; % Fastl2007, Fig. 11.1. Daniel1997, Fig.5. 
 %                            % (Only the first 8192 samples are used)
 %       r20141126_roughness_validation(options);
+%       
+%       options = [];
+%       options.bCreate = 0;
+%       outs = r20141126_roughness_validation(options);
 % 
 % 3. Additional info:
-%       Tested cross-platform: No
+%       Tested cross-platform: Yes
 %
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 25/11/2014
 % Last update on: 25/06/2015 % Update this date manually
-% Last use on   : 25/06/2015 % Update this date manually
+% Last use on   : 14/07/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin == 0
@@ -41,8 +45,8 @@ Diary(mfilename,bDiary);
 close all
 
 pathaudio_src = [Get_TUe_data_paths('db_Fastl2007')];
-pathaudio   = [Get_TUe_paths('outputs') 'Fastl2007_test_20141126' delim];
-pathaudio_D = [Get_TUe_paths('outputs') 'Daniel1997_test_20141126' delim];
+pathaudio   = [Get_TUe_paths('outputs') 'Fastl2007_R_test_20141126' delim];
+pathaudio_D = [Get_TUe_paths('outputs') 'Daniel1997_R_test_20141126' delim];
 
 p = Get_date;
 pathfigures = [Get_TUe_paths('outputs') 'Figures-' p.date4files delim];
@@ -53,7 +57,8 @@ count_files = 1;
 h = [];
 
 N           = 8192;
-bDebug      = 0;
+optsDebug.all = 1;
+optsDebug.ki  = 1;
 bCreate     = options.bCreate;
 
 if bCreate
@@ -67,26 +72,80 @@ if bCreate
     opts.bDoZeroPadding = 0;
     
     outs = Generate_reference_sounds_Zwicker2007(opts);
-    
     outs2 = Generate_reference_sounds(opts);
     
 end
 
-bDoExp0 = options.bDoExp0; % Fastl2007, Fig. 11.1. Daniel1997, Fig.5
-bDoExp1 = options.bDoExp1;
-bDoExp2 = options.bDoExp2;
-bDoExp3 = options.bDoExp3;
-bDoExp4 = options.bDoExp4;
-bDoExp5 = options.bDoExp5;
-bDoExp6 = options.bDoExp6; % FM tones Daniel1997, Fig.9
+bDoExp0 = options.bDoExp0; % Reference
+bDoExp1 = options.bDoExp1; % R(m)         - Fastl2007, Fig 11.1. Daniel1997, Fig 5
+bDoExp2 = options.bDoExp2; % R(fc,fmod)   - Fastl2007, Fig 11.2. Daniel1997, Fig 3
+bDoExp3 = options.bDoExp3; % R(type,fmod) - Fastl2007, Fig 11.3
+bDoExp4 = options.bDoExp4; % R(type,SPL)  - Fastl2007, Fig 11.4
+bDoExp5 = options.bDoExp5; % R(fdev)      - Fastl2007, Fig.11.5
+bDoExp6 = options.bDoExp6; % R(fmod), FM  - Daniel1997, Fig 9
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+filenames0  = {'rough_ref'};
+
+filenames1  = {'track_38_t01', 1;...
+               'track_38_t02', 0.7; ...
+               'track_38_t03', 0.4; ...
+               'track_38_t04', 0.25; ...
+               'track_38_t05', 0.125; ...
+               'track_38_t06', 0.1; ...
+               'track_38_t07', 0};
+           
+fc_test2    = [250 1000 2000 8000];
+fmod_test2  = [20 30 50 70 100 150];
+filenames2 = [];
+for i = 1:length(fc_test2)
+    for j = 1:length(fmod_test2)
+        filenames2{i,j} = ['rough_test_fc_' Num2str(fc_test2(i),4) '_AM_m_100_fmod_' Num2str(fmod_test2(j),3) 'Hz'];
+    end
+end
+
+fmod_test3  = [20 70 200];
+filenames3  = {'track_39_t01', 'track_39_t04', 'track_39_t07'; ...
+               'track_39_t02', 'track_39_t05', 'track_39_t08'; ...
+               'track_39_t03', 'track_39_t06', 'track_39_t09'};
+titles3     = {'AM BBN', 'AM Tone', 'FM Tone'};
+    
+fmod_test4  = [20 70 200];
+SPL_test4   = [40:10:80];
+filenames4  = {'track_39_t02',60; ...
+               'track_39_t05',70; ...
+               'track_39_t08',70};
+titles4     = {'AM BBN', 'AM Tone', 'FM Tone'};
+
+fmod_test5  = 70;
+fdev_test5  = [30 60 120 150 400 600 800 1000];
+fc_test5    = 1500;
+filenames5  = [];
+for j = 1:length(fdev_test5)
+    filenames5{j} = ['rough_test_fc_' Num2str(fc_test5,4) '_FM_dev_' Num2str(fdev_test5(j),3) '_fmod_' Num2str(fmod_test5,3) 'Hz_60_dBSPL'];
+end
+        
+fmod_test6  = [0 10 20 40 50 60 70 80 100 120 150 200 500];
+fdev_test6  = 800;
+fc_test6    = 1600;
+filenames6  = [];
+for j = 1:length(fmod_test6)
+    filenames6{j} = ['rough_test_fc_' Num2str(fc_test6,4) '_FM_dev_' Num2str(fdev_test6,3) '_fmod_' Num2str(fmod_test6(j),3) 'Hz_60_dBSPL'];
+end
+        
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+if nargout == 1
+    outs.filenames = [filenames0; filenames1(:,1); filenames2(:); filenames3(:); filenames4(:,1); filenames5(:); filenames6(:)];
+    outs.dir_where = {pathaudio; pathaudio_src};
+    return;
+end
 
 ExpNo = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if bDoExp0
     
-    filenames   = { 'rough_ref'};
-                
-    filename = [pathaudio filenames{1} '.wav'];
+    filename = [pathaudio filenames0{1} '.wav'];
     listed_files{count_files} = sprintf('%.0f - %s',ExpNo,filename);
     count_files = count_files + 1;
 
@@ -95,10 +154,10 @@ if bDoExp0
     starti = 1;
     insig = x(starti:starti + N-1);
 
-    out = Roughness_offline_debug(insig,Fs,N, bDebug); %No padding needed for off-line version
+    out = Roughness_offline_debug(insig,Fs,N, optsDebug); %No padding needed for off-line version
     R0(1) = out{1};
 
-    disp(sprintf('Exp 0: R=%.3f [aspers]\t test signal: %s\n',out{1},name2figname(filenames{1})));
+    disp(sprintf('Exp 0: R=%.3f [aspers]\t test signal: %s\n',out{1},name2figname(filenames0{1})));
 
 end
 ExpNo = ExpNo + 1;
@@ -107,21 +166,14 @@ ExpNo = ExpNo + 1;
 if bDoExp1 
     % Fastl2007, Fig 11.1 (it considers 60 dB SPL)
     % Daniel1997, Fig. 5 (it considers 70 dB SPL)
-    filenames = {   'track_38_t01', 1;...
-                    'track_38_t02', 0.7; ...
-                    'track_38_t03', 0.4; ...
-                    'track_38_t04', 0.25; ...
-                    'track_38_t05', 0.125; ...
-                    'track_38_t06', 0.1; ...
-                    'track_38_t07', 0};
     
-    for k = 1:length(filenames)
+    for k = 1:length(filenames1)
     
-        filename = [pathaudio_src filenames{k,1} '.wav'];
+        filename = [pathaudio_src filenames1{k,1} '.wav'];
         listed_files{count_files} = sprintf('%.0f - %s',ExpNo,filename);
         count_files = count_files + 1;
     
-        mx(k) = filenames{k,2};
+        mx(k) = filenames1{k,2};
         
         [x Fs] = Wavread(filename);
 
@@ -131,10 +183,10 @@ if bDoExp1
         
         for j = 1:3
             insig = insig_tmp(:,j);
-            out = Roughness_offline_debug(insig,Fs,N, bDebug); % insig at dB SPL
+            out = Roughness_offline_debug(insig,Fs,N, optsDebug); % insig at dB SPL
             R(j,k)  = out{1};
             dBSPL(k) = out{3};
-            disp(sprintf('R=%.3f [aspers]\t test signal: %s\n',out{1},name2figname(filenames{k})))
+            disp(sprintf('R=%.3f [aspers]\t test signal: %s\n',out{1},name2figname(filenames1{k})))
         end
         
     end
@@ -157,15 +209,11 @@ if bDoExp2
     % Fastl2007, Fig 11.2 (it considers 60 dB SPL)
     % Daniel1997, Fig. 3 (it considers 60 dB SPL)
     
-    fc_test     = [250 1000 2000 8000];
-    fmod_test   = [20 30 50 70 100 150];
+    for i = 1:length(fc_test2)
+        for j = 1:length(fmod_test2)
     
-    for i = 1:length(fc_test)
-        for j = 1:length(fmod_test)
-    
-            filenames = ['rough_test_fc_' Num2str(fc_test(i),4) '_AM_m_100_fmod_' Num2str(fmod_test(j),3) 'Hz'];
-            txtLegend{i} = ['f_c=' num2str(fc_test(i)) '[Hz]'];
-            filename = [pathaudio filenames '.wav'];
+            txtLegend{i} = ['f_c=' num2str(fc_test2(i)) '[Hz]'];
+            filename = [pathaudio filenames2{i,j} '.wav'];
             listed_files{count_files} = sprintf('%.0f - %s',ExpNo,filename);
             count_files = count_files + 1;
             
@@ -176,17 +224,17 @@ if bDoExp2
             starti = 1;
             insig = x(starti:starti + N-1);
             t = ( 1:length(insig) )/Fs;     
-            out = Roughness_offline_debug(insig,Fs,N, bDebug); %No padding needed for off-line version
+            out = Roughness_offline_debug(insig,Fs,N, optsDebug); %No padding needed for off-line version
             
             R2(i,j)  = out{1};
             dBSPL2(i) = out{3}; % dBFS2(i) + 90;
-            disp(sprintf('Exp 2: R=%.3f [aspers]\t test signal: %s\n',out{1},name2figname(filenames)))
+            disp(sprintf('Exp 2: R=%.3f [aspers]\t test signal: %s\n',out{1},name2figname(filenames2)))
 
         end
     end
     
     figure;
-    plot(fmod_test,R2), grid on
+    plot(fmod_test2,R2), grid on
     legend( txtLegend )
     xlabel('modulation frequency [Hz]')
     ylabel('Roughness [asper]')
@@ -198,18 +246,11 @@ ExpNo = ExpNo + 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if bDoExp3
     % Fastl2007, Fig 11.3 (it considers XX dB SPL)
-    
-    filenames = {   'track_39_t01', 'track_39_t02', 'track_39_t03'; ...
-                    'track_39_t04', 'track_39_t05', 'track_39_t06'; ...
-                    'track_39_t07', 'track_39_t08', 'track_39_t09'};
-    fmod = [20 70 200];
-    titles = {'AM BBN', 'AM Tone', 'FM Tone'};
-    
     figure;
-    for k = 1:3
+    for j = 1:3
     
-        for j = 1:3
-            filename = [pathaudio_src filenames{k,j} '.wav'];
+        for k = 1:3
+            filename = [pathaudio_src filenames3{k,j} '.wav'];
             listed_files{count_files} = sprintf('%.0f - %s',ExpNo,filename);
             count_files = count_files + 1;
             
@@ -218,19 +259,24 @@ if bDoExp3
             starti = 1;
             insig = x(starti:starti + N-1);
             
-            out = Roughness_offline_debug(insig,Fs,N, bDebug); %No padding needed for off-line version
-            R3(k,j) = out{1};
+            if k == 2
+                disp('');
+                warning('in debug...');
+            end
+            
+            out = Roughness_offline_debug(insig,Fs,N, optsDebug); %No padding needed for off-line version
+            R3(j,k) = out{1};
         
-            disp(sprintf('Exp 3: R=%.3f [aspers]\t test signal: %s\n',out{1},name2figname(filenames{k})))
+            disp(sprintf('Exp 3: R=%.3f [aspers]\t test signal: %s\n',out{1},name2figname(filenames3{k})))
         end
         
-        subplot(1,3,k)
-        plot(fmod,R3(k,:),'o--'), grid on
-        if k == 2
+        subplot(1,3,j)
+        plot(fmod_test3,R3(j,:),'o--'), grid on
+        if j == 2
             xlabel('modulation frequency [Hz]')
         end
         ylabel('Roughness [asper]')
-        title( titles{k} )
+        title( titles3{j} )
                 
     end
     h(end+1) = gcf;
@@ -242,18 +288,12 @@ ExpNo = ExpNo + 1;
 if bDoExp4
     
     % Fastl2007, Fig 11.4: modulation depth = 40 dB
-    filenames = {   'track_39_t02',60; ...
-                    'track_39_t05',70; ...
-                    'track_39_t08',70};
-    fmod = [20 70 200];
-    SPL  = [40:10:80];
-    titles = {'AM BBN', 'AM Tone', 'FM Tone'};
     
     figure;
     for k = 1:3
         
-        d_dB = SPL - filenames{k,2};
-        filename = [pathaudio_src filenames{k,1} '.wav'];
+        d_dB = SPL_test4 - filenames4{k,2};
+        filename = [pathaudio_src filenames4{k,1} '.wav'];
         listed_files{count_files} = sprintf('%.0f - %s',ExpNo,filename);
         count_files = count_files + 1;
         
@@ -264,19 +304,19 @@ if bDoExp4
             
             insig = From_dB(d_dB(j))*x(starti:starti + N-1);
            
-            out = Roughness_offline_debug(insig,Fs,N, bDebug); %No padding needed for off-line version
+            out = Roughness_offline_debug(insig,Fs,N, optsDebug); %No padding needed for off-line version
             R4(k,j) = out{1};
         
-            disp(sprintf('Exp 4: R=%.3f [aspers]\t test signal: %s\n',out{1},name2figname(filenames{k})))
+            disp(sprintf('Exp 4: R=%.3f [aspers]\t test signal: %s\n',out{1},name2figname(filenames4{k})))
         end
         
         subplot(1,3,k)
-        plot(SPL,R4(k,:)), grid on
+        plot(SPL_test4,R4(k,:)), grid on
         if k == 2
             xlabel('Sound Pressure Level [dB]')
         end
         ylabel('Roughness [asper]')
-        title( titles{k} )
+        title( titles4{k} )
                
     end
     h(end+1) = gcf;
@@ -287,14 +327,10 @@ ExpNo = ExpNo + 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if bDoExp5
     % Fastl2007, Fig.11.5
-    fmod = 70;
-    fdev = [30 60 120 150 400 600 800 1000];
-    fc = 1500;
     
-    for j = 1:length(fdev)
+    for j = 1:length(fdev_test5)
     
-        filenames = ['rough_test_fc_' Num2str(fc,4) '_FM_dev_' Num2str(fdev(j),3) '_fmod_' Num2str(fmod,3) 'Hz_60_dBSPL'];
-        filename = [pathaudio filenames '.wav'];
+        filename = [pathaudio filenames5{j} '.wav'];
         listed_files{count_files} = sprintf('%.0f - %s',ExpNo,filename);
         count_files = count_files + 1;
         
@@ -302,20 +338,20 @@ if bDoExp5
 
         starti = 1;
         insig = x(starti:starti + N-1);
-        out = Roughness_offline_debug(insig,Fs,N, bDebug); %No padding needed for off-line version
+        out = Roughness_offline_debug(insig,Fs,N, optsDebug); %No padding needed for off-line version
 
         R5(j)  = out{1};
 
-        disp(sprintf('Exp 2: R=%.3f [aspers]\t test signal: %s\n',out{1},name2figname(filenames)))
+        disp(sprintf('Exp 2: R=%.3f [aspers]\t test signal: %s\n',out{1},name2figname(filenames5{j})))
 
     end
     
     figure;
-    plot(fdev,R5), grid on
+    plot(fdev_test5,R5), grid on
     xlabel('frequency deviation [Hz]')
     ylabel('Roughness [asper]')
     h(end+1) = gcf;
-    title(sprintf('FM tone, fc=1500 [Hz], fmod=%.0f [Hz], 60 dB SPL',fmod))
+    title(sprintf('FM tone, fc=1500 [Hz], fmod=%.0f [Hz], 60 dB SPL',fmod_test5))
     
 end
 ExpNo = ExpNo + 1;
@@ -323,14 +359,10 @@ ExpNo = ExpNo + 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if bDoExp6
     % Daniel1997, Fig.9
-    fmod = [0 10 20 40 50 60 70 80 100 120 150 200 500];
-    fdev = 800;
-    fc = 1600;
     
-    for j = 1:length(fmod)
+    for j = 1:length(fmod_test6)
     
-        filenames = ['rough_test_fc_' Num2str(fc,4) '_FM_dev_' Num2str(fdev,3) '_fmod_' Num2str(fmod(j),3) 'Hz_60_dBSPL'];
-        filename = [pathaudio_D filenames '.wav'];
+        filename = [pathaudio_D filenames6{j} '.wav'];
         listed_files{count_files} = sprintf('%.0f - %s',ExpNo,filename);
         count_files = count_files + 1;
         
@@ -338,20 +370,20 @@ if bDoExp6
 
         starti = 1;
         insig = x(starti:starti + N-1);
-        out = Roughness_offline_debug(insig,Fs,N, bDebug); %No padding needed for off-line version
+        out = Roughness_offline_debug(insig,Fs,N, optsDebug); %No padding needed for off-line version
 
         R6(j)  = out{1};
 
-        disp(sprintf('Exp 6: R=%.3f [aspers]\t test signal: %s\n',out{1},name2figname(filenames)))
+        disp(sprintf('Exp 6: R=%.3f [aspers]\t test signal: %s\n',out{1},name2figname(filenames6{j})))
 
     end
     
     figure;
-    plot(fmod,R6), grid on
+    plot(fmod_test6,R6), grid on
     xlabel('modulation frequency [Hz]')
     ylabel('Roughness [asper]')
     h(end+1) = gcf;
-    title(sprintf('FM tone, fc=%.0f [Hz], dev.freq=%.0f, 60 dB SPL',fc,fdev))
+    title(sprintf('FM tone, fc=%.0f [Hz], dev.freq=%.0f, 60 dB SPL',fc_test6,fdev_test6))
     
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

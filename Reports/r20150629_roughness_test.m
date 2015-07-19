@@ -1,10 +1,16 @@
-function r20150629_roughness_test
-% function r20150629_roughness_test
+function outs = r20150629_roughness_test;
+% function outs = r20150629_roughness_test;
 %
 % 1. Description:
-%
+%       It runs the a validation using roughness stimuli.
+%       In case the output outs is requested, the validation is not run but
+%       some metadata is returned: filenames
+% 
 % 2. Stand-alone example:
-%       r20150629_roughness_test;
+%       r20150629_roughness_test; % it runs the validation
+% 
+%       outs = r20150629_roughness_test; % it gets the filenames
+% 
 % 
 % 3. Additional info:
 %       Tested cross-platform: Yes
@@ -35,6 +41,11 @@ files = {   'rough_ref.wav', ... % 1
             'rough_test_fc_8000_AM_m_100_fmod_050Hz.wav', ...
             'rough_test_fc_8000_AM_m_100_fmod_100Hz.wav', ...
             'rough_test_fc_8000_AM_m_100_fmod_150Hz.wav'};
+if nargout == 1
+    outs.filenames  = files;
+    outs.dir_where  = dir_files; 
+    return;
+end
 
 N = 8192;
 fc = [1000 125 8000];

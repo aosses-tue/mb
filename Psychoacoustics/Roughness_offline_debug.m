@@ -1,5 +1,5 @@
-function dataOut = Roughness_offline_debug(dataIn, Fs, N, bDebug)
-% function dataOut = Roughness_offline_debug(dataIn, Fs, N, bDebug)
+function dataOut = Roughness_offline_debug(dataIn, Fs, N, optsDebug)
+% function dataOut = Roughness_offline_debug(dataIn, Fs, N, optsDebug)
 %
 % 1. Description:
 %       Off-line implementation of the roughness algorithm. It implements 
@@ -24,12 +24,18 @@ function dataOut = Roughness_offline_debug(dataIn, Fs, N, bDebug)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 10/11/2014
 % Last update on: 21/11/2014 % Update this date manually
-% Last use on   : 28/06/2015 % Update this date manually
+% Last use on   : 14/07/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 4
-    bDebug = 0;
+    optsDebug = [];
 end
+
+optsDebug   = ef(optsDebug,'all',0);
+optsDebug   = ef(optsDebug,'ki',0);
+
+bDebug      = optsDebug.all;
+debug_ki    = optsDebug.ki;
 
 if nargin < 3
     N = 8192;
@@ -252,10 +258,10 @@ if bDebug
 end
 
 if bDebug
-    etmp_array   = zeros(47,N);
+    etmp_array   = zeros(Chno,N);
 end
 
-for k=1:1:47 % each critical band number
+for k=1:1:Chno % each critical band number
     
     etmp    = zeros(1,N);
     
@@ -350,7 +356,7 @@ for k=1:1:47 % each critical band number
             
             hFig(end+1) = figure(4);
             subplot(figM,figN,1)
-            hp(1) = plot(plot_f,20*log10(abs(etmp_fd(k,:))));
+            hp(1) = plot(plot_f,20*log10( etmp_fd(k,:) ));
             ha = gca;
             grid on, hold on
             title(sprintf('Excitation patterns in freq. domain\nNum band = %.0f',k))
@@ -441,6 +447,28 @@ for k=1:1:45
   else
     ki(k)	=	0;
   end
+end
+
+if debug_ki
+    
+    ki_fac( 1: 2) = ki(1:2).^2;
+    ki_fac( 3:45) = ki(3:45).*ki(1:43);
+    ki_fac(46:47) = ki(44:45).^2;
+    
+    figure;
+    plot(zi,ki_fac,'LineWidth',2); hold on
+    plot(zi,mdept,'r'); grid on
+    xlim([0 24]);
+    
+    ha = gca;
+    zil = transpose( str2num( get(ha,'XTickLabel') ) );
+    fil = Round(audtofreq(zil,'bark'),0);
+    grid on
+    set(ha,'XTickLabel',fil );
+    
+    xlabel('Frequency [Hz]')
+    legend('kk^2','mdept')
+    
 end
 
 % Calculate specific roughness ri and total roughness R
