@@ -12,8 +12,8 @@ function hOutput = Figure2paperfigureT(nHandle,numRows,numCols,plotOpts)
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 26/09/2014
-% Last update on: 28/02/2015 % Update this date manually
-% Last use on   : 28/02/2015 % Update this date manually
+% Last update on: 24/07/2015 % Update this date manually
+% Last use on   : 24/07/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 2
@@ -31,10 +31,14 @@ end
 plotOpts = ef(plotOpts,'I_FontSize',14);
 plotOpts = ef(plotOpts,'I_Width'   ,10);
 plotOpts = ef(plotOpts,'I_Height'  , 8);
+plotOpts = ef(plotOpts,'I_TitleInAxis',1);
+plotOpts = ef(plotOpts,'I_KeepColor',1);
 
 I_FontSize = plotOpts.I_FontSize;
 I_Width    = plotOpts.I_Width;
 I_Height   = plotOpts.I_Height;
+I_TitleInAxis = plotOpts.I_TitleInAxis;
+I_KeepColor = plotOpts.I_KeepColor;
 
 hM = ImageSetup; 
 hM.I_Matrix      = [numRows,numCols];
@@ -42,7 +46,7 @@ hM.I_FontSize    = I_FontSize;
 hM.I_FontName    = 'Arial'; 
 hM.I_Width       = I_Width;
 hM.I_Height      = I_Height;
-hM.I_TitleInAxis = 1;
+hM.I_TitleInAxis = I_TitleInAxis;
 hM.I_Space       = [0.05,0.05];
 hM.I_Legend      = 'off';
 
@@ -50,7 +54,7 @@ hM.I_Legend      = 'off';
 % hM.I_Xlim       = [0 24];
 
 hM.I_Grid        = 'on'; 
-hM.I_KeepColor   = 1; 
+hM.I_KeepColor   = I_KeepColor; 
 hM.I_Handles     = nHandle;
 hM.prepareAllFigures;
 hM.arrayAddedHandles = 1;

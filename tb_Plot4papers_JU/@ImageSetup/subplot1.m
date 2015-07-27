@@ -60,7 +60,6 @@ FontS  = FontSDef;
 XScale = XScaleDef;
 YScale = YScaleDef;
 
-
 MoveFoc     = 0;
 if (nargin  ==1),
    %--- move focus to subplot # ---

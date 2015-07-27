@@ -2,6 +2,7 @@ function num = note2num(note)
 % function num = note2num(note)
 %
 % Update for recognising Gsh and G#
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 switch note 
     case 'C'
@@ -41,3 +42,4 @@ switch note
     otherwise
         error('Inproper note expression');
 end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -114,7 +114,7 @@ nAnalyser   = get(handles.popAnalyser ,'value');
 dir_output  = get(handles.txtOutputDir,'string');
 
 nSkipStart  = str2num( get(handles.txtAnalysisStart,'string') );
-nSkipEnd    = str2num( get(handles.txtAnalysisEnd  ,'string') );
+nSkipEnd    = str2num( get(handles.txtAnalysisEnd  ,'string') )+1;
 
 options.bLogScale = get(handles.cbLogAxis,'value'); % to be used in PsySound_Figures
 

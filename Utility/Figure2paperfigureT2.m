@@ -31,10 +31,12 @@ end
 plotOpts = ef(plotOpts,'I_FontSize',14);
 plotOpts = ef(plotOpts,'I_Width'   , 11);
 plotOpts = ef(plotOpts,'I_Height'  , 10);
+plotOpts = ef(plotOpts,'I_KeepColor',1);
 
 I_FontSize = plotOpts.I_FontSize;
 I_Width    = plotOpts.I_Width;
 I_Height   = plotOpts.I_Height;
+I_KeepColor = plotOpts.I_KeepColor;
 
 hM = ImageSetup; 
 hM.I_Matrix      = [numRows,numCols];
@@ -50,7 +52,7 @@ hM.I_Legend      = 'off';
 % hM.I_Xlim       = [0 24];
 
 hM.I_Grid        = 'on'; 
-hM.I_KeepColor   = 1; 
+hM.I_KeepColor   = I_KeepColor; 
 hM.I_Handles     = nHandle;
 hM.prepareAllFigures;
 hM.arrayAddedHandles = 1;

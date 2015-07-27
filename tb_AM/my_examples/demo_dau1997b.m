@@ -38,7 +38,7 @@ paths.outputs   = options.output_dir;
 
 h = []; % we initialise handle for Figures
 
-bPlot3D = 0;
+bPlot3D = 1;
 bListen = 0;
 fs = 44100;
 
@@ -73,10 +73,18 @@ end
 
 %%
 
-[outsig1 , fc ,fcm, opts] = dau1997preproc_1Ch(insig_NBN           ,fs,5000);
-[outsig2 , fc ,fcm, opts] = dau1997preproc_1Ch(insig_test+insig_NBN,fs,5000);
-outsig1 = outsig1{1};
-outsig2 = outsig2{1};
+if bPlot3D == 0
+    [outsig1 , fc ,fcm, opts] = dau1997preproc_1Ch(insig_NBN           ,fs,5000);
+    [outsig2 , fc ,fcm, opts] = dau1997preproc_1Ch(insig_test+insig_NBN,fs,5000);
+    outsig1 = outsig1{1};
+    outsig2 = outsig2{1};
+else
+    % Out of memory in Win
+    [outsig1 , fc ,fcm] = dau1997preproc(insig_NBN           ,fs);
+    [outsig2 , fc ,fcm] = dau1997preproc(insig_test+insig_NBN,fs);
+    outsig1 = outsig1{1};
+    outsig2 = outsig2{1};
+end
 
 opts.step1 = 1;
 opts.step2 = 1;

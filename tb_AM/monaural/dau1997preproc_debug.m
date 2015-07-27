@@ -1,5 +1,5 @@
-function [outsig, fc, mfc] = dau1997preproc(insig, fs, varargin)
-% function [outsig, fc, mfc] = dau1997preproc(insig, fs, varargin)
+function [outsig, fc, mfc, extra] = dau1997preproc(insig, fs, varargin)
+% function [outsig, fc, mfc, extra] = dau1997preproc(insig, fs, varargin)
 %
 % 1. Description:
 %       Auditory model from Dau et. al. 1997
@@ -7,14 +7,9 @@ function [outsig, fc, mfc] = dau1997preproc(insig, fs, varargin)
 %               [outsig, fc] = dau1997preproc(insig,fs,...);
 %
 %   Input parameters:
-%     insig  : input acoustic signal (column vector).
-%     fs     : sampling rate [Hz].
+%     insig  : input acoustic signal.
+%     fs     : sampling rate.
 %  
-%   Output parameters:
-%     output : output of the modulation filterbank. It is a cell array with 
-%              dimensions 31 x 1, so output{i} corresponds to the output 
-%              of the modulation filter centred at fc(i). 
-% 
 %   DAU1997PREPROC(insig,fs) computes the internal representation of the
 %   signal insig sampled with a frequency of fs Hz as described in Dau,
 %   Puschel and Kohlrausch (1997a).
@@ -47,8 +42,8 @@ function [outsig, fc, mfc] = dau1997preproc(insig, fs, varargin)
 % Author        : Torsten Dau, Morten L. Jepsen, Peter L. Soendergaard
 % Downloaded on : 18/03/2014
 % Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
-% Last update on: 25/07/2015 % Update this date manually
-% Last use on   : 25/07/2015 % Update this date manually
+% Last update on: 29/04/2015 % Update this date manually
+% Last use on   : 29/04/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % ------ Checking of input parameters ------------
@@ -78,14 +73,20 @@ definput.keyvals.subfs=[];
 %   outsig = N x 31 (31 gammatone filters)
 [outsig, fc]            = auditoryfilterbank(insig,fs,'argimport',flags,keyvals);
 
+extra.insig             = insig;
+extra.out_filterbank    = outsig; 
+
 % 'haircell' envelope extraction
 outsig                  = ihcenvelope(outsig,fs,'argimport',flags,keyvals);
+extra.out_ihc           = outsig;
 
 % non-linear adaptation loops (model units, MU)
 outsig                  = adaptloop(outsig,fs,'argimport',flags,keyvals);
+extra.out_adaptloop     = outsig;
 
 % Modulation filterbank
 [outsig,mfc] = modfilterbank(outsig,fs,fc);
+extra.out04_modfilterbank = outsig;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
