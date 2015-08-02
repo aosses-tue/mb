@@ -1,15 +1,16 @@
-function [outsig, fc] = dau1996preproc(insig, fs, varargin);
-% function [outsig, fc] = dau1996preproc(insig, fs, varargin);
+function [outsig, fc, extra] = dau1996preproc_debug(insig, fs, varargin);
+% function [outsig, fc, extra] = dau1996preproc_debug(insig, fs, varargin);
 %
 % 1. Description:
 %       Auditory model from Dau et. al. 1996.
 % 
-%   Usage: [outsig, fc] = dau1996preproc(insig,fs);
-%          [outsig, fc] = dau1996preproc(insig,fs,...);
+%   Usage: [outsig, fc, extra] = dau1996preproc(insig,fs);
+%          [outsig, fc, extra] = dau1996preproc(insig,fs,...);
 %
 %   Input parameters:
 %     insig  : input acoustic signal.
 %     fs     : sampling rate.
+%     extra  : struct with outputs of each stage of the model (added by AO)
 %
 %   *Warning:* This code is incorrect, the Dau 1996 models uses a transmission-line 
 %   model from Strube 1985, while THIS code erroneously uses the gammatone filters. 
@@ -69,8 +70,8 @@ function [outsig, fc] = dau1996preproc(insig, fs, varargin);
 % Author        : Torsten Dau, Morten L. Jepsen, Peter L. Sondergaard
 % Downloaded on : 18/03/2014
 % Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
-% Last update on: 15/10/2014 
-% Last use on   : 24/03/2015 
+% Last update on: 15/10/2014 % Update this date manually
+% Last use on   : 24/03/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % ------ Warning, Strube model not used ----------

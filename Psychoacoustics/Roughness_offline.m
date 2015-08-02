@@ -13,9 +13,9 @@ function [R dataOut out] = Roughness_offline(insig, Fs, N, options, CParams,bDeb
 % March 2006 : For the psySoundPro project
 %
 % revised : Farhan Rizwi, July 2007
-%           Reformatted, copied and vectorised code from InitAll
-%           and Hweights into the function space below.  This
-%           allows us to use nested functions effeciently.
+%           Reformatted, copied and vectorised code from InitAll and Hweights 
+%           into the function space below.  This allows us to use nested 
+%           functions effeciently.
 %
 % contact for the original source code :
 %           http://home.tm.tue.nl/dhermes/
@@ -45,8 +45,8 @@ function [R dataOut out] = Roughness_offline(insig, Fs, N, options, CParams,bDeb
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 10/11/2014
-% Last update on: 25/06/2015 % Update this date manually
-% Last use on   : 28/06/2015 % Update this date manually
+% Last update on: 25/06/2015 
+% Last use on   : 30/07/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 6
@@ -65,8 +65,10 @@ if nargin < 4
 end
 
 options = ef(options,'nSkipStart',0);
+options = ef(options,'nSkipEnd'  ,0);
 
 nSkipStart = options.nSkipStart; % to correct time series, in case an analysis frame has been excluded
+nSkipEnd   = options.nSkipEnd;
 
 N_hop   = CParams.HopSize;
 insig   = insig( nSkipStart*N_hop+1:end );
@@ -158,9 +160,15 @@ Hweight = Get_Hweight_roughness(N,Fs);
 
 %% Stage 1, BEGIN: RoughBody
 
-insig_buf   =   buffer(insig, N, N-N_hop,'nodelay');
-m_blocks    =   size(insig_buf,2);
-ri          =   zeros(m_blocks,Chno);
+insig_buf   = buffer(insig, N, N-N_hop,'nodelay');
+m_blocks    = size(insig_buf,2);
+if nSkipEnd < m_blocks
+    m_blocks    = m_blocks - nSkipEnd;
+else
+    warning('nSkipEnd is larger than the amount of analysis frames...')
+end
+
+ri          = zeros(m_blocks,Chno);
 
 Window      = blackman(N, 'periodic') .* 1.8119;
 dBcorr      = 80+2.72;

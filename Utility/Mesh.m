@@ -1,5 +1,5 @@
-function h = Mesh(t,f,z,options)
-% function h = Mesh(t,f,z,options)
+function hFig = Mesh(t,f,z,options)
+% function hFig = Mesh(t,f,z,options)
 %
 % 1. Description:
 %       It generates a 3D plot using a reduced time and frequency resolution. 
@@ -21,8 +21,8 @@ function h = Mesh(t,f,z,options)
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 23/07/2014
-% Last update on: 21/08/2014 % Update this date manually
-% Last used on  : 02/04/2015 % Update this date manually
+% Last update on: 31/07/2014 
+% Last used on  : 31/07/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 4
@@ -37,7 +37,9 @@ options = Ensure_field(options,'step2',1);
 options = Ensure_field(options,'ZLabel','Amplitude');
 options = ef(options,'XLabel','x-axis');
 options = ef(options,'XLabel','y-axis');
+options = ef(options,'bSave',1);
 
+bSave = options.bSave;
 step_t = options.step1;
 step_f = options.step2; % round(length(f)/M);
 
@@ -78,7 +80,6 @@ if bPlot2D
         end
     end
     
-    figure;
     tm = t(1:step_t:end);
     fm = f;
 
@@ -130,6 +131,8 @@ if bPlot2D
     linkaxes(ha,'xy');
     ylim([MinAmp MaxAmp]);
     
+    hFig(1) = gcf;
+    
     h = ImageSetup; 
     h.I_Matrix      = options.I_Matrix;
     h.I_FontSize    = 10; 
@@ -155,11 +158,16 @@ if bPlot2D
         add2ArraySubplotHor(h);
     end
 
-    stName = Get_date;
-    stName = stName.date2print;
-    Saveas(gcf,[Get_TUe_paths('outputs') mfilename '-' name2figname(options.Title) '-' stName]);
-%     close;
-%     close;
+    hFig(2) = gcf;
+    close(hFig(1))
+    hFig = hFig(2);
+    
+    if bSave
+        stName = Get_date;
+        stName = stName.date2print;
+        Saveas(gcf,[Get_TUe_paths('outputs') mfilename '-' name2figname(options.Title) '-' stName]);
+    end
+
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

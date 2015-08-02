@@ -35,13 +35,13 @@ function varargout = PsySoundControl(varargin)
 %       2. SLM: problem at @Analyser/process, line 381. Object subclass is not readable 'AZ'
 %       3. Put save figures in other Button
 %       
-% Edit the above text to modify the response to help PsySoundControl
 % Created on        : 16/01/2015
 % Last modified on  : 28/05/2015
-% Last used on      : 28/05/2015 % Remember to check compatibility with template_PsySoundCL.m
+% Last used on      : 30/07/2015 % Remember to check compatibility with template_PsySoundCL.m
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%% Begin initialization code - DO NOT EDIT
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 0. Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
@@ -61,13 +61,13 @@ end
 % End initialization code - DO NOT EDIT
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% --- Executes just before PsySoundControl is made visible.
+% 1. Executes just before PsySoundControl is made visible:
 function PsySoundControl_OpeningFcn(hObject, eventdata, handles, varargin)
 % This function has no output args, see OutputFcn.
-% hObject    handle to figure
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-% varargin   command line arguments to PsySoundControl (see VARARGIN)
+%   - hObject    handle to figure
+%   - eventdata  reserved - to be defined in a future version of MATLAB
+%   - handles    structure with handles and user data (see GUIDATA)
+%   - varargin   command line arguments to PsySoundControl (see VARARGIN)
 
 % Choose default command line output for PsySoundControl
 handles.output = hObject;
@@ -80,20 +80,21 @@ initialize_gui(hObject, handles, false);
 % UIWAIT makes PsySoundControl wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 
-
-% --- Outputs from this function are returned to the command line.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 2. Outputs from this function are returned to the command line.
 function varargout = PsySoundControl_OutputFcn(hObject, eventdata, handles)
 % varargout  cell array for returning output args (see VARARGOUT);
-% hObject    handle to figure
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+%   - hObject    handle to figure
+%   - eventdata  reserved - to be defined in a future version of MATLAB
+%   - handles    structure with handles and user data (see GUIDATA)
 
 % Get default command line output from handles structure
 varargout{1} = handles.output;
 
 
-%% Calculations: 
-% Executes on button press in calculate.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 3. Calculations: 
+%   Executes on button press in calculate.
 
 function calculate_Callback(hObject, eventdata, handles)
 % function calculate_Callback(hObject, eventdata, handles)
@@ -110,11 +111,14 @@ bUsePsySound = get(handles.rbPsySound,'value');
 options.bUsePsySound = bUsePsySound;
 
 bSave       = get(handles.bSave       ,'value');
-nAnalyser   = get(handles.popAnalyser ,'value');
+
+% nAnalyser   = get(handles.popAnalyser ,'value');
+nAnalyser = il_get_nAnalyser(handles.popAnalyser);
+
 dir_output  = get(handles.txtOutputDir,'string');
 
 nSkipStart  = str2num( get(handles.txtAnalysisStart,'string') );
-nSkipEnd    = str2num( get(handles.txtAnalysisEnd  ,'string') )+1;
+nSkipEnd    = str2num( get(handles.txtAnalysisEnd  ,'string') );
 
 options.bLogScale = get(handles.cbLogAxis,'value'); % to be used in PsySound_Figures
 
@@ -157,10 +161,10 @@ options.label2 = get(handles.txtLabel2,'string');
 
 % options     = Ensure_field(options,'bPlot',1);
 options          = Ensure_field(options,'label','');
-options.SPLrange = [str2num(get(handles.txtlvlmin,'string'))   str2num(get(handles.txtlvlmax,'string'))];
+options.SPLrange = [str2num(get(handles.txtlvlmin ,'string'))  str2num(get(handles.txtlvlmax ,'string'))];
 options.frange   = [str2num(get(handles.txtFreqmin,'string'))  str2num(get(handles.txtFreqmax,'string'))];
-options.zrange   = [str2num(get(handles.txtZmin,'string'))     str2num(get(handles.txtZmax,'string'))];
-options.trange   = [str2num(get(handles.txtTimei,'string'))    str2num(get(handles.txtTimef,'string'))];
+options.zrange   = [str2num(get(handles.txtZmin   ,'string'))  str2num(get(handles.txtZmax   ,'string'))];
+options.trange   = [str2num(get(handles.txtTimei  ,'string'))  str2num(get(handles.txtTimef  ,'string'))];
 options          = Ensure_field(options,'ylim_bExtend',0);
 options          = Ensure_field(options,'ylim_bDrawLine',0);
 options.bLoudnessContrained = get(handles.chAvgLoudnessLimits,'Value'); % only validated for Analyser 12
@@ -192,10 +196,12 @@ if bUsePsySound
 
     options.callevel = callevel + handles.audio.G1;
     options.nSkipStart = nSkipStart;
+    options.nSkipEnd   = nSkipEnd;
     [out_1 tmp_h tmp_ha]   = PsySoundCL(filename1,options,CParams);
     
     options.callevel = callevel + handles.audio.G2;
     options.nSkipStart = nSkipStart;
+    options.nSkipEnd   = nSkipEnd;
     [out_2 tmp_h tmp_ha]   = PsySoundCL(filename2,options,CParams);
     
 else
@@ -266,20 +272,15 @@ else
             
             N = 8192; % default frame length
             opts.nSkipStart = nSkipStart;
-            [xx out_1] = Roughness_offline(insig1,fs1,N,opts,CParams,0);
-            [xx out_2] = Roughness_offline(insig2,fs2,N,opts,CParams,0);
-            Ndel = length(out_1.t);
-            out_1.t(Ndel)       = []; % we delete last frame
-            out_1.Data1(Ndel)   = [];
-            out_1.Data2(Ndel,:) = [];
-            out_2.t(Ndel)       = [];
-            out_2.Data1(Ndel)   = [];
-            out_2.Data2(Ndel,:) = [];
+            opts.nSkipEnd   = nSkipEnd;
+            [xx xx out_1] = Roughness_offline(insig1,fs1,N,opts,CParams,0);
+            [xx xx out_2] = Roughness_offline(insig2,fs2,N,opts,CParams,0);
             
         case 20 % Fluctuation strength, see also r20141126_fluctuation
             
             N = 44100*4; % 8192*4;
             opts.nSkipStart = nSkipStart;
+            opts.nSkipEnd   = nSkipEnd;
             warning('Fluctuation strength: temporal value...')
             [xx out_1] = FluctuationStrength_offline_debug(insig1(1:N),fs1,N,0);
             [xx out_2] = FluctuationStrength_offline_debug(insig2(1:N),fs2,N,0);
@@ -517,7 +518,8 @@ function unitgroup_SelectionChangeFcn(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-nAnalyser = get(handles.popAnalyser,'value');
+% nAnalyser = get(handles.popAnalyser,'value');
+nAnalyser = il_get_nAnalyser(handles.popAnalyser);
 
 if (hObject == handles.rbPsySound)
     set(handles.txtScript, 'String', '');
@@ -638,13 +640,15 @@ function popAnalyser_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-nAnalyser = get(handles.popAnalyser,'value');
+% nAnalyser = get(handles.popAnalyser,'value');
+nAnalyser = il_get_nAnalyser(handles.popAnalyser);
 
 switch nAnalyser
 
     case 1
         
         set(handles.txtAnalysisStart,'Enable','off');
+        set(handles.txtAnalysisEnd  ,'Enable','off');
         set(handles.chPercentiles,'enable','off');
         
         set(handles.rbPsySound,'value',1);
@@ -683,6 +687,7 @@ switch nAnalyser
     case 10
         
         set(handles.txtAnalysisStart,'Enable','off');
+        set(handles.txtAnalysisEnd  ,'Enable','off');
         set(handles.chPercentiles,'enable','off');
         
         set(handles.rbPsySound,'value',1);
@@ -721,6 +726,7 @@ switch nAnalyser
     case 11
         
         set(handles.txtAnalysisStart,'Enable','off');
+        set(handles.txtAnalysisEnd  ,'Enable','off');
         set(handles.chPercentiles,'enable','off');
         
         set(handles.rbPsySound,'value',1);
@@ -759,6 +765,7 @@ switch nAnalyser
     case 12
         
         set(handles.txtAnalysisStart,'Enable','off');
+        set(handles.txtAnalysisEnd  ,'Enable','off');
         set(handles.chPercentiles,'enable','on');
         
         set(handles.rbScripts,'enable','on');
@@ -792,9 +799,10 @@ switch nAnalyser
         set(handles.chParam7,'enable','on');
         set(handles.chParam7,'value',0);
     
-    case 15
+    case 15 % Roughness
         
         set(handles.txtAnalysisStart,'Enable','on');
+        set(handles.txtAnalysisEnd  ,'Enable','on');
         set(handles.chPercentiles,'enable','off');
         
         set(handles.rbPsySound,'enable','on');
@@ -829,9 +837,10 @@ switch nAnalyser
         % Customable params:
         set(handles.txtOverlap,'string',num2str(4096));
         
-    case 20
+    case 20 % Fluctuation strength
         
         set(handles.txtAnalysisStart,'Enable','on');
+        set(handles.txtAnalysisEnd  ,'Enable','on');
         set(handles.chPercentiles,'enable','off');
         
         set(handles.rbPsySound,'enable','off');
@@ -868,6 +877,7 @@ switch nAnalyser
     case 21
         
         set(handles.txtAnalysisStart,'Enable','off');
+        set(handles.txtAnalysisEnd  ,'Enable','off');
         set(handles.chPercentiles,'enable','off');
         
         set(handles.rbScripts,'value',1);
@@ -1064,8 +1074,10 @@ filename2 = get(handles.txtFile2,'string');
 
 if strcmp(filename1,'')|strcmp(filename2,'')
     try
-        filename1 = [Get_TUe_paths('db_voice_of_dragon') '02-Wav-files' delim '2015-02-wav-files' delim '02-calibrated' delim 'meas-ac-2-close-ane.wav'];
-        filename2 = [Get_TUe_paths('db_voice_of_dragon') '03-Wav-files-predicted' delim '2015-02-wav-files' delim '02-calibrated' delim 'model-ac-2-close-ane.wav'];
+        % filename1 = [Get_TUe_paths('db_voice_of_dragon') '02-Wav-files' delim '2015-02-wav-files' delim '02-calibrated' delim 'meas-ac-2-close-ane.wav'];
+        % filename2 = [Get_TUe_paths('db_voice_of_dragon') '03-Wav-files-predicted' delim '2015-02-wav-files' delim '02-calibrated' delim 'model-ac-2-close-ane.wav'];
+        filename1 = [Get_TUe_paths('outputs') 'Fastl2007_test_20141126' delim 'fluct_test_bbn_AM_m_000_fmod_004Hz_60_dBSPL.wav'];
+        filename2 = [Get_TUe_paths('outputs') 'Fastl2007_test_20141126' delim 'fluct_test_bbn_AM_m_070_fmod_004Hz_60_dBSPL.wav'];
     catch
         warning('Enter you wav filenames...')
     end
@@ -1889,3 +1901,11 @@ set(handles.txtFile1,'String',string2);
 set(handles.txtFile2,'String',string1);
 set(handles.txtLabel1,'String',lbl2);
 set(handles.txtLabel2,'String',lbl1);
+
+function nAnalyser = il_get_nAnalyser(h)
+
+strTmp = get(h,'String');
+idxTmp = get(h,'value');
+strTmp = strTmp{idxTmp};
+strTmp = strsplit(strTmp,'-');
+nAnalyser = str2num(strTmp{1});

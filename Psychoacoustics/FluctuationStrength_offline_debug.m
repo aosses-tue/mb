@@ -15,8 +15,8 @@ function [dataOut out] = FluctuationStrength_offline_debug(insig, Fs, N, options
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 10/11/2014
-% Last update on: 18/11/2014 % Update this date manually
-% Last use on   : 29/06/2015 % Update this date manually
+% Last update on: 18/11/2014
+% Last use on   : 29/06/2015
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 5
@@ -30,6 +30,7 @@ end
 options = ef(options,'nSkipStart',0);
 
 nSkipStart = options.nSkipStart; % to correct time series, in case an analysis frame has been excluded
+nSkipEnd   = options.nSkipEnd;
 
 if nargin < 3
     N = 8192*4;
@@ -165,11 +166,16 @@ Hhann       = Hanning_half(8192);
 
 %% Stage 1, BEGIN: FluctBody
 
-Window      =   blackman(N, 'periodic') .* 1.8119;
-dBcorr      =   80+2.72; % originally = 80, last change of this value on 26/11/2014
+Window      = blackman(N, 'periodic') .* 1.8119;
+dBcorr      = 80+2.72; % originally = 80, last change of this value on 26/11/2014
 
-insig_buf   =   buffer(insig, N, N-N_hop,'nodelay');
-m_blocks    =   size(insig_buf,2);
+insig_buf   = buffer(insig, N, N-N_hop,'nodelay');
+m_blocks    = size(insig_buf,2);
+if nSkipEnd < m_blocks
+    m_blocks= m_blocks - nSkipEnd;
+else
+    warning('nSkipEnd is larger than the amount of analysis frames...')
+end
 fi          =   zeros(m_blocks,Chno);
 
 if bDebug 

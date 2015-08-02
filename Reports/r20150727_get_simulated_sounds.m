@@ -54,7 +54,7 @@ plot(tp,xp); grid on, hold on
 ha(end+1) = gca;
 title('Piano C#5')
 xlabel('Time [s]')
-xlim([0 0.6])
+xlim([0.05 0.34])
 
 linkaxes(ha,'y');
 ylim([-0.15 0.15])
@@ -74,17 +74,17 @@ PxP     = [0.05754  0.0636];
 PyP     = [0        0.1195];
 
 hold on;
-plot(PxP,PyP,'rd','MarkerFaceColor','r')
-plot([PxP(1) PxP(1)],[PyP(1) 0.15],'r--')
-plot([PxP(2) PxP(2)],[PyP(2) 0.15],'r--')
+plot(PxP,PyP,'rd','MarkerFaceColor','r','LineWidth',5)
+plot([PxP(1) PxP(1)],[PyP(1) 0.15],'r--','LineWidth',2)
+plot([PxP(2) PxP(2)],[PyP(2) 0.15],'r--','LineWidth',2)
 
 disp('Select manually first subplot of the last figure (to get the axes handle into gca)')
 pause()
 
 hold on;
-plot(PxH,PyH,'ro','MarkerFaceColor','r')
-plot([PxH(1) PxH(1)],[PyH(1) 0.15],'r--')
-plot([PxH(2) PxH(2)],[PyH(2) 0.15],'r--')
+plot(PxH,PyH,'ro','MarkerFaceColor','r','LineWidth',5)
+plot([PxH(1) PxH(1)],[PyH(1) 0.15],'r--','LineWidth',2)
+plot([PxH(2) PxH(2)],[PyH(2) 0.15],'r--','LineWidth',2)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

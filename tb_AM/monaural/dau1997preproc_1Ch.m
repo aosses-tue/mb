@@ -41,9 +41,9 @@ function [outsig, fc, mfc, extra] = dau1997preproc_1Ch(insig, fs, fc, varargin)
 %
 % Author        : Torsten Dau, Morten L. Jepsen, Peter L. Søndergaard
 % Downloaded on : 18/03/2014
-% Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
-% Last update on: 07/10/2014 % Update this date manually
-% Last use on   : 07/10/2014 % Update this date manually
+% Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
+% Last update on: 07/10/2014 
+% Last use on   : 07/10/2014 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % ------ Checking of input parameters ------------

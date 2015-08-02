@@ -18,11 +18,16 @@ close all
 bDiary = 0;
 Diary(mfilename,bDiary);
 
-bDoWaveforms = 0;
-bDoSTFT = 0;
+bDoWaveforms = 1;
+bDoSTFT = 1;
 bDoMFB = 1;
 
 dir = 'D:\Databases\dir01-Instruments\Piano\04-PAPA\F1\';
+f1 = [dir 'NS19-F1.wav']; % Only first 5 seconds
+f2 = [dir 'JBS36-F1.wav']; % Only first 5 seconds
+% dir = 'D:\Databases\dir01-Instruments\Piano\04-PAPA\F1-44100-Hz\';
+% f1 = [dir 'NS19-F1-noisered.wav']; % Only first 5 seconds
+% f2 = [dir 'JBS36-F1-noisered.wav']; % Only first 5 seconds
 
 tmax = 3; % s
 fmax = 2000; % Hz
@@ -32,8 +37,6 @@ G    = 5;
 Cal  = 1/(G*sens);  % 1 =  94 dB
 Cal  = Cal/2;       % 1 = 100 dB 
 
-f1 = [dir 'NS19-F1.wav']; % Only first 5 seconds
-f2 = [dir 'JBS36-F1.wav']; % Only first 5 seconds
 title1 = 'Type NS19';
 title2 = 'Type JBS36';
 
@@ -52,7 +55,7 @@ if bDoWaveforms
     %subplot(1,2,1)
     plot(t1,2*x1), grid on
     xlim([0 tmax])
-    title( sprintf('%s: waveform',title1) )
+    title( sprintf('%s',title1) )
     xlabel('Time [s]') 
     ylabel('Pressure [Pa]')
     h(1) = gcf;
@@ -60,10 +63,10 @@ if bDoWaveforms
     figure;
     plot(t2,2*x2), grid on
     xlim([0 tmax])
-    title( sprintf('%s: waveform',title2) )
+    title( sprintf('%s',title2) )
     xlabel('Time [s]') 
     ylabel('Pressure [Pa]')
-    h(3) = gcf;
+    h(2) = gcf;
 end
 
 if bDoSTFT
@@ -75,15 +78,15 @@ if bDoSTFT
     figure
     stft(x1, fs, nfft, wlen, overlap, nwtype);
     xlabel('Time [s]') 
-    title( sprintf('%s: spectrogram',title1) )
+    title( sprintf('%s',title1) )
     ylim([0 fmax])
     xlim([0 tmax])
-    h(2) = gcf;
+    h(3) = gcf;
     
     figure;
     stft(x2, fs, nfft, wlen, overlap, nwtype);
     xlabel('Time [s]') 
-    title( sprintf('%s: spectrogram',title2) )
+    title( sprintf('%s',title2) )
     ylim([0 fmax])
     xlim([0 tmax])
     h(4) = gcf;
@@ -91,9 +94,11 @@ if bDoSTFT
     hM.I_TitleInAxis = 0;
     hM.I_KeepColor = 0;
     hM.I_FontSize = 18;
-    hM.I_Width = 16;
-    hM.I_Height = 8;
-    Figure2paperfigureT(h,1,4,hM)
+    hM.I_Width = 8;
+    hM.I_Height = 4;
+    Figure2paperfigureT(h(1:2),1,2,hM)
+    Figure2paperfigureT(h(3:4),1,2,hM)
+    
     % Manually stored
 end
 

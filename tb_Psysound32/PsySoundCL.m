@@ -29,10 +29,10 @@ function [output h ha] = PsySoundCL(filename,option,params)
 % 3. Additional info:
 %       Tested cross-platform: Yes
 %
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 22/07/2014
-% Last update on: 02/02/2015 % Update this date manually
-% Last use on   : 02/02/2015 % Update this date manually
+% Last update on: 02/02/2015
+% Last use on   : 30/07/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 h = [];
@@ -62,8 +62,12 @@ end
 
 option = Ensure_field(option,'bPlot'      , 1);
 option = Ensure_field(option,'nAnalyser'  , 1);
+option = ef(option,'nSkipStart',0);
+option = ef(option,'nSkipEnd'  ,0);
 
 nAnalyser = option.nAnalyser;
+nSkipStart = option.nSkipStart;
+nSkipEnd   = option.nSkipEnd;
 
 if ~isfield(option,'title')
     option = Ensure_field(option,'title',name2figname(filename));
@@ -125,12 +129,16 @@ if isfield(option,'tanalysis')
     
     option = Ensure_field(option,'bGenerateExcerpt',1);
     
-    if option.nSkipStart
+    if nSkipStart
+        warning('nSkipStart not working')
         tanalysis_inf_tmp = max( option.tanalysis(1)-1, 0);
         delta_t = option.tanalysis(1) - tanalysis_inf_tmp; % time to add at output of PsySound
     else
         tanalysis_inf_tmp = option.tanalysis(1);
         delta_t     = 0;
+    end
+    if nSkipEnd
+        warning('nSkipEnd not working');
     end
     delta_tN    = delta_t*fs; 
     

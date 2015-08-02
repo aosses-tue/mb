@@ -18,8 +18,8 @@ function demo_dau1997b_one_sound(insig,fs,options)
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 01/04/2015
-% Last update on: 01/04/2015 % Update this date manually
-% Last use on   : 01/04/2015 % Update this date manually
+% Last update on: 01/04/2015 
+% Last use on   : 01/04/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 3

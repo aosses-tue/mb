@@ -25,10 +25,10 @@ function [h ha stats] = PsySoundCL_Figures(param,res1, res2, option)
 % 3. Stand-alone example:
 %       PsySoundCL_Figures;
 % 
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 20/08/2014
-% Last update on: 16/02/2015 % Update this date manually
-% Last use on   : 16/02/2015 % Update this date manually
+% Last update on: 16/02/2015 
+% Last use on   : 29/07/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 h = [];
@@ -104,7 +104,7 @@ if strcmp(param,'sharpness')
     plot(t1,DataSharp1,option.color{1},'LineWidth',option.LineWidth(1)); hold on
     plot(t2,DataSharp2,option.color{2},'LineWidth',option.LineWidth(2));
 
-    xlabel('Time (Seconds)')
+    xlabel('Time [s]')
     ylabel('Sharpness (Acums)');
     if bLoudnessContrained == 0
         title(sprintf('Sharpness - %s', option.title));
@@ -126,7 +126,7 @@ elseif strcmp(param,'loudness')
     plot(t1,DataLoud1,option.color{1},'LineWidth',option.LineWidth(1)); hold on
     plot(t2,DataLoud2,option.color{2},'LineWidth',option.LineWidth(2));
 
-    xlabel('Time (Seconds)')
+    xlabel('Time [s]')
     ylabel('Loudness (Sones)');
     if bLoudnessContrained == 0
         title(sprintf('Loudness - %s', option.title));
@@ -151,7 +151,7 @@ elseif strcmp(param,'loudness-fluctuation')| strcmp(param,'loudness-fluctuation-
     grid on
     legend(option.label1,option.label2)
     
-    xlabel('Critical band rate (Bark)')
+    xlabel('Critical-band rate [Bark]')
     ylabel('Critical-band level L_G [dB]')
     ha = gca;
     title('L_G_{max}')
@@ -183,7 +183,7 @@ elseif strcmp(param,'loudness-fluctuation-min')
     grid on
     legend(option.label1,option.label2)
     
-    xlabel('Critical band rate (Bark)')
+    xlabel('Critical-band rate [Bark]')
     ylabel('Critical-band level L_G [dB]')
     ha(end+1) = gca;
     title('L_G_{min}')
@@ -363,7 +363,7 @@ elseif strcmp(param,'specific-loudness')| strcmp(param,'average-specific-loudnes
             figure;
             plot(zspec,DataLoud1,option.color{1},'LineWidth',option.LineWidth(1)); hold on
             plot(zspec,DataLoud2,option.color{2},'LineWidth',option.LineWidth(2));
-            xlabel('Critical band rate (Bark)')
+            xlabel('Critical-band rate [Bark]')
             ylabel('Loudness (Sones/Bark)');
             xlim(option.zrange);
             
@@ -408,8 +408,8 @@ elseif strcmp(param,'specific-loudness')| strcmp(param,'average-specific-loudnes
             option.label1suffix = sprintf(', avg=%.2f [sones]',data2show1);
             option.label2suffix = sprintf(', avg=%.2f [sones]',data2show2);
                 
-            xlabel('Critical band rate (Bark)');
-            ylabel('Loudness (Sone/Bark)')
+            xlabel('Critical-band rate [Bark]');
+            ylabel('Loudness [Sone/Bark]')
             grid on;
             h(end+1) = gcf;
             ha(end+1) = gca;
@@ -499,8 +499,8 @@ elseif strcmp(param,'roughness')
     plot(t1+timeoffset,Data1,option.color{1},'LineWidth',option.LineWidth(1),'Marker','o'); hold on
     plot(t2+timeoffset,Data2,option.color{2},'LineWidth',option.LineWidth(2),'Marker','<');
 
-    xlabel('Time (seconds)')
-    ylabel('Roughness (aspers)')
+    xlabel('Time [s]')
+    ylabel('Roughness [asper]')
     title(sprintf('Roughness - %s', option.title));
     grid on
 
@@ -525,8 +525,8 @@ elseif strcmp(param,'specific-roughness')| strcmp(param,'average-specific-roughn
     figure;
     plot(z, mean(Data1(idx1,:)),option.color{1},'LineWidth',option.LineWidth(1)); hold on
     plot(z, mean(Data2(idx2,:)),option.color{2},'LineWidth',option.LineWidth(2));
-    xlabel('Critical band rate (Bark)')
-    ylabel('Specific Roughness (Aspers/Bark)')
+    xlabel('Critical-band rate [Bark]')
+    ylabel('Specific roughness [asper/Bark]')
     xlim(option.zrange);
     
     if length(idx1) == length(t1)
@@ -557,7 +557,7 @@ elseif strcmp(param,'fluctuation-strength')
     plot(t1+timeoffset,Data1,option.color{1},'LineWidth',option.LineWidth(1),'Marker','o'); hold on
     plot(t2+timeoffset,Data2,option.color{2},'LineWidth',option.LineWidth(2),'Marker','<');
 
-    xlabel('Time (seconds)')
+    xlabel('Time [s]')
     ylabel('Fluctuation strength (vacils)')
     title(sprintf('FS - %s', option.title));
     grid on
@@ -582,7 +582,7 @@ elseif strcmp(param,'specific-fluctuation-strength')| strcmp(param,'average-spec
         plot(z, Data1,option.color{1},'LineWidth',option.LineWidth(1)); hold on
         plot(z, Data2,option.color{2},'LineWidth',option.LineWidth(2));
     end
-    xlabel('Critical band rate (Bark)')
+    xlabel('Critical-band rate [Bark]')
     ylabel('Specific Fluctuation strength (Vacils/Bark)')
     %title(sprintf('Average Roughness - %s', option.title));
     xlim(option.zrange);
