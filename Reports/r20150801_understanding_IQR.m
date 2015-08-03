@@ -159,6 +159,7 @@ ylabel(text_YLabel)
 grid on;
 xlim([0.5 Ntest+0.5])
 ha = gca;
+set(ha,'XTick',[1:Ntest])
 set(ha,'XTickLabel',test_fmod)
 title('FS using Standard1')
 legend('IQR','std')
@@ -171,6 +172,7 @@ ylabel(text_YLabel)
 grid on;
 xlim([0.5 Ntest+0.5])
 ha = gca;
+set(ha,'XTick',[1:Ntest])
 set(ha,'XTickLabel',test_fmod)
 title('FS using Standard2')
 legend('IQR','std')
@@ -180,15 +182,19 @@ legend('IQR','std')
 figure; 
 errorbar([1:Ntest]-0.10,iq1(1,:),iq1(2,:),iq1(3,:),'bx'); hold on
 errorbar([1:Ntest]+0.10,iq2(1,:),iq2(2,:),iq2(3,:),'ro');
-plot([1:Ntest],mean([iq1(1,:); iq2(1,:)]),'k>--','LineWidth',2)
+plot([1:Ntest],mean([iq1(1,:); iq2(1,:)]),'k>--','LineWidth',2);
+
 xlabel(text_XLabel)
 ylabel(text_YLabel)
 grid on;
 xlim([0.5 Ntest+0.5])
 ha = gca;
+set(ha,'XTick',[1:Ntest])
 set(ha,'XTickLabel',test_fmod)
 title('Measured FS')
 legend('std1','std2','combined')
+
+exp_fastl2007;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
