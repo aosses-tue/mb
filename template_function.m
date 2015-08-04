@@ -10,8 +10,8 @@ function y = $$functionname$$(x)
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : $$dd$$/$$mm$$/$$yyyy$$
-% Last update on: $$dd$$/$$mm$$/$$yyyy$$ % Update this date manually
-% Last use on   : $$dd$$/$$mm$$/$$yyyy$$ % Update this date manually
+% Last update on: $$dd$$/$$mm$$/$$yyyy$$ 
+% Last use on   : $$dd$$/$$mm$$/$$yyyy$$ 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 $$log_begin$$
 x =  [];

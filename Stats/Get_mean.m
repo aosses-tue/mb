@@ -7,13 +7,37 @@ function [m,s,ci,iq] = Get_mean(data)
 %           's' = standard deviation 
 %           'ci' = confidence interval
 %           'iq' = Interquartile range
-%
+%       For the interquartile range, the length of the error bars is returned
+%       in the rows 2 and 3 for the percentile 25 and 75 respectively in order
+%       to be used as input to the errorbar function. 
+% 
+% 2. Stand-alone example:
+%           data = [ 12   25    50    75    50   100   175   175   200   200     0; ...
+%                    15   25    50    36    50   100   175   200   175   200   150; ...
+%                    20  100    92   123   100   100    76    87    51    50    16; ...
+%                    0   127   137   100   100   100    87    63    74    76     8; ...
+%                    2   102   100   126    83   100    68    83    74    50     8; ...
+%                    0   137   114   100   100   100    68    80    52    25     8];
+%           [m,s,ci,iq] = Get_mean(data);
+%           figure; 
+%           errorbar(1:length(iq(1,:)),iq(1,:),iq(2,:),iq(3,:));
+%           xlabel('Order of presentation')
+%           ylabel('Amplitude')
+%           title('data considering IQR')
+% 
+%           figure; 
+%           errorbar(1:length(m),m,s,'r');
+%           xlabel('Order of presentation')
+%           ylabel('Amplitude')
+%           title('data considering mean and std')
+%  
+%   See also errorbar
+% 
 % Programmed by Matthias Milczynski, ExpORL, KU Leuven, Belgium 2008-2011
 % Edited by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Last update on : 02/08/2015
 % Last use on    : 02/08/2015
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% function [m,s,ci] = calcMeanStd(data)
 
 m = nan(1, size(data, 2)); % zeros
 s = nan(1, size(data, 2)); % zeros

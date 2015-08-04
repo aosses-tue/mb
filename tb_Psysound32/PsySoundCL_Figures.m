@@ -11,7 +11,7 @@ function [h ha stats] = PsySoundCL_Figures(param,res1, res2, option)
 % (XX/XX/2015)     10       - 'specific-loudness'   NO          NO
 % (XX/XX/2015)        11    - 'one-third-OB'        YES         NO
 % (25/02/2015) L96  / 12    - 'sharpness'           NO          NO
-% (25/02/2015) L117 / 12    - 'loudness'            NO          NO
+% (25/02/2015) L117 / 12-13 - 'loudness'            NO          NO
 % (25/02/2015) L417 / 12    - 'loudness-percentiles'
 % (01/03/2015) L345 / 12    - 'specific-loudness'   YES         NO
 % (05/02/2015) L475 / 15    - 'roughness'           NO          YES
@@ -19,16 +19,16 @@ function [h ha stats] = PsySoundCL_Figures(param,res1, res2, option)
 % (29/01/2015) L249 /       - 'average-power-spectrum' 
 % (25/02/2015) L310 /       - 'spectrogram'
 % 
-% 2. Additional info:
-%       Tested cross-platform: Yes
-%
-% 3. Stand-alone example:
+% 2. Stand-alone example:
 %       PsySoundCL_Figures;
+% 
+% 3. Additional info:
+%       Tested cross-platform: Yes
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 20/08/2014
-% Last update on: 16/02/2015 
-% Last use on   : 29/07/2015 
+% Last update on: 04/08/2015 
+% Last use on   : 04/08/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 h = [];
@@ -115,23 +115,30 @@ if strcmp(param,'sharpness')
     h(end+1) = gcf;
     ha(end+1) = gca;
 
-elseif strcmp(param,'loudness')
+elseif strcmp(param,'loudness') | strcmp(param,'instantaneous-loudness') | strcmp(param,'short-term-loudness') | strcmp(param,'long-term-loudness')
     % Loudness
     
     bPlot_vs_time = 1;
-    DataLoud1 = res1.Data1;
-    DataLoud2 = res2.Data1;
+    
+    idx = 1;
+    while ~strcmp(param,res1.param{idx})
+        idx = idx + 1;
+    end
+    exp1 = sprintf('DataLoud1 = res1.Data%.0f;',idx); % DataLoud1 = res1.Data1;
+    exp2 = sprintf('DataLoud2 = res2.Data%.0f;',idx); % DataLoud2 = res2.Data1;
+    eval(exp1);
+    eval(exp2);
 
     figure;
     plot(t1,DataLoud1,option.color{1},'LineWidth',option.LineWidth(1)); hold on
     plot(t2,DataLoud2,option.color{2},'LineWidth',option.LineWidth(2));
 
     xlabel('Time [s]')
-    ylabel('Loudness (Sones)');
+    ylabel('Loudness [Sones]');
     if bLoudnessContrained == 0
-        title(sprintf('Loudness - %s', option.title));
+        title(sprintf('%s - %s', res1.name{idx}, option.title));
     else
-        title(sprintf('Loudness, z = (%.1f,%.1f) [Bark] - %s', zlim4assessment(1),zlim4assessment(2),option.title));
+        title(sprintf('%s, z = (%.1f,%.1f) [Bark] - %s', res1.name{idx}, zlim4assessment(1),zlim4assessment(2),option.title));
     end
     grid on;
     
@@ -334,8 +341,8 @@ elseif strcmp(param,'spectrogram')
             colormap('Gray')
             set(gca,'YDir','normal')
             set(gca, 'FontName', 'Times New Roman', 'FontSize', 14)
-            xlabel('Time (s)'); 
-            ylabel('Frequency (Hz)'); 
+            xlabel('Time [s]'); 
+            ylabel('Frequency [Hz]'); 
             ylim(option.frange);
             title( sprintf('%s %s',option.label2,option.label2suffix) );
             
@@ -364,7 +371,7 @@ elseif strcmp(param,'specific-loudness')| strcmp(param,'average-specific-loudnes
             plot(zspec,DataLoud1,option.color{1},'LineWidth',option.LineWidth(1)); hold on
             plot(zspec,DataLoud2,option.color{2},'LineWidth',option.LineWidth(2));
             xlabel('Critical-band rate [Bark]')
-            ylabel('Loudness (Sones/Bark)');
+            ylabel('Loudness [Sones/Bark]');
             xlim(option.zrange);
             
             title(sprintf('Specific Loudness (ISO532B) - %s', option.title));
@@ -453,8 +460,8 @@ elseif strcmp(param,'loudness-percentiles')
     plot(zspec,nmin1,option.color_no_format{1},'LineStyle','-.')%,'Marker','+')
     grid on
     
-    xlabel('Critical-band rate (Bark)')
-    ylabel('Specific loudness (Sones/Bark)')
+    xlabel('Critical-band rate [Bark]')
+    ylabel('Specific loudness [Sones/Bark]')
     
     if bLoudnessContrained == 0
         title( sprintf('Percentiles %.0f, %.0f, %0.f, t =(%.1f,%.1f) [s] - %s %s',N3,N2,N1,option.trange(1),option.trange(2),option.label1,option.label1suffix));
@@ -476,8 +483,8 @@ elseif strcmp(param,'loudness-percentiles')
     plot(zspec,nmin2,option.color_no_format{2},'LineStyle','-.')%,'Marker','+')
     grid on            
     
-    xlabel('Critical-band rate (Bark)')
-    ylabel('Specific loudness (Sones/Bark)')
+    xlabel('Critical-band rate [Bark]')
+    ylabel('Specific loudness [Sones/Bark]')
     title( sprintf('Percentiles %.0f, %.0f, %0.f - %s %s',N3,N2,N1,option.label2,option.label2suffix));
     xlim(option.zrange);
     
@@ -558,7 +565,7 @@ elseif strcmp(param,'fluctuation-strength')
     plot(t2+timeoffset,Data2,option.color{2},'LineWidth',option.LineWidth(2),'Marker','<');
 
     xlabel('Time [s]')
-    ylabel('Fluctuation strength (vacils)')
+    ylabel('Fluctuation strength [vacil]')
     title(sprintf('FS - %s', option.title));
     grid on
     
@@ -583,7 +590,7 @@ elseif strcmp(param,'specific-fluctuation-strength')| strcmp(param,'average-spec
         plot(z, Data2,option.color{2},'LineWidth',option.LineWidth(2));
     end
     xlabel('Critical-band rate [Bark]')
-    ylabel('Specific Fluctuation strength (Vacils/Bark)')
+    ylabel('Specific Fluctuation strength [vacil/Bark]')
     %title(sprintf('Average Roughness - %s', option.title));
     xlim(option.zrange);
     

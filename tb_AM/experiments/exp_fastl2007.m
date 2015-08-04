@@ -2,16 +2,17 @@ function output = exp_fastl2007(varargin)
 %EXP_JELFS2011  Figures from Fastl and Zwicker (2007)
 %   Usage: output = exp_fastl2007(flag);
 %
-%   EXP_FASTL2007 reproduces Fluctuation strength data from the book Fastl and Zwicker (2007).
+%   EXP_FASTL2007 reproduces Fluctuation strength data from the book Fastl 
+%       and Zwicker (2007).
 %
 %   Examples:
 %   ---------
+%     exp_fastl2007;
 %
-%   To display Figure 4 use :
-%
-%     exp_jelfs2011('fig4');
-%
-%   See also: jelfs2011, culling2005bmld
+% Programmed by Alejandro Osses V., HTI, TU/e, the Netherlands, 2014-2015
+% Created on    : 02/08/2015
+% Last update on: 02/08/2015 % Update this date manually
+% Last use on   : 02/08/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 fmod = [0.25 0.5 1 2 4 8 16 32]; % Hz
@@ -19,7 +20,7 @@ FS_BBN_std1 = [22.5  57   79   101  100    82   29     6; ...
                 3.5  29.5 59.5  90   97    68.5 20     1; ... 
                30    70   98   110  102.25 84.5 44    14];
 FS_BBN_std2 = [12.5  27   45.5  75   99.75 92   24.25  9.75; ...
-                5.5  24.5 30    51.5 60.5  77   13     4; ...
+                5.5  24.5 39    51.5 60.5  67   13     4; ...
                16    30   48    92  110   110   32    19.5]; 
 
 FS_AM_std1 = [3   10.25 26.25 66   100  99 30    9.5; ...
@@ -98,10 +99,10 @@ if nargout == 0
     ylabel(text_YLabel)
     grid on;
     xlim([0.5 Ntest+0.5])
-    ha(end) = gca;
+    ha(end+1) = gca;
     set(ha(end),'XTick',[1:Ntest])
     set(ha(end),'XTickLabel',fmod)
-    title('AM SIN')
+    title('FM SIN')
     
     legend('4-Hz std','0.5-Hz std','avg')
     linkaxes(ha,'xy');

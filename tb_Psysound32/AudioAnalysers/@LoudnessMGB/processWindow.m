@@ -1,12 +1,14 @@
 function dataOut = processWindow(obj, dataIn)
+% function dataOut = processWindow(obj, dataIn)
+%
 % PROCESSWINDOW This is the core workhorse of this analyser
 %
 % We are using raw mode - the whole file to be analysed is stored 
 % in dataIn.
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if dataIn == 1
-  dataOut = 1;
-  return;
+    dataOut = 1;
+    return;
 end
 
 filtermethod = get(obj, 'filterMethod'); % (or GUI choice)
@@ -22,3 +24,6 @@ oDataRate = get(obj, 'outputDataRate');
 [InstantaneousLoudness, ShortTermLoudness, LongTermLoudness, times] = MGBLoudness2b(dataIn,fs,filtermethod,cal,faster,decay,doplot);
 
 dataOut = {InstantaneousLoudness, ShortTermLoudness, LongTermLoudness, times'};
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+end

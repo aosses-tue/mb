@@ -1,28 +1,27 @@
 function  [InstantaneousLoudness, ShortTermLoudness, LongTermLoudness, times] = MGBLoudness2b(signal,fs,filtermethod,cal,faster,decay,doplot)
-% by Densil Cabrera & Doheon Lee (2009-10)
-% Loudness calculated following Moore,Glasberg & Baer (1997)
-% with Glasberg & Moore (2002) dynamic loudness
-% and Moore & Glasberg (2007) binaural loudness
+% function  [InstantaneousLoudness, ShortTermLoudness, LongTermLoudness, times] = MGBLoudness2b(signal,fs,filtermethod,cal,faster,decay,doplot)
+%
+% 1. Description:
+%       Loudness calculated following Moore,Glasberg & Baer (1997) with Glasberg 
+%       & Moore (2002) dynamic loudness and Moore & Glasberg (2007) binaural loudness
 %
 % WARNING 1 - this function is slow. Test it on a short duration sound file
 % first, such as 0.5 seconds.
 % However, the function is more efficiet than Densil's old version due to:
-% * removing unnecessary calculations from the main program loop, and
-% instead precalculating values before the loop. This uses much more memory;
-% * vectorising all of the old for loops (except the time-step loop). This
-% also uses much more memory.
+%       * removing unnecessary calculations from the main program loop, and
+%         instead precalculating values before the loop. This uses much more memory;
+%       * vectorising all of the old for loops (except the time-step loop). 
+%         This also uses much more memory.
 % The function is also potentially faster than a straight implementation of
 % Glasberg and Moore (2002) due to combining closely-spaced high frequency spectral components
 % (see "faster" below). This is similar to the 'compact spectrum' used in
 % Densil's old code (but implemented more efficiently, and with less data reduction).
 % Another speed-up is to caclulate the FFT for low frequency components
 % less often than for high frequency components. This, and the spectrum
-% compression mentioned above, are both done when the 'faster' option is
-% chosen.
+% compression mentioned above, are both done when the 'faster' option is chosen.
 %
-% WARNING 2 - this code has tested well to the extent that we have
-% validated it, but you use it at your own risk. We suggest that you test it for
-% yourself.
+% WARNING 2 - this code has tested well to the extent that we have validated it, 
+% but you use it at your own risk. We suggest that you test it for yourself.
 %
 % ISSUES
 % We have included the 15.625 Hz component from the FFT in the loudness
@@ -45,8 +44,8 @@ function  [InstantaneousLoudness, ShortTermLoudness, LongTermLoudness, times] = 
 % alternative approach to calibration is to add 0.89 dB relative to the rms
 % value measured over the entire input wave.
 %
-% The time domain filters are probably preferable to the spectrum intensity weighting
-% filters. The time domain filters introduce smoothing into
+% The time domain filters are probably preferable to the spectrum intensity 
+% weighting filters. The time domain filters introduce smoothing into
 % transient parts of the wave (for example, a stopped sinusoid), which
 % results in a smoother short-term loudness function.
 %
@@ -177,8 +176,9 @@ function  [InstantaneousLoudness, ShortTermLoudness, LongTermLoudness, times] = 
 % B.C.J. Moore and B.R. Glasberg. 2007
 % Modelling Binaural Loudness
 % J. Acoust. Soc. Am. 121: 1604-1612
-
-
+%
+% Adapted by: Densil Cabrera & Doheon Lee (2009-10)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin<7, doplot=0; end
 if nargin<6, decay=0; end
@@ -214,8 +214,7 @@ signal = signal .* 10^(cal/20);
 % use if you wish to monitor the sound pressure level here
 % disp(['rms level of the entire wave ', num2str(10*log10(mean(signal.^2)+10e-99)+59.9259), ' dB'])
 % the offset of 59.9259 dB was chosen so that a 1 kHz tone at 40 dB yields
-% 1 sone. However, arguably 0.89 dB should be added to this (see comments
-% elsewhere).
+% 1 sone. However, arguably 0.89 dB should be added to this (see comments elsewhere).
 
 % zeropad signal by 32 ms at start and 63 ms at end
 signal = [zeros(1024,nchan);signal;zeros(2016,nchan)];

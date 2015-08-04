@@ -19,7 +19,7 @@ close all
 bDiary = 0;
 Diary(mfilename,bDiary);
 
-bDoSRT_Leuven = 0;
+bDoSRT_Leuven = 1;
 bDoPooledPilot = 1;
 
 if bDoSRT_Leuven
@@ -112,23 +112,32 @@ end
 
 if bDoPooledPilot
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% dirres = '/home/alejandro/Documenten/Documenten-TUe/09-Training+activities/Master-thesis/01-2015-Rodrigo/20150729-pilot-APEX/';
-dirres = '/home/alejandro/Documenten/Documenten-TUe/02-Experiments/2015-APEX-Rodrigo/APEX_shared/experiment/fluctuation_strength_results/';
+if isunix
+    % dirres = '/home/alejandro/Documenten/Documenten-TUe/09-Training+activities/Master-thesis/01-2015-Rodrigo/20150729-pilot-APEX/';
+    dirres = '/home/alejandro/Documenten/Documenten-TUe/02-Experiments/2015-APEX-Rodrigo/APEX_shared/experiment/fluctuation_strength_results/';
+else
+    dirres = 'D:\Documenten-TUe\02-Experiments\2015-APEX-Rodrigo\APEX_shared\experiment\fluctuation_strength_results\'; 
+end
+
+% AM:
 fileres = { 'AM-fm-S01-RO.apr', ...
             'AM-fm-S02-CH.apr', ...
             'AM-fm-S03-ED.apr', ...
             'AM-fm-S04-AN.apr', ...
             'AM-fm-S05-BE.apr', ...
-            'AM-fm-S06-RA.apr', ...
-            'AM_tones-fm-results-AO-test.apr', ...
-            'AM_tones-fm-slider-results-AO-test.apr'};
+            'AM-fm-S06-RA.apr'}; %, ...
+%             'AM_tones-fm-results-AO-test.apr', ...
+%             'AM_tones-fm-slider-results-AO-test.apr'};
 
 % fileres = { 'AM-fm-S01-RO.apr', ...
 %             'AM-fm-S05-BE.apr', ...
 %             'AM-fm-S06-RA.apr', ...
 %             'AM_tones-fm-results-AO-test.apr', ...
 %             'AM_tones-fm-slider-results-AO-test.apr'};
-   
+
+% FM:
+% fileres = { 'FM-fm-S09-YE.apr'};
+
 Nfiles = length(fileres);
 dataraw1 = nan(4*Nfiles,11);
 dataraw2 = nan(4*Nfiles,11);

@@ -13,6 +13,7 @@
 *.mexmaci
 *.mex*
 *.mexw32
+*no-commit
 *.p
 *.pdf
 *.rar

@@ -214,6 +214,8 @@ switch nAnalyser
         
     case 12
         obj = LoudnessCF(fh);
+    case 13
+        obj = LoudnessMGB(fh); % dataOut = {InstantaneousLoudness, ShortTermLoudness, LongTermLoudness, times'};
     case 15
         option = Ensure_field(option,'Author','DH');
         
@@ -449,8 +451,8 @@ switch nAnalyser
         if option.bPlot
             figure;
             plot(t,Data1)
-            xlabel('Time (Seconds)')
-            ylabel('Loudness (Sones)');
+            xlabel('Time [s]')
+            ylabel('Loudness [Sones]');
             
             if bLoudnessContrained == 0
                 title(sprintf('Loudness - %s', option.title));
@@ -474,9 +476,9 @@ switch nAnalyser
             set(gca,'YDir','Normal');
             colormap(option.colorbar_scale);
             hcb = colorbar; 
-            ylabel('Critical band rate (Bark)')
+            ylabel('Critical-band rate [Bark]')
             xlabel('Time (seconds)')
-            set(get(hcb,'YLabel'),'String','Loudness (Sones/Bark)')
+            set(get(hcb,'YLabel'),'String','Loudness [Sones/Bark]')
             title(sprintf('Main loudness - %s', option.title));
             h(end+1) = gcf;
             ha(end+1) = gca;
@@ -584,6 +586,27 @@ switch nAnalyser
         output.Data4    = Data4; % Param 4: Average Main loudness       out.DataAvMainLoud
         output.Data5    = Data5; % Param 5: Average specific loudness   out.DataAvSpecLoud
         output.Data6    = Data6; % Param 6: Sharpness                   out.DataSharp
+        
+    case 13
+        
+        nParam = 1;
+        Data1 = get(tmpObj{1,nParam},'Data');
+        output.Data1 = Data1;
+        output.name{nParam} = get(tmpObj{1,nParam},'Name');
+        output.param{nParam}    = strrep( lower( output.name{nParam} ),' ','-');
+        
+        % One-third Octave Band Spectrogram, global values
+        nParam = 2;
+        Data2 = get(tmpObj{1,nParam},'Data');
+        output.Data2 = Data2;
+        output.name{nParam} = get(tmpObj{1,nParam},'Name');
+        output.param{nParam}    = strrep( lower( output.name{nParam} ),' ','-');
+        
+        nParam = 3;
+        Data3    = get(tmpObj{1,nParam},'Data');
+        output.Data3 = Data3;
+        output.name{nParam} = get(tmpObj{1,nParam},'Name');
+        output.param{nParam}    = strrep( lower( output.name{nParam} ),' ','-');
         
     case 15
         

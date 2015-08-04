@@ -29,7 +29,7 @@ function varargout = AMTControl(varargin)
 %       236     4. btnReset                         31/07/2015
 %       244     5. btnCalculate                     31/07/2015
 %       1101    6. txtXoffset: waveforms shift      31/07/2015
-%       1168    7. popAnalyser_Callback             31/07/2015
+%       1184    7. popAnalyser_Callback             04/08/2015
 %       
 % TO DO:
 %       Dau1997_1Ch
@@ -223,11 +223,21 @@ set(gca,'YTick',[])
 
 lvl_m_30_dBFS = str2num( get(handles.txtCalLevel,'string') );
 
-RMS1 = rmsdb(x1(ti_samples        :tf_samples))+handles.audio.G1+lvl_m_30_dBFS+30; % Zwicker's correction
-RMS2 = rmsdb(x2(ti_samples+toffset:tf_samples))+handles.audio.G2+lvl_m_30_dBFS+30; % Zwicker's correction
+x1tmp = x1(ti_samples        :tf_samples);
+x2tmp = x2(ti_samples+toffset:tf_samples);
+GainFile1 = handles.audio.G1+lvl_m_30_dBFS+30;
+GainFile2 = handles.audio.G2+lvl_m_30_dBFS+30;
+RMS1 = rmsdb(x1tmp)+GainFile1; % Zwicker's correction
+RMS2 = rmsdb(x2tmp)+GainFile2; 
+thres_silence = 1/3; % one-third of the median value of the envelope 
+[xx xx idxtmp] = Rmssilence(x1tmp,fs,thres_silence);
+RMS1nosil = rmsdb( x1tmp(idxtmp) )+GainFile1;
 
-set( handles.txtRMS1,'string',sprintf('RMS, file 1 = %.2f [dB SPL]',RMS1) )
-set( handles.txtRMS2,'string',sprintf('RMS, file 2 = %.2f [dB SPL]',RMS2) )
+[xx xx idxtmp] = Rmssilence(x2tmp,fs,thres_silence);
+RMS2nosil = rmsdb( x2tmp(idxtmp) )+GainFile2;
+
+set( handles.txtRMS1,'string',sprintf('RMS, file 1 = %.2f [dB SPL] (%.2f no silent)',RMS1,RMS1nosil) );
+set( handles.txtRMS2,'string',sprintf('RMS, file 2 = %.2f [dB SPL] (%.2f no silent)',RMS2,RMS2nosil) );
 
 handles.audio.toffset = toffset;
 
@@ -266,9 +276,15 @@ nSkipStart  = str2num( get(handles.txtAnalysisStart,'string') );
 nSkipEnd    = str2num( get(handles.txtAnalysisEnd  ,'string') );
 
 if nAnalyser == 100 | nAnalyser == 101
+    
     fc2plot_idx = get(handles.popFc ,'value'); 
     fc_ERB = fc2plot_idx+2;
-    fc     = audtofreq(fc_ERB,'erb')
+    fc     = audtofreq(fc_ERB,'erb');
+    mu      = 0;
+    tmp     = get(handles.popInternalNoise,'string');
+    tmp_idx = get(handles.popInternalNoise,'value');
+    sigma   = str2num( tmp{tmp_idx} );
+    
 end
 
 options.bLogScale = get(handles.cbLogAxis,'value'); % to be used in PsySound_Figures
@@ -439,11 +455,14 @@ else
             bPlotParams = il_get_plotParams(handles);
             
             [out_1 , fc] = dau1996preproc(insig1,fs1);
+            [out_1 xx] = Add_gaussian_noise(out_1,mu,sigma); % Add internal noise
+            
             out_1.out   = out_1;
             out_1.fs    = fs1;
             out_1.fc    = fc;
             
             [out_2 , fc] = dau1996preproc(insig2,fs2);
+            out_2 = Add_gaussian_noise(out_2,mu,sigma); % Add internal noise
             out_2.out   = out_2;
             out_2.fs    = fs2;
             out_2.fc    = fc;
@@ -457,12 +476,15 @@ else
             else
                 [out_1 , fc ,fcm] = dau1997preproc_1Ch(insig1,fs1,fc2plot_idx);
             end
+            out_1 = Add_gaussian_noise(out_1{fc2plot_idx},mu,sigma); % Add internal noise
             out_1.out   = out_1{fc2plot_idx};
+            
             out_1.fs    = fs1;
             out_1.fc    = fc;
             out_1.fcm   = fcm;
             
             [out_2 , fc ,fcm] = dau1997preproc(insig2,fs2);
+            out_2 = Add_gaussian_noise(out_2{fc2plot_idx},mu,sigma); % Add internal noise
             out_2.out   = out_2{fc2plot_idx};
             out_2.fs    = fs2;
             out_2.fc    = fc;
@@ -1195,6 +1217,7 @@ switch nAnalyser
         
         set(handles.txtAnalysisStart,'Enable','off');
         set(handles.txtAnalysisEnd  ,'Enable','off');
+        set(handles.popInternalNoise,'enable','off');
         set(handles.popFc,'enable','off');
         set(handles.chPercentiles,'enable','off');
         
@@ -1235,6 +1258,7 @@ switch nAnalyser
         
         set(handles.txtAnalysisStart,'Enable','off');
         set(handles.txtAnalysisEnd  ,'Enable','off');
+        set(handles.popInternalNoise,'enable','off');
         set(handles.popFc,'enable','off');
         set(handles.chPercentiles,'enable','off');
         
@@ -1275,6 +1299,7 @@ switch nAnalyser
         
         set(handles.txtAnalysisStart,'Enable','off');
         set(handles.txtAnalysisEnd  ,'Enable','off');
+        set(handles.popInternalNoise,'enable','off');
         set(handles.popFc,'enable','off');
         set(handles.chPercentiles,'enable','on');
         
@@ -1313,6 +1338,7 @@ switch nAnalyser
         
         set(handles.txtAnalysisStart,'Enable','on');
         set(handles.txtAnalysisEnd  ,'Enable','on');
+        set(handles.popInternalNoise,'enable','off');
         set(handles.popFc,'enable','off');
         set(handles.chPercentiles,'enable','off');
         
@@ -1354,6 +1380,7 @@ switch nAnalyser
         
         set(handles.txtAnalysisStart,'Enable','on');
         set(handles.txtAnalysisEnd  ,'Enable','on');
+        set(handles.popInternalNoise,'enable','off');
         set(handles.popFc,'enable','off');
         set(handles.chPercentiles,'enable','off');
         
@@ -1397,6 +1424,7 @@ switch nAnalyser
         
         set(handles.chAvgLoudnessLimits,'enable','off');
         set(handles.chPercentiles,'enable','off');
+        set(handles.popInternalNoise,'enable','on');
         set(handles.popFc,'enable','off');
         set(handles.rbScripts,'value',1);
         set(handles.rbPsySound,'enable','off');
@@ -1435,6 +1463,7 @@ switch nAnalyser
         set(handles.txtAnalysisEnd  ,'Enable','off');
         set(handles.txtOverlap,'enable','off');
         
+        set(handles.popInternalNoise,'enable','on');
         set(handles.popFc,'enable','on');
         set(handles.chAvgLoudnessLimits,'enable','off');
         set(handles.chPercentiles,'enable','off');
@@ -1794,8 +1823,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
 function txtGain2_Callback(hObject, eventdata, handles)
 % hObject    handle to txtGain2 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -1803,7 +1830,6 @@ function txtGain2_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of txtGain2 as text
 %        str2double(get(hObject,'String')) returns contents of txtGain2 as a double
-
 
 % --- Executes during object creation, after setting all properties.
 function txtGain2_CreateFcn(hObject, eventdata, handles)
@@ -1834,12 +1860,47 @@ set(handles.txtFile2,'String',string1);
 set(handles.txtLabel1,'String',lbl2);
 set(handles.txtLabel2,'String',lbl1);
 
-
 % --- Executes during object deletion, before destroying properties.
 function btnCalculate_DeleteFcn(hObject, eventdata, handles)
 % hObject    handle to btnCalculate (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% --- Executes on slider movement.
+function popInternalNoise_Callback(hObject, eventdata, handles)
+% hObject    handle to popInternalNoise (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'Value') returns position of slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+
+
+% --- Executes during object creation, after setting all properties.
+function popInternalNoise_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popInternalNoise (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: slider controls usually have a light gray background.
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% --- Executes on button press in chInternalNoise.
+function chInternalNoise_Callback(hObject, eventdata, handles)
+% hObject    handle to chInternalNoise (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+idx = get(hObject,'Value'); % returns toggle state of chInternalNoise
+if idx == 0
+    set(handles.popInternalNoise,'Enable','off');
+else
+    set(handles.popInternalNoise,'Enable','on');
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Inline functions:
@@ -1865,7 +1926,6 @@ for i = 1:N
     eval( exp1 );
 
 end
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 3 of 4:

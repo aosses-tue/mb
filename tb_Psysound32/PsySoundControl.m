@@ -143,10 +143,10 @@ if options.bGenerateExcerpt
     set( handles.txtExcerpt,'visible','off');
 end
 
-eval( sprintf('options.bDoAnalyser%s=1;',Num2str(nAnalyser,2)) ); % activates selected processor
-
 filename1 = get(handles.txtFile1,'string');
 filename2 = get(handles.txtFile2,'string');
+
+eval( sprintf('options.bDoAnalyser%s=1;',Num2str(nAnalyser,2)) ); % activates selected processor
 
 options.nAnalyser   = nAnalyser;
 options.bSave       = bSave;
@@ -180,6 +180,7 @@ if bUsePsySound
     options     = ef(options,'bDoAnalyser10',0);
     options     = ef(options,'bDoAnalyser11',0);
     options     = ef(options,'bDoAnalyser12',0);
+    options     = ef(options,'bDoAnalyser13',0);
     options     = ef(options,'bDoAnalyser15',0);
 
     tmp_h = [];
@@ -340,7 +341,6 @@ if nAnalyser ~= 21
     end
 
     if bPlotParam2
-        % Specific loudness, roughness
         param{end+1}        = labelParam2;
         [h(end+1) ha(end+1) stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
     end
@@ -798,7 +798,44 @@ switch nAnalyser
         set(handles.chParam7,'string','loudness-fluctuation');
         set(handles.chParam7,'enable','on');
         set(handles.chParam7,'value',0);
-    
+
+    case 13
+        
+        set(handles.txtAnalysisStart,'Enable','off');
+        set(handles.txtAnalysisEnd  ,'Enable','off');
+        set(handles.chPercentiles,'enable','off');
+        
+        set(handles.rbScripts,'enable','off');
+        
+        set(handles.rbPsySound,'value',1);
+        set(handles.rbPsySound,'enable','on');
+        set(handles.rbScripts,'value',0);
+        
+        set(handles.chParam1,'string','instantaneous-loudness');
+        set(handles.chParam1,'enable','on');
+        
+        set(handles.chParam2,'string','short-term-loudness');
+        set(handles.chParam2,'enable','on');
+        set(handles.chParam2,'value',0);
+        
+        set(handles.chParam3,'string','long-term-loudness');
+        set(handles.chParam3,'enable','on');
+        set(handles.chParam3,'value',0);
+        
+        set(handles.chParam4,'string','Param4');
+        set(handles.chParam4,'enable','off');
+        set(handles.chParam3,'value',0);
+        
+        set(handles.chParam5,'string','Param5');
+        set(handles.chParam5,'enable','off');
+        
+        set(handles.chParam6,'string','Param6');
+        set(handles.chParam6,'enable','off');
+        
+        set(handles.chParam7,'string','Param7');
+        set(handles.chParam7,'enable','off');
+        set(handles.chParam7,'value',0);
+        
     case 15 % Roughness
         
         set(handles.txtAnalysisStart,'Enable','on');
