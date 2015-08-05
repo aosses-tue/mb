@@ -18,7 +18,7 @@ function y = Normalise_signal(x,fs)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 20/10/2014
 % Last update on: 30/04/2015 % Update this date manually
-% Last use on   : 30/04/2015 % Update this date manually
+% Last use on   : 05/08/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 y = nan(size(x)); % just allocation

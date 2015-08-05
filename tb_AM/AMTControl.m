@@ -26,7 +26,7 @@ function varargout = AMTControl(varargin)
 %       43      0. Initialisation                   31/07/2015
 %       63      1. AMTControl_OpeningFcn            31/07/2015
 %       94      3. btnLoad                          31/07/2015
-%       236     4. btnReset                         31/07/2015
+%       236     4. btnGetTemplate                         31/07/2015
 %       244     5. btnCalculate                     31/07/2015
 %       1101    6. txtXoffset: waveforms shift      31/07/2015
 %       1184    7. popAnalyser_Callback             04/08/2015
@@ -126,15 +126,16 @@ else
     
 end
 
+direx = [Get_TUe_paths('outputs') 'AMTControl-examples' delim];
 filename1 = get(handles.txtFile1,'string');
 filename2 = get(handles.txtFile2,'string');
 
 if strcmp(filename1,'')|strcmp(filename2,'')
     try
-        % filename1 = [Get_TUe_paths('db_voice_of_dragon') '02-Wav-files' delim '2015-02-wav-files' delim '02-calibrated' delim 'meas-ac-2-close-ane.wav'];
-        % filename2 = [Get_TUe_paths('db_voice_of_dragon') '03-Wav-files-predicted' delim '2015-02-wav-files' delim '02-calibrated' delim 'model-ac-2-close-ane.wav'];
-        filename1 = [Get_TUe_paths('outputs') 'Fastl2007_test_20141126' delim 'fluct_test_bbn_AM_m_000_fmod_004Hz_60_dBSPL.wav'];
-        filename2 = [Get_TUe_paths('outputs') 'Fastl2007_test_20141126' delim 'fluct_test_bbn_AM_m_070_fmod_004Hz_60_dBSPL.wav'];
+        % filename1 = [direx 'fluct_test_bbn_AM_m_000_fmod_004Hz_60_dBSPL.wav'];
+        % filename2 = [direx 'fluct_test_bbn_AM_m_070_fmod_004Hz_60_dBSPL.wav'];
+        filename1 = [direx 'dau1996b_expI_noisemasker.wav'];
+        filename2 = [direx 'dau1996b_expIB0_stim-10ms-76-onset-50-ms.wav'];
     catch
         warning('Enter you wav filenames...')
     end
@@ -147,31 +148,30 @@ set(handles.txtOutputDir,'string',dir_out)
 handles.audio.G1 = str2num( get(handles.txtGain1,'string') );
 handles.audio.G2 = str2num( get(handles.txtGain2,'string') );
 
-[x1,fs]  = Wavread(filename1);
-[x2,fs2] = Wavread(filename2);
+[insig1,fs]  = Wavread(filename1);
+[insig2,fs2] = Wavread(filename2);
 
 % This sould be the normal case:
 if fs == fs2
     handles.audio.fs = fs;
+    handles.audio.insig1 = insig1;
+    handles.audio.insig2 = insig2;
 end
 
 if strcmp( get(handles.txtti,'String'), '')
     set(handles.txtti,'String','1');
 end
 if strcmp(get(handles.txttf,'String'),'' )
-    set(handles.txttf,'String',num2str(min(length(x1),length(x2))));
+    set(handles.txttf,'String',num2str(min(length(insig1),length(insig2))));
 end
 
-t1 = ( 0:length(x1)-1 )/fs;
-t2 = ( 0:length(x2)-1 )/fs2;
+t1 = ( 0:length(insig1)-1 )/fs;
+t2 = ( 0:length(insig2)-1 )/fs2;
 
-% set(handles.txtti,'string',num2str(1));
-% set(handles.txttf,'string',num2str(min(length(x1),length(x2))));
-
-txt2display = sprintf('Length: %.3f [s],\n\t %.0f [samples]\nSample rate: %.0f [Hz]\n',max(t1),length(x1),fs); 
+txt2display = sprintf('Length: %.3f [s],\n\t %.0f [samples]\nSample rate: %.0f [Hz]\n',max(t1),length(insig1),fs); 
 set( handles.txtFile1info,'string',txt2display);
 
-txt2display2 = sprintf('Length: %.3f [s],\n\t %.0f [samples]\nSample rate: %.0f [Hz]\n',max(t2),length(x2),fs2); 
+txt2display2 = sprintf('Length: %.3f [s],\n\t %.0f [samples]\nSample rate: %.0f [Hz]\n',max(t2),length(insig2),fs2); 
 set( handles.txtFile2info,'string',txt2display2);
 
 txtti_Callback(handles.txtti,[],handles);
@@ -190,32 +190,40 @@ toffset     = str2num( get(handles.txtXoffset,'string') );
 
 if length(ti_samples)==0 & length(tf_samples)==0
     ti_samples = 1;
-    tf_samples = min( length(x1), length(x2) );
+    tf_samples = min( length(insig1), length(insig2) );
     set( handles.txtti,'string',num2str(ti_samples) );
     set( handles.txttf,'string',num2str(tf_samples) );
+    txtti_Callback(handles.txtti,[],handles);
+    txttf_Callback(handles.txttf,[],handles);
+    handles.audio.ti_samples = ti_samples;
+    handles.audio.tf_samples = tf_samples;
 end
 
-if ti_samples ~= 1 | (tf_samples ~= length(x1) & tf_samples ~= length(x2) )
+if ti_samples ~= 1 | (tf_samples ~= length(insig1) & tf_samples ~= length(insig2) )
     handles.audio.bGenerateExcerpt = 1;
     set(handles.txtExcerpt,'visible','on');
 else
     handles.audio.bGenerateExcerpt = 0;
     set(handles.txtExcerpt,'visible','off');
 end
+bGenerateExcerpt = handles.audio.bGenerateExcerpt;
+% ti_samples = handles.audio.ti_samples;
+% tf_samples = handles.audio.tf_samples;
 
 xliminf = ti_samples/fs;
 xlimsup = tf_samples/fs;
 
 axes(handles.axes1)
-plot(t1,From_dB(handles.audio.G1)*x1);
+plot(t1,From_dB(handles.audio.G1)*insig1);
 % title( name2figname( filename1 ) )
 xlim([xliminf xlimsup])
+set(gca,'XTickLabel',''); % Time scale will be the same as in File2 (Axes2)
 
 axes(handles.axes2)
 try
-    plot(t2(1:end-toffset+1),From_dB(handles.audio.G2)*x2(toffset:end),'r');
+    plot(t2(1:end-toffset+1),From_dB(handles.audio.G2)*insig2(toffset:end),'r');
 catch
-    plot(t2,From_dB(handles.audio.G2)*x2,'r');
+    plot(t2,From_dB(handles.audio.G2)*insig2,'r');
 end
 xlim([xliminf xlimsup])
 
@@ -223,8 +231,48 @@ set(gca,'YTick',[])
 
 lvl_m_30_dBFS = str2num( get(handles.txtCalLevel,'string') );
 
-x1tmp = x1(ti_samples        :tf_samples);
-x2tmp = x2(ti_samples+toffset:tf_samples);
+x1tmp = insig1(ti_samples        :tf_samples);
+x2tmp = insig2(ti_samples+toffset:tf_samples);
+
+if bGenerateExcerpt
+    Nextra = length(insig1)-(tf_samples - ti_samples)-1;
+    if Nextra >= 8192
+        Nextra = 8192;
+    end
+ 
+    try
+        insig1tmp = insig1( ti_samples:tf_samples + Nextra ); % one additional frame
+        insig2tmp = insig2( ti_samples + toffset:tf_samples + toffset + Nextra ); % one additional frame
+        insig1 = insig1tmp;
+        insig2 = insig2tmp;
+    catch
+        insig1 = insig1( ti_samples:tf_samples ); % one additional frame
+        insig2 = insig2( ti_samples + toffset:tf_samples + toffset ); % one additional frame
+        warning('using catch...')
+    end
+    set(handles.txtExcerpt,'visible','on');
+
+    %% Extracts excerpt:
+    fname1_excerpt = [Delete_extension(filename1,'wav') '-e.wav']; 
+    fname2_excerpt = [Delete_extension(filename2,'wav') '-e.wav']; 
+
+    Wavwrite(insig1,fs,fname1_excerpt);
+    Wavwrite(insig2,fs,fname2_excerpt);
+
+    filename1 = fname1_excerpt;
+    filename2 = fname2_excerpt;
+
+    handles.audio.filename1 = filename1;
+    handles.audio.filename2 = filename2;
+   
+else
+    set(handles.txtExcerpt,'visible','off');
+
+    handles.audio.filename1 = filename1;
+    handles.audio.filename2 = filename2;
+
+end
+
 GainFile1 = handles.audio.G1+lvl_m_30_dBFS+30;
 GainFile2 = handles.audio.G2+lvl_m_30_dBFS+30;
 RMS1 = rmsdb(x1tmp)+GainFile1; % Zwicker's correction
@@ -241,15 +289,194 @@ set( handles.txtRMS2,'string',sprintf('RMS, file 2 = %.2f [dB SPL] (%.2f no sile
 
 handles.audio.toffset = toffset;
 
+lvl_m_30dBFS = str2num( get(handles.txtCalLevel,'string') );
+calvalue = 70-lvl_m_30dBFS; % values calibrated to 100 dB RMS = 0 dBFS
+insig1 = From_dB(calvalue+handles.audio.G1) * insig1;    
+insig2 = From_dB(calvalue+handles.audio.G2) * insig2;
+
+handles.audio.insig1 = insig1;
+handles.audio.insig2 = insig2;
+
 guidata(hObject,handles)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 4. Executes on button press in btnReset.
-function btnReset_Callback(hObject, eventdata, handles)
-% hObject    handle to btnReset (see GCBO)
+% 4. Executes on button press in btnGetTemplate.
+function btnGetTemplate_Callback(hObject, eventdata, handles)
+% hObject    handle to btnGetTemplate (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-initialize_gui(gcbf, handles, true);
+
+try
+    insig1 = handles.audio.insig1;
+    insig2 = handles.audio.insig2;
+    fs = handles.audio.fs;
+catch
+    error('Load any data before pressing this button...')
+end
+
+Gain4supra = 10;
+insig2supra = From_dB(Gain4supra) * insig2;
+
+nAnalyser = il_get_nAnalyser(handles.popAnalyser);
+
+if nAnalyser == 100 | nAnalyser == 101
+    
+    fc2plot_idx = get(handles.popFc ,'value'); 
+    fc_ERB = fc2plot_idx+2;
+    fc     = audtofreq(fc_ERB,'erb');
+    mu      = 0;
+    tmp     = get(handles.popInternalNoise,'string');
+    tmp_idx = get(handles.popInternalNoise,'value');
+    sigma   = str2num( tmp{tmp_idx} );
+    
+end
+
+idx = 13;
+template_test = [];
+Ntimes = 1; %
+switch nAnalyser
+    case 100
+            
+        [out_1pre , fc] = dau1996preproc(insig1              ,fs);
+        [out_2pre , fc] = dau1996preproc(insig1 + insig2supra,fs);
+        for i = 1:Ntimes
+            
+            out_1 = Add_gaussian_noise(out_1pre,mu,sigma); % Add internal noise
+            out_2 = Add_gaussian_noise(out_2pre,mu,sigma); % Add internal noise
+            
+            out_template = Get_template(out_1(:,idx),out_2(:,idx));
+            
+            template_test = [template_test out_template];
+        end
+end
+
+if Ntimes ~= 1
+    template = transpose(  mean( transpose(template_test) )  );
+else
+    template = template_test;
+end
+
+handles.audio.template = template;
+t = ( 1:length(insig1) )/fs;
+figure;
+plot(t,template); grid on
+guidata(hObject,handles)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% --- Executes on button press in btnSimulateAFC.
+function btnSimulateAFC_Callback(hObject, eventdata, handles)
+% hObject    handle to btnSimulateAFC (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+Level_start     = 15; % above test-signal level
+Level_step      = il_get_value_numericPop(handles.popStepdB);
+Level_current   = Level_start;
+Reversals_stop  = il_get_value_numericPop(handles.popNreversals);
+bHalveStepSize  = get(handles.chStepSizeHalved,'value');
+
+idx = 13;
+Ntimes = 1; %
+Staircase = [];
+Reversals = [];
+
+try
+    insig1 = handles.audio.insig1;
+    insig2 = handles.audio.insig2;
+    template = handles.audio.template;
+    fs = handles.audio.fs;
+catch
+    error('Load any data and get the template before pressing this button...');
+end
+
+nAnalyser = il_get_nAnalyser(handles.popAnalyser);
+
+if nAnalyser == 100 | nAnalyser == 101
+    
+    fc2plot_idx = get(handles.popFc ,'value'); 
+    fc_ERB = fc2plot_idx+2;
+    fc     = audtofreq(fc_ERB,'erb');
+    mu      = 0;
+    tmp     = get(handles.popInternalNoise,'string');
+    tmp_idx = get(handles.popInternalNoise,'value');
+    sigma   = str2num( tmp{tmp_idx} );
+    
+end
+
+nWrong      = 0;
+nCorrect    = 1;
+nReversal   = 0;
+
+while (nReversal < Reversals_stop)
+    
+    Gain2apply = From_dB(Level_current);
+    insig2test = Gain2apply * insig2;
+
+    interval1 = insig1; % Only noise
+    interval2 = insig1 + insig2test; % Current signal
+
+    switch nAnalyser
+        case 100
+
+            [out_interval1 , fc] = dau1996preproc(interval1,fs);
+            [out_interval2 , fc] = dau1996preproc(interval2,fs);
+            for i = 1:Ntimes
+
+                out_interval1 = Add_gaussian_noise(out_interval1,mu,sigma); % Add internal noise
+                out_interval2 = Add_gaussian_noise(out_interval2,mu,sigma); % Add internal noise
+
+                decision(1) = optimaldetector(out_interval1(:,idx),template);
+                decision(2) = optimaldetector(out_interval2(:,idx),template);
+
+            end
+    end
+    
+    Staircase = [Staircase Level_current];
+    
+    if decision(2) >= decision(1) % test tone correctly identified
+        
+        if nCorrect == 0
+            
+            nReversal = nReversal + 1;
+            Reversals = [Reversals Level_current];
+            
+            if mod(nReversal,2) == 0 & bHalveStepSize
+                Level_step = max( Level_step/2, 1 );
+            end
+            
+        end
+        nCorrect = 1;
+        Level_current = Level_current - Level_step; % we make it more difficult
+        
+    else % masker is chosen
+        nWrong = nWrong+1;
+        if nWrong == 2
+            
+            nWrong = 0;
+            nReversal = nReversal + 1;
+            Reversals = [Reversals Level_current];
+            if mod(nReversal,2) == 0 & bHalveStepSize
+                Level_step = max( Level_step/2, 1 );
+            end
+            Level_current = Level_current + Level_step; % we make it easier after two mistakes
+            nCorrect = 0;
+        end
+    end
+
+    bPlotStimuli = 0;
+    if bPlotStimuli == 1
+        t = ( 1:length(insig1) )/fs;
+        figure; plot(t,out_interval2(:,idx),t,out_interval1(:,idx)); grid on
+    end
+end
+
+figure; plot(Staircase,'o');
+xlabel('Presentation order')
+ylabel('Relative level')
+title(sprintf('Reversals median = %.2f [dB]',median(Reversals(3:end))));
+grid on
+
+disp('')
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 5. Calculations: 
@@ -275,6 +502,11 @@ dir_output  = get(handles.txtOutputDir,'string');
 nSkipStart  = str2num( get(handles.txtAnalysisStart,'string') );
 nSkipEnd    = str2num( get(handles.txtAnalysisEnd  ,'string') );
 
+if nAnalyser == 15
+    HopSize = str2num( get(handles.txtOverlap,'string') );
+    CParams.HopSize = HopSize;
+end
+
 if nAnalyser == 100 | nAnalyser == 101
     
     fc2plot_idx = get(handles.popFc ,'value'); 
@@ -289,19 +521,16 @@ end
 
 options.bLogScale = get(handles.cbLogAxis,'value'); % to be used in PsySound_Figures
 
-fs          = handles.audio.fs;
-
+fs         = handles.audio.fs;
 sample_inf = handles.audio.ti_samples;
 sample_sup = handles.audio.tf_samples;
 
-HopSize = str2num( get(handles.txtOverlap,'string') );
-CParams.HopSize = HopSize;
-
 toffset = handles.audio.toffset; % time offset of audio 2 in relation to audio 1
 
-options.bGenerateExcerpt = handles.audio.bGenerateExcerpt;
+options.bGenerateExcerpt= handles.audio.bGenerateExcerpt;
+bGenerateExcerpt        = handles.audio.bGenerateExcerpt;
 
-if options.bGenerateExcerpt
+if bGenerateExcerpt
     options.tanalysis = [sample_inf-1 sample_sup-1]/fs;
     set( handles.txtExcerpt,'visible','on');
  else
@@ -310,13 +539,13 @@ end
 
 eval( sprintf('options.bDoAnalyser%s=1;',Num2str(nAnalyser,2)) ); % activates selected processor
 
-filename1 = get(handles.txtFile1,'string');
-filename2 = get(handles.txtFile2,'string');
+filename1 = handles.audio.filename1; % get(handles.txtFile1,'string');
+filename2 = handles.audio.filename2; % get(handles.txtFile2,'string');
 
 options.nAnalyser   = nAnalyser;
 options.bSave       = bSave;
 
-if options.bSave == 1
+if bSave == 1
     options.dest_folder_fig = dir_output;
 end
     
@@ -374,45 +603,11 @@ else
     callevel = str2num( get(handles.txtCalLevel,'string') ); % rms 90 dB SPL = 0 dBFS 
     warning('callevel not used at all for m-file scripts...');
     
-    [insig1 fs1] = Wavread(filename1);
-    [insig2 fs2] = Wavread(filename2);
-    
-    if options.bGenerateExcerpt
-        Nextra = length(insig1)-(sample_sup - sample_inf)-1;
-        if Nextra >= 8192
-            Nextra = 8192;
-        end
-            
-        try
-            insig1tmp = insig1( sample_inf:sample_sup + Nextra ); % one additional frame
-            insig2tmp = insig2( sample_inf + toffset:sample_sup + toffset + Nextra ); % one additional frame
-            insig1 = insig1tmp;
-            insig2 = insig2tmp;
-        catch
-            insig1 = insig1( sample_inf:sample_sup ); % one additional frame
-            insig2 = insig2( sample_inf + toffset:sample_sup + toffset ); % one additional frame
-            warning('using catch...')
-        end
-        set(handles.txtExcerpt,'visible','on');
-         
-        %% Extracts excerpt:
-        fname1_excerpt = [Delete_extension(filename1,'wav') '-e.wav']; 
-        fname2_excerpt = [Delete_extension(filename2,'wav') '-e.wav']; 
- 
-        Wavwrite(insig1,fs1,fname1_excerpt);
-        Wavwrite(insig2,fs2,fname2_excerpt);
-        
-        filename1 = fname1_excerpt;
-        filename2 = fname2_excerpt;
-        
-    else
-        set(handles.txtExcerpt,'visible','off');
-    end
+    insig1 = handles.audio.insig1; % [insig1 fs1] = Wavread(filename1);
+    insig2 = handles.audio.insig2; % [insig2 fs2] = Wavread(filename2);
     
     lvl_m_30dBFS = str2num( get(handles.txtCalLevel,'string') );
-    calvalue = lvl_m_30dBFS-60; % values calibrated to 90 dB RMS = 0 dBFS (Fastl's standard)
-    insig1 = From_dB(calvalue+handles.audio.G1) * insig1;    
-    insig2 = From_dB(calvalue+handles.audio.G2) * insig2;
+    calvalue = lvl_m_30dBFS-70; 
     
     switch nAnalyser
         
@@ -454,17 +649,17 @@ else
             
             bPlotParams = il_get_plotParams(handles);
             
-            [out_1 , fc] = dau1996preproc(insig1,fs1);
+            [out_1 , fc] = dau1996preproc(insig1,fs);
             [out_1 xx] = Add_gaussian_noise(out_1,mu,sigma); % Add internal noise
             
             out_1.out   = out_1;
-            out_1.fs    = fs1;
+            out_1.fs    = fs;
             out_1.fc    = fc;
             
-            [out_2 , fc] = dau1996preproc(insig2,fs2);
+            [out_2 , fc] = dau1996preproc(insig2,fs);
             out_2 = Add_gaussian_noise(out_2,mu,sigma); % Add internal noise
             out_2.out   = out_2;
-            out_2.fs    = fs2;
+            out_2.fs    = fs;
             out_2.fc    = fc;
             
         case 101
@@ -472,21 +667,21 @@ else
             bPlotParams = il_get_plotParams(handles);
             
             if sum( bPlotParams(2:4) ) == 0 % we need only the final outout of the peripheral processing
-                [out_1 , fc ,fcm] = dau1997preproc(insig1,fs1);
+                [out_1 , fc ,fcm] = dau1997preproc(insig1,fs);
             else
-                [out_1 , fc ,fcm] = dau1997preproc_1Ch(insig1,fs1,fc2plot_idx);
+                [out_1 , fc ,fcm] = dau1997preproc_1Ch(insig1,fs,fc2plot_idx);
             end
             out_1 = Add_gaussian_noise(out_1{fc2plot_idx},mu,sigma); % Add internal noise
             out_1.out   = out_1{fc2plot_idx};
             
-            out_1.fs    = fs1;
+            out_1.fs    = fs;
             out_1.fc    = fc;
             out_1.fcm   = fcm;
             
-            [out_2 , fc ,fcm] = dau1997preproc(insig2,fs2);
+            [out_2 , fc ,fcm] = dau1997preproc(insig2,fs);
             out_2 = Add_gaussian_noise(out_2{fc2plot_idx},mu,sigma); % Add internal noise
             out_2.out   = out_2{fc2plot_idx};
-            out_2.fs    = fs2;
+            out_2.fs    = fs;
             out_2.fc    = fc;
             out_2.fcm   = fcm;
             
@@ -1902,6 +2097,217 @@ else
     set(handles.popInternalNoise,'Enable','on');
 end
 
+function edit26_Callback(hObject, eventdata, handles)
+% hObject    handle to txtti (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of txtti as text
+%        str2double(get(hObject,'String')) returns contents of txtti as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit26_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to txtti (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+function edit29_Callback(hObject, eventdata, handles)
+% hObject    handle to txttf_s (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of txttf_s as text
+%        str2double(get(hObject,'String')) returns contents of txttf_s as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit29_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to txttf_s (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit30_Callback(hObject, eventdata, handles)
+% hObject    handle to txtLabel1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of txtLabel1 as text
+%        str2double(get(hObject,'String')) returns contents of txtLabel1 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit30_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to txtLabel1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit31_Callback(hObject, eventdata, handles)
+% hObject    handle to txtLabel2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of txtLabel2 as text
+%        str2double(get(hObject,'String')) returns contents of txtLabel2 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit31_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to txtLabel2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit32_Callback(hObject, eventdata, handles)
+% hObject    handle to txtXoffset (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of txtXoffset as text
+%        str2double(get(hObject,'String')) returns contents of txtXoffset as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit32_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to txtXoffset (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit33_Callback(hObject, eventdata, handles)
+% hObject    handle to txtAnalysisTime (see GCBO)
+% eventdata  reserved - to be de9fined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of txtAnalysisTime as text
+%        str2double(get(hObject,'String')) returns contents of txtAnalysisTime as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit33_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to txtAnalysisTime (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in chFile1.
+function checkbox15_Callback(hObject, eventdata, handles)
+% hObject    handle to chFile1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chFile1
+
+
+function edit35_Callback(hObject, eventdata, handles)
+% hObject    handle to txtGain1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of txtGain1 as text
+%        str2double(get(hObject,'String')) returns contents of txtGain1 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit35_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to txtGain1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% --- Executes on selection change in popStepdB.
+function popStepdB_Callback(hObject, eventdata, handles)
+% hObject    handle to popStepdB (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns popStepdB contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popStepdB
+
+
+% --- Executes during object creation, after setting all properties.
+function popStepdB_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popStepdB (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% --- Executes on selection change in popNreversals.
+function popNreversals_Callback(hObject, eventdata, handles)
+% hObject    handle to popNreversals (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns popNreversals contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popNreversals
+
+
+% --- Executes during object creation, after setting all properties.
+function popNreversals_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popNreversals (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Inline functions:
 % 1 of 4:
@@ -1912,6 +2318,13 @@ idxTmp = get(h,'value');
 strTmp = strTmp{idxTmp};
 strTmp = strsplit(strTmp,'-');
 nAnalyser = str2num(strTmp{1});
+
+function value = il_get_value_numericPop(h)
+
+strTmp = get(h,'String');
+idxTmp = get(h,'value');
+strTmp = strTmp{idxTmp};
+value = str2num(strTmp);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 2 of 4
@@ -1997,3 +2410,12 @@ end
 
 figure;
 h = Mesh(t,fmod,transpose(out(:,fmod_num)),opts);
+
+
+% --- Executes on button press in chStepSizeHalved.
+function chStepSizeHalved_Callback(hObject, eventdata, handles)
+% hObject    handle to chStepSizeHalved (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chStepSizeHalved

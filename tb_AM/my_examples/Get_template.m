@@ -17,7 +17,7 @@ function out = Get_template(ir1,ir2,setup)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 23/10/2014
 % Last update on: 30/04/2015 % Update this date manually
-% Last use on   : 30/04/2015 % Update this date manually
+% Last use on   : 05/08/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 4
