@@ -29,7 +29,7 @@ function varargout = AMTControl(varargin)
 %       236     4. btnGetTemplate                         31/07/2015
 %       244     5. btnCalculate                     31/07/2015
 %       1101    6. txtXoffset: waveforms shift      31/07/2015
-%       1184    7. popAnalyser_Callback             04/08/2015
+%       1401    7. popAnalyser_Callback             05/08/2015
 %       
 % TO DO:
 %       Dau1997_1Ch
@@ -1415,6 +1415,7 @@ switch nAnalyser
         set(handles.popInternalNoise,'enable','off');
         set(handles.popFc,'enable','off');
         set(handles.chPercentiles,'enable','off');
+        set(handles.chInternalNoise,'enable','off');
         
         set(handles.rbPsySound,'value',1);
         set(handles.rbPsySound,'enable','on');
@@ -1456,6 +1457,7 @@ switch nAnalyser
         set(handles.popInternalNoise,'enable','off');
         set(handles.popFc,'enable','off');
         set(handles.chPercentiles,'enable','off');
+        set(handles.chInternalNoise,'enable','off');
         
         set(handles.rbPsySound,'value',1);
         set(handles.rbPsySound,'enable','on');
@@ -1497,6 +1499,7 @@ switch nAnalyser
         set(handles.popInternalNoise,'enable','off');
         set(handles.popFc,'enable','off');
         set(handles.chPercentiles,'enable','on');
+        set(handles.chInternalNoise,'enable','off');
         
         set(handles.rbScripts,'enable','on');
         
@@ -1536,6 +1539,7 @@ switch nAnalyser
         set(handles.popInternalNoise,'enable','off');
         set(handles.popFc,'enable','off');
         set(handles.chPercentiles,'enable','off');
+        set(handles.chInternalNoise,'enable','off');
         
         set(handles.rbPsySound,'enable','off');
         set(handles.rbPsySound,'value',0);
@@ -1578,6 +1582,7 @@ switch nAnalyser
         set(handles.popInternalNoise,'enable','off');
         set(handles.popFc,'enable','off');
         set(handles.chPercentiles,'enable','off');
+        set(handles.chInternalNoise,'enable','off');
         
         set(handles.rbPsySound,'enable','off');
         set(handles.rbScripts,'value',1);
@@ -1619,6 +1624,7 @@ switch nAnalyser
         
         set(handles.chAvgLoudnessLimits,'enable','off');
         set(handles.chPercentiles,'enable','off');
+        set(handles.chInternalNoise,'enable','on');
         set(handles.popInternalNoise,'enable','on');
         set(handles.popFc,'enable','off');
         set(handles.rbScripts,'value',1);
@@ -1662,6 +1668,7 @@ switch nAnalyser
         set(handles.popFc,'enable','on');
         set(handles.chAvgLoudnessLimits,'enable','off');
         set(handles.chPercentiles,'enable','off');
+        set(handles.chInternalNoise,'enable','on');
         set(handles.rbScripts,'value',1);
         set(handles.rbPsySound,'enable','off');
         
@@ -2068,10 +2075,17 @@ function popInternalNoise_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'Value') returns position of slider
-%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+idx = get(hObject,'Value');
 
+if idx ~= 1
+    set(handles.btnGetTemplate,'enable','on');
+    set(handles.btnSimulateAFC,'enable','on');
+else
+    set(handles.btnGetTemplate,'enable','off');
+    set(handles.btnSimulateAFC,'enable','off');
+end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % --- Executes during object creation, after setting all properties.
 function popInternalNoise_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to popInternalNoise (see GCBO)
@@ -2083,7 +2097,6 @@ if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColo
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % --- Executes on button press in chInternalNoise.
 function chInternalNoise_Callback(hObject, eventdata, handles)
 % hObject    handle to chInternalNoise (see GCBO)
@@ -2097,141 +2110,7 @@ else
     set(handles.popInternalNoise,'Enable','on');
 end
 
-function edit26_Callback(hObject, eventdata, handles)
-% hObject    handle to txtti (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of txtti as text
-%        str2double(get(hObject,'String')) returns contents of txtti as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function edit26_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to txtti (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-function edit29_Callback(hObject, eventdata, handles)
-% hObject    handle to txttf_s (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of txttf_s as text
-%        str2double(get(hObject,'String')) returns contents of txttf_s as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function edit29_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to txttf_s (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-
-function edit30_Callback(hObject, eventdata, handles)
-% hObject    handle to txtLabel1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of txtLabel1 as text
-%        str2double(get(hObject,'String')) returns contents of txtLabel1 as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function edit30_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to txtLabel1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-
-function edit31_Callback(hObject, eventdata, handles)
-% hObject    handle to txtLabel2 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of txtLabel2 as text
-%        str2double(get(hObject,'String')) returns contents of txtLabel2 as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function edit31_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to txtLabel2 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-
-function edit32_Callback(hObject, eventdata, handles)
-% hObject    handle to txtXoffset (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of txtXoffset as text
-%        str2double(get(hObject,'String')) returns contents of txtXoffset as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function edit32_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to txtXoffset (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-
-function edit33_Callback(hObject, eventdata, handles)
-% hObject    handle to txtAnalysisTime (see GCBO)
-% eventdata  reserved - to be de9fined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of txtAnalysisTime as text
-%        str2double(get(hObject,'String')) returns contents of txtAnalysisTime as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function edit33_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to txtAnalysisTime (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % --- Executes on button press in chFile1.
 function checkbox15_Callback(hObject, eventdata, handles)
 % hObject    handle to chFile1 (see GCBO)
