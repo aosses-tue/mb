@@ -11,10 +11,10 @@ function $$functionname$$(f1,f2)
 % 3. Additional info:
 %       Tested cross-platform: Yes
 %
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : $$dd$$/$$mm$$/$$yyyy$$ (automatic generation)
-% Last update on: $$dd$$/$$mm$$/$$yyyy$$ % Update this date manually
-% Last use on   : $$dd$$/$$mm$$/$$yyyy$$ % Update this date manually
+% Last update on: $$dd$$/$$mm$$/$$yyyy$$ 
+% Last use on   : $$dd$$/$$mm$$/$$yyyy$$ 
 % Template      : template_PsySoundCL.m (revised on: 12/03/2015)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -27,7 +27,7 @@ close all
 if nargin < 1
     f1 = '$$f1$$';
 end
-if nargin < 1
+if nargin < 2
     f2 = '$$f2$$';
 end
 dir_output = Get_TUe_paths('outputs');

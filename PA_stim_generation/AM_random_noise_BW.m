@@ -85,14 +85,15 @@ wstep	= 2*pi/Fs;
 for q=1:N
    Sig(q) =	Sig(q)*(1+(Mdept*sin(wstep*Fmod*q)));
 end
+
 Sig     = fft(Sig);
 FcLoc	= round(Fc/dF);             % bin-number of Fc (location)
 Finf    = FcLoc-round(BW/(2*dF)+1); % bin-number of Finf = Fc - BW/2
 Fsup    = FcLoc+round(BW/(2*dF)+1); % bin-number of Fsup = Fc + BW/2
 Bpass	= max([Finf 1]):min([Fsup N]);
 BPmul	= zeros(N,1);BPmul(Bpass) = 1;
-
 Sig     = real(ifft(Sig.*BPmul)); % Inverse FFT of band-passed filter signal
+
 Amp     = From_dB(-dBFS)*( From_dB(SPL-3)/mean(rms(Sig)) );
 Sig     = Amp*Sig;
 

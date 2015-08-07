@@ -28,7 +28,6 @@ if nargout == 0
 end                                         % 2 = linear scale, normalised scale
                                             % 2 = linear scale, 0 to fs/2 (if info.fs is defined)
                                             % 4 = FFT bins
-% info = Ensure_field(info,'wtype',0);      % Rectangular window
 
 if isfield(info,'fs')
     f = (1:K)/K*info.fs/2;
