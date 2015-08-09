@@ -10,7 +10,7 @@ function gain = From_dB(gain_dB)
 % $Revision     : #1 $
 % $DateTime     : 2008/03/04 14:27:13 $
 % Authors       : Brett Swanson
-% Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Last update on: 30/07/2014 % Update this date manually
 % Last use on   : 30/07/2014 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,5 +1,5 @@
-function [outsig,less,act_indexo] =  Rmssilence(sig,fs,threshin)
-% function [outsig,less,act_indexo] =  Rmssilence(sig,fs,threshin)
+function [outsig,less,act_indexo,rmsdb_sil] =  Rmssilence(sig,fs,threshin)
+% function [outsig,less,act_indexo,rmsdb_sil] =  Rmssilence(sig,fs,threshin)
 % 
 % 1. Description:
 %       This function removes the silence intervals from the input speech based
@@ -95,6 +95,10 @@ for k = 2:cc
     % extracted signal
     extsig = resample(rmsig, fs,ufs);
     outsig(:,k) = extsig;
+end
+
+if nargout == 4
+    rmsdb_sil = rmsdb(sig(act_indexo));
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

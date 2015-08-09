@@ -1,8 +1,11 @@
-function y = rmsdb_freq(X,fs,N,ti,tf)
-% function y = rmsdb_freq(x,fs,N,ti,tf)
+function y = rmsdb_freqdomain(f,X)
+% function y = rmsdb_freqdomain(f,X)
 %
 % 1. Description:
-%       Root-Mean-Square value of x, in dB
+%       Root-Mean-Square value of the spectrum X. If X comes from an N-point
+%       FFT, then X has K = N/2 elements.
+%       N_time corresponds to the length in samples of the time series x used
+%       (at some point) as input to the FFT (or DFT).
 %
 % 2.1 Example 1:
 %   [x, Fs] = wavread('Choice.wav'); 
@@ -23,39 +26,32 @@ function y = rmsdb_freq(X,fs,N,ti,tf)
 % Last use on   : 31/03/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if ischar(X)
-    try
-        X = Wavread(X);
-    catch
-        error('variable x interpreted as char, but no wav file with such a name was found')
-    end
-end
-
-if nargin < 5
-    Nf = length(X);
-else
-    Nf = round(tf*fs);
-end
-
-if nargin < 4
-    Ni = 1;
-else
-    Ni = ceil(ti*fs + 1e-6); % to make min idx equal to 1
-end
-
-if nargin < 3
-    N = Nf - Ni;
-end
-
 [r,c]=size(X);
 
+if r == 1
+    K = c;
+else 
+    K = r;
+end
+
+N = 2*K;
+
+if nargin < 3
+    N_time = N; % by default we assume that an N-length x waveform was used
+                % to obtain an N-point FFT
+end
+
+df = f(2)-f(1); % frequency resolution
+
+X2 = X.^2;
+
 if c == 1
-    y = 10*log10( X(Ni:Nf)'*X(Ni:Nf)/length(X(Ni:Nf)) );
+    y = 10*log10( df*X'*X );
 elseif r == 1
     Nf = c;
-    y = 10*log10( X(Ni:Nf)*X(Ni:Nf)'/length(X(Ni:Nf)) );
+    y = 10*log10( df*X*X' );
 else % Generic case:
-    y = 10*log10( sum(X(Ni:Nf,:).*X(Ni:Nf,:))/length(X(Ni:Nf,:)) );
+    y = 10*log10( df*sum(X.*X) );
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

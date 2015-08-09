@@ -25,9 +25,9 @@ function varargout = AMTControl(varargin)
 %       Line    Stage                               Last updated on
 %       43      0. Initialisation                   31/07/2015
 %       63      1. AMTControl_OpeningFcn            31/07/2015
-%       94      3. btnLoad                          31/07/2015
-%       236     4. btnGetTemplate                         31/07/2015
-%       244     5. btnCalculate                     31/07/2015
+%       101     3. btnLoad                          07/08/2015
+%       338     4. btnGetTemplate                   07/08/2015
+%       344     5. btnCalculate                     31/07/2015
 %       1101    6. txtXoffset: waveforms shift      31/07/2015
 %       1401    7. popAnalyser_Callback             05/08/2015
 %       
@@ -145,8 +145,8 @@ if strcmp(filename1,'')|strcmp(filename2,'')
 end
 set(handles.txtOutputDir,'string',dir_out)
 
-handles.audio.G1 = str2num( get(handles.txtGain1,'string') );
-handles.audio.G2 = str2num( get(handles.txtGain2,'string') );
+G1 = str2num( get(handles.txtGain1,'string') );
+G2 = str2num( get(handles.txtGain2,'string') );
 
 [insig1,fs]  = Wavread(filename1);
 [insig2,fs2] = Wavread(filename2);
@@ -154,8 +154,6 @@ handles.audio.G2 = str2num( get(handles.txtGain2,'string') );
 % This sould be the normal case:
 if fs == fs2
     handles.audio.fs = fs;
-    handles.audio.insig1 = insig1;
-    handles.audio.insig2 = insig2;
 end
 
 if strcmp( get(handles.txtti,'String'), '')
@@ -180,7 +178,8 @@ txttf_Callback(handles.txttf,[],handles);
 try
     ti_samples  = handles.audio.ti_samples;
     tf_samples  = handles.audio.tf_samples;
-catch % Redundant, but first time running needs it (aparently)
+catch
+    % Redundant, but first time running needs it (aparently)
     handles.audio.ti_samples = str2num( get(handles.txtti,'String') );
     handles.audio.tf_samples = str2num( get(handles.txttf,'String') );
     ti_samples  = handles.audio.ti_samples;
@@ -207,32 +206,34 @@ else
     set(handles.txtExcerpt,'visible','off');
 end
 bGenerateExcerpt = handles.audio.bGenerateExcerpt;
-% ti_samples = handles.audio.ti_samples;
-% tf_samples = handles.audio.tf_samples;
 
 xliminf = ti_samples/fs;
 xlimsup = tf_samples/fs;
 
 axes(handles.axes1)
-plot(t1,From_dB(handles.audio.G1)*insig1);
+plot(t1,From_dB(G1)*insig1);
 % title( name2figname( filename1 ) )
 xlim([xliminf xlimsup])
 set(gca,'XTickLabel',''); % Time scale will be the same as in File2 (Axes2)
 
 axes(handles.axes2)
 try
-    plot(t2(1:end-toffset+1),From_dB(handles.audio.G2)*insig2(toffset:end),'r');
+    plot(t2(1:end-toffset+1),From_dB(G2)*insig2(toffset:end),'r');
 catch
-    plot(t2,From_dB(handles.audio.G2)*insig2,'r');
+    plot(t2,From_dB(G2)*insig2,'r');
 end
 xlim([xliminf xlimsup])
 
 set(gca,'YTick',[])
 
 lvl_m_30_dBFS = str2num( get(handles.txtCalLevel,'string') );
+adjustmentvalue = 70-lvl_m_30_dBFS; % values calibrated to 100 dB RMS = 0 dBFS
 
-x1tmp = insig1(ti_samples        :tf_samples);
-x2tmp = insig2(ti_samples+toffset:tf_samples);
+insig1_orig = From_dB(adjustmentvalue+G1) * insig1;    
+insig2_orig = From_dB(adjustmentvalue+G2) * insig2;
+
+insig1 = insig1_orig(ti_samples        :tf_samples);
+insig2 = insig2_orig(ti_samples+toffset:tf_samples);
 
 if bGenerateExcerpt
     Nextra = length(insig1)-(tf_samples - ti_samples)-1;
@@ -241,13 +242,13 @@ if bGenerateExcerpt
     end
  
     try
-        insig1tmp = insig1( ti_samples:tf_samples + Nextra ); % one additional frame
-        insig2tmp = insig2( ti_samples + toffset:tf_samples + toffset + Nextra ); % one additional frame
+        insig1tmp = insig1_orig( ti_samples:tf_samples + Nextra ); % one additional frame
+        insig2tmp = insig2_orig( ti_samples + toffset:tf_samples + toffset + Nextra ); % one additional frame
         insig1 = insig1tmp;
         insig2 = insig2tmp;
     catch
-        insig1 = insig1( ti_samples:tf_samples ); % one additional frame
-        insig2 = insig2( ti_samples + toffset:tf_samples + toffset ); % one additional frame
+        insig1 = insig1_orig( ti_samples:tf_samples ); % one additional frame
+        insig2 = insig2_orig( ti_samples + toffset:tf_samples + toffset ); % one additional frame
         warning('using catch...')
     end
     set(handles.txtExcerpt,'visible','on');
@@ -273,30 +274,52 @@ else
 
 end
 
-GainFile1 = handles.audio.G1+lvl_m_30_dBFS+30;
-GainFile2 = handles.audio.G2+lvl_m_30_dBFS+30;
-RMS1 = rmsdb(x1tmp)+GainFile1; % Zwicker's correction
-RMS2 = rmsdb(x2tmp)+GainFile2; 
+dBFS = lvl_m_30_dBFS+30+adjustmentvalue;
+RMS1 = rmsdb(insig1) + dBFS; % Zwicker's correction
+RMS2 = rmsdb(insig2) + dBFS; 
+
 thres_silence = 1/3; % one-third of the median value of the envelope 
-[xx xx idxtmp] = Rmssilence(x1tmp,fs,thres_silence);
-RMS1nosil = rmsdb( x1tmp(idxtmp) )+GainFile1;
+[xx xx xx RMS1nosil] = Rmssilence(insig1,fs,thres_silence);
+[xx xx xx RMS2nosil] = Rmssilence(insig2,fs,thres_silence);
 
-[xx xx idxtmp] = Rmssilence(x2tmp,fs,thres_silence);
-RMS2nosil = rmsdb( x2tmp(idxtmp) )+GainFile2;
-
-set( handles.txtRMS1,'string',sprintf('RMS, file 1 = %.2f [dB SPL] (%.2f no silent)',RMS1,RMS1nosil) );
-set( handles.txtRMS2,'string',sprintf('RMS, file 2 = %.2f [dB SPL] (%.2f no silent)',RMS2,RMS2nosil) );
+set( handles.txtRMS1,'string',sprintf('RMS1 = %.1f [dB SPL] (%.1f no silent)',RMS1,RMS1nosil + dBFS) );
+set( handles.txtRMS2,'string',sprintf('RMS2 = %.1f [dB SPL] (%.1f no silent)',RMS2,RMS2nosil + dBFS) );
 
 handles.audio.toffset = toffset;
 
-lvl_m_30dBFS = str2num( get(handles.txtCalLevel,'string') );
-calvalue = 70-lvl_m_30dBFS; % values calibrated to 100 dB RMS = 0 dBFS
-insig1 = From_dB(calvalue+handles.audio.G1) * insig1;    
-insig2 = From_dB(calvalue+handles.audio.G2) * insig2;
+bDFT = get(handles.chAddDFT,'value');
+
+if bDFT
+    windowtype = 'hanning';
+    dBFS = lvl_m_30_dBFS + 30;
+    
+    K  = length(insig1)/2;
+    [xx y1dB f] = freqfft2(insig1,K,fs,windowtype,dBFS);   
+    [xx y2dB  ] = freqfft2(insig2,K,fs,windowtype,dBFS);
+    
+    axes(handles.axesDFT);
+    plot(f,y1dB,'b',f,y2dB,'r'); grid on
+    min2plot = max( min(min([y1dB y2dB])),0 ); % minimum of 0 dB
+    max2plot = max(max([y1dB y2dB]))+5; % maximum exceeded in 5 dB
+    ylim([min2plot max2plot])
+    xlabel('Frequency [Hz]')
+    ylabel('Log-spectrum [dB]')
+    
+    nTicks = get(gca,'YTick');
+    
+    if length(nTicks) == 2 % then we add a third Tick
+        
+        nTicks = [nTicks(1) mean(nTicks) nTicks(2)];
+        set(gca,'YTick',nTicks);
+        
+    end
+    
+end
 
 handles.audio.insig1 = insig1;
 handles.audio.insig2 = insig2;
-
+handles.audio.G1 = G1;
+handles.audio.G2 = G2;
 guidata(hObject,handles)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -334,6 +357,12 @@ end
 idx = 13;
 template_test = [];
 Ntimes = 1; %
+if Ntimes == 1
+    bDeterministic = 1;
+else
+    bDeterministic = 0;
+end
+
 switch nAnalyser
     case 100
             
@@ -341,8 +370,16 @@ switch nAnalyser
         [out_2pre , fc] = dau1996preproc(insig1 + insig2supra,fs);
         for i = 1:Ntimes
             
-            out_1 = Add_gaussian_noise(out_1pre,mu,sigma); % Add internal noise
-            out_2 = Add_gaussian_noise(out_2pre,mu,sigma); % Add internal noise
+            if bDeterministic == 1 
+                % Deterministic noise
+                [out_1 noise] = Add_gaussian_noise_deterministic(out_1pre,mu,sigma); 
+                out_2 = out_2pre + noise; % deterministic noise
+                
+            else
+                % 'Running' noise
+                [out_1 noise] = Add_gaussian_noise(out_1pre,mu,sigma); 
+                out_2 = Add_gaussian_noise(out_2pre,mu,sigma); % Add internal noise
+            end
             
             out_template = Get_template(out_1(:,idx),out_2(:,idx));
             
@@ -357,6 +394,11 @@ else
 end
 
 handles.audio.template = template;
+handles.audio.bDeterministic = bDeterministic;
+if bDeterministic
+    handles.audio.noise = noise;
+end
+
 t = ( 1:length(insig1) )/fs;
 figure;
 plot(t,template); grid on
@@ -369,27 +411,37 @@ function btnSimulateAFC_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-Level_start     = 15; % above test-signal level
+Level_start     = 10; % above test-signal level
 Level_step      = il_get_value_numericPop(handles.popStepdB);
 Level_current   = Level_start;
 Reversals_stop  = il_get_value_numericPop(handles.popNreversals);
 bHalveStepSize  = get(handles.chStepSizeHalved,'value');
 
+% idxobs = [4410       13230];
+idxobs = [220       750];
 idx = 13;
 Ntimes = 1; %
 Staircase = [];
 Reversals = [];
 
+dprime = [];
+
 try
     insig1 = handles.audio.insig1;
     insig2 = handles.audio.insig2;
     template = handles.audio.template;
+    bDeterministic = handles.audio.bDeterministic;
+    if bDeterministic
+        noise = handles.audio.noise;
+    end
+    
     fs = handles.audio.fs;
 catch
     error('Load any data and get the template before pressing this button...');
 end
 
 nAnalyser = il_get_nAnalyser(handles.popAnalyser);
+bStochastic = ~bDeterministic;
 
 if nAnalyser == 100 | nAnalyser == 101
     
@@ -422,12 +474,40 @@ while (nReversal < Reversals_stop)
             [out_interval2 , fc] = dau1996preproc(interval2,fs);
             for i = 1:Ntimes
 
-                out_interval1 = Add_gaussian_noise(out_interval1,mu,sigma); % Add internal noise
-                out_interval2 = Add_gaussian_noise(out_interval2,mu,sigma); % Add internal noise
+                if bStochastic
+                    out_interval1 = Add_gaussian_noise(out_interval1,mu,sigma); % Add internal noise
+                    out_interval2 = Add_gaussian_noise(out_interval2,mu,sigma); % Add internal noise
+                end
+                if bDeterministic
+                    out_interval1 = out_interval1 + noise;
+                    out_interval2 = out_interval2 + noise;
+                end
+                
+                sigint1 = out_interval1(idxobs(1):idxobs(2),idx);
+                sigint2 = out_interval2(idxobs(1):idxobs(2),idx);
+                
+                Mmin = floor(min(sigint1));
+                Mmax = ceil(max(sigint2));
+                Centres = Mmin-1:1:Mmax+1;
 
-                decision(1) = optimaldetector(out_interval1(:,idx),template);
-                decision(2) = optimaldetector(out_interval2(:,idx),template);
+                [PDF1 yi1 stats1] = Probability_density_function(sigint1,Centres);
+                [PDF2 yi2 stats2] = Probability_density_function(sigint2,Centres);
 
+                figure(100)
+                plot(yi1,PDF1,'b',yi2,PDF2,'r')
+                grid on
+                
+                % xlim([lvl1-15 lvl1+5]);
+                % ylim([0 1])
+                
+                dprime(end+1,i) = ( mean(sigint2) - mean(sigint1) )/sigma;
+                decision(1) = optimaldetector(sigint1,template(idxobs(1):idxobs(2)));
+                decision(2) = optimaldetector(sigint2,template(idxobs(1):idxobs(2)));
+
+                if abs( dprime(end) ) < 1.26
+                    disp('');
+                end
+                
             end
     end
     
@@ -502,7 +582,7 @@ dir_output  = get(handles.txtOutputDir,'string');
 nSkipStart  = str2num( get(handles.txtAnalysisStart,'string') );
 nSkipEnd    = str2num( get(handles.txtAnalysisEnd  ,'string') );
 
-if nAnalyser == 15
+if nAnalyser == 15 | bUsePsySound
     HopSize = str2num( get(handles.txtOverlap,'string') );
     CParams.HopSize = HopSize;
 end
@@ -1427,7 +1507,7 @@ switch nAnalyser
         set(handles.chParam1,'value',0);
         
         set(handles.chParam2,'string','average-power-spectrum'); % 1 x 1024
-        set(handles.chParam2,'enable','on');
+        set(handles.chParam2,'enable','off');
         % set(handles.chParam2,'value',0);
         
         set(handles.chParam3,'string','spectral-centroid'); % 
@@ -2298,3 +2378,12 @@ function chStepSizeHalved_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of chStepSizeHalved
+
+
+% --- Executes on button press in chAddDFT.
+function chAddDFT_Callback(hObject, eventdata, handles)
+% hObject    handle to chAddDFT (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chAddDFT
