@@ -2,13 +2,13 @@ function y = dbmean(SPLs)
 % function y = dbmean(SPLs)
 %
 % 1. Description:
-%       Energetic mean. Different rows are different times, while different
-%       columns refer to different frequency bands
+%       Energetic mean (sum of the squares). Different rows are different 
+%       times, while different columns refer to different frequency bands
 % 
 % 2. Stand-alone example:
 %
 % 3. Additional info:
-%       Tested cross-platform: No
+%       Tested cross-platform: Yes
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 03/10/2014

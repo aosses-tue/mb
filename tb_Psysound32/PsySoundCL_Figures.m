@@ -65,6 +65,8 @@ option = ef(option,'bUsePsySound'    ,1);
 option = ef(option,'bLoudnessContrained',0);
 option = ef(option,'zlim4assessment',[0 24]);
 
+nAnalyser = option.nAnalyser;
+
 bLoudnessContrained = option.bLoudnessContrained; % out of the struct to be visible by MATLAB
 zlim4assessment = option.zlim4assessment;
 
@@ -86,7 +88,7 @@ option = Ensure_field(option,'LineWidth',[2 1]);
 idx1 = find(t1>=option.tanalysis(1) & t1<=option.tanalysis(2));
 idx2 = find(t2>=option.tanalysis(1) & t2<=option.tanalysis(2));
 
-if option.bGenerateExcerpt == 1 & option.nAnalyser == 15 & option.bUsePsySound == 0 % only for roughness offline
+if option.bGenerateExcerpt == 1 & nAnalyser == 15 & option.bUsePsySound == 0 % only for roughness offline
     idx1 = find(t1>=0 & t1<=option.tanalysis(2)-option.tanalysis(1));
     idx2 = find(t2>=0 & t2<=option.tanalysis(2)-option.tanalysis(1));
      timeoffset = option.tanalysis(1);
@@ -213,7 +215,7 @@ elseif strcmp(param,'one-third-OB') | strcmp(param,'one-third-octave-band-spectr
     bPlot_vs_time = 0;
     option = Ensure_field(option,'nAnalyser',10);
     
-    switch option.nAnalyser
+    switch Analyser
             
         case 10
             
@@ -259,8 +261,8 @@ elseif strcmp(param,'one-third-OB') | strcmp(param,'one-third-octave-band-spectr
                 semilogx(f,dbmean( res2.DataSpecOneThird(idx1,:) ),option.color{2},'LineWidth',option.LineWidth(2),'Marker','<'); grid on;
             
             end
-            ylabel('Magnitude (dB)')
-            xlabel('Frequency (Hz)');
+            ylabel('Magnitude [dB]')
+            xlabel('Frequency [Hz]');
                 
             ylims = get(gca,'YLim');
             ylims(1) = 0; % Nothing below 0 dB
@@ -274,12 +276,37 @@ elseif strcmp(param,'one-third-OB') | strcmp(param,'one-third-octave-band-spectr
             
     end
     
+elseif strcmp(param,'log-spectrum') % same as average-power-spectrum, but res1.Data1 comes already in dB
+    
+    switch nAnalyser
+        case 1
+            
+            f = res1.f;
+            
+            figure;
+            plot(f,res1.Data1(:,:),option.color{1},'LineWidth',option.LineWidth(1)); hold on
+            plot(f,res2.Data1(:,:),option.color{2},'LineWidth',option.LineWidth(2)); grid on;
+            
+            ylabel('Log-spectrum [dB]'); % this can be automised
+            xlabel('Frequency [Hz]'); % this can be automised
+            xlim(option.frange)
+            
+            title(sprintf('%s - %s (ti, tf) = (%.3f,%.3f) [s]',res1.name{2},option.title,option.tanalysis(1),option.tanalysis(2)));
+            
+            ylims = get(gca,'YLim');
+            ylims(1) = 0; % Nothing below 0 dB
+            set(gca,'YLim',ylims);
+            
+            h(end+1) = gcf;
+            ha(end+1) = gca;
+    end
+    
 elseif strcmp(param,'average-power-spectrum')
     
     bPlot_vs_time = 0;
     % option = Ensure_field(option,'nAnalyser',10);
     
-    switch option.nAnalyser
+    switch nAnalyser
         case 1
             option = Ensure_field(option,'bLogScale',1);
             f = res1.f;
@@ -293,8 +320,8 @@ elseif strcmp(param,'average-power-spectrum')
                 plot(f,dbmean( res1.Data1(:,:)),option.color{1},'LineWidth',option.LineWidth(1)); hold on
                 plot(f,dbmean( res2.Data1(:,:)),option.color{2},'LineWidth',option.LineWidth(2)); grid on;
             end
-            ylabel('Magnitude (dB)'); % this can be automised
-            xlabel('Frequency (Hz)'); % this can be automised
+            ylabel('Magnitude [dB]'); % this can be automised
+            xlabel('Frequency [Hz]'); % this can be automised
             xlim(option.frange)
             
             title(sprintf('%s - %s (ti, tf) = (%.3f,%.3f) [s]',res1.name{2},option.title,option.tanalysis(1),option.tanalysis(2)));
@@ -317,7 +344,7 @@ elseif strcmp(param,'average-power-spectrum')
     
 elseif strcmp(param,'spectrogram')
     bPlot_vs_time = 1;
-    switch option.nAnalyser
+    switch Analyser
         case 1
             f = res1.f;
             option = ef(option,'frange',minmax(f));
@@ -329,8 +356,8 @@ elseif strcmp(param,'spectrogram')
             colormap('Gray')
             set(gca,'YDir','normal')
             set(gca, 'FontName', 'Times New Roman', 'FontSize', 14)
-            xlabel('Time (s)'); 
-            ylabel('Frequency (Hz)'); 
+            xlabel('Time [s]'); 
+            ylabel('Frequency [Hz]'); 
             h(end+1) = gcf;
             ha(end+1) = gca;
             title( sprintf('%s %s',option.label1,option.label1suffix) );
@@ -353,7 +380,7 @@ elseif strcmp(param,'specific-loudness')| strcmp(param,'average-specific-loudnes
     
     option = Ensure_field(option,'nAnalyser',12);
         
-    switch option.nAnalyser
+    switch Analyser
         case 10
             
             option.label1suffix = sprintf(', tot = %.2f [sone]',res1.stats.loud_tot);

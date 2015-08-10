@@ -27,7 +27,7 @@ function varargout = AMTControl(varargin)
 %       63      1. AMTControl_OpeningFcn            31/07/2015
 %       101     3. btnLoad                          07/08/2015
 %       338     4. btnGetTemplate                   07/08/2015
-%               5. btnSimulateAFC
+%       433     5. btnSimulateAFC                   10/08/2015
 %       633     6. btnCalculate                     31/07/2015
 %       1101    7. txtXoffset: waveforms shift      31/07/2015
 %       1550    8. popAnalyser_Callback             10/08/2015
@@ -133,8 +133,6 @@ filename2 = get(handles.txtFile2,'string');
 
 if strcmp(filename1,'')|strcmp(filename2,'')
     try
-        % filename1 = [direx 'fluct_test_bbn_AM_m_000_fmod_004Hz_60_dBSPL.wav'];
-        % filename2 = [direx 'fluct_test_bbn_AM_m_070_fmod_004Hz_60_dBSPL.wav'];
         filename1 = [direx 'dau1996b_expI_noisemasker.wav'];
         filename2 = [direx 'dau1996b_expIB0_stim-10ms-76-onset-50-ms.wav'];
     catch
@@ -346,15 +344,15 @@ nAnalyser = il_get_nAnalyser(handles.popAnalyser);
 if nAnalyser == 100 | nAnalyser == 101
     
     fc2plot_idx = get(handles.popFc ,'value'); 
-    fc_ERB = fc2plot_idx+2;
-    Nelements = length(get(handles.popFc,'String'));
+    fc_ERB      = fc2plot_idx+2;
+    Nelements   = length(get(handles.popFc,'String'));
     
     if fc2plot_idx == Nelements
         disp('Choose an fc value to proceed with the analysis...');
         pause();
         fc2plot_idx = get(handles.popFc ,'value');
     end
-    fc     = audtofreq(fc_ERB,'erb');
+    fc      = audtofreq(fc_ERB,'erb');
     mu      = 0;
     tmp     = get(handles.popInternalNoise,'string');
     tmp_idx = get(handles.popInternalNoise,'value');
@@ -372,6 +370,7 @@ end
 
 out_1 = [];
 out_2 = [];
+
 switch nAnalyser
     case 100
         
@@ -409,11 +408,7 @@ switch nAnalyser
  
 end
 
-% if Ntimes ~= 1
-%     template = transpose(  mean( transpose(template_test) )  );
-% else
-    template = template_test;
-% end
+template = template_test;
 
 handles.audio.template      = template;
 handles.audio.bDeterministic= bDeterministic;
@@ -432,7 +427,7 @@ xlabel(sprintf('Time [s]\nFollow the instructions in the command window to conti
 guidata(hObject,handles)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% --- Executes on button press in btnSimulateAFC.
+% 5. Executes on button press in btnSimulateAFC.
 function btnSimulateAFC_Callback(hObject, eventdata, handles)
 % hObject    handle to btnSimulateAFC (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -748,7 +743,7 @@ if bUsePsySound
     options.nSkipEnd   = nSkipEnd;
     [out_2 tmp_h tmp_ha]   = PsySoundCL(filename2,options,CParams);
     
-else
+else % if NOT PsySound
     
     callevel = str2num( get(handles.txtCalLevel,'string') ); % rms 90 dB SPL = 0 dBFS 
     warning('callevel not used at all for m-file scripts...');
@@ -769,6 +764,23 @@ else
             K  = length(insig1)/2;
             [xx y1dB f] = freqfft2(insig1,K,fs,windowtype,dBFS);   
             [xx y2dB  ] = freqfft2(insig2,K,fs,windowtype,dBFS);
+
+            out_1.t = ( 1:length(insig1) )/fs;
+            out_1.f = f;
+            out_1.Data1 = y1dB;
+            
+            nParam = 2;
+            out_1.name{nParam} = 'Log-spectrum';
+            out_1.param{nParam} = strrep( lower( out_1.name{nParam} ),' ','-');
+            
+            out_2.t = ( 1:length(insig2) )/fs;
+            out_2.f = f;
+            out_2.Data1 = y2dB;
+                        
+            nParam = 2;
+            out_2.name{nParam} = 'Log-spectrum';
+            out_2.param{nParam} = strrep( lower( out_2.name{nParam} ),' ','-');
+
 
         case 12 % Loudness
             
@@ -898,24 +910,24 @@ switch nAnalyser
             param{end+1}   = sprintf('%s-analyser-%s-file2','MU',Num2str(options.nAnalyser));
         end
         
-    case 1
-        
-        if bUsePsySound == 0
-            
-            if bPlotParam2 == 1
-                figure;
-                plot(f,y1dB,'b',f,y2dB,'r'); grid on
-                min2plot = max( min(min([y1dB y2dB])),0 ); % minimum of 0 dB
-                max2plot = max(max([y1dB y2dB]))+5; % maximum exceeded in 5 dB
-                ylim([min2plot max2plot])
-                xlabel('Frequency [Hz]')
-                ylabel('Log-spectrum [dB]')
-                
-                legend(options.label1,options.label2);
-                
-            end
-            
-        end
+    % case 1
+    % 
+    %     if bUsePsySound == 0
+    % 
+    %         if bPlotParam2 == 1
+    %             figure;
+    %             plot(f,y1dB,'b',f,y2dB,'r'); grid on
+    %             min2plot = max( min(min([y1dB y2dB])),0 ); % minimum of 0 dB
+    %             max2plot = max(max([y1dB y2dB]))+5; % maximum exceeded in 5 dB
+    %             ylim([min2plot max2plot])
+    %             xlabel('Frequency [Hz]')
+    %             ylabel('Log-spectrum [dB]')
+    % 
+    %             legend(options.label1,options.label2);
+    % 
+    %         end
+    % 
+    %     end
         
     otherwise
         
@@ -952,7 +964,7 @@ switch nAnalyser
         end
 
         if bPlotParam2
-            % Specific loudness, roughness
+            % Log-spectrum, Specific loudness, roughness
             param{end+1}        = labelParam2;
             [h(end+1) ha(end+1) stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
         end
@@ -1604,7 +1616,7 @@ switch nAnalyser
         set(handles.chParam1,'enable','on');
         set(handles.chParam1,'value',0);
         
-        set(handles.chParam2,'string','average-power-spectrum'); % 1 x 1024
+        set(handles.chParam2,'string','log-spectrum'); % 1 x 1024
         set(handles.chParam2,'enable','on');
         set(handles.chParam2,'value',1);
         
@@ -1612,7 +1624,7 @@ switch nAnalyser
         set(handles.chParam3,'enable','off');
         set(handles.chParam3,'value',0);
         
-        set(handles.chParam4,'string','Param4');
+        set(handles.chParam4,'string','average-power-spectrum');
         set(handles.chParam4,'enable','off');
         set(handles.chParam4,'value',0);
         

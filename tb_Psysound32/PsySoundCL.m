@@ -310,7 +310,6 @@ switch nAnalyser
         
         nParam = 2;
         Data2   = get(tmpObj{1,nParam},'Data');
-        % Data2name = '';
         output.Data2 = Data2;
         output.name{nParam} = get(tmpObj{1,nParam},'Name');
         output.param{nParam} = strrep( lower( output.name{nParam} ),' ','-');

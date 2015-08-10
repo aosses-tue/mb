@@ -1,5 +1,5 @@
-function y = AM_random_noise_BW(Fc,BW,SPL,dur,Fs,Fmod,Mdept,dBFS)
-% function y = AM_random_noise_BW(Fc,BW,SPL,dur,Fs,Fmod,Mdept,dBFS)
+function [SigAM Env] = AM_random_noise_BW(Fc,BW,SPL,dur,Fs,Fmod,Mdept,dBFS)
+% function [SigAM Env] = AM_random_noise_BW(Fc,BW,SPL,dur,Fs,Fmod,Mdept,dBFS)
 % 
 % 1. Description:
 %       Creates one frame of AM-'running' noise at Fs, N.
@@ -83,26 +83,25 @@ dF		= Fs/N;
 wstep	= 2*pi/Fs;
 
 for q=1:N
-   Sig(q) =	Sig(q)*(1+(Mdept*sin(wstep*Fmod*q)));
+    Env(q) = (1+(Mdept*sin(wstep*Fmod*q)));
+    SigAM(q) =	Sig(q)*Env(q);
 end
 
-Sig     = fft(Sig);
+SigAM   = fft(SigAM);
 FcLoc	= round(Fc/dF);             % bin-number of Fc (location)
 Finf    = FcLoc-round(BW/(2*dF)+1); % bin-number of Finf = Fc - BW/2
 Fsup    = FcLoc+round(BW/(2*dF)+1); % bin-number of Fsup = Fc + BW/2
 Bpass	= max([Finf 1]):min([Fsup N]);
 BPmul	= zeros(N,1);BPmul(Bpass) = 1;
-Sig     = real(ifft(Sig.*BPmul)); % Inverse FFT of band-passed filter signal
+SigAM   = real(ifft(SigAM.*BPmul)); % Inverse FFT of band-passed filter signal
 
-Amp     = From_dB(-dBFS)*( From_dB(SPL-3)/mean(rms(Sig)) );
-Sig     = Amp*Sig;
-
-y		= Sig;
+Amp     = From_dB(-dBFS)*( From_dB(SPL-3)/mean(rms(SigAM)) );
+SigAM   = Amp*SigAM;
 
 if nargout == 0
     
     filename = [Get_TUe_paths('outputs') sprintf('randomnoise-Fc-%.0f_BW-%.0f_Fmod-%.0f_Mdept-%.0f_SPL-%.0f',Fc,BW,Fmod,Mdept,SPL)];
-    Wavwrite(y,Fs,filename);
+    Wavwrite(SigAM,Fs,filename);
     
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
