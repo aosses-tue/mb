@@ -15,8 +15,8 @@ function [y centres stats] = Probability_density_function(x,N)
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 21/05/2014
-% Last update on: 16/05/2015 % Update this date manually
-% Last use on   : 16/05/2015 % Update this date manually
+% Last update on: 16/05/2015 
+% Last use on   : 10/08/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 2
@@ -37,7 +37,6 @@ y = cal * p;
 
 if nargout > 2
     idx = min(find(y == max(y))); % in case two maximum values are found, the minimum index (arbitrary) is chosen
-    % stats.mean  = centres(idx);
     stats.mean  = mean(x);
     stats.std   = std(x);
     

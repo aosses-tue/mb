@@ -7,7 +7,8 @@ function r20150522_update(f)
 %
 % 3. Additional info:
 %       Tested cross-platform: Yes
-%
+%       See also r20150522_update2, r20150522_update_opt.m
+% 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 18/05/2015
 % Last update on: 18/05/2015 % Update this date manually

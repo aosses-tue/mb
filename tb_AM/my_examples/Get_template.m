@@ -12,22 +12,21 @@ function out = Get_template(ir1,ir2,setup)
 % 2. Stand-alone example:
 % 
 % 3. Additional info:
-%       Tested cross-platform: No
+%       Tested cross-platform: Yes
 %
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 23/10/2014
-% Last update on: 30/04/2015 % Update this date manually
-% Last use on   : 05/08/2015 % Update this date manually
+% Last update on: 30/04/2015 
+% Last use on   : 10/08/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if nargin < 4
+if nargin < 3
     setup = [];
 end
 
 setup = ef(setup,'idx',1:size(ir1,2));
 idx = setup.idx;
 
-disp('Make sure ir2 is N+Suprathreshold signal')
 setup   = Ensure_field(setup,'fs',44100);
 fs      = setup.fs;
 out     = Normalise_signal(ir2(:,idx)-ir1(:,idx),fs);

@@ -2,16 +2,22 @@ function outs = r20150522_update_opt(opts)
 % function outs = r20150522_update_opt(opts)
 %
 % 1. Description:
-%
+%       outs.JNDcurrent - corresponds to the estimated JND when a deviation
+%                         of opts.sigma is considered.
+% 
+%       This script is being controlled from r20150522_update.m
+% 
 % 2. Stand-alone example:
-%
+%       r20150522_update; 
+% 
 % 3. Additional info:
 %       Tested cross-platform: No
-%
+%       See also r20150522_update.m, r20150522_update2.m
+% 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 18/05/2015
-% Last update on: 22/05/2015 % Update this date manually
-% Last use on   : 22/05/2015 % Update this date manually
+% Last update on: 22/05/2015 
+% Last use on   : 22/05/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin == 0
