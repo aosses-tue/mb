@@ -101,7 +101,7 @@ for i = 1:N_iterations
     env=abs(hilbert(LNN));
     LNN = LNN./env;
     
-    LNNtmp = Set_Fourier_coeff_to_zero(LNN,fs,length(LNN),finf,fsup);
+    LNNtmp = Set_Fourier_coeff_to_zero(LNN,fs,finf,fsup);
     
     LNN = setdbspl(LNNtmp,Level_y+dBFS); % set level to the same as input 'y'
     

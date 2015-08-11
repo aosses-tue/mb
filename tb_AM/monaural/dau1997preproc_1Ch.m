@@ -88,6 +88,9 @@ extra.out03_adaptloop   = outsig;
 
 % Modulation filterbank
 [outsig,mfc] = modfilterbank(outsig,fs,fc);
+
+outsig = outsig{1};
+
 extra.out04_modfilterbank = outsig;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

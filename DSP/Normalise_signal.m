@@ -7,18 +7,24 @@ function y = Normalise_signal(x,fs)
 %       This normalisation is approximately independent respect to the 
 %       sampling frequency.
 % 
+%       This script makes the multiplication sum(DeltaT * y^2) equal to 1
+% 
 % 2. Additional info:
-%       Tested cross-platform: No
+%       Tested cross-platform: Yes
 %
 % 3. Stand-alone example:
 %       x = wgn(1,10,1); % 10 element white noise
 %       fs = 44100;
 %       y = Normalise_signal(x,fs);
 % 
+%       x = wgn(1,44100,1); % 10 element white noise
+%       fs = 44100;
+%       y = Normalise_signal(x,fs);
+% 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 20/10/2014
-% Last update on: 30/04/2015 % Update this date manually
-% Last use on   : 05/08/2015 % Update this date manually
+% Last update on: 30/04/2015 
+% Last use on   : 05/08/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 y = nan(size(x)); % just allocation

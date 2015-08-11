@@ -1,5 +1,5 @@
-function inoutsig = Set_Fourier_coeff_to_zero(inoutsig,fs,N,fmin,fmax)
-% function inoutsig = Set_Fourier_coeff_to_zero(inoutsig,fs,N,fmin,fmax)
+function inoutsig = Set_Fourier_coeff_to_zero(inoutsig,fs,fmin,fmax)
+% function inoutsig = Set_Fourier_coeff_to_zero(inoutsig,fs,fmin,fmax)
 %
 % 1. Description:
 %
@@ -14,16 +14,13 @@ function inoutsig = Set_Fourier_coeff_to_zero(inoutsig,fs,N,fmin,fmax)
 % Last use on   : 06/08/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if nargin < 3
-    N       = length(inoutsig);
-end
+N   = length(inoutsig);
 
 fc      = (fmin + fmax)/2;
 BW      = fmax - fmin;
 dF		= fs/N;
-% wstep	= 2*pi/fs;
 
-inoutsig   = fft(inoutsig);
+inoutsig   = fft(inoutsig,N);
 FcLoc	= round(fc/dF);             % bin-number of Fc (location)
 Finf    = FcLoc-round(BW/(2*dF)+1); % bin-number of Finf = Fc - BW/2
 Fsup    = FcLoc+round(BW/(2*dF)+1); % bin-number of Fsup = Fc + BW/2

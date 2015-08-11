@@ -22,12 +22,15 @@ function hFig = Mesh(t,f,z,options)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 23/07/2014
 % Last update on: 31/07/2014 
-% Last used on  : 31/07/2015 % Update this date manually
+% Last used on  : 11/08/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 4
     options = [];
 end
+
+torig = t; Ntorig = length(t);
+forig = f; Nforig = length(f);
 
 options = Ensure_field(options,'bPlot3D',1);
 options = Ensure_field(options,'bPlot2D',~options.bPlot3D);
@@ -36,7 +39,7 @@ options = Ensure_field(options,'step1',1);
 options = Ensure_field(options,'step2',1);
 options = Ensure_field(options,'ZLabel','Amplitude');
 options = ef(options,'XLabel','x-axis');
-options = ef(options,'XLabel','y-axis');
+options = ef(options,'YLabel','y-axis');
 options = ef(options,'bSave',1);
 
 bSave = options.bSave;

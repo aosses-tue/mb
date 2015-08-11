@@ -1,9 +1,11 @@
-function [SigAM Env] = AM_random_noise_BW(Fc,BW,SPL,dur,Fs,Fmod,Mdept,dBFS)
-% function [SigAM Env] = AM_random_noise_BW(Fc,BW,SPL,dur,Fs,Fmod,Mdept,dBFS)
+function [SigAM filename Env SigBBN] = AM_random_noise_BW(fc,BW,SPL,dur,fs,Fmod,Mdept,dBFS)
+% function [SigAM filename Env SigBBN] = AM_random_noise_BW(fc,BW,SPL,dur,fs,Fmod,Mdept,dBFS)
 % 
 % 1. Description:
-%       Creates one frame of AM-'running' noise at Fs, N.
-%       The input parameters are centre frequency Fc and bandwidth BW
+%       Creates one frame of AM-'running' noise at fs, N.
+%       The input parameters are centre frequency fc and bandwidth BW
+%           
+%       The Envelope is applied before the band-pass limitation.
 % 
 %       See also: AM_random_noise.m
 % 
@@ -17,7 +19,7 @@ function [SigAM Env] = AM_random_noise_BW(Fc,BW,SPL,dur,Fs,Fmod,Mdept,dBFS)
 %       Mdept = 1;
 %       SPL = 70;
 %       Fs = 44100;
-%       y = AM_random_noise_BW(Fc,BW,SPL,dur,Fs,Fmod,Mdept);
+%       [y env] = AM_random_noise_BW(Fc,BW,SPL,dur,Fs,Fmod,Mdept);
 % 
 %       % If you want to store the output (Wav file):
 %       AM_random_noise_BW(Fc,BW,SPL,dur,Fs,Fmod,Mdept);
@@ -55,7 +57,7 @@ if nargin < 6
 end
 
 if nargin < 5
-    Fs  = 40960;
+    fs  = 40960;
 end
 
 if nargin < 4
@@ -71,37 +73,53 @@ if nargin < 2
 end
 
 if nargin < 1
-    Fc = 1000;
+    fc = 1000;
 end
 
-Fsup    = Fc + BW/2;
-Finf    = Fc - BW/2;
+Fsup    = fc + BW/2;
+Finf    = fc - BW/2;
 
-N       = round(Fs*dur);
+N       = round(fs*dur);
 Sig     = rand(N,1)-0.5; % non-calibrated white noise, with amplitudes from -0.5 to 0.5
-dF		= Fs/N;
-wstep	= 2*pi/Fs;
+SigAM   = zeros(N,1); % Initialisation
+Env     = zeros(N,1); % Initialisation
+dF		= fs/N;
+wstep	= 2*pi/fs;
 
-for q=1:N
-    Env(q) = (1+(Mdept*sin(wstep*Fmod*q)));
-    SigAM(q) =	Sig(q)*Env(q);
+for i=1:N
+    Env(i) = (1+(Mdept*sin(wstep*Fmod*i)));
+    SigAM(i) =	Sig(i)*Env(i);
 end
 
+SigBBN  = SigAM;
 SigAM   = fft(SigAM);
-FcLoc	= round(Fc/dF);             % bin-number of Fc (location)
+FcLoc	= round(fc/dF);             % bin-number of Fc (location)
 Finf    = FcLoc-round(BW/(2*dF)+1); % bin-number of Finf = Fc - BW/2
 Fsup    = FcLoc+round(BW/(2*dF)+1); % bin-number of Fsup = Fc + BW/2
 Bpass	= max([Finf 1]):min([Fsup N]);
 BPmul	= zeros(N,1);BPmul(Bpass) = 1;
 SigAM   = real(ifft(SigAM.*BPmul)); % Inverse FFT of band-passed filter signal
 
-Amp     = From_dB(-dBFS)*( From_dB(SPL-3)/mean(rms(SigAM)) );
-SigAM   = Amp*SigAM;
+SigAM   = setdbspl(SigAM ,SPL,dBFS);
+SigBBN  = setdbspl(SigBBN,SPL,dBFS);
+% filename will be stored in case only if nargout == 0
+filename{1} = sprintf('randomnoise-fc-%.0f_BW-%.0f_fmod-%.0f_Mdept-%.0f_SPL-%.0f',fc,BW,Fmod,100*Mdept,SPL);
+filename{2} = sprintf('randomnoise-BBN_SPL-%.0f',SPL);
+fullfilename  = [Get_TUe_paths('outputs') filename{1}];
+fullfilename2 = [Get_TUe_paths('outputs') filename{2}];
 
 if nargout == 0
     
-    filename = [Get_TUe_paths('outputs') sprintf('randomnoise-Fc-%.0f_BW-%.0f_Fmod-%.0f_Mdept-%.0f_SPL-%.0f',Fc,BW,Fmod,Mdept,SPL)];
-    Wavwrite(SigAM,Fs,filename);
+    Wavwrite(SigAM ,fs,fullfilename);
+    Wavwrite(SigBBN,fs,fullfilename2);
+    
+    figure;
+    t = (1:N)/fs;
+    plot(t,Env,'r--',t,SigAM,'b');
+    legend(sprintf('Envelope that was applied\n before setting coeff to 0'))
+    xlabel('Time [s]')
+    ylabel('Amplitude')
+    grid on
     
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

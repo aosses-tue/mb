@@ -337,7 +337,6 @@ catch
 end
 
 Gain4supra = 10;
-insig2supra = From_dB(Gain4supra) * insig2;
 
 nAnalyser = il_get_nAnalyser(handles.popAnalyser);
 
@@ -374,6 +373,8 @@ out_2 = [];
 switch nAnalyser
     case 100
         
+        insig2supra = From_dB(Gain4supra) * insig2;
+        
         for i = 1:Ntimes
             
             if bDeterministic == 0
@@ -405,6 +406,88 @@ switch nAnalyser
             out_2Mean = transpose(  mean( transpose(out_2) )  );
         end
         template_test = Get_template(out_1Mean,out_2Mean,tmp);
+        
+        
+    case 101
+        
+        insigtmp = Wavread(handles.audio.filenameBBN);
+        % insig2supra = insig2;
+        BW = 3;
+        
+        for i = 1:Ntimes
+            
+            dBFS = 100;
+            warning('arrange dBFS')
+            if bDeterministic == 0
+                insig1 = il_randomise_insig(insigtmp);
+                lvl = rmsdb(insig1) + dBFS;
+                insig1 = Set_Fourier_coeff_to_zero(insig1,fs,fc-BW/2,fc+BW/2);
+                insig1 = setdbspl(insig1,lvl,dBFS);
+                
+                insig2 = il_randomise_insig(insigtmp);
+                [insig2 env] = ch_am(insig2,50,50,'m',fs,0);
+                insig2 = Set_Fourier_coeff_to_zero(insig2,fs,fc-BW/2,fc+BW/2);
+                
+                insig2supra = setdbspl(insig2,lvl,dBFS);
+            end
+
+%             [out_1pre , fc, mfc] = dau1997preproc(insig1     ,fs);
+%             [out_2pre , fc, mfc] = dau1997preproc(insig2supra,fs);
+            % out_1pre = out_1pre{27};
+            [out_1pre , fc, mfc] = dau1997preproc_1Ch(insig1     ,fs,fc);
+            [out_2pre , fc, mfc] = dau1997preproc_1Ch(insig2supra,fs,fc);
+%             
+            bPlot = 0;
+            if bPlot
+                figure;
+                opts.bPlot3D = 0;
+                opts.XLabel = 'Time [s]';
+                opts.YLabel = 'Modulation frequency [Hz]';
+                opts.Zlabel = 'Normalised amplitude';
+                t = (1:44100)/fs;
+                Mesh(t,mfc,transpose(out_1pre),opts)
+            end
+            
+            if bDeterministic == 1 
+                % Deterministic noise
+                [out_1 noise] = Add_gaussian_noise_deterministic(out_1pre,mu,sigma); 
+                out_2 = out_2pre+noise; % deterministic noise
+                
+            else
+                % 'Running' noise
+                [n m] = size(out_1pre);
+                out_1 = [out_1 Add_gaussian_noise(out_1pre(:),mu,sigma)]; 
+                out_2 = [out_2 Add_gaussian_noise(out_2pre(:),mu,sigma)]; % Add internal noise
+            end
+            
+        end
+        
+        tmp.fs = fs;
+        if bDeterministic
+            
+            out_1Mean = out_1;
+            out_2Mean = out_2;
+            
+        else
+            
+            out_1Mean = transpose(  mean( transpose(out_1) )  );
+            out_2Mean = transpose(  mean( transpose(out_2) )  );
+            
+            out_1Mean = reshape(out_1Mean,n,m);
+            out_2Mean = reshape(out_2Mean,n,m);
+            
+            bPlot = 1;
+            if bPlot
+                for i = 1:length(mfc)
+                    figure;
+                    plot(out_1Mean(:,i)), hold on;
+                    plot(out_2Mean(:,i),'r'); grid on
+                    plot(out_2Mean(:,i)-out_1Mean(:,i),'g')
+                    title(sprintf('mfc=%.1f Hz',mfc(i)));
+                end
+            end
+        end
+        template_test = Get_template_MFB(out_1Mean,out_2Mean,fs);
  
 end
 
@@ -421,10 +504,25 @@ if bDeterministic
 end
 
 t = ( 1:length(insig1) )/fs;
-figure;
-plot(t,template); grid on
-xlabel(sprintf('Time [s]\nFollow the instructions in the command window to continue with the AFC simulation'))
+
+switch nAnalyser
+    case 100
+        figure;
+        plot(t,template); grid on
+        xlabel(sprintf('Time [s]\nFollow the instructions in the command window to continue with the AFC simulation'))
+        
+    case 101
+        figure;
+        opts.bPlot3D = 0;
+        opts.XLabel = 'Time [s]';
+        opts.YLabel = 'Modulation frequency [Hz]';
+        opts.Zlabel = 'Normalised amplitude';
+        t = (1:44100)/fs;
+        Mesh(t,mfc,transpose(template),opts)
+end
+
 guidata(hObject,handles)
+        
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 5. Executes on button press in btnSimulateAFC.
@@ -2406,6 +2504,11 @@ filename = AMTControl_Examples(nExample);
 
 set(handles.txtFile1,'String',filename{1});
 set(handles.txtFile2,'String',filename{2});
+if nExample == 3
+    handles.audio.filenameBBN = filename{3};
+end
+
+guidata(hObject,handles);
 
 % --- Executes during object creation, after setting all properties.
 function popExamples_CreateFcn(hObject, eventdata, handles)

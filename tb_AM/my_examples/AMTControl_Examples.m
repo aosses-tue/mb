@@ -20,7 +20,7 @@ function filename = AMTControl_Examples(nExample)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 10/08/2015
 % Last update on: 10/08/2015 
-% Last use on   : 10/08/2015 
+% Last use on   : 11/08/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 bDiary = 0;
@@ -77,17 +77,21 @@ switch nExample
         Mdept = 0.5; % well above threshold
         SPL = 70;
         Fs = 44100;
-        [y env] = AM_random_noise_BW(fc,BW,SPL,dur,fs,fmod,Mdept);
+        [outsig1 file1,  xx, outsigBBN] = AM_random_noise_BW(fc,BW,SPL,dur,fs,fmod,0);
+        [xx      file2, env           ] = AM_random_noise_BW(fc,BW,SPL,dur,fs,fmod,Mdept);
 
-        % If you want to store the output (Wav file):
-        AM_random_noise_BW(fc,BW,SPL,dur,Fs,fmod,Mdept);
+        outsig2 = outsig1.*env;
+        outsig2 = setdbspl(outsig2,SPL,100);
         
-%         file1 = ['fluct_test_bbn_AM_m_000_fmod_004Hz_60_dBSPL.wav'];
-%         file2 = ['fluct_test_bbn_AM_m_070_fmod_004Hz_60_dBSPL.wav'];
-%         
-%         filename{1} = [dirout file1];
-%         filename{2} = [dirout file2];
+        filename{1} = [dirout file1{1} '.wav'];
+        filename{2} = [dirout file2{1} '.wav'];
+        filename{3} = [dirout file1{2} '.wav'];
         
+        if nargout == 0
+            Wavwrite( outsig1,fs,filename{1} );
+            Wavwrite( outsig2,fs,filename{2} );
+            Wavwrite( outsigBBN,fs,filename{3} );
+        end
 end
 
 
