@@ -417,26 +417,30 @@ switch nAnalyser
         for i = 1:Ntimes
             
             dBFS = 100;
+            N = length(insigtmp);
+            r = cos_ramp(N,fs,200,200); r = r(:);
+            
             warning('arrange dBFS')
             if bDeterministic == 0
                 insig1 = il_randomise_insig(insigtmp);
                 lvl = rmsdb(insig1) + dBFS;
                 insig1 = Set_Fourier_coeff_to_zero(insig1,fs,fc-BW/2,fc+BW/2);
+                insig1 = r .* insig1;
                 insig1 = setdbspl(insig1,lvl,dBFS);
                 
                 insig2 = il_randomise_insig(insigtmp);
-                [insig2 env] = ch_am(insig2,50,50,'m',fs,0);
                 insig2 = Set_Fourier_coeff_to_zero(insig2,fs,fc-BW/2,fc+BW/2);
-                
+                insig2 = r .* insig2;
+                [insig2 env] = ch_am(insig2,20,40,'d',fs,0);
                 insig2supra = setdbspl(insig2,lvl,dBFS);
             end
 
-%             [out_1pre , fc, mfc] = dau1997preproc(insig1     ,fs);
-%             [out_2pre , fc, mfc] = dau1997preproc(insig2supra,fs);
+            % [out_1pre , fc, mfc] = dau1997preproc(insig1     ,fs);
+            % [out_2pre , fc, mfc] = dau1997preproc(insig2supra,fs);
             % out_1pre = out_1pre{27};
             [out_1pre , fc, mfc] = dau1997preproc_1Ch(insig1     ,fs,fc);
             [out_2pre , fc, mfc] = dau1997preproc_1Ch(insig2supra,fs,fc);
-%             
+       
             bPlot = 0;
             if bPlot
                 figure;
@@ -518,7 +522,9 @@ switch nAnalyser
         opts.YLabel = 'Modulation frequency [Hz]';
         opts.Zlabel = 'Normalised amplitude';
         t = (1:44100)/fs;
-        Mesh(t,mfc,transpose(template),opts)
+        % Mesh(t,mfc,transpose(out_2Mean-out_1Mean),opts)
+        
+        Mesh(t,mfc,transpose(hilbert(template)),opts)
 end
 
 guidata(hObject,handles)
@@ -902,8 +908,8 @@ else % if NOT PsySound
             N = 8192; % default frame length
             opts.nSkipStart = nSkipStart;
             opts.nSkipEnd   = nSkipEnd;
-            [xx xx out_1] = Roughness_offline(insig1,fs1,N,opts,CParams,0);
-            [xx xx out_2] = Roughness_offline(insig2,fs2,N,opts,CParams,0);
+            [xx xx out_1] = Roughness_offline(insig1,fs,N,opts,CParams,0);
+            [xx xx out_2] = Roughness_offline(insig2,fs,N,opts,CParams,0);
             
         case 20 % Fluctuation strength, see also r20141126_fluctuation
             
@@ -911,8 +917,8 @@ else % if NOT PsySound
             opts.nSkipStart = nSkipStart;
             opts.nSkipEnd   = nSkipEnd;
             warning('Fluctuation strength: temporal value...')
-            [xx out_1] = FluctuationStrength_offline_debug(insig1(1:N),fs1,N,0);
-            [xx out_2] = FluctuationStrength_offline_debug(insig2(1:N),fs2,N,0);
+            [xx out_1] = FluctuationStrength_offline_debug(insig1(1:N),fs,N,0);
+            [xx out_2] = FluctuationStrength_offline_debug(insig2(1:N),fs,N,0);
             
         case 100
             

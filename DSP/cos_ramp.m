@@ -21,8 +21,8 @@ function ramp = cos_ramp(sig_len, fs, attack, release)
 % Created in    : 2008-2012
 % Downloaded on : 06/09/2012
 % Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
-% Last update on: 18/08/2014 % Update this date manually
-% Last use on   : 05/07/2015 % Update this date manually
+% Last update on: 18/08/2014 
+% Last use on   : 11/08/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 1

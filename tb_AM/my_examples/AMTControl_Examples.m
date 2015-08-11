@@ -12,7 +12,7 @@ function filename = AMTControl_Examples(nExample)
 % 
 %       % To get the filenames but not storing the audio files
 %       filename = AMTControl_Examples(1); 
-
+% 
 % 3. Additional info:
 %       Tested cross-platform: Yes
 %       See also r20150522_update (for example 1)
@@ -68,6 +68,12 @@ switch nExample
         filename{2} = [dirout file2];
         
     case 3 % Modulation detection
+        
+        % - An independent sample of noise was presented at each interval
+        % - Noise stimuli were digitally filtered before modulation = first filtered, then modulated
+        % - To eliminate level cues , digital waveforms were adjusted to have equal power
+        % - Modulation with zero onset  phase was applied
+        % - Both were windowed with 200-ms cosine ramps
         
         fs = 44100;
         BW = 3;
