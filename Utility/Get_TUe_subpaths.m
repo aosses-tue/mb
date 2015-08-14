@@ -69,6 +69,14 @@ elseif strcmp(type,'db_voice_of_dragon')
                              
     misc.dir_meas_def      = misc.dir_measurements{1}; % Anechoic condition
 
+elseif strcmp(type,'Psychoacoustics')
+    
+    misc.CASP4AMT = [path 'CASP_Jepsen4AMT' delim];
+
+elseif strcmp(type,'tb_AM_AddOns')
+    
+    misc.modelstages = [paths 'modelstages' delim];
+    
 elseif strcmp(type,'tb_Loudness_v12')
     
     misc.WAV               = [path 'WAV' delim];

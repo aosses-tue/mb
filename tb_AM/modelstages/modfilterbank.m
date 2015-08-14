@@ -57,7 +57,7 @@ function [outsig,mfc] = modfilterbank(insig,fs,fc,varargin)
   
 % AUTHOR: Stephan Ewert
 %
-% Modifications by Morten L. Jepsen and Peter L. Søndergaard.
+% Modifications by Morten L. Jepsen and Peter L. Soendergaard.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 definput.keyvals.mfc=[];
@@ -140,10 +140,9 @@ for freqchannel=1:nfreqchannels
 end;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Inline functions:
 
-%% ------------ subfunctions ------------------------
-
-% complex frequency shifted first order lowpass
+% 1. Complex frequency shifted first order lowpass
 function [b,a] = efilt(w0,bw);
 
 e0 = exp(-bw/2);

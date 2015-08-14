@@ -17,8 +17,8 @@ function misc = Start_TUe
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 01/05/2014
-% Last update on: 12/03/2015
-% Last use on   : 12/03/2015
+% Last update on: 14/08/2015
+% Last use on   : 14/08/2015
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 misc = Get_TUe_paths;
@@ -26,6 +26,18 @@ misc = Get_TUe_paths;
 if nargout == 0
    
     Add_paths(misc);
+    
+    if isfield(misc,'Psychoacoustics')
+        misc_sub = Get_TUe_subpaths('Psychoacoustics');
+        disp(['Adding paths under: Psychoacoustics'])
+        Add_paths(misc_sub);
+    end
+    
+    if isfield(misc,'tb_AM_AddOns')
+        misc_sub = Get_TUe_subpaths('tb_AM_AddOns');
+        disp(['Adding paths under: tb_AM_AddOns'])
+        Add_paths(misc_sub);
+    end
     
     if isfield(misc,'tb_Loudness_v12')
         misc_sub = Get_TUe_subpaths('tb_Loudness_v12');

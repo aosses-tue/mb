@@ -19,8 +19,10 @@ bDiary = 0;
 Diary(mfilename,bDiary);
 
 
-bDoHartmann = 1;
 bDoEnveAMT = 0;
+bDoHartmann = 0;
+bDoTFMF = 1;
+bDoTFDRNL = 1;
 
 dire = [Get_TUe_paths('outputs') 'AMTControl-examples' delim]; % 'D:\Output\AMTControl-examples\'
 dBFS = 100;
@@ -142,6 +144,56 @@ if bDoHartmann
     insig = setdbspl(y,SPL,dBFS);
     filename = sprintf('%ssine-%.0f-plus-%.0f-Hz-%.0f-dB.wav',dire,f(1),f(2),SPL);
     Wavwrite(insig,fs,filename);
+    
+end
+
+fmax2plot = 1000;
+N = 8192*8;
+
+if bDoTFMF
+    
+    % To do: compare outsig with TFs
+    insig = [zeros(N/2-1,1); 1; zeros(N/2,1)];
+    fs = 44100;
+    fc = 4000;
+    [outsig,mfc,params] = modfilterbank_debug(insig,fs,fc);
+    outsig = outsig{1};
+    
+    K = N/2;
+    [x xdB f] = freqfft2(insig,K,fs);
+    
+    h(:,1) = freqz(params.b_mf1, params.a_mf1, K);
+        
+    ydB = [];
+    for i = 2:length(mfc)
+        
+        exp1 = sprintf('h(:,%.0f) = freqz(params.b_mf%.0f, params.a_mf%.0f, K);',i,i,i);
+        eval(exp1);
+        
+    end
+    figure;
+    plot(f,To_dB(abs(h))); grid on;
+    xlim([0 fmax2plot])
+    ylim([-18 5])
+    xlabel('Modulation frequency [Hz]')
+    ylabel('Attenuation [dB]')
+    title('Only modulation filterbank')
+    
+    figure;
+    hhigh = freqz(params.b_highest,params.a_highest,K);
+    hhigh = repmat(hhigh,1,length(mfc));
+    plot(f,To_dB(abs(h.*hhigh))); grid on; hold on
+    xlim([0 fmax2plot])
+    ylim([-18 5])
+    xlabel('Modulation frequency [Hz]')
+    ylabel('Attenuation [dB]')
+    plot(f,To_dB(hhigh(:,1)),'k--','LineWidth',2)
+     
+end
+
+if bDoTFDRNL
+    
+    
     
 end
 
