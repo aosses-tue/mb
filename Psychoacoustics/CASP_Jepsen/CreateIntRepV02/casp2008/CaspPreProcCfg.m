@@ -1,8 +1,9 @@
-%--------------------------------------------------------------------------
-% CaspPreProcCfg.m
-%--------------------------------------------------------------------------
-% relevant parameters in the pre-processing for the basilar-membrane and
-% modulation filterbank are assigned
+function [BM MF] = CaspPreProcCfg
+% function [BM MF] = CaspPreProcCfg
+%
+% 1. Description:
+%       Relevant parameters in the pre-processing for the basilar-membrane 
+%       and modulation filterbank are assigned
 %
 % usage
 %   [BM MF] = CaspPreProcCfg
@@ -13,12 +14,10 @@
 %   MF          : structure containing filter coefficients, center frequencies
 %                 and stuff for the modulation filterbank
 %
-% version 1.0
-%   20/01/2013, C.T. Iben
-% version 2.0
-%   29/01/2013, C.T. Iben
-
-function [BM MF] = CaspPreProcCfg
+% Date: 20/01/2013, C.T. Iben (version 1.0)
+%       29/01/2013, C.T. Iben (version 2.0)
+% Last used on: 13/08/2015
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Basilar filterbank variables
 BM.MinCF = 80;               % lowest CF in Hz

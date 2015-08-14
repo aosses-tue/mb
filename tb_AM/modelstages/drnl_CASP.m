@@ -1,5 +1,5 @@
-function [outsig,fc] = drnl_CASP(insig,fs,~,flags,~,IntRep)
-% function [outsig,fc] = drnl_CASP(insig,fs,~,flags,~,IntRep)
+function [outsig, fc] = drnl_CASP(insig,fs,~,flags,~,BM)
+% function [outsig, fc] = drnl_CASP(insig,fs,~,flags,~,BM)
 % 
 % script for pemo preprocessing using an implementation of the dual
 % resonance nonlinear (DRNL) filter (Lopez-Poveda, meddis 2001)
@@ -8,7 +8,8 @@ function [outsig,fc] = drnl_CASP(insig,fs,~,flags,~,IntRep)
 %
 % usage: out = drnl(x,CF,fs)
 % Original file: '..\Psychoacoustics\CASP_Jepsen\CreateIntRepV02\casp2008\bm\drnl.m'
-% Created on: 24/04/2015
+% Created on  : 24/04/2015
+% Last used on: 13/08/2015
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if flags.do_jepsenmiddleear
@@ -16,10 +17,12 @@ if flags.do_jepsenmiddleear
     insig = filter(me_fir,1,insig);
 end;
 
-% necessary parameters for basilar-membrane and modulation filterbank
-[BM MF]     = CaspPreProcCfg;
-[BM MF Lp]  = CaspPreProcInit(BM, MF, fs, IntRep.fs);
-warning('In this implementation IntRep neither MF are not being used...')
+if nargin < 6
+    % necessary parameters for basilar-membrane and modulation filterbank
+    [BM MF]     = CaspPreProcCfg;
+    [BM MF Lp]  = CaspPreProcInit(BM, MF, fs);
+    warning('In this implementation IntRep neither MF are not being used...')
+end
 
 fc = BM.CenterFreqs;
 NrChannels = length(fc);

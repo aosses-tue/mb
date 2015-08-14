@@ -1,5 +1,5 @@
-function out = Get_template_MFB(ir1,ir2,fs)
-% function out = Get_template_MFB(ir1,ir2,fs)
+function out = Get_template_append(ir1,ir2,fs)
+% function out = Get_template_append(ir1,ir2,fs)
 %
 % 1. Description:
 %       ir1 - internal representation of signal 1
@@ -15,9 +15,10 @@ function out = Get_template_MFB(ir1,ir2,fs)
 %       Tested cross-platform: Yes
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
+% Original name : Get_template_MFB
 % Created on    : 11/08/2015
-% Last update on: 11/08/2015 
-% Last use on   : 11/08/2015 
+% Last update on: 13/08/2015 
+% Last use on   : 13/08/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 3

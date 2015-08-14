@@ -38,8 +38,10 @@ options = Ensure_field(options,'Title','');
 options = Ensure_field(options,'step1',1);
 options = Ensure_field(options,'step2',1);
 options = Ensure_field(options,'ZLabel','Amplitude');
+
 options = ef(options,'XLabel','x-axis');
 options = ef(options,'YLabel','y-axis');
+options = ef(options,'YLim',[]);
 options = ef(options,'bSave',1);
 
 bSave = options.bSave;
@@ -132,7 +134,11 @@ if bPlot2D
         end
     end
     linkaxes(ha,'xy');
-    ylim([MinAmp MaxAmp]);
+    if length(options.YLim) == 0
+        ylim([MinAmp MaxAmp]);
+    else
+        ylim(options.YLim);
+    end
     
     hFig(1) = gcf;
     

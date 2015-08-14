@@ -28,7 +28,7 @@ function varargout = AMTControl(varargin)
 %       101     3. btnLoad                          07/08/2015
 %       338     4. btnGetTemplate                   07/08/2015
 %       433     5. btnSimulateAFC                   10/08/2015
-%       633     6. btnCalculate                     31/07/2015
+%       733     6. btnCalculate                     12/08/2015
 %       1101    7. txtXoffset: waveforms shift      31/07/2015
 %       1550    8. popAnalyser_Callback             10/08/2015
 %       
@@ -40,7 +40,7 @@ function varargout = AMTControl(varargin)
 % 
 % Created on        : 30/07/2015
 % Last modified on  : 30/07/2015
-% Last used on      : 30/07/2015 % Remember to check compatibility with template_PsySoundCL.m
+% Last used on      : 12/08/2015 % Remember to check compatibility with template_PsySoundCL.m
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -340,9 +340,11 @@ Gain4supra = 10;
 
 nAnalyser = il_get_nAnalyser(handles.popAnalyser);
 
-if nAnalyser == 100 | nAnalyser == 101
+if nAnalyser == 100 | nAnalyser == 101 | nAnalyser == 103 | nAnalyser == 104
     
     fc2plot_idx = get(handles.popFc ,'value'); 
+    fc2plot_idx2= get(handles.popFc2,'value'); 
+    
     fc_ERB      = fc2plot_idx+2;
     Nelements   = length(get(handles.popFc,'String'));
     
@@ -351,6 +353,11 @@ if nAnalyser == 100 | nAnalyser == 101
         pause();
         fc2plot_idx = get(handles.popFc ,'value');
     end
+    
+    if fc2plot_idx2~= Nelements
+        fc2plot_idx = fc2plot_idx:fc2plot_idx2;
+    end
+    
     fc      = audtofreq(fc_ERB,'erb');
     mu      = 0;
     tmp     = get(handles.popInternalNoise,'string');
@@ -383,6 +390,7 @@ switch nAnalyser
 
             [out_1pre , fc] = dau1996preproc(insig1              ,fs);
             [out_2pre , fc] = dau1996preproc(insig1 + insig2supra,fs);
+            fs_intrep = fs;
             
             if bDeterministic == 1 
                 % Deterministic noise
@@ -391,8 +399,10 @@ switch nAnalyser
                 
             else
                 % 'Running' noise
-                out_1 = [out_1 Add_gaussian_noise(out_1pre(:,fc2plot_idx),mu,sigma)]; 
-                out_2 = [out_2 Add_gaussian_noise(out_2pre(:,fc2plot_idx),mu,sigma)]; % Add internal noise
+                tmp = Add_gaussian_noise(out_1pre(:,fc2plot_idx),mu,sigma);
+                out_1 = [out_1 tmp(:)]; 
+                tmp = Add_gaussian_noise(out_2pre(:,fc2plot_idx),mu,sigma);
+                out_2 = [out_2 tmp(:)]; % Add internal noise
             end
             
         end
@@ -402,13 +412,18 @@ switch nAnalyser
             out_1Mean = out_1(:,fc2plot_idx);
             out_2Mean = out_2(:,fc2plot_idx);
         else
-            out_1Mean = transpose(  mean( transpose(out_1) )  );
-            out_2Mean = transpose(  mean( transpose(out_2) )  );
+            out_1Mean = mean(out_1,2);
+            out_2Mean = mean(out_2,2);
+            
+            Mtmp = length(fc2plot_idx);
+            Ntmp = length(out_1Mean)/Mtmp;
+            out_1Mean = reshape(out_1Mean,Ntmp,Mtmp);
+            out_2Mean = reshape(out_2Mean,Ntmp,Mtmp);
         end
-        template_test = Get_template(out_1Mean,out_2Mean,tmp);
+        template_test = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
+        fs_intrep = fs;
         
-        
-    case 101
+    case 101 % Still testing
         
         insigtmp = Wavread(handles.audio.filenameBBN);
         % insig2supra = insig2;
@@ -440,7 +455,8 @@ switch nAnalyser
             % out_1pre = out_1pre{27};
             [out_1pre , fc, mfc] = dau1997preproc_1Ch(insig1     ,fs,fc);
             [out_2pre , fc, mfc] = dau1997preproc_1Ch(insig2supra,fs,fc);
-       
+            fs_intrep = fs;
+            
             bPlot = 0;
             if bPlot
                 figure;
@@ -492,22 +508,57 @@ switch nAnalyser
             end
         end
         template_test = Get_template_MFB(out_1Mean,out_2Mean,fs);
- 
+        
+	case 104
+        
+        insig2supra = From_dB(Gain4supra) * insig2;
+        fbstyle = 'lp';
+        
+        for i = 1:Ntimes
+            
+            if bDeterministic == 0
+                insig1 = il_randomise_insig(handles.audio.insig1);
+            end
+
+            [out_1pre , fc, xx, IntRep] = jepsen2008preproc(insig1  ,fs,fbstyle);
+            [out_2pre , fc] = jepsen2008preproc(insig1 + insig2supra,fs,fbstyle);
+            fs_intrep = IntRep.fs;
+            
+            if bDeterministic == 1 
+                % Deterministic noise
+                [out_1 noise] = Add_gaussian_noise_deterministic(out_1pre,mu,sigma); 
+                out_2 = out_2pre+noise; % deterministic noise
+                
+            else
+                % 'Running' noise
+                tmp = Add_gaussian_noise(out_1pre(:,fc2plot_idx),mu,sigma);
+                out_1 = [out_1 tmp(:)]; 
+                tmp = Add_gaussian_noise(out_2pre(:,fc2plot_idx),mu,sigma);
+                out_2 = [out_2 tmp(:)]; % Add internal noise
+            end
+            
+        end
+        
+        tmp.fs = IntRep.fs;
+        if bDeterministic
+            out_1Mean = out_1(:,fc2plot_idx);
+            out_2Mean = out_2(:,fc2plot_idx);
+        else
+            out_1Mean = mean(out_1,2);
+            out_2Mean = mean(out_2,2);
+            
+            Mtmp = length(fc2plot_idx);
+            Ntmp = length(out_1Mean)/Mtmp;
+            out_1Mean = reshape(out_1Mean,Ntmp,Mtmp);
+            out_2Mean = reshape(out_2Mean,Ntmp,Mtmp);
+        end
+        template_test = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
+        
 end
 
 template = template_test;
 
-handles.audio.template      = template;
-handles.audio.bDeterministic= bDeterministic;
-handles.audio.fc2plot_idx   = fc2plot_idx;
-handles.audio.Ntimes        = Ntimes;
-
-
-if bDeterministic
-    handles.audio.noise = noise;
-end
-
-t = ( 1:length(insig1) )/fs;
+t = ( 1:size(out_1Mean,1) )/fs_intrep;
 
 switch nAnalyser
     case 100
@@ -522,9 +573,24 @@ switch nAnalyser
         opts.YLabel = 'Modulation frequency [Hz]';
         opts.Zlabel = 'Normalised amplitude';
         t = (1:44100)/fs;
+        warning('variable t only temporally defined')
         % Mesh(t,mfc,transpose(out_2Mean-out_1Mean),opts)
         
         Mesh(t,mfc,transpose(hilbert(template)),opts)
+        
+    case 104
+        figure;
+        plot(t,template); grid on
+        xlabel(sprintf('Time [s]\nFollow the instructions in the command window to continue with the AFC simulation'))
+end
+
+handles.audio.template      = template;
+handles.audio.bDeterministic= bDeterministic;
+handles.audio.fc2plot_idx   = fc2plot_idx;
+handles.audio.Ntimes        = Ntimes;
+handles.audio.fs_intrep     = fs_intrep;
+if bDeterministic
+    handles.audio.noise = noise;
 end
 
 guidata(hObject,handles)
@@ -543,10 +609,12 @@ Reversals_stop  = il_get_value_numericPop(handles.popNreversals);
 bHalveStepSize  = get(handles.chStepSizeHalved,'value');
 
 fs = handles.audio.fs;
+fs_intrep = handles.audio.fs_intrep;
+
 t1 = str2num( get(handles.txtTimei,'string') ); 
 t2 = str2num( get(handles.txtTimef,'string') );
-s1 = max(round(t1*fs), 1); % time 0 is forced to be sample 1
-s2 = round(t2*fs);
+s1 = max(round(t1*fs_intrep), 1); % time 0 is forced to be sample 1
+s2 = round(t2*fs_intrep);
 idxobs = [s1 s2];
 Ntimes = handles.audio.Ntimes; %
 
@@ -567,10 +635,11 @@ end
 nAnalyser = il_get_nAnalyser(handles.popAnalyser);
 bStochastic = ~bDeterministic;
 
-if nAnalyser == 100 | nAnalyser == 101
+switch nAnalyser
+    case {100, 101, 104}
     
     fc2plot_idx = handles.audio.fc2plot_idx;
-    fc_ERB = fc2plot_idx+2;
+    fc_ERB = fc2plot_idx(1)+2;
     fc     = audtofreq(fc_ERB,'erb');
     mu      = 0;
     tmp     = get(handles.popInternalNoise,'string');
@@ -608,10 +677,15 @@ for k = 1:Ntimes
         interval2 = insig1 + insig2test; % Current signal
 
         switch nAnalyser
-            case 100
+            case {100, 104}
 
-                [out_interval1 , fc] = dau1996preproc(interval1,fs);
-                [out_interval2 , fc] = dau1996preproc(interval2,fs);
+                if nAnalyser == 100;
+                    [out_interval1 , fc] = dau1996preproc(interval1,fs);
+                    [out_interval2 , fc] = dau1996preproc(interval2,fs);
+                elseif nAnalyser == 104
+                    [out_interval1 , fc] = jepsen2008preproc(interval1,fs,'lp');
+                    [out_interval2 , fc] = jepsen2008preproc(interval2,fs,'lp');
+                end
                 
                 % for i = 1:Ntimes
 
@@ -631,8 +705,8 @@ for k = 1:Ntimes
                 Mmax = ceil(max(sigint2));
                 Centres = Mmin-1:1:Mmax+1;
 
-                [PDF1 yi1 stats1] = Probability_density_function(sigint1,Centres);
-                [PDF2 yi2 stats2] = Probability_density_function(sigint2,Centres);
+                [PDF1 yi1 stats1] = Probability_density_function(sigint1(:),Centres);
+                [PDF2 yi2 stats2] = Probability_density_function(sigint2(:),Centres);
 
                 % figure(100)
                 % plot(yi1,PDF1,'b',yi2,PDF2,'r')
@@ -642,8 +716,8 @@ for k = 1:Ntimes
                 % stats2.mean = mean(sigint2);
                 dprime(end+1,1) = (stats2.mean - stats1.mean )/sigma;
 
-                decision(1) = optimaldetector(sigint1,template(idxobs(1):idxobs(2)));
-                decision(2) = optimaldetector(sigint2,template(idxobs(1):idxobs(2)));
+                decision(1) = optimaldetector(sigint1,template(idxobs(1):idxobs(2),:));
+                decision(2) = optimaldetector(sigint2,template(idxobs(1):idxobs(2),:));
 
                 decisionN(end+1,1) = decision(1);
                 decisionSN(end+1,1) = decision(2);
@@ -657,9 +731,9 @@ for k = 1:Ntimes
 
         Staircase = [Staircase; Level_current];
 
-        if abs( dprime(end) ) >= 1.26
-        % if decision(2) >= decision(1) % test tone correctly identified
-
+        % if abs( dprime(end) ) >= 1.26
+        if decision(2) >= 1.025*decision(1) % test tone correctly identified
+            warning('check here')
             if nCorrect == 0
 
                 nReversal = nReversal + 1;
@@ -942,20 +1016,44 @@ else % if NOT PsySound
             bPlotParams = il_get_plotParams(handles);
             
             if sum( bPlotParams(2:4) ) == 0 % we need only the final outout of the peripheral processing
+                
                 [out_1 , fc ,fcm] = dau1997preproc(insig1,fs);
+                out_1 = Add_gaussian_noise(out_1{fc2plot_idx},mu,sigma); % Add internal noise
+                
             else
-                [out_1 , fc ,fcm] = dau1997preproc_1Ch(insig1,fs,fc2plot_idx);
+                
+                [out_1 , fc ,fcm, extraouts] = dau1997preproc_1Ch(insig1,fs,fc);
+                if bPlotParams(2) == 1
+                    filteroutsig = extraouts.out01_filterbank;
+                    
+                    f1 = sprintf('%sAMTControl-Examples%sfile1-audfilter-fc-%.0f-Hz.wav',Get_TUe_paths('outputs'),delim,fc);
+                    Wavwrite(filteroutsig,fs,f1);
+                end
             end
-            out_1 = Add_gaussian_noise(out_1{fc2plot_idx},mu,sigma); % Add internal noise
-            out_1.out   = out_1{fc2plot_idx};
+            
+            out_1.out   = out_1;
             
             out_1.fs    = fs;
             out_1.fc    = fc;
             out_1.fcm   = fcm;
             
-            [out_2 , fc ,fcm] = dau1997preproc(insig2,fs);
-            out_2 = Add_gaussian_noise(out_2{fc2plot_idx},mu,sigma); % Add internal noise
-            out_2.out   = out_2{fc2plot_idx};
+            if sum( bPlotParams(2:4) ) == 0 % we need only the final outout of the peripheral processing
+                
+                [out_2 , fc ,fcm] = dau1997preproc(insig2,fs);
+                out_2 = Add_gaussian_noise(out_2{fc2plot_idx},mu,sigma); % Add internal noise
+                
+            else
+                
+                [out_2 , fc ,fcm, extraouts] = dau1997preproc_1Ch(insig2,fs,fc);
+                if bPlotParams(2) == 1
+                    filteroutsig = extraouts.out01_filterbank;
+                    
+                    f1 = sprintf('%sAMTControl-Examples%sfile2-audfilter-fc-%.0f-Hz.wav',Get_TUe_paths('outputs'),delim,fc);
+                    Wavwrite(filteroutsig,fs,f1);
+                end
+                
+            end
+            out_2.out   = out_2;
             out_2.fs    = fs;
             out_2.fc    = fc;
             out_2.fcm   = fcm;
@@ -998,18 +1096,24 @@ switch nAnalyser
         
     case 101
         
-        fc2plot = fc(fc2plot_idx);
+        if length(fc) > 1
+            fc2plot = fc(fc2plot_idx);
+        else
+            fc2plot = fc;
+        end
         
         if bPlotParams(1) == 1
             optsTmp = [];
             optsTmp.bSave  = 0; % is going to be saved by this GUI, later
             optsTmp.Title  = sprintf('%s, fc=%.0f [Hz]',options.label1,fc2plot); 
+            % optsTmp.YLim   = [-105 400];
             h(end+1) = il_Plot_dau1997(out_1,optsTmp);
             param{end+1}   = sprintf('%s-analyser-%s-file1','MU',Num2str(options.nAnalyser));
 
             optsTmp = [];
             optsTmp.bSave  = 0;
             optsTmp.Title  = sprintf('%s, fc=%.0f [Hz]',options.label2,fc2plot); 
+            % optsTmp.YLim   = [-105 400];
             h(end+1) = il_Plot_dau1997(out_2,optsTmp);
             param{end+1}   = sprintf('%s-analyser-%s-file2','MU',Num2str(options.nAnalyser));
         end
@@ -1971,6 +2075,48 @@ switch nAnalyser
         set(handles.chParam1,'value',1);
         
         set(handles.chParam2,'string','Auditory filterbank');
+        set(handles.chParam2,'enable','on');
+        set(handles.chParam2,'value',0);
+        
+        set(handles.chParam3,'string','Hair-cell envelope'); 
+        set(handles.chParam3,'enable','off');
+        
+        set(handles.chParam4,'string','Adaptation loops');
+        set(handles.chParam4,'enable','off');
+        set(handles.chParam4,'value',0);
+        
+        set(handles.chParam5,'string','Param5');
+        set(handles.chParam5,'enable','off');
+        set(handles.chParam5,'value',0);
+        
+        set(handles.chParam6,'string','Param6');
+        set(handles.chParam6,'enable','off');
+        set(handles.chParam6,'value',0);
+        
+        set(handles.chParam7,'string','Param7');
+        set(handles.chParam7,'enable','off');
+        set(handles.chParam7,'value',0);
+    
+    case 104 % jepsen2008 (LP modulation filter)
+        
+        set(handles.txtCalLevel,'string',70);
+        set(handles.txtAnalysisStart,'Enable','off');
+        set(handles.txtAnalysisEnd  ,'Enable','off');
+        set(handles.txtOverlap,'enable','off');
+        
+        set(handles.chAvgLoudnessLimits,'enable','off');
+        set(handles.chPercentiles,'enable','off');
+        set(handles.chInternalNoise,'enable','on');
+        set(handles.popInternalNoise,'enable','on');
+        set(handles.popFc,'enable','on');
+        set(handles.rbScripts,'value',1);
+        set(handles.rbPsySound,'enable','off');
+                
+        set(handles.chParam1,'string','Low-passed filters');
+        set(handles.chParam1,'enable','on');
+        set(handles.chParam1,'value',1);
+        
+        set(handles.chParam2,'string','Auditory filterbank');
         set(handles.chParam2,'enable','off');
         set(handles.chParam2,'value',0);
         
@@ -1992,7 +2138,7 @@ switch nAnalyser
         set(handles.chParam7,'string','Param7');
         set(handles.chParam7,'enable','off');
         set(handles.chParam7,'value',0);
-        
+
     otherwise
         for i = 1:7
             exp1 = sprintf('set(handles.chParam%.0f,''string'',''Param%.0f''); set(handles.chParam%.0f,''enable'',''off''); set(handles.chParam%.0f,''value'',0); ',i,i,i,i);
@@ -2653,6 +2799,29 @@ function popNavg_Callback(hObject, eventdata, handles)
 % --- Executes during object creation, after setting all properties.
 function popNavg_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to popNavg (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in popFc2.
+function popFc2_Callback(hObject, eventdata, handles)
+% hObject    handle to popFc2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns popFc2 contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popFc2
+
+
+% --- Executes during object creation, after setting all properties.
+function popFc2_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popFc2 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 

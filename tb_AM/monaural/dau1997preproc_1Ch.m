@@ -73,12 +73,20 @@ definput.keyvals.subfs=[];
 %   outsig = N x 31 (31 gammatone filters)
 keyvals.flow    = fc;
 keyvals.fhigh   = fc;
-[outsig, fc]            = auditoryfilterbank(insig,fs,'argimport',flags,keyvals);
+
+bDoFB = 1;
+
+if bDoFB
+    [outsig, fc]            = auditoryfilterbank(insig,fs,'argimport',flags,keyvals);
+else
+    outsig = insig;
+end
 
 extra.insig             = insig;
 extra.out01_filterbank  = outsig; 
 
 % 'haircell' envelope extraction
+% outsig                  = ihcenvelope([zeros(654,1); outsig(655:end,:)],fs,'argimport',flags,keyvals);
 outsig                  = ihcenvelope(outsig,fs,'argimport',flags,keyvals);
 extra.out02_ihc         = outsig;
 

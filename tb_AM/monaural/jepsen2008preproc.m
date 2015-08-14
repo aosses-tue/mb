@@ -1,16 +1,17 @@
-function [outsig, fc, mfc] = jepsen2008preproc(insig, fs, varargin);
+function [outsig, fc, mfc, IntRep] = jepsen2008preproc(insig, fs, style, varargin);
 %JEPSEN2008PREPROC   Auditory model from Jepsen et. al. 2008
-%   Usage: [outsig, fc] = jepsen2008preproc(insig,fs);
-%          [outsig, fc] = jepsen2008preproc(insig,fs,...);
+%   Usage: [outsig, fc, mfc, IntRep] = jepsen2008preproc(insig,fs,style);
+%          [outsig, fc, mfc, IntRep] = jepsen2008preproc(insig,fs,style,...);
 %
 %   Input parameters:
 %     insig  : input acoustic signal.
 %     fs     : sampling rate.
-%
+%     style = 'mfbtd_drnl' for modulation filterbank
+%     style = 'lp' for low-pass modulation filter
+% 
 %   *Warning:* This code cannot be verified. It has not been possible to
-%   tell from the desciption in the original paper nor from personal
-%   communication with the original authors what the correct parameter set
-%   used for the model is. This code is kept here as a reminder of the
+%   tell from the desciption in the original paper what the correct parameter 
+%   set used for the model is. This code is kept here as a reminder of the
 %   structure of the model, and may reappear in a future work if a
 %   verified parameter set can be established. The status of this piece
 %   of code is "not even wrong": http://en.wikipedia.org/wiki/Not_even_wrong.
@@ -76,7 +77,8 @@ function [outsig, fc, mfc] = jepsen2008preproc(insig, fs, varargin);
 %       [insig,fs] = greasy;
 %       insig = resample(insig,44100,fs);
 %       fs = 44100;
-%       [outsig, fc, mfc] = jepsen2008preproc(insig, fs);
+%       style = 'mfbtd_drnl';
+%       [outsig, fc, mfc] = jepsen2008preproc(insig, fs, style);
 % 
 % Author        : Torsten Dau, Morten Loeve Jepsen, Peter L. Soendergaard
 % Downloaded on : 18/03/2014
@@ -118,6 +120,11 @@ IntRep.resampleLen = floor(length(insig) / IntRep.resampleFac);
 IntRep.fs = fs / IntRep.resampleFac;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+if nargin < 3
+    style = 'mfbtd_drnl';
+    % style   = 'lp';
+end
+
 %% 1. Headphone filter (outer ear)
 %       Typical human headphone-to-eardrum gain. 
 %       insig is assumed to be in [Pa]
@@ -129,7 +136,10 @@ outsig = filter(hp_fir,1,insig);    % Applying the FIR filter
 
 % [outsig, fc] = drnl(outsig, fs, 'argimport',flags,keyvals);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[outsig, fc] = drnl_CASP(outsig, fs, 'argimport',flags,keyvals,IntRep);
+[BM MF] = CaspPreProcCfg(style);
+[BM MF] = CaspPreProcInit(BM, MF, fs, IntRep.fs);
+
+[outsig, fc] = drnl_CASP(outsig, fs, 'argimport',flags,keyvals,BM);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% 3. 'haircell' envelope extraction
@@ -143,8 +153,22 @@ outsig = outsig.^2;
 %% non-linear adaptation loops
 outsig = adaptloop(outsig,fs,'argimport',flags,keyvals);
 
-%% Modulation filterbank
-[outsig,mfc] = modfilterbank(outsig,fs,fc);
+outsig = resample(outsig,1,IntRep.resampleFac);
+outsig = outsig(1:IntRep.resampleLen,:);
+
+switch MF.style
+    
+    case 'mfbtd_drnl'
+        % Modulation filterbank
+        [outsig,mfc] = modfilterbank(outsig,IntRep.fs,fc);
+        
+    case 'lp'
+        
+        % Low-pass modulation filter.
+        mfc = MF.CenterFreq;
+        outsig = filter(MF.MLpb,MF.MLpa,outsig);
+        
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
