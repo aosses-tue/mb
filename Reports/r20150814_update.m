@@ -10,8 +10,8 @@ function y = r20150814_update(x)
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 12/08/2015
-% Last update on: 12/08/2015 
-% Last use on   : 12/08/2015 
+% Last update on: 15/08/2015 
+% Last use on   : 15/08/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 close all
@@ -19,10 +19,11 @@ bDiary = 0;
 Diary(mfilename,bDiary);
 
 
-bDoEnveAMT = 0;
+bDoEnveAMT  = 0;
 bDoHartmann = 0;
-bDoTFMF = 1;
-bDoTFDRNL = 1;
+bDoTFMF     = 1;
+bDoTFDRNL   = 0;
+bDoTFDRNL2  = 1;
 
 dire = [Get_TUe_paths('outputs') 'AMTControl-examples' delim]; % 'D:\Output\AMTControl-examples\'
 dBFS = 100;
@@ -149,28 +150,55 @@ end
 
 fmax2plot = 1000;
 N = 8192*8;
+K = N/2;
+fs = 44100;
+insig = [zeros(N/2-1,1); 1; zeros(N/2,1)]; % dirac
 
 if bDoTFMF
     
     % To do: compare outsig with TFs
-    insig = [zeros(N/2-1,1); 1; zeros(N/2,1)];
-    fs = 44100;
-    fc = 4000;
+    fc = 4000; % to get all the modulation filterbanks
     [outsig,mfc,params] = modfilterbank_debug(insig,fs,fc);
     outsig = outsig{1};
     
-    K = N/2;
     [x xdB f] = freqfft2(insig,K,fs);
     
     h(:,1) = freqz(params.b_mf1, params.a_mf1, K);
         
-    ydB = [];
     for i = 2:length(mfc)
         
         exp1 = sprintf('h(:,%.0f) = freqz(params.b_mf%.0f, params.a_mf%.0f, K);',i,i,i);
         eval(exp1);
         
     end
+    
+    HdB = To_dB(abs(h));
+    freqscut = [];
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Get filterbank parameters:
+    for i = 1:length(mfc)
+        
+        if i ~= 1 
+            f1 = Get_cutoff_freq_below_fc(f,abs(h(:,i)),mfc(i));
+            f2 = Get_cutoff_freq_above_fc(f,abs(h(:,i)),mfc(i));
+        else
+            f1 = 0;
+            f2 = Get_cutoff_freq_above_fc(f,abs(h(:,i)),mfc(i));
+            mfc(1) = f2/2;
+        end
+        freqscut = [freqscut; mfc(i) f1 f2];
+    end
+    BW = freqscut(:,3)-freqscut(:,2); % Bandwidth
+    BW(1) = freqscut(1,3); % To avoid not-a-number
+     % estimation of centre frequency
+    Q = transpose(mfc)./BW;
+    
+    freqscut = [freqscut BW]; 
+    freqscut = [freqscut  Q]; % BW
+    freqscut = Round(freqscut,2);
+    var2latex(freqscut);
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
     figure;
     plot(f,To_dB(abs(h))); grid on;
     xlim([0 fmax2plot])
@@ -189,12 +217,102 @@ if bDoTFMF
     ylabel('Attenuation [dB]')
     plot(f,To_dB(hhigh(:,1)),'k--','LineWidth',2)
      
+    bands2plot = 12;
+    for i = 1:bands2plot
+        hout(:,i) = freqz(outsig(:,i),1,K);
+    end
+    
+    hout_dB = To_dB(abs(hout(:,1:bands2plot)));
+    figure;
+%     plot(f,To_dB(abs(h(:,1:bands2plot))),'LineWidth',2); hold on
+    plot(f,hout_dB(:,1:bands2plot)); hold on
+    grid on;
+    xlim([0 100])
+    ylim([-18 5])
 end
 
 if bDoTFDRNL
     
+    SPL = [40 70];
+    LineWidths = [1 2];
     
+    bands2plot = 31;
     
+    f = 250;
+    dur = N/fs;
+    
+    insig = Create_sin(f,dur,fs);
+    
+    for k = 1:length(SPL) 
+        
+        insigM = setdbspl( insig,SPL(k) );
+        [x xdB f] = freqfft2(insigM,K,fs);
+
+        [outsigdrnl fcdrnl paramsouts] = drnl_CASP_debug(insigM,fs);
+
+        for i = 1:bands2plot
+            hout_drnl(:,i) = freqz(outsigdrnl(:,i),1,K);
+            hout_lin(:,i) = freqz(paramsouts.outsiglin(:,i),1,K);
+            hout_nlin(:,i) = freqz(paramsouts.outsignlin(:,i),1,K);
+        end
+
+        hout_dB_drnl = To_dB(abs(hout_drnl(:,1:bands2plot)));
+        
+        Max_values      = max( abs(hout_drnl) );
+        
+        hout_dB_drnl_norm = To_dB(hout_drnl./repmat(Max_values,length(hout_dB_drnl),1));
+        
+        figure(100);
+        plot(f,hout_dB_drnl(:,1:3:bands2plot),'LineWidth',LineWidths(k)); hold on
+        
+        figure(101);
+        plot(f,hout_dB_drnl_norm(:,1:3:bands2plot),'LineWidth',LineWidths(k)); hold on
+        
+    end
+    figure(100)
+    grid on;
+    xlim([0 10000])
+    ylim([0 SPL(2)+10])
+    title('Impulse')
+    
+    figure(101)
+    grid on;
+    xlim([0 10000])
+    ylim([-(SPL(2)+10) 0])
+    title('Impulse-normalised')
+    
+end
+
+if bDoTFDRNL2
+    
+    SPL = [20:10:90];
+    LineWidths = [1 2];
+    
+    bandidx = 25; % 4000 Hz
+    
+    fc = [1000 2400 4000 8000];
+    dur = N/fs;
+    
+    for j = 1:4
+        insig = Create_sin(fc(j),dur,fs);
+        % sound(insig,fs);
+        for k = 1:length(SPL) 
+
+            insigM = setdbspl( insig,SPL(k) );
+            
+            [outsigdrnl fcdrnl paramsouts] = drnl_CASP_debug(insigM,fs);
+
+            out = outsigdrnl(:,bandidx);
+            lvl(j,k) = rmsdb(out);
+        end       
+        
+    end
+    
+    lvl = lvl+100;
+    figure;
+    plot(SPL,lvl)
+    legend('1k','2.4k','4k','8k')
+    ylim([0 80])
 end
 
 if bDiary

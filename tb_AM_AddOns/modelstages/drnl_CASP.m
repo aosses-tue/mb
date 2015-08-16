@@ -1,5 +1,5 @@
-function [outsig, fc] = drnl_CASP(insig,fs,~,flags,~,BM)
-% function [outsig, fc] = drnl_CASP(insig,fs,~,flags,~,BM)
+function [outsig, fc] = drnl_CASP(insig,fs,BM)
+% function [outsig, fc] = drnl_CASP(insig,fs,BM)
 % 
 % script for pemo preprocessing using an implementation of the dual
 % resonance nonlinear (DRNL) filter (Lopez-Poveda, meddis 2001)
@@ -12,12 +12,7 @@ function [outsig, fc] = drnl_CASP(insig,fs,~,flags,~,BM)
 % Last used on: 13/08/2015
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if flags.do_jepsenmiddleear
-    me_fir = middleearfilter(fs,'jepsenmiddleear');
-    insig = filter(me_fir,1,insig);
-end;
-
-if nargin < 6
+if nargin < 3
     % necessary parameters for basilar-membrane and modulation filterbank
     [BM MF]     = CaspPreProcCfg;
     [BM MF Lp]  = CaspPreProcInit(BM, MF, fs);

@@ -85,7 +85,7 @@ outsig                  = adaptloop(outsig,fs,'argimport',flags,keyvals);
 extra.out_adaptloop     = outsig;
 
 % Modulation filterbank
-[outsig,mfc] = modfilterbank(outsig,fs,fc);
+[outsig,mfc] = modfilterbank1997(outsig,fs,fc);
 extra.out04_modfilterbank = outsig;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

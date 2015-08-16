@@ -79,7 +79,7 @@ switch nExample
         fs = 44100;
         BW = 3;
         fc = 5000;
-        fmod = 20;
+        fmod = 16.67;
         dur = 1;
         Mdept = 0.5; % well above threshold
         SPL = 70;

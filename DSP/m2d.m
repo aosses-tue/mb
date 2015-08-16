@@ -29,7 +29,12 @@ if sum( m > 1 )>0 % then there are m values larger than 1
     m = m/100;
 end
 
-dp = 20 * log10( (1+m)./(1-m) );
+if m ~= 1
+    dp = 20 * log10( (1+m)./(1-m) );
+else
+    dp = 40; % to avoid NaN
+end
+
 dn = 20 * log10( m );
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

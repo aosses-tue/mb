@@ -8,15 +8,15 @@ function m = d2m(d,method)
 %       Nomenclature as used by Fastl2007.
 % 
 % 2. Stand-alone example:
-%       m = d2m(40)
+%       m = d2m(40,'fastl');
 % 
 % 3. Additional info:
 %       Tested cross-platform: yes
 % 
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 05/03/2015
-% Last update on: 01/04/2015 % Update this date manually
-% Last use on   : 01/04/2015 % Update this date manually
+% Last update on: 01/04/2015 
+% Last use on   : 01/04/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 2

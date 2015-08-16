@@ -15,7 +15,7 @@ function [outsig, fc] = drnl(insig,fs,varargin)
 %   Lopez-Poveda and Meddis (2001).
 %
 %   The DRNL takes a lot of parameters which vary over frequency. Such a
-%   parameter is described by a 1 x2 vector [b a] and indicates
+%   parameter is described by a 1 x 2 vector [b a] and indicates
 %   that the value of the parameter at frequency fc can be calculated by
 %
 %       10^(b+a*log10(fc));
@@ -228,8 +228,7 @@ else
     fclimit=fc;
 end;
 
-% Sanity checking, some center frequencies may go above the Nyquest
-% frequency
+% Sanity checking, some center frequencies may go above the Nyquest frequency
 % Happens for lin_lp_cutoff
 
 for ii=1:nchannels

@@ -39,7 +39,7 @@ function [outsig, fc, mfc, extra] = dau1997preproc_1Ch(insig, fs, fc, varargin)
 %
 %   References: dau1997mapI dau1997mapII
 %
-% Author        : Torsten Dau, Morten L. Jepsen, Peter L. Søndergaard
+% Author        : Torsten Dau, Morten L. Jepsen, Peter L. Sï¿½ndergaard
 % Downloaded on : 18/03/2014
 % Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Last update on: 07/10/2014 
@@ -77,7 +77,7 @@ keyvals.fhigh   = fc;
 bDoFB = 1;
 
 if bDoFB
-    [outsig, fc]            = auditoryfilterbank(insig,fs,'argimport',flags,keyvals);
+    [outsig, fc]        = auditoryfilterbank(insig,fs,'argimport',flags,keyvals);
 else
     outsig = insig;
 end
@@ -95,7 +95,7 @@ outsig                  = adaptloop(outsig,fs,'argimport',flags,keyvals);
 extra.out03_adaptloop   = outsig;
 
 % Modulation filterbank
-[outsig,mfc] = modfilterbank(outsig,fs,fc);
+[outsig,mfc] = modfilterbank1997(outsig,fs,fc);
 
 outsig = outsig{1};
 

@@ -425,29 +425,18 @@ switch nAnalyser
         
     case 101 % Still testing
         
-        insigtmp = Wavread(handles.audio.filenameBBN);
+        insigBBN = Wavread(handles.audio.filenameBBN);
+        handles.audio.insigBBN = insigBBN;
         % insig2supra = insig2;
-        BW = 3;
+        BW = 314;
+        dBFS = 100;
         
         for i = 1:Ntimes
             
-            dBFS = 100;
-            N = length(insigtmp);
-            r = cos_ramp(N,fs,200,200); r = r(:);
-            
-            warning('arrange dBFS')
             if bDeterministic == 0
-                insig1 = il_randomise_insig(insigtmp);
-                lvl = rmsdb(insig1) + dBFS;
-                insig1 = Set_Fourier_coeff_to_zero(insig1,fs,fc-BW/2,fc+BW/2);
-                insig1 = r .* insig1;
-                insig1 = setdbspl(insig1,lvl,dBFS);
-                
-                insig2 = il_randomise_insig(insigtmp);
-                insig2 = Set_Fourier_coeff_to_zero(insig2,fs,fc-BW/2,fc+BW/2);
-                insig2 = r .* insig2;
-                [insig2 env] = ch_am(insig2,20,40,'d',fs,0);
-                insig2supra = setdbspl(insig2,lvl,dBFS);
+                Fmod    = 5; % Fmod    = 16.67;
+                ModIndex= 0.98; 
+                [insig1, insig2supra] = il_random_sample_mod_experiment(insigBBN,fs,fc,BW,Fmod,ModIndex,dBFS);
             end
 
             % [out_1pre , fc, mfc] = dau1997preproc(insig1     ,fs);
@@ -490,13 +479,13 @@ switch nAnalyser
             
         else
             
-            out_1Mean = transpose(  mean( transpose(out_1) )  );
-            out_2Mean = transpose(  mean( transpose(out_2) )  );
+            out_1Mean = mean( out_1,2 );
+            out_2Mean = mean( out_2,2 );
             
             out_1Mean = reshape(out_1Mean,n,m);
             out_2Mean = reshape(out_2Mean,n,m);
             
-            bPlot = 1;
+            bPlot = 0;
             if bPlot
                 for i = 1:length(mfc)
                     figure;
@@ -507,7 +496,7 @@ switch nAnalyser
                 end
             end
         end
-        template_test = Get_template_MFB(out_1Mean,out_2Mean,fs);
+        template_test = Get_template_append(out_1Mean,out_2Mean,fs);
         
 	case 104
         
@@ -575,8 +564,8 @@ switch nAnalyser
         t = (1:44100)/fs;
         warning('variable t only temporally defined')
         % Mesh(t,mfc,transpose(out_2Mean-out_1Mean),opts)
-        
-        Mesh(t,mfc,transpose(hilbert(template)),opts)
+        opts.YLim = [min(min(abs(template))) max(max(abs(template)))];
+        Mesh(t,mfc,transpose( template ),opts)
         
     case 104
         figure;
@@ -603,7 +592,14 @@ function btnSimulateAFC_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-Level_start     = 10; % above test-signal level
+nAnalyser = il_get_nAnalyser(handles.popAnalyser);
+
+if nAnalyser == 101
+    Level_start = 0; % above test-signal level
+else
+    Level_start = 10;
+end
+
 Level_step      = il_get_value_numericPop(handles.popStepdB);
 Reversals_stop  = il_get_value_numericPop(handles.popNreversals);
 bHalveStepSize  = get(handles.chStepSizeHalved,'value');
@@ -632,7 +628,6 @@ catch
     error('Load any data and get the template before pressing this button...');
 end
 
-nAnalyser = il_get_nAnalyser(handles.popAnalyser);
 bStochastic = ~bDeterministic;
 
 switch nAnalyser
@@ -652,7 +647,7 @@ for k = 1:Ntimes
     
     fprintf('Running simulation: %.0f of %.0f\n',k,Ntimes);
     
-     if bStochastic == 1
+    if bStochastic == 1
         insig1 = il_randomise_insig(handles.audio.insig1);
     end
     
@@ -661,34 +656,47 @@ for k = 1:Ntimes
     Staircase = [];
     Reversals = [];
 
-    dprime = [];
+    dprime     = [];
     decisionSN = [];
-    decisionN = [];
+    decisionN  = [];
 
     nWrong      = 0;
     nCorrect    = 1;
     nReversal   = 0;
     while (nReversal < Reversals_stop)
 
-        Gain2apply = From_dB(Level_current);
-        insig2test = Gain2apply * insig2;
-
-        interval1 = insig1; % Only noise
-        interval2 = insig1 + insig2test; % Current signal
+        if nAnalyser ~= 101
+            
+            Gain2apply = From_dB(Level_current);
+            insig2test = Gain2apply * insig2;
+            interval1 = insig1; % Only noise
+            interval2 = insig1 + insig2test; % Current signal
+            
+        else
+            BW = 314;
+            fc = 5000;
+            dBFS = 100;
+            Fmod = 5;
+            depthDau = Level_current;
+            ModIndex = d2m(depthDau,'dau');
+            insigtmp = handles.audio.insigBBN;
+            [interval1 interval2] = il_random_sample_mod_experiment(insigtmp,fs,fc,BW,Fmod,ModIndex,dBFS);
+        end
 
         switch nAnalyser
-            case {100, 104}
+            case {100, 101, 104}
 
                 if nAnalyser == 100;
                     [out_interval1 , fc] = dau1996preproc(interval1,fs);
                     [out_interval2 , fc] = dau1996preproc(interval2,fs);
+                elseif nAnalyser == 101
+                    [out_interval1 , fc] = dau1997preproc_1Ch(interval1,fs,fc);
+                    [out_interval2 , fc] = dau1997preproc_1Ch(interval2,fs,fc);
                 elseif nAnalyser == 104
                     [out_interval1 , fc] = jepsen2008preproc(interval1,fs,'lp');
                     [out_interval2 , fc] = jepsen2008preproc(interval2,fs,'lp');
                 end
                 
-                % for i = 1:Ntimes
-
                 if bStochastic
                     out_interval1 = Add_gaussian_noise(out_interval1,mu,sigma); % Add internal noise
                     out_interval2 = Add_gaussian_noise(out_interval2,mu,sigma); % Add internal noise
@@ -698,8 +706,14 @@ for k = 1:Ntimes
                     out_interval2 = out_interval2 + noise;
                 end
 
-                sigint1 = out_interval1(idxobs(1):idxobs(2),fc2plot_idx);
-                sigint2 = out_interval2(idxobs(1):idxobs(2),fc2plot_idx);
+                if nAnalyser ~= 101
+                    sigint1 = out_interval1(idxobs(1):idxobs(2),fc2plot_idx);
+                    sigint2 = out_interval2(idxobs(1):idxobs(2),fc2plot_idx);
+                else
+                    % one audio-frequency band but all the modulation filterbanks:
+                    sigint1 = out_interval1(idxobs(1):idxobs(2),:);
+                    sigint2 = out_interval2(idxobs(1):idxobs(2),:);
+                end
 
                 Mmin = floor(min(sigint1));
                 Mmax = ceil(max(sigint2));
@@ -731,9 +745,8 @@ for k = 1:Ntimes
 
         Staircase = [Staircase; Level_current];
 
-        % if abs( dprime(end) ) >= 1.26
-        if decision(2) >= 1.025*decision(1) % test tone correctly identified
-            warning('check here')
+        if abs( dprime(end) ) >= 1.26
+        % if decision(2) >= 1.025*decision(1) % test tone correctly identified
             if nCorrect == 0
 
                 nReversal = nReversal + 1;
@@ -2784,6 +2797,30 @@ Nstart = round( length(insig)*random('unif',[0 1]) );
 Nstart = max(1,Nstart);
 
 outsig = [insig(Nstart:end,:); insig(1:Nstart-1,:)];
+
+function [outsig1 outsig2] = il_random_sample_mod_experiment(insig,fs,fc,BW,Fmod,ModIndex,dBFS)
+
+if nargin < 7
+    dBFS = 100;
+end
+
+N = length(insig);
+r = cos_ramp(N,fs,200,200); r = r(:);
+insig1 = il_randomise_insig(insig);
+lvl = rmsdb(insig1) + dBFS;
+insig1 = Set_Fourier_coeff_to_zero(insig1,fs,fc-BW/2,fc+BW/2);
+insig1 = r .* insig1;
+outsig1 = setdbspl(insig1,lvl,dBFS);
+
+insig2 = il_randomise_insig(insig);
+insig2 = Set_Fourier_coeff_to_zero(insig2,fs,fc-BW/2,fc+BW/2);
+insig2 = r .* insig2;
+
+[depthFastl depthDau] = m2d(ModIndex);
+                
+[insig2 env] = ch_am(insig2,Fmod,depthFastl,'d',fs,0);
+outsig2 = setdbspl(insig2,lvl,dBFS);
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % --- Executes on selection change in popNavg.

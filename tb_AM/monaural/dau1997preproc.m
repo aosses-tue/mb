@@ -76,16 +76,16 @@ definput.keyvals.subfs=[];
 % Apply the auditory filterbank: 
 %   insig  = N x  1
 %   outsig = N x 31 (31 gammatone filters)
-[outsig, fc]            = auditoryfilterbank(insig,fs,'argimport',flags,keyvals);
+[outsig, fc]    = auditoryfilterbank(insig,fs,'argimport',flags,keyvals);
 
 % 'haircell' envelope extraction
-outsig                  = ihcenvelope(outsig,fs,'argimport',flags,keyvals);
+outsig          = ihcenvelope(outsig,fs,'argimport',flags,keyvals);
 
 % non-linear adaptation loops (model units, MU)
-outsig                  = adaptloop(outsig,fs,'argimport',flags,keyvals);
+outsig          = adaptloop(outsig,fs,'argimport',flags,keyvals);
 
 % Modulation filterbank
-[outsig,mfc] = modfilterbank(outsig,fs,fc);
+[outsig,mfc]    = modfilterbank1997(outsig,fs,fc);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end

@@ -1,90 +1,74 @@
-function [outsig, fc, mfc, IntRep] = jepsen2008preproc(insig, fs, style, varargin);
-%JEPSEN2008PREPROC   Auditory model from Jepsen et. al. 2008
-%   Usage: [outsig, fc, mfc, IntRep] = jepsen2008preproc(insig,fs,style);
-%          [outsig, fc, mfc, IntRep] = jepsen2008preproc(insig,fs,style,...);
+function [outsig, fc, mfc] = jepsen2008preproc(insig, fs, varargin)
+% function [outsig, fc, mfc] = jepsen2008preproc(insig, fs, varargin)
+%
+% 1. Description:
+%   Auditory model from Jepsen et. al. 2008
+%   Usage: [outsig, fc, mfc, IntRep] = jepsen2008preproc(insig,fs);
+%          [outsig, fc, mfc, IntRep] = jepsen2008preproc(insig,fs,...);
 %
 %   Input parameters:
 %     insig  : input acoustic signal.
 %     fs     : sampling rate.
-%     style = 'mfbtd_drnl' for modulation filterbank
-%     style = 'lp' for low-pass modulation filter
 % 
-%   *Warning:* This code cannot be verified. It has not been possible to
-%   tell from the desciption in the original paper what the correct parameter 
-%   set used for the model is. This code is kept here as a reminder of the
-%   structure of the model, and may reappear in a future work if a
-%   verified parameter set can be established. The status of this piece
-%   of code is "not even wrong": http://en.wikipedia.org/wiki/Not_even_wrong.
-%
-%   JEPSEN2008PREPROC(insig,fs) computes the internal representation of the signal insig
-%   sampled with a frequency of fs Hz as described in Jepsen, Ewert and
-%   Dau (2008).
+%   JEPSEN2008PREPROC(insig,fs) computes the internal representation of the 
+%   signal insig sampled with a frequency of fs Hz as described in Jepsen, 
+%   Ewert and Dau (2008).
 %  
 %   [outsig,fc]=jepsen2008(...) additionally returns the center frequencies of
 %   the filter bank.
 %
 %   The Jepsen 2008 model consists of the following stages:
 % 
-%     1) a heaphone filter to simulate the effect of a standard set of
-%        headphones.
+%     1) A heaphone filter to simulate the effect of a standard set of
+%        headphones (drnl_CASP_debug.m).
 %
-%     2) a middle ear filter to simulate the effect of the middle ear, and
-%        to convert to stapes movement.
+%     2) A middle ear filter to simulate the effect of the middle ear, and
+%        to convert to stapes movement (drnl_CASP_debug.m).
 %
-%     3) DRNL - Dual resonance non-linear filterbank.
+%     3) DRNL - Dual resonance non-linear filterbank (drnl_CASP_debug.m).
 %
-%     4) an envelope extraction stage done by half-wave rectification
-%        followed by low-pass filtering to 1000 Hz.
+%     4) An envelope extraction stage done by half-wave rectification
+%        followed by low-pass filtering to 1000 Hz (this code, stage 3).
 %
-%     5) an expansion stage
+%     5) An expansion stage (this code, stage 4).
 %
-%     6) an adaptation stage modelling nerve adaptation by a cascade of 5
-%        loops.
+%     6) An adaptation stage modelling nerve adaptation by a cascade of 5
+%        loops (adaptloop.m).
 %
-%     7) a modulation filterbank.
+%     7) A modulation filterbank (modfilterbank.m) or low-pass modulation
+%        filter. For the latter type, use 'lowpass' as input argument for 
+%        this function.
 %
 %   Any of the optinal parameters for DRNL, IHCENVELOPE and
 %   ADAPTLOOP may be optionally specified for this function. They will be
 %   passed to the corresponding functions.
 %
-%   See also: drnl, ihcenvelope, adaptloop, modfilterbank, dau1997preproc
+% 2. Additional info:
+%   See also: drnl_CASP, drnl, ihcenvelope, adaptloop, modfilterbank, dau1997preproc
 %
 %   References:
 %     M. Jepsen, S. Ewert, and T. Dau. A computational model of human
 %     auditory signal processing and perception. J. Acoust. Soc. Am.,
 %     124(1):422-438, 2008.
 %     
-%
 %   Url: http://amtoolbox.sourceforge.net/doc/monaural/jepsen2008preproc.php
 % 
-% Copyright (C) 2009-2014 Peter L. Soendergaard and Piotr Majdak.
+% Copyright (C) 2009-2014 Peter L. Soendergaard and Piotr Majdak. 
 % This file is part of AMToolbox version 0.9.5
 %
-% This program is free software: you can redistribute it and/or modify
-% it under the terms of the GNU General Public License as published by
-% the Free Software Foundation, either version 3 of the License, or
-% (at your option) any later version.
-%
-% This program is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU General Public License for more details.
-%
-% You should have received a copy of the GNU General Public License
-% along with this program.  If not, see <http://www.gnu.org/licenses/>.
-% 
-% Examples:
+% 3. Stand-alone example:
+%       % Examples:
 %       [insig,fs] = greasy;
 %       insig = resample(insig,44100,fs);
 %       fs = 44100;
 %       style = 'mfbtd_drnl';
-%       [outsig, fc, mfc] = jepsen2008preproc(insig, fs, style);
+%       [outsig, fc, mfc] = jepsen2008preproc(insig, fs);
 % 
 % Author        : Torsten Dau, Morten Loeve Jepsen, Peter L. Soendergaard
 % Downloaded on : 18/03/2014
 % Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
-% Last update on: 22/04/2015 % Update this date manually
-% Last use on   : 22/04/2015 % Update this date manually
+% Last update on: 16/08/2015 
+% Last use on   : 16/08/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % ------ Checking of input parameters ------------
@@ -104,70 +88,65 @@ if ~isnumeric(fs) || ~isscalar(fs) || fs<=0
   error('%s: fs must be a positive scalar.',upper(mfilename));
 end;
 
-definput.import={'drnl','ihcenvelope','adaptloop'};
-% definput.importdefaults={'jepsen2008'};
-definput.importdefaults={'jepsen2008','ihc_jepsen','adt_dau'}; % Added by AO
+definput.import={'drnl_CASP','ihcenvelope','adaptloop'};
+definput.importdefaults={'jepsen2008','ihc_jepsen','adt_dau'};
 definput.keyvals.subfs=[];
 
 [flags,keyvals]  = ltfatarghelper({'flow','fhigh'},definput,varargin);
 
-% ------ do the computation -------------------------
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% avoid truncation errors due to resampling: COPIED FROM CASP ALGO.
-IntRep.resampleFac = 4;
-IntRep.resampleLen = floor(length(insig) / IntRep.resampleFac);
-IntRep.fs = fs / IntRep.resampleFac;
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-if nargin < 3
-    style = 'mfbtd_drnl';
-    % style   = 'lp';
+%% 1. Up- or down-sampling to fs = 44100 Hz:
+% Note copied from Two!Ears code: up- or down-sampling because outer-middle
+%       ear filter coefficients are calculated (optimised) for input signals
+%       at 44100 Hz
+if fs < 44100    
+    insig = resample(insig,44100,fs);
+    fs = 44100;
+elseif fs > 44100
+    resampleLen = floor(length(insig)) / (44100/fs);
+    insig = resample(insig,fs,44100);
+    insig = insig(1:resampleLen);
 end
 
-%% 1. Headphone filter (outer ear)
-%       Typical human headphone-to-eardrum gain. 
-%       insig is assumed to be in [Pa]
-
-hp_fir = headphonefilter(fs);       % Getting the filter coefficients at fs
-outsig = filter(hp_fir,1,insig);    % Applying the FIR filter
-
 %% 2. DRNL and compensation for middle-ear (middle ear)
-
-% [outsig, fc] = drnl(outsig, fs, 'argimport',flags,keyvals);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[BM MF] = CaspPreProcCfg(style);
-[BM MF] = CaspPreProcInit(BM, MF, fs, IntRep.fs);
-
-[outsig, fc] = drnl_CASP(outsig, fs, 'argimport',flags,keyvals,BM);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+[outsig, fc] = drnl_CASP_debug(insig, fs, 'argimport',flags,keyvals);
 
 %% 3. 'haircell' envelope extraction
 outsig = ihcenvelope(outsig,fs,'argimport',flags,keyvals);
-
-outsig = gaindb(outsig,50); % moved by AO from line after DRNL filterbank
+outsig = gaindb(outsig,50); % linear gain to fit adaptation loops operating point
 
 %% 4. Expansion stage
 outsig = outsig.^2;
 
-%% non-linear adaptation loops
+%% 5. non-linear adaptation loops
 outsig = adaptloop(outsig,fs,'argimport',flags,keyvals);
 
-outsig = resample(outsig,1,IntRep.resampleFac);
-outsig = outsig(1:IntRep.resampleLen,:);
-
-switch MF.style
+%% 6. Downsampling (of the internal representations)
+if flags.do_resample_intrep
+    % In case of downsampling:
+    resampleFac = 4;
+    resampleLen = floor(length(insig) / resampleFac);
+    fs_intrep = fs / IntRep.resampleFac;
     
-    case 'mfbtd_drnl'
-        % Modulation filterbank
-        [outsig,mfc] = modfilterbank(outsig,IntRep.fs,fc);
-        
-    case 'lp'
-        
-        % Low-pass modulation filter.
-        mfc = MF.CenterFreq;
-        outsig = filter(MF.MLpb,MF.MLpa,outsig);
-        
+    outsig = resample(outsig,1,resampleFac);
+    outsig = outsig(1:resampleLen,:);
+else
+    % In case of no-resampling:
+    fs_intrep = fs;
+end
+
+%% 7. Modulation filterbank or modulation low-pass filter
+if flags.do_modfilterbank
+    % Modulation filterbank
+    [outsig,mfc] = modfilterbank(outsig,fs_intrep,fc);
+end
+
+if flags.do_lowpass
+    % Low-pass modulation filter.
+    timeconstant = 20e-3;
+    f0 = 1/(2*pi*timeconstant);
+    [mlp_b mlp_a] = IRIfolp(f0,fs_intrep);
+    mfc = f0;
+    outsig = filter(mlp_b,mlp_a,outsig);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

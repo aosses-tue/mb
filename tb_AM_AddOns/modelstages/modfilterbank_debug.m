@@ -1,10 +1,10 @@
-function [outsig,mfc] = modfilterbank(insig,fs,fc,varargin)
-% function [outsig,mfc] = modfilterbank(insig,fs,fc,varargin)
+function [outsig,mfc,params] = modfilterbank_debug(insig,fs,fc,varargin)
+% function [outsig,mfc,params] = modfilterbank_debug(insig,fs,fc,varargin)
 % 
 % 1. Descrption: 
 %   Modulation filter bank
 % 
-%   Usage: [outsig, mfc] = modfilterbank(insig,fs,fc);
+%   Usage: [outsig, mfc] = modfilterbank_debug(insig,fs,fc);
 %
 %   Input parameters:
 %      insig  : Input signal(s)
@@ -14,7 +14,8 @@ function [outsig,mfc] = modfilterbank(insig,fs,fc,varargin)
 %   Output parameters:
 %      outsig : Modulation filtered signals
 %      mfc    : Center frequencies of the modulation filters.
-%
+%      params : struct with filter parameters
+% 
 %   MODFILTERBANK(insig,fs,fc) applies a modulation filterbank to the input
 %   signals insig which are sampled with a frequency of fs Hz. Each column in
 %   insig is assumed to be bandpass filtered with a center frequency stored in fc.
@@ -38,26 +39,13 @@ function [outsig,mfc] = modfilterbank(insig,fs,fc,varargin)
 %   See also: dau1997preproc
 %
 %   Url: http://amtoolbox.sourceforge.net/doc/modelstages/modfilterbank.php
-
+%
 % Copyright (C) 2009-2014 Peter L. Soendergaard and Piotr Majdak.
 % This file is part of AMToolbox version 0.9.5
 %
-% This program is free software: you can redistribute it and/or modify
-% it under the terms of the GNU General Public License as published by
-% the Free Software Foundation, either version 3 of the License, or
-% (at your option) any later version.
-%
-% This program is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU General Public License for more details.
-%
-% You should have received a copy of the GNU General Public License
-% along with this program.  If not, see <http://www.gnu.org/licenses/>.
-  
 % AUTHOR: Stephan Ewert
 %
-% Modifications by Morten L. Jepsen and Peter L. Soendergaard.
+% Modifications by Morten L. Jepsen and Peter L. Soendergaard., Alejandro Osses
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 definput.keyvals.mfc=[];
@@ -83,11 +71,19 @@ outsig=cell(nfreqchannels,1);
 % center frequency.
 umf = min(fc.*0.25, 1000);  
 
+params.b_highest = b_highest;
+params.a_highest = a_highest;
+
+params.b_mf1 = b_lowpass;
+params.a_mf1 = a_lowpass;
+
 for freqchannel=1:nfreqchannels
 
     % Cut away highest modulation frequencies
-    outtmp = filter(b_highest,a_highest,insig(:,freqchannel));
-
+    % outtmp = filter(b_highest,a_highest,insig(:,freqchannel));
+    outtmp = insig(:,freqchannel);
+    warning('highest filter by-passed')
+    
     if umf(freqchannel)==0
         % ----------- only lowpass ---------------------
         outsigblock = filter(b_lowpass,a_lowpass,outtmp);
@@ -108,6 +104,7 @@ for freqchannel=1:nfreqchannels
         outsigblock(:,1) = filter(b_lowpass,a_lowpass,outtmp);
 
         for nmfc=2:length(mfc)
+            
             w0 = 2*pi*mfc(nmfc)/fs;
             if mfc(nmfc) < 10   % frequencies below 10 Hz.  - 8 Hz LPF to preserve modulation phase
                 [b3,a3] = efilt(w0,2*pi*bw/fs);
@@ -118,8 +115,13 @@ for freqchannel=1:nfreqchannels
                 %     10 Hz is further examined. [...]
                 [b3,a3] = efilt(w0,w0/Q);
             end
-      
-            outsigblock(:,nmfc) = 2*filter(b3,a3,outtmp);
+            
+            exp1 = sprintf('params.b_mf%.0f = b3;',nmfc);
+            exp2 = sprintf('params.a_mf%.0f = a3;',nmfc);
+            eval(exp1);
+            eval(exp2);
+            
+            outsigblock(:,nmfc) = 2*filter(b3,a3,outtmp); 
             % figure; t_tmp = (1:length(outtmp))/fs; plot(t_tmp,outtmp,t_tmp,outsigblock(:,nmfc))
             % legend('sig_i','sig_i filt'); grid on; title( sprintf('fc=%.1f [Hz]',mfc(nmfc)) )
         end
@@ -129,11 +131,8 @@ for freqchannel=1:nfreqchannels
   %% ------------ post-processing --------------------
   
   for nmfc=1:length(mfc) % v2 MJ 17. oct 2006
-      if nmfc == 1
-            warning('Post-processing by-passed by AO');
-      end
 %     if mfc(nmfc) <= 10 % f below 10 Hz
-        outsigblock(:,nmfc) = 1*real(outsigblock(:,nmfc));
+      outsigblock(:,nmfc) = 1*real(outsigblock(:,nmfc));
 %     else
 %       outsigblock(:,nmfc) = 1/sqrt(2)*abs(outsigblock(:,nmfc));
 %     end
