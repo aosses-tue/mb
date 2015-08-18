@@ -128,16 +128,13 @@ for freqchannel=1:nfreqchannels
   
   %% ------------ post-processing --------------------
   
-  for nmfc=1:length(mfc) % v2 MJ 17. oct 2006
-      if nmfc == 1
-            warning('Post-processing by-passed by AO');
-      end
-%     if mfc(nmfc) <= 10 % f below 10 Hz
-        outsigblock(:,nmfc) = 1*real(outsigblock(:,nmfc));
-%     else
-%       outsigblock(:,nmfc) = 1/sqrt(2)*abs(outsigblock(:,nmfc));
-%     end
-  end
+    for nmfc=1:length(mfc) % v2 MJ 17. oct 2006
+        if mfc(nmfc) <= 10 % f below 10 Hz
+            outsigblock(:,nmfc) = 1*real(outsigblock(:,nmfc));
+        else
+            outsigblock(:,nmfc) = 1/sqrt(2)*abs(outsigblock(:,nmfc));
+        end
+    end
   
   outsig{freqchannel}=outsigblock;
 end;

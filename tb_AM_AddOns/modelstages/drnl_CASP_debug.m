@@ -11,7 +11,7 @@ function [outsig, fc, params] = drnl_CASP_debug(insig,fs,varargin)
 % Original file: '..\Psychoacoustics\CASP_Jepsen\CreateIntRepV02\casp2008\bm\drnl.m'
 % Created on    : 24/04/2015
 % Last update on: 15/08/2015
-% Last use on   : 15/08/2015
+% Last use on   : 17/08/2015
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Variables in script getDRNLparam.m were all replaced and validated:
@@ -31,12 +31,12 @@ function [outsig, fc, params] = drnl_CASP_debug(insig,fs,varargin)
 %   nlinDRNLpar(6).vals (kv.nlin_c)
 %   nlinDRNLpar(7).vals (kv.nlin_lp_cutoff)
 
-if nargin < 3
-    % necessary parameters for basilar-membrane and modulation filterbank
-    [BM MF]     = CaspPreProcCfg;
-    [BM MF Lp]  = CaspPreProcInit(BM, MF, fs);
-    warning('In this implementation IntRep neither MF are not being used...')
-end
+% if nargin < 3
+%     % necessary parameters for basilar-membrane and modulation filterbank
+%     [BM MF]     = CaspPreProcCfg;
+%     [BM MF Lp]  = CaspPreProcInit(BM, MF, fs);
+%     warning('In this implementation IntRep neither MF are not being used...')
+% end
 
 % Import the parameters from the arg_drnl.m function.
 definput.import={'drnl_CASP'};
@@ -47,7 +47,7 @@ definput.import={'drnl_CASP'};
 dboffset=dbspl(1); % Assuming convention of 100 dB = rms of 1
 
 % Switch signal to the correct scaling.
-insig=gaindb(insig,dboffset-100); % Scales insig to Pa (gain of 6 dB if convention of 100 dB is used)
+insig=gaindb(insig,dboffset-94); % Scales insig to Pa (gain of 6 dB if convention of 100 dB is used)
 
 %% 1. Headphone filter (outer ear)
 %       Typical human headphone-to-eardrum gain. Input insig is assumed to 

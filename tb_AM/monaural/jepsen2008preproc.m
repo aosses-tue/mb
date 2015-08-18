@@ -73,9 +73,6 @@ function [outsig, fc, mfc] = jepsen2008preproc(insig, fs, varargin)
 
 % ------ Checking of input parameters ------------
 
-warning(['This code of this function is incorrect. Please see the description ' ...
-       'in the help text.'])
-
 if nargin<2
   error('%s: Too few input arguments.',upper(mfilename));
 end;
@@ -88,8 +85,8 @@ if ~isnumeric(fs) || ~isscalar(fs) || fs<=0
   error('%s: fs must be a positive scalar.',upper(mfilename));
 end;
 
-definput.import={'drnl_CASP','ihcenvelope','adaptloop'};
-definput.importdefaults={'jepsen2008','ihc_jepsen','adt_dau'};
+definput.import        ={'drnl_CASP' ,'ihcenvelope','adaptloop'};
+definput.importdefaults={'jepsen2008','ihc_jepsen' ,'adt_dau'};
 definput.keyvals.subfs=[];
 
 [flags,keyvals]  = ltfatarghelper({'flow','fhigh'},definput,varargin);
@@ -125,7 +122,7 @@ if flags.do_resample_intrep
     % In case of downsampling:
     resampleFac = 4;
     resampleLen = floor(length(insig) / resampleFac);
-    fs_intrep = fs / IntRep.resampleFac;
+    fs_intrep = fs / resampleFac;
     
     outsig = resample(outsig,1,resampleFac);
     outsig = outsig(1:resampleLen,:);

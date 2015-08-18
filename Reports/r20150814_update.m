@@ -21,7 +21,7 @@ Diary(mfilename,bDiary);
 
 bDoEnveAMT  = 0;
 bDoHartmann = 0;
-bDoTFMF     = 1;
+bDoTFMF     = 0;
 bDoTFDRNL   = 0;
 bDoTFDRNL2  = 1;
 
@@ -33,7 +33,7 @@ if bDoEnveAMT
     f1 = [dire 'randomnoise-BBN_SPL-70.wav'];
     [insig1 fs] = Wavread(f1);
 
-    fc = 1100;
+    fc_fig2b = 1100;
     BW = 200;
     fcut = 1000;
 
@@ -47,7 +47,7 @@ if bDoEnveAMT
 
     insig1 = setdbspl(insig1,lvl1,dBFS);
 
-    insig2 = Set_Fourier_coeff_to_zero(insig1,fs,fc-BW/2,fc+BW/2);
+    insig2 = Set_Fourier_coeff_to_zero(insig1,fs,fc_fig2b-BW/2,fc_fig2b+BW/2);
     insig2 = setdbspl(insig2,lvl2,dBFS);
     [xx y2dB f] = freqfft2(insig2,K,fs,windowtype,dBFS);
 
@@ -157,8 +157,8 @@ insig = [zeros(N/2-1,1); 1; zeros(N/2,1)]; % dirac
 if bDoTFMF
     
     % To do: compare outsig with TFs
-    fc = 4000; % to get all the modulation filterbanks
-    [outsig,mfc,params] = modfilterbank_debug(insig,fs,fc);
+    fc_fig2b = 4000; % to get all the modulation filterbanks
+    [outsig,mfc,params] = modfilterbank_debug(insig,fs,fc_fig2b);
     outsig = outsig{1};
     
     [x xdB f] = freqfft2(insig,K,fs);
@@ -285,34 +285,106 @@ end
 
 if bDoTFDRNL2
     
-    SPL = [20:10:90];
-    LineWidths = [1 2];
+    SPL = [0 20:10:90 100];
+    SPL_fig2c = [30 60 90]; % dB
+    bandidx = [5 9 14 25]; % 250, 500, 1000, 4000 Hz respectively
     
-    bandidx = 25; % 4000 Hz
-    
-    fc = [1000 2400 4000 8000];
+    fc_fig2a = [ 250  500 1000 4000];
+    fc_fig2b = [1000 2400 4000 8000];
+    fc_fig2c = Get_OB_freqs(3,250,2000);
     dur = N/fs;
     
+    % Figure 2.c
+    nfc = length(fc_fig2c);
+    for j = 1:nfc
+        insig = Create_sin(fc_fig2c(j),dur,fs);
+        for k = 1:length(SPL_fig2c) 
+
+            insigM = setdbspl( insig,SPL_fig2c(k) );
+            
+            [outsigdrnl fcdrnl paramsouts] = drnl_CASP_debug(insigM,fs);
+            [outsiggamma fcgamma] = auditoryfilterbank(insigM,fs);
+
+            out = outsigdrnl(:,bandidx(3)); % band centred at 1 kHz
+            outgamma = outsiggamma(:,bandidx(3)); % band centred at 1 kHz
+            lvl(j,k) = rmsdb(out);
+            lvlgamma(j,k) = rmsdb(outgamma);
+        end       
+        
+    end
+    % Figure 2.c
+    figure; 
+    subplot(1,3,1)
+    plot(lvl(:,1)-max(lvl(:,1))); hold on; plot(lvlgamma(:,1)-max(lvlgamma(:,1)),'r'); grid on
+    set(gca,'XTick',[1:2:nfc]);
+    set(gca,'XTickLabel',round(fc_fig2c(1:2:end)));
+    
+    subplot(1,3,2)
+    plot(lvl(:,2)-max(lvl(:,2))); hold on; plot(lvlgamma(:,2)-max(lvlgamma(:,2)),'r'); grid on
+    set(gca,'XTick',[1:2:nfc]);
+    set(gca,'XTickLabel',round(fc_fig2c(1:2:end)));
+    
+    subplot(1,3,3)
+    plot(lvl(:,3)-max(lvl(:,3))); hold on; plot(lvlgamma(:,3)-max(lvlgamma(:,3)),'r'); grid on
+    set(gca,'XTick',[1:2:nfc]);
+    set(gca,'XTickLabel',round(fc_fig2c(1:2:end)));
+    
+    % Figure 2.b
+    subplot(1,2,2)
+    plot(SPL,lvl)
+    legend('1k','2.4k','4k','8k')
+    xlim([0 100])
+    ylim([-100 0])
+    grid on
+    
+    
+    % Figure 2.a
     for j = 1:4
-        insig = Create_sin(fc(j),dur,fs);
-        % sound(insig,fs);
+        insig = Create_sin(fc_fig2a(j),dur,fs);
         for k = 1:length(SPL) 
 
             insigM = setdbspl( insig,SPL(k) );
             
             [outsigdrnl fcdrnl paramsouts] = drnl_CASP_debug(insigM,fs);
 
-            out = outsigdrnl(:,bandidx);
+            out = outsigdrnl(:,bandidx(j));
+            lvlout(j,k) = rmsdb(out);
+        end       
+        
+    end
+    
+    % Figure 2.a
+    figure;
+    subplot(1,2,1)
+    plot(SPL,lvlout)
+    legend('250','500','1k','4k')
+    xlim([0 100])
+    ylim([-100 0])
+    grid on
+    
+    % Figure 2.b
+    for j = 1:4
+        insig = Create_sin(fc_fig2b(j),dur,fs);
+        for k = 1:length(SPL) 
+
+            insigM = setdbspl( insig,SPL(k) );
+            
+            [outsigdrnl fcdrnl paramsouts] = drnl_CASP_debug(insigM,fs);
+
+            out = outsigdrnl(:,bandidx(4)); % band centred at 4 kHz
             lvl(j,k) = rmsdb(out);
         end       
         
     end
     
-    lvl = lvl+100;
-    figure;
+    % Figure 2.b
+    subplot(1,2,2)
     plot(SPL,lvl)
     legend('1k','2.4k','4k','8k')
-    ylim([0 80])
+    xlim([0 100])
+    ylim([-100 0])
+    grid on
+    
 end
 
 if bDiary

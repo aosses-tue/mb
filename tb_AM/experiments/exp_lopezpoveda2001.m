@@ -1,6 +1,9 @@
 function output=exp_lopezpoveda2001(varargin)
-%EXP_LOPEZPOVEDA2001   Figures from Lopez-Poveda and Meddis (2001)
-%   Usage: output = exp_lopezpoveda2001(flag)
+% function output=exp_lopezpoveda2001(varargin)
+%
+% 1. Description:
+%       Figures from Lopez-Poveda and Meddis (2001)
+%       Usage: output = exp_lopezpoveda2001(flag)
 %
 %   EXP_LOPEZPOVEDA2001(flags,... ) reproduces experiments from the Lopez
 %   & Poveda (2001) paper.
@@ -65,20 +68,16 @@ function output=exp_lopezpoveda2001(varargin)
 %
 %   See also: drnl, data_lopezpoveda2001, data_pralong1996, data_goode1994
 %
-%   Examples:
-%   ---------
+% 2. Stand-alone examples:
 %
-%   To display Figure 2 use :
+%       % To display Figure 2 use :
+%       exp_lopezpoveda2001('fig2');
 %
-%     exp_lopezpoveda2001('fig2');
+%       % To display Figure 3b and 3c use :
+%       exp_lopezpoveda2001('fig3bc');
 %
-%   To display Figure 3b and 3c use :
-%
-%     exp_lopezpoveda2001('fig3bc');
-%
-%   To display Figure 4 use :
-%
-%     exp_lopezpoveda2001('fig4');
+%       % To display Figure 4 use :
+%       exp_lopezpoveda2001('fig4');
 %
 %   References:
 %     R. Goode, M. Killion, K. Nakamura, and S. Nishihara. New knowledge
@@ -92,7 +91,6 @@ function output=exp_lopezpoveda2001(varargin)
 %     calibration for the generation of high fidelity virtual auditory space.
 %     J. Acoust. Soc. Am., 100:3785-3793, 1996.
 %     
-%
 %   Url: http://amtoolbox.sourceforge.net/doc/experiments/exp_lopezpoveda2001.php
 
 % Copyright (C) 2009-2014 Peter L. Søndergaard and Piotr Majdak.
@@ -110,18 +108,18 @@ function output=exp_lopezpoveda2001(varargin)
 %
 % You should have received a copy of the GNU General Public License
 % along with this program.  If not, see <http://www.gnu.org/licenses/>.
-  
-%  AUTHOR: Katharina Egger
-
+%
+% Author: Katharina Egger
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% ------ Check input options --------------------------------------------
 
-  definput.flags.type = {'missingflag','fig2','fig2a','fig2b','fig3bc','fig3b','fig3c','fig4'};
-  definput.flags.plot = {'plot','noplot'};
-  definput.keyvals.predrnl = {};
-  definput.keyvals.postdrnl = {};
+definput.flags.type = {'missingflag','fig2','fig2a','fig2b','fig3bc','fig3b','fig3c','fig4'};
+definput.flags.plot = {'plot','noplot'};
+definput.keyvals.predrnl = {};
+definput.keyvals.postdrnl = {};
 
-  % Parse input options
-  [flags,kv]  = ltfatarghelper({},definput,varargin);
+% Parse input options
+[flags,kv]  = ltfatarghelper({},definput,varargin);
         
 if flags.do_missingflag
   flagnames=[sprintf('%s, ',definput.flags.type{2:end-2}),...
@@ -448,16 +446,15 @@ if flags.do_fig3b || flags.do_fig3bc
     insig = sin(2*pi*fsig(ii).*t)*(2^0.5) * level;  
     
     hp_fir = headphonefilter(fs);
-    insig = filter(hp_fir,1,insig);
+    insig  = filter(hp_fir,1,insig);
     
-    [y_lin, ~] = drnl(insig, fs, kv.predrnl{:}, f1000{:},'linonly', kv.postdrnl{:});    
-    [y_nlin, ~] = drnl(insig, fs, kv.predrnl{:},f1000{:},'nlinonly', kv.postdrnl{:});
+    [ y_lin, ~]     = drnl(insig, fs, kv.predrnl{:}, f1000{:},'linonly', kv.postdrnl{:});    
+    [y_nlin, ~]     = drnl(insig, fs, kv.predrnl{:},f1000{:},'nlinonly', kv.postdrnl{:});
+    outsig          = y_lin + y_nlin;
     
-    outsig = y_lin + y_nlin;
-    
-    result3b(1,ii) = rms(outsig(floor(length(insig)/2):end));
-    lin3b(1,ii) = rms(y_lin(floor(length(insig)/2):end));
-    nlin3b(1,ii) = rms(y_nlin(floor(length(insig)/2):end));
+    result3b(1,ii)  = rms(outsig(floor(length(insig)/2):end));
+    lin3b(1,ii)     = rms(y_lin(floor(length(insig)/2):end));
+    nlin3b(1,ii)    = rms(y_nlin(floor(length(insig)/2):end));
   end
   
   output(:,:,1) = [fsig', lin3b', nlin3b', result3b'];
@@ -603,12 +600,12 @@ if flags.do_fig4
   
   
   OMavg = zeros(length(levelM),length(fsig));
-  OM = zeros(length(levelM),length(fsig));
+  OM    = zeros(length(levelM),length(fsig));
   OSavg = zeros(length(levelS),length(fsig));
-  OS = zeros(length(levelS),length(fsig));
+  OS    = zeros(length(levelS),length(fsig));
   ratio = zeros(length(levelM),length(levelS),length(fsig));
   ratioavg = zeros(length(levelM),length(levelS),length(fsig));
-  indx = zeros(length(levelS),length(fsig));
+  indx  = zeros(length(levelS),length(fsig));
   indxavg = zeros(length(levelS),length(fsig));
   
   output = zeros(length(LSDB),4,length(fsig));

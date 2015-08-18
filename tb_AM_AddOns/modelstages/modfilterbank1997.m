@@ -111,7 +111,7 @@ for freqchannel=1:nfreqchannels
         if mfc(nmfc) <= 10 % f below 10 Hz
             outsigblock(:,nmfc) = 1*real(outsigblock(:,nmfc));
         else
-            outsigblock(:,nmfc) = 1/sqrt(2)*abs(outsigblock(:,nmfc)); 
+            outsigblock(:,nmfc) = abs(outsigblock(:,nmfc)); 
           % figure; plot(1/sqrt(2)*abs(outsigblock(:,nmfc))); hold on; plot( real(outsigblock(:,nmfc)) ,'r'); grid on
         end
     end

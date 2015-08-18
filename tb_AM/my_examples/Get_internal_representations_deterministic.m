@@ -18,8 +18,8 @@ function [outsigs, fc, t, opts] = Get_internal_representations_deterministic(ins
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Original file : Get_internal_representations.m
 % Created on    : 30/04/2015
-% Last update on: 30/04/2015 % Update this date manually
-% Last use on   : 30/04/2015 % Update this date manually
+% Last update on: 18/08/2015 
+% Last use on   : 18/08/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if nargin < 4
     opts = [];
@@ -53,8 +53,7 @@ if strcmp(model,'dau1996a') % No overshoot limit
 end
 
 if strcmp(model,'dau1996') % Overshoot limit
-    warning('Here there is a temporal change')
-    [outsig  fc] = dau1996preproc_1Ch_test(insig,fs,fc);
+    [outsig  fc] = dau1996preproc_1Ch(insig,fs,fc);
     try
         [outsig2 fc] = dau1996preproc_1Ch(insig2,fs,fc);
         [outsig3 fc] = dau1996preproc_1Ch(insig3,fs,fc);
@@ -65,6 +64,20 @@ end
 % if strcmp(model,'dau1997') 
 %     [outsig fc mf] = dau1997preproc_1Ch(insig,fs,fc);
 % end
+
+if strcmp(model,'jepsen2008') 
+    fc2look = fc;
+    [outsig  fc  mfc] = jepsen2008preproc(insig,fs);
+    try
+        [outsig2 fc mfc] = jepsen2008preproc(insig2,fs);
+        [outsig3 fc mfc] = jepsen2008preproc(insig3,fs);
+        [outsig4 fc mfc] = jepsen2008preproc(insig4,fs);
+    end
+    [xx,idx] = max(find(fc<5000));
+    fc = fc(idx);
+    nband = 1; %low-pass channel
+    outsig = outsig{idx}(:,nband);
+end
 
 opts    = Ensure_field(opts,'bAddNoise',1);
 

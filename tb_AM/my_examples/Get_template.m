@@ -29,7 +29,7 @@ idx = setup.idx;
 
 setup   = Ensure_field(setup,'fs',44100);
 fs      = setup.fs;
-out     = Normalise_signal(ir2(:,idx)-ir1(:,idx),fs);
+[xx xx out] = Normalise_signal(ir2(:,idx)-ir1(:,idx),fs);
     
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
