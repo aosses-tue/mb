@@ -61,9 +61,9 @@ if strcmp(model,'dau1996') % Overshoot limit
     end
 end
 
-% if strcmp(model,'dau1997') 
-%     [outsig fc mf] = dau1997preproc_1Ch(insig,fs,fc);
-% end
+if strcmp(model,'dau1997') 
+    [outsig fc mf] = dau1997preproc_1Ch(insig,fs,fc);
+end
 
 if strcmp(model,'jepsen2008') 
     fc2look = fc;
@@ -73,10 +73,9 @@ if strcmp(model,'jepsen2008')
         [outsig3 fc mfc] = jepsen2008preproc(insig3,fs);
         [outsig4 fc mfc] = jepsen2008preproc(insig4,fs);
     end
-    [xx,idx] = max(find(fc<5000));
+    [xx,idx] = max(find(fc<=fc2look));
     fc = fc(idx);
-    nband = 1; %low-pass channel
-    outsig = outsig{idx}(:,nband);
+    outsig = outsig{idx}(:,:);
 end
 
 opts    = Ensure_field(opts,'bAddNoise',1);

@@ -112,7 +112,6 @@ for freqchannel=1:nfreqchannels
             outsigblock(:,nmfc) = 1*real(outsigblock(:,nmfc));
         else
             outsigblock(:,nmfc) = abs(outsigblock(:,nmfc)); 
-          % figure; plot(1/sqrt(2)*abs(outsigblock(:,nmfc))); hold on; plot( real(outsigblock(:,nmfc)) ,'r'); grid on
         end
     end
     outsig{freqchannel}=outsigblock;

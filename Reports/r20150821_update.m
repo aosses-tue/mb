@@ -23,17 +23,25 @@ if nargin < 1
     f       = 5000;
 end
 
-stepJND     = .001;
-testJNDi    = [  26     0.6 0.65; ... %  26 dB
-                 40     0.6 0.65; ... %  40
-                 60     1.0 1.05; ... %  60
-                 80     0.6 0.65; ... %  80
-                100     0.6 0.65];
-tmpJND = testJNDi(1,2):stepJND:testJNDi(1,3);    
+stepJND     = [ .04; ...
+                .04; ...
+                .005; ...
+                .04; ...
+                .04];  
+
+                                       %  dB    dau1996     dau1997     dau1997multi
+testJNDi    = [  26     1.00 1.40; ... %  26    1.1304      1.1369
+                 40     0.90 1.30; ... %  40    1.0750      1.0788   
+                 60     1.00 1.05; ... %  60    1.0040      1.0049
+                 80     0.60 1.00; ... %  80    0.9311      0.9342
+                100     0.60 1.00];    % 100    0.8666      0.8657
+                                       %        var=0.8    var=0.42                             
+            
+tmpJND = testJNDi(1,2):stepJND(1):testJNDi(1,3);    
 NJND        = length(tmpJND);
-testLevels  = 60; % [26 40 60 80 100];
+testLevels  = [26 40 60 80 100]; %[26 40 60 80 100];
 Nlevels     = length(testLevels);
-Ntimes      = 100; % 1 calculations for each condition
+Ntimes      = 10; % 1 calculations for each condition
 CondCounter = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Creating test tone:
@@ -47,16 +55,15 @@ ytmp    = Do_cos_ramp(y,fs,rampup,rampdn);
 
 Criterion = 1.26; % D-prime for 3-AFC 
 
-% model = 'jepsen2008';
+model = 'jepsen2008';
 % tmin = 0; tmax = 4;
 % sigmaValues = 2;
-model = 'dau1996';
+% model = 'dau1997';
 tmin = 2; tmax = 3;
-sigmaValues = .8; % 0.8;%[.3  .5:.1:1]; % [0 0.1 0.5]; % MU
+sigmaValues = .42; % 0.8;%[.3  .5:.1:1]; % [0 0.1 0.5]; % MU
 
 Nsigma      = length(sigmaValues);
 JNDcalc     = nan(Nlevels,Nsigma);
-Mat         = nan(NJND*Nlevels,3+Nsigma);
 CondN       = Nsigma * Nlevels;
 
 for i = 1:Nsigma
@@ -81,10 +88,8 @@ for i = 1:Nsigma
         opts.model      = model;
         opts.tmin = tmin;
         opts.tmax = tmax;
+        opts.fs         = fs;
         outs2           = r20150821_update_decision_proc(opts);
-        
-        Mat(1 + (j-1)*NJND:j*NJND,1:3) = outs2.Mat;
-        Mat(1 + (j-1)*NJND:j*NJND,3+i) = transpose(outs2.dprime);
         
         JNDcalc(j,i)    = outs2.JNDcurrent;
         fprintf('Completed %.2f%% (%.0f out of %.0f conditions)\n',CondCounter/CondN*100,CondCounter,CondN);
@@ -93,7 +98,7 @@ for i = 1:Nsigma
     end
 end
 
-var2latex(Mat);
+var2latex(JNDcalc);
 
 toc
 

@@ -30,7 +30,7 @@ end
 ir1 = ir1(:);
 ir2 = ir2(:);
 
-out     = Normalise_signal(ir2-ir1,fs);
+[xx xx out] = Normalise_signal(ir2-ir1,fs);
 out     = reshape(out,N,M);   
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
