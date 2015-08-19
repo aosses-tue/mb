@@ -20,7 +20,7 @@ function filename = AMTControl_Examples(nExample)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 10/08/2015
 % Last update on: 10/08/2015 
-% Last use on   : 11/08/2015 
+% Last use on   : 19/08/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 bDiary = 0;
@@ -79,11 +79,11 @@ switch nExample
         fs = 44100;
         BW = 3;
         fc = 5000;
-        fmod = 16.67;
-        dur = 1;
+        fmod = 20;
+        dur = 10; % buffer longer than what we need...
         Mdept = 0.5; % well above threshold
         SPL = 70;
-        Fs = 44100;
+        fs = 44100;
         [outsig1 file1,  xx, outsigBBN] = AM_random_noise_BW(fc,BW,SPL,dur,fs,fmod,0);
         [xx      file2, env           ] = AM_random_noise_BW(fc,BW,SPL,dur,fs,fmod,Mdept);
 

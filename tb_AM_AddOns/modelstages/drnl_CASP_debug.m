@@ -4,7 +4,9 @@ function [outsig, fc, params] = drnl_CASP_debug(insig,fs,varargin)
 % 1. Description:
 %       Script for pemo preprocessing using an implementation of the dual
 %       resonance nonlinear (DRNL) filter (Lopez-Poveda, meddis 2001)
-%       The filter models the BM non-linearity
+%       The filter models the BM non-linearity. The output outsig is assumed
+%       to be in [m/s], representing the basilar membrane velocity.
+% 
 % Author: Morten Loeve Jepsen, 2.nov 2005
 %
 % usage: out = drnl(x,CF,fs)

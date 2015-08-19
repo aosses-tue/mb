@@ -43,28 +43,50 @@ testLevels  = [26 40 60 80 100]; %[26 40 60 80 100];
 Nlevels     = length(testLevels);
 Ntimes      = 10; % 1 calculations for each condition
 CondCounter = 1;
+
+% testtype = 1; % sine tones
+testtype = 2; % narrow-band
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Creating test tone:
 fs      = 44100;
-dur     = 4; % in seconds
-y       = .5*Create_sin(f,dur,fs,0);
-rampup  = 5; % ms
-rampdn  = 5; % ms
-ytmp    = Do_cos_ramp(y,fs,rampup,rampdn);
+
+switch testtype
+    case 1
+        dur     = 4; % in seconds
+        y       = .5*Create_sin(f,dur,fs,0);
+        rampup  = 5; % ms
+        rampdn  = 5; % ms
+        insig    = Do_cos_ramp(y,fs,rampup,rampdn);
+        siltime = 0; %200e-3;
+    case 2
+        dur     = 500e-3; % in seconds
+        BW      = 100;
+        y       = AM_random_noise_BW(f,BW,60,dur,fs); % in the experiment the level is set
+        rampup  = 50; % ms
+        rampdn  = 50; % ms
+        insig    = Do_cos_ramp(y,fs,rampup,rampdn);
+        siltime = 0;
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Criterion = 1.26; % D-prime for 3-AFC 
 
-model = 'jepsen2008';
+% model = 'jepsen2008';
 % tmin = 0; tmax = 4;
 % sigmaValues = 2;
-% model = 'dau1997';
-tmin = 2; tmax = 3;
+model = 'dau1997';
+switch testtype
+    case 1
+        tmin = 2; tmax = 3;
+    case 2
+        tmin = 0; tmax = 500e-3;
+end
 sigmaValues = .42; % 0.8;%[.3  .5:.1:1]; % [0 0.1 0.5]; % MU
 
 Nsigma      = length(sigmaValues);
 JNDcalc     = nan(Nlevels,Nsigma);
 CondN       = Nsigma * Nlevels;
+bDeterministicTemplate = 0; % if 0, then template is stochastic
 
 for i = 1:Nsigma
 
@@ -80,7 +102,7 @@ for i = 1:Nsigma
         
         idxLvl = find( testJNDi(:,i)==testLevels(j) );
         opts.testJND    = testJNDi(idxLvl,2):stepJND:testJNDi(idxLvl,3);
-        opts.ytmp       = ytmp;
+        opts.insig      = insig;
         opts.crit       = crit;
         opts.sigma      = sigmaValues(i);
         opts.sigmaTimes = Ntimes;
@@ -89,12 +111,13 @@ for i = 1:Nsigma
         opts.tmin = tmin;
         opts.tmax = tmax;
         opts.fs         = fs;
+        opts.bDeterministicTemplate = bDeterministicTemplate;
+        opts.siltime = siltime;
         outs2           = r20150821_update_decision_proc(opts);
         
         JNDcalc(j,i)    = outs2.JNDcurrent;
         fprintf('Completed %.2f%% (%.0f out of %.0f conditions)\n',CondCounter/CondN*100,CondCounter,CondN);
         CondCounter     = CondCounter + 1;
-        % JNDrecog(j,i)   = outs2.JNDrecognised;
     end
 end
 

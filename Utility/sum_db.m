@@ -15,10 +15,10 @@ function [Y ymean] = sum_db(X,floor_dB)
 % 3. Additional info:
 %   Tested cross-platform: No
 %
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 06/06/2014
-% Last update on: 06/05/2015 % Update this date manually
-% Last use on   : 06/05/2015 % Update this date manually
+% Last update on: 06/05/2015 
+% Last use on   : 19/08/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 x2 = 10.^(X/10); % Anti-log squared

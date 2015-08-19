@@ -434,9 +434,21 @@ switch nAnalyser
         for i = 1:Ntimes
             
             if bDeterministic == 0
-                Fmod    = 5; % Fmod    = 16.67;
-                ModIndex= 0.98; 
-                [insig1, insig2supra] = il_random_sample_mod_experiment(insigBBN,fs,fc,BW,Fmod,ModIndex,dBFS);
+                insig1 = il_randomise_insig(handles.audio.insig1);
+                % insig2supra = 
+                % Fmod    = 5; % Fmod    = 16.67;
+                % ModIndex= 0.98; 
+                % [insig1, insig2supra] = il_random_sample_mod_experiment(insigBBN,fs,fc,BW,Fmod,ModIndex,dBFS);
+                insig2supra = il_randomise_insig(handles.audio.insig2);
+                
+                if get(handles.popStochasticDuration,'value') ~= 7
+                    N = il_get_value_numericPop(handles.popStochasticDuration);
+                    insig1 = insig1(1:N*fs);
+                    insig2supra = insig2supra(1:N*fs);
+                end
+                r = cos_ramp(length(insig1),fs,200e-3); r=r(:);
+                insig1 = insig1.*r;
+                insig2supra = insig2supra.*r;
             end
 
             % [out_1pre , fc, mfc] = dau1997preproc(insig1     ,fs);
@@ -453,7 +465,7 @@ switch nAnalyser
                 opts.XLabel = 'Time [s]';
                 opts.YLabel = 'Modulation frequency [Hz]';
                 opts.Zlabel = 'Normalised amplitude';
-                t = (1:44100)/fs;
+                t = (1:size(out_1pre,1))/fs;
                 Mesh(t,mfc,transpose(out_1pre),opts)
             end
             
@@ -561,7 +573,7 @@ switch nAnalyser
         opts.XLabel = 'Time [s]';
         opts.YLabel = 'Modulation frequency [Hz]';
         opts.Zlabel = 'Normalised amplitude';
-        t = (1:44100)/fs;
+        t = (1:size(template,1))/fs;
         warning('variable t only temporally defined')
         % Mesh(t,mfc,transpose(out_2Mean-out_1Mean),opts)
         opts.YLim = [min(min(abs(template))) max(max(abs(template)))];
@@ -2859,6 +2871,29 @@ function popFc2_Callback(hObject, eventdata, handles)
 % --- Executes during object creation, after setting all properties.
 function popFc2_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to popFc2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in popStochasticDuration.
+function popStochasticDuration_Callback(hObject, eventdata, handles)
+% hObject    handle to popStochasticDuration (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns popStochasticDuration contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popStochasticDuration
+
+
+% --- Executes during object creation, after setting all properties.
+function popStochasticDuration_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popStochasticDuration (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 

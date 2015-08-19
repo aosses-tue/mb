@@ -13,7 +13,7 @@ function [outsigs, fc, t, opts] = Get_internal_representations_deterministic(ins
 %       Get_internal_representations_deterministic(insig,fs,model,var);
 % 
 % 3. Additional info:
-%       Tested cross-platform: No
+%       Tested cross-platform: Yes
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Original file : Get_internal_representations.m

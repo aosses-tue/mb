@@ -17,7 +17,7 @@ function out = Get_template(ir1,ir2,fs)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 23/10/2014
 % Last update on: 30/04/2015 
-% Last use on   : 18/08/2015 
+% Last use on   : 19/08/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 3

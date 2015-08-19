@@ -34,6 +34,11 @@ opts = Ensure_field(opts,'model','dau1996');
 opts = Ensure_field(opts,'tmin',2);
 opts = Ensure_field(opts,'tmax',3);
 opts = Ensure_field(opts,'fs',44100);
+opts = Ensure_field(opts,'bDeterministicTemplate',1);
+opts = Ensure_field(opts,'siltime',200e-3);
+
+bDeterministicTemplate = opts.bDeterministicTemplate;
+siltime = opts.siltime;
 
 f = opts.f;
 tmin = opts.tmin;
@@ -60,7 +65,7 @@ testJND     = opts.testJND;
 
 opts        = ef(opts,'testLevel',80);
 testLevel   = opts.testLevel;
-ytmp        = opts.ytmp;
+insig       = opts.insig;
 crit        = opts.crit;
 sigma       = sigmaValues;
 testLevels  = testLevel*ones(size(testJND));
@@ -71,15 +76,18 @@ nCorrectAnswers = NaN;
 for idx = 1:length(testJND) 
 
     if ( nCorrectAnswers(end) < 90 )| (isnan(nCorrectAnswers))
-        lvl1    = testLevels(idx);
-        SMTc    = Il_adjust_tone(ytmp,fs,lvl1);
+        
+        if idx == 1 % lvl1 does not change
+            lvl1= testLevels(idx);
+            SMTc= Il_adjust_tone(insig,fs,lvl1,siltime);
+        end
 
         lvl2    = subtract_dB( lvl1, testJND(idx) );
-        SMTc2   = Il_adjust_tone(ytmp,fs,lvl2);
+        SMTc2   = Il_adjust_tone(insig,fs,lvl2,siltime);
 
-        if idx == 1
+        if idx == 1 % then we generate the suprathreshold signal
             lvl3    = subtract_dB( lvl1, 5 );
-            SMTc3   = Il_adjust_tone(ytmp,fs,lvl3);
+            SMTc3   = Il_adjust_tone(insig,fs,lvl3,siltime);
         end
 
         if bDebug
@@ -94,25 +102,39 @@ for idx = 1:length(testJND)
             warning('Test level below absolute threshold...')
             pause(5);
         end
-
+        
         setup.bAddNoise = 0;
         setup.fs        = fs;
         setup.fc        = f;
 
-        [RMTc   fc t] = Get_internal_representations_deterministic(SMTc ,fs,model,setup);
-        [RMTc2  fc t] = Get_internal_representations_deterministic(SMTc+SMTc2,fs,model,setup);
+        if idx == 1
+            [RM fc t] = Get_internal_representations_deterministic(SMTc,fs,model,setup);
+        end
+        
+        [RMTc  fc t] = Get_internal_representations_deterministic(SMTc+SMTc2,fs,model,setup);
 
         if idx == 1
-            RMTsupra = Get_internal_representations_deterministic(SMTc+SMTc3,fs,model,setup);
-            T = Get_template_append(RMTc(idx_compare,:),RMTsupra(idx_compare,:),fs);
-            % T = Normalise_signal(T(idx_compare,:),fs);
+            
+            RMTsupra = Get_internal_representations_deterministic(SMTc+SMTc3,fs,model,setup); % rmsdb(SMTc+SMTc3)+100
+            
+            [N M] = size(RMTsupra);
+            
+            if bDeterministicTemplate == 0
+                
+                mu = 0;
+                RM_avg       = il_get_avg_ir(RM(idx_compare,:)      ,mu,sigma,sigmaTimes);
+                RMTsupra_avg = il_get_avg_ir(RMTsupra(idx_compare,:),mu,sigma,sigmaTimes);
+                                
+            else
+                RM_avg       = RM;
+                RMTsupra_avg = RMTsupra;
+            end
+            
+            T = Get_template_append(RM_avg,RMTsupra_avg,fs);
+            N = length(idx_compare);
+            M = size(T,2);
 
         end
-
-        N = length(idx_compare);
-        M = size(T,2);
-        
-        count_row = 1;
 
         for k = 1:sigmaTimes
             mu  = 0;
@@ -123,16 +145,15 @@ for idx = 1:length(testJND)
             yn4 = normrnd(mu,sigma,N,M);
             yn5 = normrnd(mu,sigma,N,M);
 
-            RMTc_n  = RMTc(idx_compare,:)  + yn1;
-            RMTc2_n = RMTc2(idx_compare,:) + yn2;
+            RMTc_n  = RM(idx_compare,:)  + yn1;
+            RMTc2_n = RMTc(idx_compare,:) + yn2;
 
-            RMTc_n3 = RMTc(idx_compare,:) + yn3;
-            RMTc_n4 = RMTc(idx_compare,:) + yn4;
-            RMTc_n5 = RMTc(idx_compare,:) + yn5;
+            RMTc_n3 = RM(idx_compare,:) + yn3;
+            RMTc_n4 = RM(idx_compare,:) + yn4;
+            RMTc_n5 = RM(idx_compare,:) + yn5;
 
             Mmin = floor(min(RMTc_n));
             Mmax = ceil(max(RMTc2_n));
-            Centres = Mmin-1:1/16:Mmax+1;
             
             tmp_mue1 = optimaldetector(RMTc_n - RMTc_n3,T); % Noise alone
             tmp_mue2 = optimaldetector(RMTc_n - RMTc_n4,T); % Noise alone
@@ -179,11 +200,26 @@ outs.varout2 = varout2;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Inline functions:
-function outsig = Il_adjust_tone(insig,fs,lvl)
+function outsig = Il_adjust_tone(insig,fs,lvl,siltime)
+
+if nargin <4
+    siltime = 200e-3;
+end
 
 outsigtmp   = setdbspl(insig,lvl);
 
-outsig      = [Gen_silence(200e-3,fs); ...
+outsig      = [Gen_silence(siltime,fs); ...
                outsigtmp;
-               Gen_silence(200e-3,fs)];
+               Gen_silence(siltime,fs)];
            
+function RMTout = il_get_avg_ir(RMTin,mu,sigma,sigmaTimes)
+
+[N M] = size(RMTin);
+Rtmp = [];
+
+for k = 1:sigmaTimes
+    yn1 = normrnd(mu,sigma,N,M);
+    Rtmp = [Rtmp RMTin(:)+yn1(:)];
+end
+Rtmp = mean(Rtmp,2);
+RMTout = reshape(Rtmp,N,M);
