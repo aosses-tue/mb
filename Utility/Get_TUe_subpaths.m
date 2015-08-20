@@ -22,7 +22,7 @@ function misc = Get_TUe_subpaths(type)
 % Programmed by Alejandro Osses, TUe, 2014
 % Created on    : 24/06/2014
 % Last update on: 15/08/2015
-% Last use on   : 15/08/2015
+% Last use on   : 21/08/2015
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 path = Get_TUe_paths(type);
@@ -76,6 +76,7 @@ elseif strcmp(type,'Psychoacoustics')
 elseif strcmp(type,'tb_AM_AddOns')
     
     misc.comp        = [path 'comp'        delim];
+    misc.experiments = [path 'experiments' delim];
     misc.filters     = [path 'filters'     delim];
     misc.modelstages = [path 'modelstages' delim];
     

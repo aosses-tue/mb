@@ -69,25 +69,43 @@ insig       = opts.insig;
 crit        = opts.crit;
 sigma       = sigmaValues;
 testLevels  = testLevel*ones(size(testJND));
+bInsig_is_buffer = opts.bInsig_is_buffer;
 
 varout = [];
 nCorrectAnswers = NaN;
+
+insig_orig = insig;
 
 for idx = 1:length(testJND) 
 
     if ( nCorrectAnswers(end) < 90 )| (isnan(nCorrectAnswers))
         
+        if bInsig_is_buffer
+            
+            if idx == 1
+                insigtmp = il_randomise_insig(insig_orig);
+                insigsupra = insigtmp(1:tmax*44100);
+
+                % insig = il_randomise_insig(insig_orig);
+                insig = insigtmp(1:tmax*44100);
+                ramp = 50;
+            end
+        else
+            ramp = 0;
+            insigsupra = insig;
+        end
+        
         if idx == 1 % lvl1 does not change
             lvl1= testLevels(idx);
-            SMTc= Il_adjust_tone(insig,fs,lvl1,siltime);
+            SMTc= Il_adjust_tone(insig,fs,lvl1,siltime,ramp);
         end
 
         lvl2    = subtract_dB( lvl1, testJND(idx) );
-        SMTc2   = Il_adjust_tone(insig,fs,lvl2,siltime);
+        SMTc2   = Il_adjust_tone(insig,fs,lvl2,siltime,ramp);
 
         if idx == 1 % then we generate the suprathreshold signal
             lvl3    = subtract_dB( lvl1, 5 );
-            SMTc3   = Il_adjust_tone(insig,fs,lvl3,siltime);
+            SMTc3   = Il_adjust_tone(insigsupra,fs,lvl3,siltime,ramp);
         end
 
         if bDebug
@@ -155,8 +173,9 @@ for idx = 1:length(testJND)
             Mmin = floor(min(RMTc_n));
             Mmax = ceil(max(RMTc2_n));
             
-            tmp_mue1 = optimaldetector(RMTc_n - RMTc_n3,T); % Noise alone
-            tmp_mue2 = optimaldetector(RMTc_n - RMTc_n4,T); % Noise alone
+            idx_com = idx_compare; % round(2*fs+1):round(3*fs);
+            tmp_mue1 = optimaldetector(RMTc_n(idx_com,:) - RMTc_n3(idx_com,:),T(idx_com,:)); % Noise alone
+            tmp_mue2 = optimaldetector(RMTc_n(idx_com,:) - RMTc_n4(idx_com,:),T(idx_com,:)); % Noise alone
             [mue(1,idx) mue(2,idx)] = max([tmp_mue1 tmp_mue2]);
             mue(3,idx) = optimaldetector(RMTc2_n - RMTc_n5,T); % Signal + noise
             mue(4,idx) = mue(3,idx) - mue(1,idx);
@@ -200,13 +219,19 @@ outs.varout2 = varout2;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Inline functions:
-function outsig = Il_adjust_tone(insig,fs,lvl,siltime)
+function outsig = Il_adjust_tone(insig,fs,lvl,siltime,ramp)
+
+if nargin <5
+    ramp = 0;
+end
 
 if nargin <4
     siltime = 200e-3;
 end
 
-outsigtmp   = setdbspl(insig,lvl);
+outsigtmp = Do_cos_ramp(insig,fs,ramp);
+
+outsigtmp   = setdbspl(outsigtmp,lvl);
 
 outsig      = [Gen_silence(siltime,fs); ...
                outsigtmp;
@@ -223,3 +248,10 @@ for k = 1:sigmaTimes
 end
 Rtmp = mean(Rtmp,2);
 RMTout = reshape(Rtmp,N,M);
+
+function outsig = il_randomise_insig(insig)
+
+Nstart = round( length(insig)*random('unif',[0 1]) );
+Nstart = max(1,Nstart);
+
+outsig = [insig(Nstart:end,:); insig(1:Nstart-1,:)];

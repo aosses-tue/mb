@@ -108,16 +108,13 @@ end
 
 %% 3. 'haircell' envelope extraction
 outsig = ihcenvelope(outsig,fs,'argimport',flags,keyvals);
-outsigtmp = outsig;
 outsig = gaindb(outsig,50); % linear gain to fit adaptation loops operating point
 
 %% 4. Expansion stage
 outsig = outsig.^2;
-outsigtmp = outsigtmp.^2;
 
 %% 5. non-linear adaptation loops
 outsig = adaptloop(outsig,fs,'argimport',flags,keyvals);
-outsigtmp = adaptloop(outsigtmp,fs,'argimport',flags,keyvals);
 
 %% 6. Downsampling (of the internal representations)
 if flags.do_resample_intrep

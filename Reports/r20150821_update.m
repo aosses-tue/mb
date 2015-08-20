@@ -1,12 +1,13 @@
-function y = r20150821_update(f)
-% function y = r20150821_update(f)
+function y = r20150821_update(f,testtype,model)
+% function y = r20150821_update(f,testtype,model)
 %
 % 1. Description:
 %
 % 2. Stand-alone example:
-%
+%       r20150821_update(1000);
+% 
 % 3. Additional info:
-%       Tested cross-platform: No
+%       Tested cross-platform: Yes
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 17/08/2015
@@ -19,69 +20,116 @@ Diary(mfilename,bDiary);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Params:
+if nargin < 3
+    % model = 'dau1996a';
+    model = 'jepsen2008';
+end
+
+if nargin < 2
+    % testtype = 1; % sine tones as in Dau1996a
+    % testtype = 2; % narrow-band as in Jepsen2008 (used to get variance)
+    testtype = 3; % sine tones as in Jepsen2008
+end
+
 if nargin < 1
     f       = 5000;
 end
 
+% stepJND     = [ .04; ...
+%                 .04; ...
+%                 .005; ...
+%                 .04; ...
+%                 .04];  
+
+%                                        %  dB    dau1996     dau1997     dau1997multi
+% testJNDi    = [  26     1.00 1.40; ... %  26    1.1304      1.1369
+%                  40     0.90 1.30; ... %  40    1.0750      1.0788   
+%                  60     1.00 1.05; ... %  60    1.0040      1.0049
+%                  80     0.60 1.00; ... %  80    0.9311      0.9342
+%                 100     0.60 1.00];    % 100    0.8666      0.8657
+%                                        %        var=0.8    var=0.42                
+
 stepJND     = [ .04; ...
                 .04; ...
-                .005; ...
+                .04; ...
+                .04; ...
                 .04; ...
                 .04];  
+%                                        %  dB    dau1996     dau1997     dau1997multi
+% testJNDi    = [  26     0.40 0.80; ... %  26    1.1304      1.1369
+%                  40     0.40 0.80; ... %  40    1.0750      1.0788   
+%                  60     0.50 0.90; ... %  60    1.0040      1.0049
+%                  80     0.70 1.10; ... %  80    0.9311      0.9342
+%                 100     0.90 1.30];    % 100    0.8666      0.8657
+%                                        %        var=0.8    var=0.42                             
 
-                                       %  dB    dau1996     dau1997     dau1997multi
-testJNDi    = [  26     1.00 1.40; ... %  26    1.1304      1.1369
-                 40     0.90 1.30; ... %  40    1.0750      1.0788   
-                 60     1.00 1.05; ... %  60    1.0040      1.0049
-                 80     0.60 1.00; ... %  80    0.9311      0.9342
-                100     0.60 1.00];    % 100    0.8666      0.8657
+testJNDi    = [  20     0.40 0.90; ...
+                 30     0.40 0.90; ...
+                 40     0.40 0.90; ... %  40    1.0750      1.0788  
+                 50     0.40 0.90; ...
+                 60     0.50 1.00; ... %  60    1.0040      1.0049
+                 70     0.60 1.10; ... %  80    0.9311      0.9342
+                 80     0.70 1.20];    % 100    0.8666      0.8657
                                        %        var=0.8    var=0.42                             
-            
+
+
 tmpJND = testJNDi(1,2):stepJND(1):testJNDi(1,3);    
-NJND        = length(tmpJND);
-testLevels  = [26 40 60 80 100]; %[26 40 60 80 100];
+% NJND        = length(tmpJND);
+% testLevels  = [26 40 60 80 100]; 
+testLevels  =[30 40 50 60 70]; % [30 40 60 70 80]; 
 Nlevels     = length(testLevels);
-Ntimes      = 10; % 1 calculations for each condition
+Ntimes      = 2; %10; % 1 calculations for each condition
 CondCounter = 1;
 
-% testtype = 1; % sine tones
-testtype = 2; % narrow-band
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Creating test tone:
 fs      = 44100;
 
 switch testtype
     case 1
-        dur     = 4; % in seconds
+        dur     = 0.5; % in seconds
         y       = .5*Create_sin(f,dur,fs,0);
         rampup  = 5; % ms
         rampdn  = 5; % ms
         insig    = Do_cos_ramp(y,fs,rampup,rampdn);
         siltime = 0; %200e-3;
+        bInsig_is_buffer = 0;
     case 2
-        dur     = 500e-3; % in seconds
-        BW      = 100;
-        y       = AM_random_noise_BW(f,BW,60,dur,fs); % in the experiment the level is set
+        dur     = 10; % buffer in seconds
+        % BW      = 100;
+        % y       = AM_random_noise_BW(f,BW,60,dur,fs); % in the experiment the level is set
+        y       = AM_random_noise(100,10000,60,dur,fs); % in the experiment the level is set
         rampup  = 50; % ms
         rampdn  = 50; % ms
-        insig    = Do_cos_ramp(y,fs,rampup,rampdn);
+        insig   = y;
+        bInsig_is_buffer = 1;
+        % insig    = Do_cos_ramp(y,fs,rampup,rampdn);
         siltime = 0;
+    case 3
+        dur     = 0.8; % in seconds
+        y       = .5*Create_sin(f,dur,fs,0);
+        rampup  = 125; % ms
+        rampdn  = 125; % ms
+        insig    = Do_cos_ramp(y,fs,rampup,rampdn);
+        siltime = 0; %200e-3;
+        bInsig_is_buffer = 0;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Criterion = 1.26; % D-prime for 3-AFC 
 
-% model = 'jepsen2008';
 % tmin = 0; tmax = 4;
 % sigmaValues = 2;
-model = 'dau1997';
+% model = 'dau1996';
 switch testtype
     case 1
-        tmin = 2; tmax = 3;
+        tmin = 0; tmax = 0.5; % 4; % 2 3
     case 2
         tmin = 0; tmax = 500e-3;
+    case 3
+        tmin = 0; tmax = 800e-3;
 end
-sigmaValues = .42; % 0.8;%[.3  .5:.1:1]; % [0 0.1 0.5]; % MU
+sigmaValues = 0.9; % 0.42;%[.3  .5:.1:1]; % [0 0.1 0.5]; % MU
 
 Nsigma      = length(sigmaValues);
 JNDcalc     = nan(Nlevels,Nsigma);
@@ -102,6 +150,7 @@ for i = 1:Nsigma
         
         idxLvl = find( testJNDi(:,i)==testLevels(j) );
         opts.testJND    = testJNDi(idxLvl,2):stepJND:testJNDi(idxLvl,3);
+        
         opts.insig      = insig;
         opts.crit       = crit;
         opts.sigma      = sigmaValues(i);
@@ -113,6 +162,7 @@ for i = 1:Nsigma
         opts.fs         = fs;
         opts.bDeterministicTemplate = bDeterministicTemplate;
         opts.siltime = siltime;
+        opts.bInsig_is_buffer = bInsig_is_buffer;
         outs2           = r20150821_update_decision_proc(opts);
         
         JNDcalc(j,i)    = outs2.JNDcurrent;
@@ -121,30 +171,8 @@ for i = 1:Nsigma
     end
 end
 
-var2latex(JNDcalc);
+var2latex([testLevels' JNDcalc]);
 
-toc
-
-
-% fs = 44100;
-% ft = 1000;
-% durt = 800e-3;
-% durramp = 125e-3;
-% y = Create_sin(ft,durt,fs);
-% r = cos_ramp(durt*fs,fs,durramp,durramp); r = r(:);
-% y = y.*r;
-% 
-% test_level = [60 30:10:90];
-% level_delta_start = [1.25 1.1 0.85 0.5 0.5 0.5 0.5 0.5];
-% level_step = 0.05;
-% 
-% sigma_start = 0.4;
-% dprime_start = 0;
-% sigma_step = 0.01;
-% 
-% bCalculateSigma = 1;
-% mu = 0;
-% 
 % ttt = [];
 % if bCalculateSigma
 %     for j = 1 % for the reference tone
@@ -192,22 +220,16 @@ toc
 %             outsig3_int = [];
 %             outsign_int = [];
 % 
-% %             outsig4_int = [];
 %             for i = 1:length(idx)
 %                 tmp1 = Add_gaussian_noise(outsig1{idx(i)}(:,1),mu,sigma);
 %                 tmp2 = Add_gaussian_noise(outsig2{idx(i)}(:,1),mu,sigma);
 %                 tmp3 = Add_gaussian_noise(outsig3{idx(i)}(:,1),mu,sigma);
 %                 tmpn = Add_gaussian_noise(outsig1{idx(i)}(:,1),mu,sigma);
-% % 
 %                 outsig1_int = [outsig1_int; tmp1(:)];
 %                 outsig2_int = [outsig2_int; tmp2(:)];
 %                 outsig3_int = [outsig3_int; tmp3(:)];
 %                 outsign_int = [outsign_int; tmpn(:)];
-% %                 outsig4_int = [outsig4_int; tmp4(:)];
 %             end
-% % 
-% %             template = Get_template_append(outsig1_int,outsig4_int,fs);
-% % 
 %             mue(1) = optimaldetector(outsig1_int,template);
 %             mue(2) = optimaldetector(outsig2_int,template);
 %             mue(3) = optimaldetector(outsig3_int,template);

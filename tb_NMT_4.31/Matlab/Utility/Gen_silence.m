@@ -1,5 +1,9 @@
 function silence = Gen_silence(duration, sample_rate)
-% Gen_silence: Generate a sampled-audio silence.
+% function silence = Gen_silence(duration, sample_rate)
+%
+% 1. Description: 
+%       Generate a sampled-audio silence.
+% 
 % function silence = Gen_silence(duration, sample_rate)
 % duration:		the duration of the silence, in seconds.
 % sample_rate:	the audio sample rate, in Hertz.

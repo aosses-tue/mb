@@ -67,6 +67,10 @@ switch nargin
         end
 end
 
+if attack == 0 | release == 0
+    ramp(end) = 1;
+end
+
 if nargout == 0
     t = ( 1:sig_len )/fs;
     figure

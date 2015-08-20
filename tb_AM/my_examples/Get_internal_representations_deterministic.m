@@ -74,8 +74,20 @@ if strcmp(model,'jepsen2008')
         [outsig4 fc mfc] = jepsen2008preproc(insig4,fs);
     end
     [xx,idx] = max(find(fc<=fc2look));
+%     [xx,idx_min] = max(find(fc<=0.5*fc2look));
+%     [xx,idx_max] = max(find(fc<=2*fc2look));
+    [xx,idx_min] = max(find(fc<=100));
+    [xx,idx_max] = max(find(fc<=8000));
+    idx = idx_min:idx_max;
     fc = fc(idx);
-    outsig = outsig{idx}(:,:);
+    outsigtmp = [];
+    for i = 1:length(idx)
+        % [Nn Mn] = size(outsig{idx(i)});
+        % tmp = nan(Nn, 12);
+        outsigtmp = [outsigtmp outsig{idx(i)}(:,:)];
+        
+    end
+    outsig = outsigtmp;
 end
 
 opts    = Ensure_field(opts,'bAddNoise',1);
