@@ -1,10 +1,10 @@
-function [outsig, fc, mfc, outs] = jepsen2008preproc(insig, fs, varargin)
-% function [outsig, fc, mfc, outs] = jepsen2008preproc(insig, fs, varargin)
+function [outsig, fc, mfc, outs] = jepsen2008preproc_1Ch(insig, fs, fc, varargin)
+% function [outsig, fc, mfc, outs] = jepsen2008preproc_1Ch(insig, fs, fc, varargin)
 %
 % 1. Description:
 %   Auditory model from Jepsen et. al. 2008
-%   Usage: [outsig, fc, mfc, IntRep] = jepsen2008preproc(insig,fs);
-%          [outsig, fc, mfc, IntRep] = jepsen2008preproc(insig,fs,...);
+%   Usage: [outsig, fc, mfc, IntRep] = jepsen2008preproc_1Ch(insig,fs,fc);
+%          [outsig, fc, mfc, IntRep] = jepsen2008preproc_1Ch(insig,fs,fc,...);
 %
 %   Input parameters:
 %     insig  : input acoustic signal.
@@ -104,6 +104,8 @@ elseif fs > 44100
 end
 
 %% 2. DRNL and compensation for middle-ear (middle ear)
+keyvals.flow    = fc;
+keyvals.fhigh   = fc;
 [outsig, fc] = drnl_CASP_debug(insig, fs, 'argimport',flags,keyvals);
 if nargout >= 4
     outs.out_filterbank = outsig;
@@ -146,6 +148,10 @@ if flags.do_lowpass
     [mlp_b mlp_a] = IRIfolp(f0,fs_intrep);
     mfc = f0;
     outsig = filter(mlp_b,mlp_a,outsig);
+end
+
+if nargout >= 4
+    outs.fs_intrep = fs_intrep;
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

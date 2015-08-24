@@ -12,7 +12,7 @@ function [template,ir_reference]=casptemplate(target,reference,modelname,modelpa
 %
 %   Url: http://amtoolbox.sourceforge.net/doc/modelstages/casptemplate.php
 
-% Copyright (C) 2009-2014 Peter L. Søndergaard and Piotr Majdak.
+% Copyright (C) 2009-2014 Peter L. Soendergaard and Piotr Majdak.
 % This file is part of AMToolbox version 0.9.5
 %
 % This program is free software: you can redistribute it and/or modify
@@ -27,9 +27,10 @@ function [template,ir_reference]=casptemplate(target,reference,modelname,modelpa
 %
 % You should have received a copy of the GNU General Public License
 % along with this program.  If not, see <http://www.gnu.org/licenses/>.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin<4
-  modelpars={};
+    modelpars={};
 end;
 
 ntargets    = size(target,2);

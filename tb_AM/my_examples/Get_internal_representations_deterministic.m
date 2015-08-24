@@ -36,6 +36,11 @@ end
 opts    = Ensure_field(opts,'fc',1000);
 fc      = opts.fc;
 
+opts = Ensure_field(opts,'fmin',fc);
+opts = Ensure_field(opts,'fmax',fc);
+fmin = opts.fmin;
+fmax = opts.fmax;
+
 insig   = insigs(:,1);
 try
     insig2  = insigs(:,2);
@@ -44,6 +49,11 @@ try
 end
     
 if strcmp(model,'dau1996a') % No overshoot limit
+    
+    if fmin ~= fc | fmax ~= fc
+        error('Single-channel model being used, update this script and re-run the analysis');
+    end
+    
     [outsig  fc] = dau1996apreproc_1Ch(insig ,fs,fc);
     try
         [outsig2 fc] = dau1996apreproc_1Ch(insig2,fs,fc);
@@ -53,41 +63,74 @@ if strcmp(model,'dau1996a') % No overshoot limit
 end
 
 if strcmp(model,'dau1996') % Overshoot limit
-    [outsig  fc] = dau1996preproc_1Ch(insig,fs,fc);
-    try
-        [outsig2 fc] = dau1996preproc_1Ch(insig2,fs,fc);
-        [outsig3 fc] = dau1996preproc_1Ch(insig3,fs,fc);
-        [outsig4 fc] = dau1996preproc_1Ch(insig4,fs,fc);
+    
+    if fmin ~= fc | fmax ~= fc
+        bSingleChannel = 0;
+        bMultiChannel = 1;
+    else
+        bSingleChannel = 1;
+        bMultiChannel = 0;
+    end
+    
+    if bSingleChannel == 1
+        [outsig  fc] = dau1996preproc_1Ch(insig,fs,fc);
+        try
+            [outsig2 fc] = dau1996preproc_1Ch(insig2,fs,fc);
+            [outsig3 fc] = dau1996preproc_1Ch(insig3,fs,fc);
+            [outsig4 fc] = dau1996preproc_1Ch(insig4,fs,fc);
+        end
+    end
+    
+    if bMultiChannel
+        [outsig  fc] = dau1996preproc(insig,fs);
+        try
+            [outsig2 fc] = dau1996preproc(insig2,fs);
+            [outsig3 fc] = dau1996preproc(insig3,fs);
+            [outsig4 fc] = dau1996preproc(insig4,fs);
+        end
+        
+        [xx,idx] = find(fc>=fmin & fc<=fmax);
+        fc = fc(idx);
+        
+        outsig = outsig(:,idx);
+        try
+            outsig2 = outsig2(:,idx);
+            outsig3 = outsig3(:,idx);
+            outsig4 = outsig4(:,idx);
+        end
+        
     end
 end
 
 if strcmp(model,'dau1997') 
+    
+    if fmin ~= fc | fmax ~= fc
+        error('Single-channel model being used, update this script and re-run the analysis');
+    end
+    
     [outsig fc mf] = dau1997preproc_1Ch(insig,fs,fc);
 end
 
 if strcmp(model,'jepsen2008') 
-    fc2look = fc;
+    
+    % fc2look = fc;
     [outsig  fc  mfc] = jepsen2008preproc(insig,fs);
+    [outsig  fc  mfc] = jepsen2008preproc(insig,fs,'resample_intrep');
     try
-        [outsig2 fc mfc] = jepsen2008preproc(insig2,fs);
-        [outsig3 fc mfc] = jepsen2008preproc(insig3,fs);
-        [outsig4 fc mfc] = jepsen2008preproc(insig4,fs);
+        [outsig2 fc mfc] = jepsen2008preproc(insig2,fs,'resample_intrep');
+        [outsig3 fc mfc] = jepsen2008preproc(insig3,fs,'resample_intrep');
+        [outsig4 fc mfc] = jepsen2008preproc(insig4,fs,'resample_intrep');
     end
-    [xx,idx] = max(find(fc<=fc2look));
-%     [xx,idx_min] = max(find(fc<=0.5*fc2look));
-%     [xx,idx_max] = max(find(fc<=2*fc2look));
-    [xx,idx_min] = max(find(fc<=100));
-    [xx,idx_max] = max(find(fc<=8000));
-    idx = idx_min:idx_max;
+
+    [xx,idx] = find(fc>=fmin & fc<=fmax);
     fc = fc(idx);
     outsigtmp = [];
     for i = 1:length(idx)
-        % [Nn Mn] = size(outsig{idx(i)});
-        % tmp = nan(Nn, 12);
         outsigtmp = [outsigtmp outsig{idx(i)}(:,:)];
         
     end
     outsig = outsigtmp;
+    
 end
 
 opts    = Ensure_field(opts,'bAddNoise',1);

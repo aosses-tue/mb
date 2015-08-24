@@ -1,6 +1,11 @@
 function r=vocoder(d,fs,nbands)
 % function r=vocoder(d,fs,nbands)
 %
+% Stand-alone example:
+%       [x fs] = greasy; % Any wav file
+%       nbands = 8;
+%       r = vocoder(x,fs,nbands);
+% 
 % Copyright Tom Francart, 2009
 % Edited by: Alejandro Osses
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -24,8 +29,7 @@ analysis_filters_B=zeros(filter_order*2+1,nbands);
 analysis_filters_A=analysis_filters_B;
 for i=1:nbands
     [analysis_filters_B(:,i), analysis_filters_A(:,i)] = ...
-        butter(filter_order, ...
-            [analysis_cutoff(i) analysis_cutoff(i+1)]/fs*2);
+        butter(filter_order, [analysis_cutoff(i) analysis_cutoff(i+1)]/fs*2);
 end
 
 if (doplot)
@@ -64,8 +68,7 @@ for i=1:nbands
     t=filter(Blp,Alp,t);
     
     % Create noise band
-    noiseband=filter(resynthesis_filters_B(:,i), ...
-        resynthesis_filters_A(:,i), noise);
+    noiseband=filter(resynthesis_filters_B(:,i), resynthesis_filters_A(:,i), noise);
     
     out(:,i)=t.*noiseband;
 end

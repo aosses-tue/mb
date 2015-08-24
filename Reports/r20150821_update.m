@@ -4,7 +4,8 @@ function y = r20150821_update(f,testtype,model)
 % 1. Description:
 %
 % 2. Stand-alone example:
-%       r20150821_update(1000);
+%       r20150821_update(1000,3,'jepsen2008'); % Weber's law as in Jepsen 2008, 1-kHz tones
+%       r20150821_update(1000,2,'jepsen2008'); % Weber's law as in Jepsen 2008, BBN
 % 
 % 3. Additional info:
 %       Tested cross-platform: Yes
@@ -17,6 +18,9 @@ function y = r20150821_update(f,testtype,model)
 
 bDiary = 0;
 Diary(mfilename,bDiary);
+
+bPart1 = 0; % actual modelling part
+bPart2 = 1; % Plot results
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Params:
@@ -35,6 +39,8 @@ if nargin < 1
     f       = 5000;
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if bPart1
 % stepJND     = [ .04; ...
 %                 .04; ...
 %                 .005; ...
@@ -94,6 +100,9 @@ switch testtype
         insig    = Do_cos_ramp(y,fs,rampup,rampdn);
         siltime = 0; %200e-3;
         bInsig_is_buffer = 0;
+        
+        fmin = f; % to use single-channel model
+        fmax = f; % to use single-channel model
     case 2
         dur     = 10; % buffer in seconds
         % BW      = 100;
@@ -105,6 +114,9 @@ switch testtype
         bInsig_is_buffer = 1;
         % insig    = Do_cos_ramp(y,fs,rampup,rampdn);
         siltime = 0;
+        
+        fmin    = 100; % to use multi-channel model, all fcs above 100 Hz
+        fmax    = 8000; % to use multi-channel model, all fcs below 8000 Hz
     case 3
         dur     = 0.8; % in seconds
         y       = .5*Create_sin(f,dur,fs,0);
@@ -113,6 +125,9 @@ switch testtype
         insig    = Do_cos_ramp(y,fs,rampup,rampdn);
         siltime = 0; %200e-3;
         bInsig_is_buffer = 0;
+        
+        fmin = 0.5*f; % to use multi-channel model, down to one octave below fc
+        fmax = 2*f; % to use multi-channel model, up to one octave above fc
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -129,7 +144,7 @@ switch testtype
     case 3
         tmin = 0; tmax = 800e-3;
 end
-sigmaValues = 0.9; % 0.42;%[.3  .5:.1:1]; % [0 0.1 0.5]; % MU
+sigmaValues = 0.95; % 0.42;%[.3  .5:.1:1]; % [0 0.1 0.5]; % MU
 
 Nsigma      = length(sigmaValues);
 JNDcalc     = nan(Nlevels,Nsigma);
@@ -144,6 +159,8 @@ for i = 1:Nsigma
            
         opts = [];
         opts.f          = f;
+        opts.fmin       = fmin;
+        opts.fmax       = fmax;
         opts.Criterion  = Criterion;
         opts.testLevel  = testLevels(j);
         fprintf('   - variance = %.2f: lvl = %.0f dB \n',sigmaValues(i),testLevels(j));
@@ -172,86 +189,32 @@ for i = 1:Nsigma
 end
 
 var2latex([testLevels' JNDcalc]);
+end % end bPart1
 
-% ttt = [];
-% if bCalculateSigma
-%     for j = 1 % for the reference tone
-% 
-%         lvl = test_level(j);
-%         lvl2 = subtract_dB(lvl,0.1);
-%         lvl3 = subtract_dB(lvl,0.55);
-% 
-%         insig1 = setdbspl(y,lvl);
-%         insig2 = setdbspl(y,lvl);
-%         insig3 = setdbspl(y,lvl3);
-%         sigma = 85;
-%         
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if bPart2
+    lvl_j2008 = 20:10:70;
+    data_j2008_BBN = [0.49 0.55 0.67 0.62 0.83 0.97];
+    data_j2008_1kHz = [0.65 0.65 0.52 0.52 0.68 0.68];
+                  % 20  30      40      50      60      70
+    data_own_BBN = [NaN 0.46981 0.45913 0.50751 0.61146 0.76693; ... 0.85   % NaN 0.47046 0.46591 0.50224 0.6161 0.72225; ... 0.85 old
+                    NaN 0.49807 0.48094 0.54841 0.66558 0.76845; ... 0.90   % NaN 0.4977  0.48393 0.54102 0.66287 0.76268; ... 0.90, old
+                    NaN 0.52576 0.50963 0.56151 0.692   0.81209]; % 0.95    % NaN 0.52348 0.51517 0.55842 0.6987  0.79719]; % 0.95, old
+	data_own_1kHz= [NaN 0.74964 0.69323 0.71756 0.75882 0.79411; ... % 0.85
+                    NaN 0.79373 0.73414 0.75991 0.80429 0.84142; ... 0.90
+                    NaN 0.83824 0.77472 0.80215 0.84836 0.8878]; % 0.95
+    
+	compBBN = repmat(data_j2008_BBN,3,1) - data_own_BBN;
+    MBBN = mean(compBBN(:,2:end),2);
+    comp1kHz = repmat(data_j2008_1kHz,3,1) - data_own_1kHz;
+    M1kHz = mean(comp1kHz(:,2:end),2);
+    TotDiff = MBBN + abs(M1kHz);
+    
+    figure;
+    plot(lvl_j2008,data_j2008_BBN,lvl_j2008,data_own_BBN)
+end
+
 %         outsigsupra         = jepsen2008preproc(gaindb(insig1,5), fs,'resample_intrep'); % 5 dB above the standard level
-%         [outsig1, fc, mfc]  = jepsen2008preproc(insig1          , fs,'resample_intrep');
-%         outsig2             = jepsen2008preproc(insig2          , fs,'resample_intrep');
-%         outsig3             = jepsen2008preproc(insig1+insig3   , fs,'resample_intrep');
-% 
-%         % idx = 14; 
-%         idx = find(fc > 0.5*ft & 2*ft);
-%         
-%         outsig1_int = []; 
-%         outsig4_int = []; 
-%         template    = [];
-%         for k = 1:50
-%             tmp1 = [];
-%             tmp4 = [];
-%             for i = 1:length(idx)
-%                 tmp1 = [tmp1; Add_gaussian_noise(outsig1{idx(i)}(:,1),mu,sigma)];
-%                 tmp4 = [tmp4; Add_gaussian_noise(outsigsupra{idx(i)}(:,1), mu, sigma)];
-%             end
-%             
-%             outsig1_int = [outsig1_int tmp1]; 
-%             outsig4_int = [outsig4_int tmp4]; 
-%         end
-%         
-%         outsig1_int = mean(outsig1_int,2);
-%         outsig4_int = mean(outsig4_int,2);
-%         template = [template Get_template_append(outsig1_int,outsig4_int,fs/4)];
-%         
-%         for k = 1:100
-%             
-%             outsig1_int = []; 
-%             outsig2_int = [];
-%             outsig3_int = [];
-%             outsign_int = [];
-% 
-%             for i = 1:length(idx)
-%                 tmp1 = Add_gaussian_noise(outsig1{idx(i)}(:,1),mu,sigma);
-%                 tmp2 = Add_gaussian_noise(outsig2{idx(i)}(:,1),mu,sigma);
-%                 tmp3 = Add_gaussian_noise(outsig3{idx(i)}(:,1),mu,sigma);
-%                 tmpn = Add_gaussian_noise(outsig1{idx(i)}(:,1),mu,sigma);
-%                 outsig1_int = [outsig1_int; tmp1(:)];
-%                 outsig2_int = [outsig2_int; tmp2(:)];
-%                 outsig3_int = [outsig3_int; tmp3(:)];
-%                 outsign_int = [outsign_int; tmpn(:)];
-%             end
-%             mue(1) = optimaldetector(outsig1_int,template);
-%             mue(2) = optimaldetector(outsig2_int,template);
-%             mue(3) = optimaldetector(outsig3_int,template);
-% % 
-%             [xx maxidx] = max(abs(mue));
-%             ttt = [ttt; maxidx mue];
-%         end
-%         
-%         [sum(ttt(:,1)==3) sum( ttt(:,4)>ttt(:,2) ) sum( ttt(:,4)>ttt(:,3) )]
-%         
-%         crit = abs( max( ttt(:,2),ttt(:,3) )- ttt(:,4) );
-%         sum(  crit > sigma )
-%         
-%     end
-% 
-% end
-% 
-% JND = JND(2:end);
-% test_level = test_level(2:end);
-% 
-% figure;
-% plot(test_level,JND,'ro','LineWidth',2); grid on; hold on
 
 if bDiary
 	diary off

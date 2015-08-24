@@ -97,7 +97,7 @@ switch nExample
         if nargout == 0
             Wavwrite( outsig1,fs,filename{1} );
             Wavwrite( outsig2,fs,filename{2} );
-            Wavwrite( outsigBBN,fs,filename{3} );
+            % Wavwrite( outsigBBN,fs,filename{3} );
         end
     case 4
         % 4 - Envelope detection in two auditory channels
@@ -138,7 +138,7 @@ switch nExample
     case {5, 6}
         
         fs = 44100;
-        durM = 500e-3;
+        durM = 10; % 500e-3;
         
         BW = 100;
         fc = 1300;
@@ -178,6 +178,50 @@ switch nExample
             Wavwrite(outsig2,fs,filename2);
             Wavwrite(outsig3,fs,filename3);
         end    
+        
+    case {7, 8}
+        
+        fs = 44100;
+        durM = 10; % 500e-3;
+        
+        BW = 20;
+        fc = 1300;
+        fmod = 0;
+        SPL = 60;
+        [outsig1 file1,  xx, outsigBBN] = AM_random_noise_BW(fc,BW,SPL,durM,fs,fmod,0);
+        
+        filename1 = [dirout file1{1} '.wav'];
+        
+        % Test tone:
+        durT = 400e-3; % plus 50 and 50 ms of silence
+        dursilence = 50e-3;
+        f = 2000;
+        rampupdn = 20;
+        % test tone:
+        outsig2 = Il_create_tone(f,durT,fs,SPL,rampupdn,dursilence);
+        
+        fname = sprintf('%ssine-%.0f-Hz-ramps-of-%.0f-ms-%.0f-dB.wav',dirout,f,rampupdn,SPL);
+        filename2 = fname;
+        
+        % Multiplication noise:
+        outsig3 = Multiplied_noise(fc,BW,SPL,durM,fs);
+        outsig3 = setdbspl(outsig3,SPL);
+               
+        fname = sprintf('%smult-noise-%.0f-Hz-BW-%.0f-Hz-%.0f-dB.wav',dirout,fc,BW,SPL);
+        filename3 = fname;
+                
+        if nExample == 7;
+            filename{1} = filename1;
+        elseif nExample == 8
+            filename{1} = filename3;
+        end
+        filename{2} = filename2;
+        
+        if nargout == 0
+            Wavwrite(outsig1,fs,filename1);
+            Wavwrite(outsig2,fs,filename2);
+            Wavwrite(outsig3,fs,filename3);
+        end   
 end
 
 

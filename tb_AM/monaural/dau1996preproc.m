@@ -1,5 +1,5 @@
-function [outsig, fc] = dau1996preproc(insig, fs, varargin);
-% function [outsig, fc] = dau1996preproc(insig, fs, varargin);
+function [outsig, fc, outs] = dau1996preproc(insig, fs, varargin);
+% function [outsig, fc, outs] = dau1996preproc(insig, fs, varargin);
 %
 % 1. Description:
 %       Auditory model from Dau et. al. 1996.
@@ -103,7 +103,9 @@ definput.keyvals.subfs=[];
 
 % Apply the auditory filterbank
 [outsig, fc] = auditoryfilterbank(insig,fs,'argimport',flags,keyvals);
-extra.out_filterbank  = outsig; 
+if nargout >= 3
+    outs.out_filterbank  = outsig; 
+end
 
 % 'haircell' envelope extraction
 outsig = ihcenvelope(outsig,fs,'argimport',flags,keyvals);

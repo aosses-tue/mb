@@ -41,6 +41,13 @@ bDeterministicTemplate = opts.bDeterministicTemplate;
 siltime = opts.siltime;
 
 f = opts.f;
+
+opts = Ensure_field(opts,'fmin',f);
+opts = Ensure_field(opts,'fmax',f);
+
+fmin = opts.fmin;
+fmax = opts.fmax;
+
 tmin = opts.tmin;
 tmax = opts.tmax;
 
@@ -124,9 +131,22 @@ for idx = 1:length(testJND)
         setup.bAddNoise = 0;
         setup.fs        = fs;
         setup.fc        = f;
+        setup.fmin      = fmin;
+        setup.fmax      = fmax;
 
         if idx == 1
             [RM fc t] = Get_internal_representations_deterministic(SMTc,fs,model,setup);
+            if size(RM,1) ~= size(SMTc,1);
+                warning('Downsampled internal representation')
+                factor = round(size(SMTc,1)/size(RM,1) );
+                idx_compare = round(idx_compare / factor);
+                if idx_compare(1) == 0
+                    idx_compare(1) = [];
+                end
+                idx_compare = idx_compare(1:factor:end);
+                idxtodelete = length(idx_compare) - size(RM,1);
+                idx_compare(end-idxtodelete+1) = [];
+            end
         end
         
         [RMTc  fc t] = Get_internal_representations_deterministic(SMTc+SMTc2,fs,model,setup);
@@ -170,8 +190,8 @@ for idx = 1:length(testJND)
             RMTc_n4 = RM(idx_compare,:) + yn4;
             RMTc_n5 = RM(idx_compare,:) + yn5;
 
-            Mmin = floor(min(RMTc_n));
-            Mmax = ceil(max(RMTc2_n));
+            % Mmin = floor(min(RMTc_n));
+            % Mmax = ceil(max(RMTc2_n));
             
             idx_com = idx_compare; % round(2*fs+1):round(3*fs);
             tmp_mue1 = optimaldetector(RMTc_n(idx_com,:) - RMTc_n3(idx_com,:),T(idx_com,:)); % Noise alone

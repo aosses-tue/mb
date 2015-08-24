@@ -17,7 +17,7 @@ function y = Multiplied_noise(fc,BW,SPL,dur,fs)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 20/08/2015
 % Last update on: 20/08/2015 
-% Last use on   : 20/08/2015 
+% Last use on   : 24/08/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 s = Create_sin(fc,dur,fs);
