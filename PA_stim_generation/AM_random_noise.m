@@ -71,7 +71,7 @@ if nargin < 1
 end
 
 BW      = Fsup-Finf;
-Fc      = BW/2;
+Fc      = (Finf+Fsup)/2;
 
 N       = round(Fs*dur);
 Sig     = rand(N,1)-0.5; % non-calibrated white noise

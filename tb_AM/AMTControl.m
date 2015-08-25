@@ -39,8 +39,8 @@ function varargout = AMTControl(varargin)
 %       Create menu, with load parameters
 % 
 % Created on        : 30/07/2015
-% Last modified on  : 30/07/2015
-% Last used on      : 12/08/2015 % Remember to check compatibility with template_PsySoundCL.m
+% Last modified on  : 24/08/2015
+% Last used on      : 24/08/2015 % Remember to check compatibility with template_PsySoundCL.m
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -388,7 +388,8 @@ switch nAnalyser
             % deterministic masker
             insig1 = handles.audio.insig1;
         else
-            insig1 = handles.audio.insig1orig;
+            insig1 = il_randomise_insig( handles.audio.insig1orig );
+            insig1 = insig1(1:length(insig2));
         end
         
         [out_1Mean out_2Mean fs_intrep] = Get_internalrep_stochastic(insig1,insig2supra,fs,'dau1996',sigma,Ntimes,fc2plot_idx);

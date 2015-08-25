@@ -144,7 +144,11 @@ switch nExample
         fc = 1300;
         fmod = 0;
         SPL = 60;
+        
+        BP = AM_random_noise(500,800,SPL-25,durM,fs); % background noise to avoid undesired cues
+        
         [outsig1 file1,  xx, outsigBBN] = AM_random_noise_BW(fc,BW,SPL,durM,fs,fmod,0);
+        outsig1 = outsig1 + BP;
         
         filename1 = [dirout file1{1} '.wav'];
         
@@ -159,11 +163,12 @@ switch nExample
         fname = sprintf('%ssine-%.0f-Hz-ramps-of-%.0f-ms-%.0f-dB.wav',dirout,f,rampupdn,SPL);
         filename2 = fname;
         
-        % Sine-masker:
-        outsig3 = .5*Create_sin(fc,durM,fs,0);
+        % Multiplication noise:
+        outsig3 = Multiplied_noise(fc,BW,SPL,durM,fs);
         outsig3 = setdbspl(outsig3,SPL);
-               
-        fname = sprintf('%ssine-%.0f-Hz-%.0f-dB.wav',dirout,fc,SPL);
+        outsig3 = outsig3 + BP;
+              
+        fname = sprintf('%smult-noise-%.0f-Hz-BW-%.0f-Hz-%.0f-dB.wav',dirout,fc,BW,SPL);
         filename3 = fname;
                 
         if nExample == 5;
@@ -182,13 +187,17 @@ switch nExample
     case {7, 8}
         
         fs = 44100;
-        durM = 10; % 500e-3;
+        durM = 10; 
         
         BW = 20;
         fc = 1300;
         fmod = 0;
         SPL = 60;
+        
+        BP = AM_random_noise(500,800,SPL-25,durM,fs); % background noise to avoid undesired cues
+                
         [outsig1 file1,  xx, outsigBBN] = AM_random_noise_BW(fc,BW,SPL,durM,fs,fmod,0);
+        outsig1 = outsig1 + BP;
         
         filename1 = [dirout file1{1} '.wav'];
         
@@ -206,7 +215,8 @@ switch nExample
         % Multiplication noise:
         outsig3 = Multiplied_noise(fc,BW,SPL,durM,fs);
         outsig3 = setdbspl(outsig3,SPL);
-               
+        outsig3 = outsig3 + BP;
+              
         fname = sprintf('%smult-noise-%.0f-Hz-BW-%.0f-Hz-%.0f-dB.wav',dirout,fc,BW,SPL);
         filename3 = fname;
                 
@@ -221,7 +231,44 @@ switch nExample
             Wavwrite(outsig1,fs,filename1);
             Wavwrite(outsig2,fs,filename2);
             Wavwrite(outsig3,fs,filename3);
-        end   
+        end 
+        
+    case 9
+        
+        fs = 44100;
+        durM = 10; % 500e-3;
+        fc = 1300;
+        SPL = 60;
+        
+        BP = AM_random_noise(500,800,SPL-25,durM,fs); % background noise to avoid undesired cues
+        
+        % Sine-masker:
+        outsig1 = .5*Create_sin(fc,durM,fs,0);
+        outsig1 = setdbspl(outsig1,SPL);
+        outsig1 = outsig1 + BP;
+        
+        fname = sprintf('%ssine-%.0f-Hz-%.0f-dB.wav',dirout,fc,SPL);
+        filename1 = fname;
+        filename{1} = filename1;
+        
+        % Test tone:
+        durT = 400e-3; % plus 50 and 50 ms of silence
+        dursilence = 50e-3;
+        f = 2000;
+        rampupdn = 20;
+        % test tone:
+        outsig2 = Il_create_tone(f,durT,fs,SPL,rampupdn,dursilence);
+        
+        fname = sprintf('%ssine-%.0f-Hz-ramps-of-%.0f-ms-%.0f-dB.wav',dirout,f,rampupdn,SPL);
+        filename2 = fname;
+        
+        filename{2} = filename2;
+        
+        if nargout == 0
+            Wavwrite(outsig1,fs,filename1);
+            Wavwrite(outsig2,fs,filename2);
+        end    
+        
 end
 
 
