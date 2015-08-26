@@ -1,8 +1,16 @@
-function y = r20150821_update(f,testtype,model)
-% function y = r20150821_update(f,testtype,model)
+function r20150821_update(f,testtype,model)
+% function r20150821_update(f,testtype,model)
 %
 % 1. Description:
-%
+%       bPart4-data presented to Armin on 26/08/2015. In his opinion the
+%       use of the modulation filterbank instead of the low-pass filterbank
+%       should not provide many more information when analysing a tone masker,
+%       because of the lack of envelope fluctuations and therefore low-passed
+%       innformation of every audio channel should be the only one providing
+%       relevant detection cues. This was consistent with the small difference
+%       in the single-channel predictions (presented in the bottom panel of 
+%       the figure).
+% 
 % 2. Stand-alone example:
 %       r20150821_update(1000,3,'jepsen2008'); % Weber's law as in Jepsen 2008, 1-kHz tones
 %       r20150821_update(1000,2,'jepsen2008'); % Weber's law as in Jepsen 2008, BBN
@@ -21,7 +29,7 @@ Diary(mfilename,bDiary);
 
 bPart1 = 0; % actual modelling part
 bPart2 = 0; % Plot results Weber's law
-bPart3 = 1;
+bPart3 = 0;
 bPart4 = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Params:
@@ -281,6 +289,7 @@ if bPart4
     dx = [0 0 0];
     
     figure;
+    subplot(3,1,1)
     errorbar(x+dx(1),T50(1,:),T25(1,:),T75(1,:),'ro-'); hold on
     errorbar(x+dx(2),T50(2,:),T25(2,:),T75(2,:),'b--','LineWidth',2);
     errorbar(x+dx(3),T50(3,:),T25(3,:),T75(3,:),'kx-','LineWidth',2);
@@ -294,6 +303,43 @@ if bPart4
     ylabel('Simulated threshold [dB SPL]')
     title('Simulations using a single-channel CASP model')
     disp('')
+    
+    % Values obtained from AMTControl, running examples 5-9
+    %      1.3k              2k
+    T502 =[  9.5  -1.75  -4.0  -22 -23.5 -22 -19 -19.75 -19; ...
+            10.25 0.5 -11.5  -16.75 -17.5  -15.25  -13 -11.5  -7.00; ... % 72 dB
+            13.25 3.5 -7.0   -7 -10.75  -10.5  -10.0 -7.75   -5.50]; 
+    T502 = T502 + repmat([60; 72; 84],1,L);    
+	T25 = T50*0;
+    T75 = T50*0;
+    
+    subplot(3,1,2)
+    errorbar(x+dx(1),T50(1,:),T25(1,:),T75(1,:),'ro-'); hold on
+    errorbar(x+dx(2),T50(2,:),T25(2,:),T75(2,:),'b--','LineWidth',2);
+    errorbar(x+dx(3),T50(3,:),T25(3,:),T75(3,:),'kx-','LineWidth',2);
+    grid on
+    % legend('Masker: 60 dB','Masker: 72 dB','Masker: 84 dB')
+    xlim([0.5 L+1])
+    set(gca,'XTick'     ,x);
+    set(gca,'XTickLabel',f);
+        
+    xlabel('f_c of channel used in the single-model [Hz]')
+    ylabel('Simulated threshold [dB SPL]')
+    title('Simulations using a single-channel CASP model (modfilterbank)')
+    disp('')
+    
+    subplot(3,1,3)
+    errorbar(x+dx(1),T502(1,:)-T50(1,:),T25(1,:),T75(1,:),'ro-'); hold on
+    errorbar(x+dx(2),T502(2,:)-T50(2,:),T25(2,:),T75(2,:),'b--','LineWidth',2);
+    errorbar(x+dx(3),T502(3,:)-T50(3,:),T25(3,:),T75(3,:),'kx-','LineWidth',2);
+    grid on
+    % legend('Masker: 60 dB','Masker: 72 dB','Masker: 84 dB')
+    xlim([0.5 L+1])
+    set(gca,'XTick'     ,x);
+    set(gca,'XTickLabel',f);
+        
+    xlabel('f_c of channel used in the single-model [Hz]')
+    ylabel('Difference (b)-(a) [dB SPL]')
     
 end
 

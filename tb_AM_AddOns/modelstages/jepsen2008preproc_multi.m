@@ -1,10 +1,10 @@
-function [outsig, fc, mfc, outs] = jepsen2008preproc(insig, fs, varargin)
-% function [outsig, fc, mfc, outs] = jepsen2008preproc(insig, fs, varargin)
+function [outsig, fc, mfc, outs] = jepsen2008preproc_multi(insig, fs, fmin, fmax, varargin)
+% function [outsig, fc, mfc, outs] = jepsen2008preproc_multi(insig, fs, fmax, fmax, varargin)
 %
 % 1. Description:
 %   Auditory model from Jepsen et. al. 2008
-%   Usage: [outsig, fc, mfc, IntRep] = jepsen2008preproc(insig,fs);
-%          [outsig, fc, mfc, IntRep] = jepsen2008preproc(insig,fs,...);
+%   Usage: [outsig, fc, mfc, IntRep] = jepsen2008preproc(insig,fs,fmin,fmax);
+%          [outsig, fc, mfc, IntRep] = jepsen2008preproc(insig,fs,fmin,fmax...);
 %
 %   Input parameters:
 %     insig  : input acoustic signal.
@@ -89,6 +89,9 @@ definput.importdefaults={'jepsen2008','ihc_jepsen' ,'adt_dau'};
 definput.keyvals.subfs=[];
 
 [flags,keyvals]  = ltfatarghelper({'flow','fhigh'},definput,varargin);
+
+keyvals.flow = fmin;
+keyvals.fhigh = fmax;
 
 %% 1. Up- or down-sampling to fs = 44100 Hz:
 % Note copied from Two!Ears code: up- or down-sampling because outer-middle
