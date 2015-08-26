@@ -339,7 +339,7 @@ catch
     error('Load any data before pressing this button...')
 end
 
-Gain4supra = -25;
+Gain4supra = 10;
 
 nAnalyser = il_get_nAnalyser(handles.popAnalyser);
 
@@ -375,11 +375,11 @@ if nAnalyser == 100 | nAnalyser == 101 | nAnalyser == 103 | nAnalyser == 104
     if length(fc2plot_idx) == 1
         bSingleChannel = 1;
         bMultiChannel = 0;
-        fc2plot_idx = 1;
+        fc2plot_idx_1 = 1;
     else
         bSingleChannel = 0;
         bMultiChannel = 1;
-        fc2plot_idx = 1:length(fc2plot_idx);
+        fc2plot_idx_1 = 1:length(fc2plot_idx);
     end
     
 end
@@ -398,16 +398,16 @@ out_2 = [];
 switch nAnalyser
     case 100
         
+        insig1      = handles.audio.insig1;
         insig2supra = From_dB(Gain4supra) * insig2;
         if bDeterministic == 1
             % deterministic masker
-            insig1 = handles.audio.insig1;
+            error('not implemented yet, continue here');
         else
-            insig1 = il_randomise_insig( handles.audio.insig1orig );
-            % insig1 = insig1(1:length(insig2));
+            % stochastic masker
+            [out_1Mean out_2Mean fs_intrep] = Get_internalrep_stochastic(insig1,insig2supra,fs,'dau1996',sigma,Ntimes,fc2plot_idx);
         end
         
-        [out_1Mean out_2Mean fs_intrep] = Get_internalrep_stochastic(insig1,insig2supra,fs,'dau1996',sigma,Ntimes,fc2plot_idx);
         template_test = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
         
     case 101 % Still testing
@@ -494,86 +494,78 @@ switch nAnalyser
         % template_test = Get_template_append(out_1Mean,out_2Mean,fs);
     case 103
         
-        rampdn = 20; % e-3
+        insig1 = handles.audio.insig1;
         insig2supra = From_dB(Gain4supra) * insig2;
-        fbstyle = 'modfilterbank'; % default
         
-        for i = 1:Ntimes
-            
-            if bDeterministic == 1
+        if bDeterministic == 1
             % deterministic masker
-                insig1s0 = handles.audio.insig1;
-                insig1s1 = handles.audio.insig1;
-            else
-                insig1s0 = il_randomise_insig( handles.audio.insig1orig );
-                insig1s0 = Do_cos_ramp( insig1s0(1:length(insig2)),fs,rampdn );
-                insig1s1 = il_randomise_insig( handles.audio.insig1orig );
-                insig1s1 = Do_cos_ramp( insig1s1(1:length(insig2)),fs,rampdn );
-            end
+            insig1s0 = handles.audio.insig1;
+            insig1s1 = handles.audio.insig1;
             
-            if bMultiChannel
-                [out_1pre , fc, xx, IntRep] = jepsen2008preproc_multi(insig1s0  ,fs,fcmin,fcmax,fbstyle,'resample_intrep');
-                [out_2pre , fc] = jepsen2008preproc_multi(insig1s1 + insig2supra,fs,fcmin,fcmax,fbstyle,'resample_intrep');
-                fs_intrep = IntRep.fs_intrep;
-            
-            end
-            
-            if bSingleChannel
-                [out_1pre , fc, xx, IntRep] = jepsen2008preproc_1Ch(insig1s0  ,fs,fc,fbstyle);
-                [out_2pre , fc] = jepsen2008preproc_1Ch(insig1s1 + insig2supra,fs,fc,fbstyle);
-                fs_intrep = IntRep.fs_intrep;
-            end
-            
-            out_1pre = il_pool_in_one_column(out_1pre);
-            out_2pre = il_pool_in_one_column(out_2pre);
-            
-            if bDeterministic == 1 
-                % Deterministic noise
-                [out_1 noise] = Add_gaussian_noise_deterministic(out_1pre,mu,sigma); 
-                out_2 = out_2pre+noise; % deterministic noise
-                
-            else
-                % 'Running' noise
-                tmp = Add_gaussian_noise(out_1pre(:),mu,sigma); % tmp = Add_gaussian_noise(out_1pre(:,fc2plot_idx),mu,sigma);
-                out_1 = [out_1 tmp(:)]; 
-                tmp = Add_gaussian_noise(out_2pre(:),mu,sigma); % tmp = Add_gaussian_noise(out_2pre(:,fc2plot_idx),mu,sigma);
-                out_2 = [out_2 tmp(:)]; % Add internal noise
-            end
-            
-        end
-        
-        tmp.fs = IntRep.fs_intrep;
-        if bDeterministic
-            out_1Mean = out_1(:,fc2plot_idx);
-            out_2Mean = out_2(:,fc2plot_idx);
+            error('not implemented yet, continue here');
         else
-            out_1Mean = mean(out_1,2);
-            out_2Mean = mean(out_2,2);
+            % stochastic masker
+            rampdn = 20; % e-3
+            fbstyle = 'modfilterbank'; % default
+            bMethod1 = 1;
+            bMethod2 = ~bMethod1;
+            if bMethod1 == 1
+                [out_1Mean out_2Mean fs_intrep] = Get_internalrep_stochastic(insig1,insig2supra,fs,'jepsen2008',sigma,Ntimes,fc2plot_idx);
+            end
             
-            Mtmp = length(fc2plot_idx);
-            Ntmp = round(length(out_1Mean)/Mtmp);
-            try
-                out_1Mean = reshape(out_1Mean,Ntmp,Mtmp);
-                out_2Mean = reshape(out_2Mean,Ntmp,Mtmp);
-            catch
-                warning('Template not reshaped, probably you are using the modulation filterbank and then not every filter has the same amount of elements');
+            if bMethod2 == 1
+                
+                insig1s0 = il_randomise_insig(insig1);
+                insig1s0 = Do_cos_ramp( insig1s0(1:length(insig2)),fs,rampdn );
+                insig1s1 = il_randomise_insig(insig1);
+                insig1s0 = Do_cos_ramp( insig1s0(1:length(insig2)),fs,rampdn );
+                for i = 1:Ntimes
+
+                    if bMultiChannel
+                        [out_1pre , fc, xx, IntRep] = jepsen2008preproc_multi(insig1s0  ,fs,fcmin,fcmax,fbstyle,'resample_intrep');
+                        [out_2pre , fc] = jepsen2008preproc_multi(insig1s1 + insig2supra,fs,fcmin,fcmax,fbstyle,'resample_intrep');
+                        fs_intrep = IntRep.fs_intrep;
+
+                    end
+
+                    if bSingleChannel
+                        [out_1pre , fc, xx, IntRep] = jepsen2008preproc_1Ch(insig1s0  ,fs,fc,fbstyle);
+                        [out_2pre , fc] = jepsen2008preproc_1Ch(insig1s1 + insig2supra,fs,fc,fbstyle);
+                        fs_intrep = IntRep.fs_intrep;
+                    end
+
+                    out_1pre = il_pool_in_one_column(out_1pre);
+                    out_2pre = il_pool_in_one_column(out_2pre);
+
+                    if bDeterministic == 0
+                        % 'Running' noise
+                        tmp = Add_gaussian_noise(out_1pre(:),mu,sigma); % tmp = Add_gaussian_noise(out_1pre(:,fc2plot_idx),mu,sigma);
+                        out_1 = [out_1 tmp(:)]; 
+                        tmp = Add_gaussian_noise(out_2pre(:),mu,sigma); % tmp = Add_gaussian_noise(out_2pre(:,fc2plot_idx),mu,sigma);
+                        out_2 = [out_2 tmp(:)]; % Add internal noise
+                    end
+
+                end
+
+                tmp.fs = IntRep.fs_intrep;
+
+                if bDeterministic == 0
+                    out_1Mean = mean(out_1,2);
+                    out_2Mean = mean(out_2,2);
+
+                    Mtmp = length(fc2plot_idx);
+                    Ntmp = round(length(out_1Mean)/Mtmp);
+                    try
+                        out_1Mean = reshape(out_1Mean,Ntmp,Mtmp);
+                        out_2Mean = reshape(out_2Mean,Ntmp,Mtmp);
+                    catch
+                        warning('Template not reshaped, probably you are using the modulation filterbank and then not every filter has the same amount of elements');
+                    end
+                end
+                
             end
         end
-        
-        
-        %%%
-        % if bDeterministic == 1
-        %     % deterministic masker
-        %     insig1 = handles.audio.insig1;
-        % else
-        %     insig1 = il_randomise_insig( handles.audio.insig1orig );
-        %     % insig1 = insig1(1:length(insig2));
-        % end
-        % 
-        % [out_1Mean out_2Mean fs_intrep] = Get_internalrep_stochastic(insig1,insig2supra,fs,'dau1996',sigma,Ntimes,fc2plot_idx);
-        % template_test = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
-        
-        %%%
+                
         template_test = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
         
 	case 104
@@ -620,13 +612,13 @@ switch nAnalyser
         
         tmp.fs = IntRep.fs_intrep;
         if bDeterministic
-            out_1Mean = out_1(:,fc2plot_idx);
-            out_2Mean = out_2(:,fc2plot_idx);
+            out_1Mean = out_1(:,fc2plot_idx_1);
+            out_2Mean = out_2(:,fc2plot_idx_1);
         else
             out_1Mean = mean(out_1,2);
             out_2Mean = mean(out_2,2);
             
-            Mtmp = length(fc2plot_idx);
+            Mtmp = length(fc2plot_idx_1);
             Ntmp = length(out_1Mean)/Mtmp;
             out_1Mean = reshape(out_1Mean,Ntmp,Mtmp);
             out_2Mean = reshape(out_2Mean,Ntmp,Mtmp);
@@ -2999,6 +2991,98 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% --- Executes on selection change in popNavg.
+function popNavg_Callback(hObject, eventdata, handles)
+% hObject    handle to popNavg (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns popNavg contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popNavg
+
+
+% --- Executes during object creation, after setting all properties.
+function popNavg_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popNavg (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in popFc2.
+function popFc2_Callback(hObject, eventdata, handles)
+% hObject    handle to popFc2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns popFc2 contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popFc2
+
+
+% --- Executes during object creation, after setting all properties.
+function popFc2_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popFc2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in popStochasticDuration.
+function popStochasticDuration_Callback(hObject, eventdata, handles)
+% hObject    handle to popStochasticDuration (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns popStochasticDuration contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popStochasticDuration
+
+
+% --- Executes during object creation, after setting all properties.
+function popStochasticDuration_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popStochasticDuration (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in popNsim.
+function popNsim_Callback(hObject, eventdata, handles)
+% hObject    handle to popNsim (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns popNsim contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popNsim
+
+
+% --- Executes during object creation, after setting all properties.
+function popNsim_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popNsim (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Inline functions:
 % 1 of 4:
 function nAnalyser = il_get_nAnalyser(h)
@@ -3141,95 +3225,3 @@ for k = 1:length(incell);
     out = [out; outtmp(:)];
 end
 y = out;
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% --- Executes on selection change in popNavg.
-function popNavg_Callback(hObject, eventdata, handles)
-% hObject    handle to popNavg (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns popNavg contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from popNavg
-
-
-% --- Executes during object creation, after setting all properties.
-function popNavg_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to popNavg (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-% --- Executes on selection change in popFc2.
-function popFc2_Callback(hObject, eventdata, handles)
-% hObject    handle to popFc2 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns popFc2 contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from popFc2
-
-
-% --- Executes during object creation, after setting all properties.
-function popFc2_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to popFc2 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-% --- Executes on selection change in popStochasticDuration.
-function popStochasticDuration_Callback(hObject, eventdata, handles)
-% hObject    handle to popStochasticDuration (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns popStochasticDuration contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from popStochasticDuration
-
-
-% --- Executes during object creation, after setting all properties.
-function popStochasticDuration_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to popStochasticDuration (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-% --- Executes on selection change in popNsim.
-function popNsim_Callback(hObject, eventdata, handles)
-% hObject    handle to popNsim (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns popNsim contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from popNsim
-
-
-% --- Executes during object creation, after setting all properties.
-function popNsim_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to popNsim (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end

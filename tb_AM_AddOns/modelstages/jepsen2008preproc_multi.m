@@ -90,8 +90,8 @@ definput.keyvals.subfs=[];
 
 [flags,keyvals]  = ltfatarghelper({'flow','fhigh'},definput,varargin);
 
-keyvals.flow = fmin;
-keyvals.fhigh = fmax;
+keyvals.flow = fmin-1;
+keyvals.fhigh = fmax+2;
 
 %% 1. Up- or down-sampling to fs = 44100 Hz:
 % Note copied from Two!Ears code: up- or down-sampling because outer-middle

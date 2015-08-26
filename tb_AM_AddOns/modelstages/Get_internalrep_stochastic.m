@@ -31,14 +31,16 @@ if nargin < 7
     fc = 1000;
     fctmp = ceil( freqtoaud(fc,'erb') );
     fc = audtofreq(fctmp,'erb');
-    bidx_fc = 0; % to use single channel
 else
-    bidx_fc = 1;
+    
     if length(idx_fc) == 1
         fc = audtofreq(idx_fc+3-1); % assuming default fc values
         idx_fc = 1; % output of the single channel will have only one column
-        bidx_fc = 0; % to use single channel
+    else
+        fcmin = audtofreq(min(idx_fc)+2,'erb'); 
+        fcmax = audtofreq(max(idx_fc)+2,'erb');
     end
+
 end
 
 if nargin < 6
@@ -49,36 +51,48 @@ if nargin < 5
     sigma = 0.8;
 end
 
+if length(idx_fc) == 1
+    bSingleChannel = 1;
+    bMultiChannel = 0;
+else
+    bSingleChannel = 0;
+    bMultiChannel = 1;
+end 
+
 N = size(in_signal_pre,1);
+mu = 0;
 
 out_1 = [];
 out_2 = [];
+rampdn = 20;
 for i = 1:Ntimes
     
     in_masker_s0 = Randomise_insig(in_masker_pre); % random sample of the noise
-    in_masker_s0 = in_masker_s0(1:N,:);
+    %in_masker_s0 = in_masker_s0(1:N,:);
+    in_masker_s0 = Do_cos_ramp( in_masker_s0(1:N),fs,rampdn );
     in_masker_s1 = Randomise_insig(in_masker_pre); % random sample of the noise
-    in_masker_s1 = in_masker_s1(1:N,:);
-    
+    %in_masker_s1 = in_masker_s1(1:N,:);
+    in_masker_s1 = Do_cos_ramp( in_masker_s1(1:N),fs,rampdn );
     switch model
         case 'dau1996'
             
-            if bidx_fc == 1
-                [out_pre , fc] = dau1996preproc(in_masker_s0,fs); % out_1pre affected by external noise
-            else
-                [out_pre , fc] = dau1996preproc_1Ch(in_masker_s0,fs,fc); % out_1pre affected by external noise
+            if bMultiChannel == 1
+                [out_pre , fc] = dau1996preproc(in_masker_s0,fs);
+            end
+            if bSingleChannel == 1
+                [out_pre , fc] = dau1996preproc_1Ch(in_masker_s0,fs,fc); 
             end
             
             [Ni,Mi] = size(out_pre(:,idx_fc));
             fs_intrep = fs;
-            mu = 0;
             
             tmp = Add_gaussian_noise(out_pre(:,idx_fc),mu,sigma);
             out_1 = [out_1 tmp(:)]; % out_1 affected by internal noise
             
-            if bidx_fc == 1
+            if bMultiChannel == 1
                 [out_pre , fc] = dau1996preproc(in_masker_s1 + in_signal_pre,fs); % out_2pre affected by external noise
-            else
+            end
+            if bSingleChannel == 1
                 [out_pre , fc] = dau1996preproc_1Ch(in_masker_s1 + in_signal_pre,fs,fc); % out_1pre affected by external noise
             end
             
@@ -87,21 +101,43 @@ for i = 1:Ntimes
             
         case 'dau1997'
             
-            [out_1pre , fc, mfc] = dau1997preproc_1Ch(in_masker_s0                ,fs,fc);
-            [out_2pre , fc, mfc] = dau1997preproc_1Ch(in_masker_s0 + in_signal_pre,fs,fc);
-            fs_intrep = fs;
-            
-            if bDeterministic == 1 
-                % Deterministic noise
-                [out_1 noise] = Add_gaussian_noise_deterministic(out_1pre,mu,sigma); 
-                out_2 = out_2pre+noise; % deterministic noise
-                
-            else
-                % 'Running' noise
-                [n m] = size(out_1pre);
-                out_1 = [out_1 Add_gaussian_noise(out_1pre(:),mu,sigma)]; 
-                out_2 = [out_2 Add_gaussian_noise(out_2pre(:),mu,sigma)]; % Add internal noise
+            if bMultiChannel == 1
+                error('Not implemented yet, continue here');
             end
+            if bSingleChannel == 1
+                [out_1pre , fc, mfc] = dau1997preproc_1Ch(in_masker_s0                ,fs,fc);
+                [out_2pre , fc, mfc] = dau1997preproc_1Ch(in_masker_s1 + in_signal_pre,fs,fc);
+                fs_intrep = fs;
+            end
+            
+            % 'Running' noise
+            [n m] = size(out_1pre);
+            out_1 = [out_1 Add_gaussian_noise(out_1pre(:),mu,sigma)]; 
+            out_2 = [out_2 Add_gaussian_noise(out_2pre(:),mu,sigma)]; % Add internal noise
+            
+        case 'jepsen2008'
+            
+            fbstyle = 'modfilterbank';
+            if bMultiChannel == 1
+                [out_1pre , fc, xx, IntRep] = jepsen2008preproc_multi(in_masker_s0  ,fs,fcmin,fcmax,fbstyle,'resample_intrep');
+                [out_2pre , fc] = jepsen2008preproc_multi(in_masker_s1 + in_signal_pre,fs,fcmin,fcmax,fbstyle,'resample_intrep');
+                [Ni,Mi] = size(out_1pre{1});
+            end
+            if bSingleChannel == 1
+                [out_1pre , fc, xx, IntRep] = jepsen2008preproc_1Ch(in_masker_s0  ,fs,fc,fbstyle);
+                [out_2pre , fc] = jepsen2008preproc_1Ch(in_masker_s1 + in_signal_pre,fs,fc,fbstyle);
+            end
+            fs_intrep = IntRep.fs_intrep;
+            
+            out_1pre = il_pool_in_one_column(out_1pre);
+            out_2pre = il_pool_in_one_column(out_2pre);
+            Mi = length(idx_fc);
+            Ni = round(length(out_1pre)/Mi);
+            
+            % 'Running' noise
+            [n m] = size(out_1pre);
+            out_1 = [out_1 Add_gaussian_noise(out_1pre(:),mu,sigma)]; 
+            out_2 = [out_2 Add_gaussian_noise(out_2pre(:),mu,sigma)]; % Add internal noise
             
         otherwise
             error('Model not added yet')
@@ -112,10 +148,24 @@ end
 out_1avg = mean(out_1,2);
 out_2avg = mean(out_2,2);
 
-out_1avg = reshape(out_1avg,Ni,Mi);
-out_2avg = reshape(out_2avg,Ni,Mi);
+try
+    out_1avg = reshape(out_1avg,Ni,Mi);
+    out_2avg = reshape(out_2avg,Ni,Mi);
+catch
+    warning('Template not reshaped, probably you are using the modulation filterbank and then not every filter has the same amount of elements');
+end
 
 outs.fc = fc;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% EOF
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function y = il_pool_in_one_column(incell)
+
+out = [];
+for k = 1:length(incell);
+    outtmp = incell{k};
+    out = [out; outtmp(:)];
 end
+y = out;
