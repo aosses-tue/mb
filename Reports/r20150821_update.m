@@ -20,8 +20,9 @@ bDiary = 0;
 Diary(mfilename,bDiary);
 
 bPart1 = 0; % actual modelling part
-bPart2 = 1; % Plot results
-
+bPart2 = 0; % Plot results Weber's law
+bPart3 = 1;
+bPart4 = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Params:
 if nargin < 3
@@ -214,7 +215,87 @@ if bPart2
     plot(lvl_j2008,data_j2008_BBN,lvl_j2008,data_own_BBN)
 end
 
-%         outsigsupra         = jepsen2008preproc(gaindb(insig1,5), fs,'resample_intrep'); % 5 dB above the standard level
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if bPart3
+    
+    % Values obtained from AMTControl, running examples 5-9
+    T50 = [  -23.5  -17.3  -7.75; ...
+             -32.00 -32.5 -25.5; ...
+             -30.75 -29.5 -15.5; ...
+             -44.5  -42.5 -38.5; ...
+             -44.0  -43.5 -41.75];
+	
+	T25 = [ -23.5  -17.3  -7.75; ...
+            -36.5  -34.5  -27.5; ...    
+            -35.5  -32.5  -26.5; ...
+            -44.5  -43.5  -40.5; ...
+            -46.5  -46.5  -50.5 ]
+    T25 = abs(T25 - T50);
+    
+    T75 = [ -23.5  -17.3  -7.75; ...
+            -31.5  -32.5  -24.5; ...
+            -29.5  -25.5  -13; ...
+            -43.5  -39.5  -37.5; ...
+            -43.5  -40.5  -39.5];
+    T75 = abs(T75 - T50);
+    
+    T50 = T50 + repmat([60 72 84],5,1);
+    
+    x = [1 2 3];
+    dx = [0 -0.05 0.05 -0.05 0.05];
+    figure;
+    errorbar(x+dx(1),T50(1,:),T25(1,:),T75(1,:),'ro-'); hold on
+    errorbar(x+dx(2),T50(2,:),T25(2,:),T75(2,:),'LineWidth',2);
+    errorbar(x+dx(3),T50(3,:),T25(3,:),T75(3,:));
+    errorbar(x+dx(4),T50(4,:),T25(4,:),T75(4,:),'k--','LineWidth',2);
+    errorbar(x+dx(5),T50(5,:),T25(5,:),T75(5,:),'k--');
+    grid on
+    legend('S','G1','G2','M1','M2')
+    xlim([0.5 4])
+    set(gca,'XTick'     ,[1 2 3]);
+    set(gca,'XTickLabel',[60 72 84]);
+        
+    xlabel('Masker level [dB SPL]')
+    ylabel('Simulated threshold [dB SPL]')
+    title('Simulations using a single-channel CASP model')
+    disp('')
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if bPart4
+    
+    % Values obtained from AMTControl, running examples 5-9
+    %      1.3k              2k
+    T50 = [  9.5 -4.0  -4.0  -23.5 -25.75 -22.75 -20.5 -21.25 -22.0; ...
+             8.3 -2.5 -14.5  -17.5 -19.0  -16.0  -14.5 -17.5  -7.38; ... % 72 dB
+            18.5  2.0 -10.75 -7.75 -11.5  -11.5  -10.0 -8.5   -6.25]; 
+        
+	T25 = T50*0;
+    T75 = T50*0;
+    
+    L = length(T50);
+    T50 = T50 + repmat([60; 72; 84],1,L);
+    x = 1:L;
+    f = 18:18+L;
+    f = round(audtofreq(f,'erb'));
+    dx = [0 0 0];
+    
+    figure;
+    errorbar(x+dx(1),T50(1,:),T25(1,:),T75(1,:),'ro-'); hold on
+    errorbar(x+dx(2),T50(2,:),T25(2,:),T75(2,:),'b--','LineWidth',2);
+    errorbar(x+dx(3),T50(3,:),T25(3,:),T75(3,:),'kx-','LineWidth',2);
+    grid on
+    legend('Masker: 60 dB','Masker: 72 dB','Masker: 84 dB')
+    xlim([0.5 L+1])
+    set(gca,'XTick'     ,x);
+    set(gca,'XTickLabel',f);
+        
+    xlabel('f_c of channel used in the single-model [Hz]')
+    ylabel('Simulated threshold [dB SPL]')
+    title('Simulations using a single-channel CASP model')
+    disp('')
+    
+end
 
 if bDiary
 	diary off

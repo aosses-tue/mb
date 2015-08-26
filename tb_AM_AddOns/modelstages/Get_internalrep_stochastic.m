@@ -27,6 +27,20 @@ function [out_1avg out_2avg fs_intrep outs] = Get_internalrep_stochastic(in_mask
 % Last use on   : 13/08/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+if nargin < 7
+    fc = 1000;
+    fctmp = ceil( freqtoaud(fc,'erb') );
+    fc = audtofreq(fctmp,'erb');
+    bidx_fc = 0; % to use single channel
+else
+    bidx_fc = 1;
+    if length(idx_fc) == 1
+        fc = audtofreq(idx_fc+3-1); % assuming default fc values
+        idx_fc = 1; % output of the single channel will have only one column
+        bidx_fc = 0; % to use single channel
+    end
+end
+
 if nargin < 6
     Ntimes = 10;
 end
@@ -41,29 +55,40 @@ out_1 = [];
 out_2 = [];
 for i = 1:Ntimes
     
-    in_masker = Randomise_insig(in_masker_pre); % random sample of the noise
-    in_masker = in_masker(1:N,:);
+    in_masker_s0 = Randomise_insig(in_masker_pre); % random sample of the noise
+    in_masker_s0 = in_masker_s0(1:N,:);
+    in_masker_s1 = Randomise_insig(in_masker_pre); % random sample of the noise
+    in_masker_s1 = in_masker_s1(1:N,:);
     
     switch model
         case 'dau1996'
-            [out_pre , fc] = dau1996preproc(in_masker,fs); % out_1pre affected by external noise
+            
+            if bidx_fc == 1
+                [out_pre , fc] = dau1996preproc(in_masker_s0,fs); % out_1pre affected by external noise
+            else
+                [out_pre , fc] = dau1996preproc_1Ch(in_masker_s0,fs,fc); % out_1pre affected by external noise
+            end
+            
+            [Ni,Mi] = size(out_pre(:,idx_fc));
             fs_intrep = fs;
             mu = 0;
-            if nargin < 7
-                idx_fc = 1:length(fc);
-            end
-            [Ni,Mi] = size(out_pre(:,idx_fc));
+            
             tmp = Add_gaussian_noise(out_pre(:,idx_fc),mu,sigma);
             out_1 = [out_1 tmp(:)]; % out_1 affected by internal noise
             
-            [out_pre , fc] = dau1996preproc(in_masker + in_signal_pre,fs); % out_2pre affected by external noise
+            if bidx_fc == 1
+                [out_pre , fc] = dau1996preproc(in_masker_s1 + in_signal_pre,fs); % out_2pre affected by external noise
+            else
+                [out_pre , fc] = dau1996preproc_1Ch(in_masker_s1 + in_signal_pre,fs,fc); % out_1pre affected by external noise
+            end
+            
             tmp = Add_gaussian_noise(out_pre(:,idx_fc),mu,sigma);
             out_2 = [out_2 tmp(:)]; % out_1 affected by internal noise
             
         case 'dau1997'
             
-            [out_1pre , fc, mfc] = dau1997preproc_1Ch(in_masker                ,fs,fc);
-            [out_2pre , fc, mfc] = dau1997preproc_1Ch(in_masker + in_signal_pre,fs,fc);
+            [out_1pre , fc, mfc] = dau1997preproc_1Ch(in_masker_s0                ,fs,fc);
+            [out_2pre , fc, mfc] = dau1997preproc_1Ch(in_masker_s0 + in_signal_pre,fs,fc);
             fs_intrep = fs;
             
             if bDeterministic == 1 
@@ -77,32 +102,6 @@ for i = 1:Ntimes
                 out_1 = [out_1 Add_gaussian_noise(out_1pre(:),mu,sigma)]; 
                 out_2 = [out_2 Add_gaussian_noise(out_2pre(:),mu,sigma)]; % Add internal noise
             end
-            
-            % tmp.fs = fs;
-            % if bDeterministic
-            % 
-            %     out_1Mean = out_1;
-            %     out_2Mean = out_2;
-            % 
-            % else
-            % 
-            %     out_1Mean = mean( out_1,2 );
-            %     out_2Mean = mean( out_2,2 );
-            % 
-            %     out_1Mean = reshape(out_1Mean,n,m);
-            %     out_2Mean = reshape(out_2Mean,n,m);
-            % 
-            %     bPlot = 0;
-            %     if bPlot
-            %         for i = 1:length(mfc)
-            %             figure;
-            %             plot(out_1Mean(:,i)), hold on;
-            %             plot(out_2Mean(:,i),'r'); grid on
-            %             plot(out_2Mean(:,i)-out_1Mean(:,i),'g')
-            %             title(sprintf('mfc=%.1f Hz',mfc(i)));
-            %         end
-            %     end
-            % end
             
         otherwise
             error('Model not added yet')

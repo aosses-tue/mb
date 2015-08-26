@@ -389,7 +389,7 @@ switch nAnalyser
             insig1 = handles.audio.insig1;
         else
             insig1 = il_randomise_insig( handles.audio.insig1orig );
-            insig1 = insig1(1:length(insig2));
+            % insig1 = insig1(1:length(insig2));
         end
         
         [out_1Mean out_2Mean fs_intrep] = Get_internalrep_stochastic(insig1,insig2supra,fs,'dau1996',sigma,Ntimes,fc2plot_idx);
@@ -488,6 +488,7 @@ switch nAnalyser
         
 	case 104
         
+        rampdn = 20; % e-3
         insig2supra = From_dB(Gain4supra) * insig2;
         fbstyle = 'lowpass';
         
@@ -495,17 +496,20 @@ switch nAnalyser
             
             if bDeterministic == 1
             % deterministic masker
-                insig1 = handles.audio.insig1;
+                insig1s0 = handles.audio.insig1;
+                insig1s1 = handles.audio.insig1;
             else
-                insig1 = il_randomise_insig( handles.audio.insig1orig );
-                insig1 = insig1(1:length(insig2));
+                insig1s0 = il_randomise_insig( handles.audio.insig1orig );
+                insig1s0 = Do_cos_ramp( insig1s0(1:length(insig2)),fs,rampdn );
+                insig1s1 = il_randomise_insig( handles.audio.insig1orig );
+                insig1s1 = Do_cos_ramp( insig1s1(1:length(insig2)),fs,rampdn );
             end
             
-            % [out_1pre , fc, xx, IntRep] = jepsen2008preproc(insig1  ,fs,fbstyle);
-            % [out_2pre , fc] = jepsen2008preproc(insig1 + insig2supra,fs,fbstyle);
-            warning('1-Ch model being used')
-            [out_1pre , fc, xx, IntRep] = jepsen2008preproc_1Ch(insig1  ,fs,fc,fbstyle);
-            [out_2pre , fc] = jepsen2008preproc_1Ch(insig1 + insig2supra,fs,fc,fbstyle);
+            if i == 1
+                warning('1-Ch model being used')
+            end
+            [out_1pre , fc, xx, IntRep] = jepsen2008preproc_1Ch(insig1s0  ,fs,fc,fbstyle);
+            [out_2pre , fc] = jepsen2008preproc_1Ch(insig1s1 + insig2supra,fs,fc,fbstyle);
             fs_intrep = IntRep.fs_intrep;
             
             if bDeterministic == 1 
@@ -514,16 +518,10 @@ switch nAnalyser
                 out_2 = out_2pre+noise; % deterministic noise
                 
             else
-                % % 'Running' noise
-                % tmp = Add_gaussian_noise(out_1pre(:,fc2plot_idx),mu,sigma);
-                % out_1 = [out_1 tmp(:)]; 
-                % tmp = Add_gaussian_noise(out_2pre(:,fc2plot_idx),mu,sigma);
-                % out_2 = [out_2 tmp(:)]; % Add internal noise
-                
                 % 'Running' noise
-                tmp = Add_gaussian_noise(out_1pre(:),mu,sigma);
+                tmp = Add_gaussian_noise(out_1pre(:),mu,sigma); % tmp = Add_gaussian_noise(out_1pre(:,fc2plot_idx),mu,sigma);
                 out_1 = [out_1 tmp(:)]; 
-                tmp = Add_gaussian_noise(out_2pre(:),mu,sigma);
+                tmp = Add_gaussian_noise(out_2pre(:),mu,sigma); % tmp = Add_gaussian_noise(out_2pre(:,fc2plot_idx),mu,sigma);
                 out_2 = [out_2 tmp(:)]; % Add internal noise
             end
             
@@ -542,6 +540,21 @@ switch nAnalyser
             out_1Mean = reshape(out_1Mean,Ntmp,Mtmp);
             out_2Mean = reshape(out_2Mean,Ntmp,Mtmp);
         end
+        
+        
+        %%%
+        % if bDeterministic == 1
+        %     % deterministic masker
+        %     insig1 = handles.audio.insig1;
+        % else
+        %     insig1 = il_randomise_insig( handles.audio.insig1orig );
+        %     % insig1 = insig1(1:length(insig2));
+        % end
+        % 
+        % [out_1Mean out_2Mean fs_intrep] = Get_internalrep_stochastic(insig1,insig2supra,fs,'dau1996',sigma,Ntimes,fc2plot_idx);
+        % template_test = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
+        
+        %%%
         template_test = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
         
 end
@@ -601,7 +614,7 @@ else
     Level_start = 10;
 end
 
-Level_step      = il_get_value_numericPop(handles.popStepdB);
+Level_step_i    = il_get_value_numericPop(handles.popStepdB);
 Reversals_stop  = il_get_value_numericPop(handles.popNreversals);
 bHalveStepSize  = get(handles.chStepSizeHalved,'value');
 
@@ -611,9 +624,10 @@ fs_intrep = handles.audio.fs_intrep;
 t1 = str2num( get(handles.txtTimei,'string') ); 
 t2 = str2num( get(handles.txtTimef,'string') );
 s1 = max(round(t1*fs_intrep), 1); % time 0 is forced to be sample 1
-s2 = round(t2*fs_intrep);
+s2 = round(t2*fs_intrep+1);
 idxobs = [s1 s2];
 Ntimes = handles.audio.Ntimes; %
+Nsim = il_get_value_numericPop(handles.popNsim);
 
 try
     insig1 = handles.audio.insig1;
@@ -642,20 +656,53 @@ switch nAnalyser
     tmp_idx = get(handles.popInternalNoise,'value');
     sigma   = str2num( tmp{tmp_idx} );
     
+    if length(fc2plot_idx) == 1
+        bSingleChannel = 1;
+        bMultiChannel = 0;
+        fc2plot_idx = 1;
+    else
+        bSingleChannel = 0;
+        bMultiChannel = 1;
+    end
+    
 end
 
 Threshold = [];
-for k = 1:Ntimes
+% Ntimes = 15;
+rampdn = 20; % e-3 s
+
+for k = 1:Nsim
     
+    Level_step = Level_step_i;
     if k > 1
-        fprintf('Running simulation: %.0f of %.0f. Last computed threshold=%.2f [dB, relative]\n',k,Ntimes,Threshold(k-1));
+        fprintf('Running simulation: %.0f of %.0f. Last computed threshold=%.2f [dB, relative]\n',k,Nsim,Threshold(k-1));
     else
-        fprintf('Running simulation: %.0f of %.0f.\n',k,Ntimes);
+        fprintf('Running simulation: %.0f of %.0f.\n',k,Nsim);
     end
     
     if bStochastic == 1
-        insig1 = il_randomise_insig(handles.audio.insig1orig);
-        insig1 = insig1( 1:length(insig2) );
+        insig1s0 = il_randomise_insig(handles.audio.insig1orig);
+        insig1s0 = Do_cos_ramp( insig1s0( 1:length(insig2) ), fs, rampdn);
+        
+        insig1s1 = il_randomise_insig(handles.audio.insig1orig);
+        insig1s1 = Do_cos_ramp( insig1s1( 1:length(insig2) ), fs, rampdn);
+        
+        insig1s2 = il_randomise_insig(handles.audio.insig1orig);
+        insig1s2 = Do_cos_ramp( insig1s2( 1:length(insig2) ), fs, rampdn);
+        
+        insig1s3 = il_randomise_insig(handles.audio.insig1orig);
+        insig1s3 = Do_cos_ramp( insig1s3( 1:length(insig2) ), fs, rampdn);
+        
+        insig1s4 = il_randomise_insig(handles.audio.insig1orig);
+        insig1s4 = Do_cos_ramp( insig1s4( 1:length(insig2) ), fs, rampdn);
+        
+        insig1s5 = il_randomise_insig(handles.audio.insig1orig);
+        insig1s5 = Do_cos_ramp( insig1s5( 1:length(insig2) ), fs, rampdn);
+        
+    end
+    if bDeterministic == 1
+        insig1s0 = insig1;
+        insig1s1 = insig1;
     end
     
     Level_current   = Level_start;
@@ -664,6 +711,7 @@ for k = 1:Ntimes
     Reversals = [];
 
     dprime     = [];
+    dprimetmp = [];
     decisionSN = [];
     decisionN  = [];
 
@@ -676,8 +724,12 @@ for k = 1:Ntimes
             
             Gain2apply = From_dB(Level_current);
             insig2test = Gain2apply * insig2;
-            interval1 = insig1; % Only noise
-            interval2 = insig1 + insig2test; % Current signal
+            interval1 = insig1s0; % Only noise
+            interval2 = insig1s1 + insig2test; % Current signal
+            interval1s2 = insig1s2;
+            interval1s3 = insig1s3;
+            interval1s4 = insig1s4;
+            interval1s5 = insig1s5;
             
         else
             BW = 314;
@@ -694,21 +746,39 @@ for k = 1:Ntimes
             case {100, 101, 104}
 
                 if nAnalyser == 100;
-                    [out_interval1 , fc] = dau1996preproc(interval1,fs);
-                    [out_interval2 , fc] = dau1996preproc(interval2,fs);
+                    if bMultiChannel
+                        [out_interval1 , fc] = dau1996preproc(interval1,fs);
+                        [out_interval2 , fc] = dau1996preproc(interval2,fs);
+                        [out_interval1s2, fc] = dau1996preproc(interval1s2,fs);
+                        [out_interval1s3, fc] = dau1996preproc(interval1s3,fs);
+                    end
+                    if bSingleChannel
+                        [out_interval1] = dau1996preproc_1Ch(interval1,fs,fc);
+                        [out_interval2] = dau1996preproc_1Ch(interval2,fs,fc);
+                        [out_interval1s2] = dau1996preproc_1Ch(interval1s2,fs,fc);
+                        [out_interval1s3] = dau1996preproc_1Ch(interval1s3,fs,fc);
+                        [out_interval1s4] = dau1996preproc_1Ch(interval1s4,fs,fc);
+                        [out_interval1s5] = dau1996preproc_1Ch(interval1s5,fs,fc);
+                    end
                 elseif nAnalyser == 101
                     [out_interval1 , fc] = dau1997preproc_1Ch(interval1,fs,fc);
                     [out_interval2 , fc] = dau1997preproc_1Ch(interval2,fs,fc);
                 elseif nAnalyser == 104
-                    % [out_interval1 , fc] = jepsen2008preproc(interval1,fs,'lowpass');
-                    % [out_interval2 , fc] = jepsen2008preproc(interval2,fs,'lowpass');
-                    [out_interval1 , fc] = jepsen2008preproc_1Ch(interval1,fs,fc,'lowpass');
-                    [out_interval2 , fc] = jepsen2008preproc_1Ch(interval2,fs,fc,'lowpass');
+                    [out_interval1] = jepsen2008preproc_1Ch(interval1,fs,fc,'lowpass');
+                    [out_interval2] = jepsen2008preproc_1Ch(interval2,fs,fc,'lowpass');
+                    [out_interval1s2] = jepsen2008preproc_1Ch(interval1s2,fs,fc,'lowpass');
+                    [out_interval1s3] = jepsen2008preproc_1Ch(interval1s3,fs,fc,'lowpass');
+                    [out_interval1s4] = jepsen2008preproc_1Ch(interval1s4,fs,fc,'lowpass');
+                    [out_interval1s5] = jepsen2008preproc_1Ch(interval1s5,fs,fc,'lowpass');
                 end
                 
                 if bStochastic
                     out_interval1 = Add_gaussian_noise(out_interval1,mu,sigma); % Add internal noise
                     out_interval2 = Add_gaussian_noise(out_interval2,mu,sigma); % Add internal noise
+                    out_interval1s2 = Add_gaussian_noise(out_interval1s2,mu,sigma);
+                    out_interval1s3 = Add_gaussian_noise(out_interval1s3,mu,sigma);
+                    out_interval1s4 = Add_gaussian_noise(out_interval1s4,mu,sigma);
+                    out_interval1s5 = Add_gaussian_noise(out_interval1s5,mu,sigma);
                 end
                 if bDeterministic
                     out_interval1 = out_interval1 + noise;
@@ -722,6 +792,10 @@ for k = 1:Ntimes
                     % one audio-frequency band but all the modulation filterbanks:
                     sigint1 = out_interval1(idxobs(1):idxobs(2),:);
                     sigint2 = out_interval2(idxobs(1):idxobs(2),:);
+                    sigint1s2 = out_interval1s2(idxobs(1):idxobs(2),:);
+                    sigint1s3 = out_interval1s3(idxobs(1):idxobs(2),:);
+                    sigint1s4 = out_interval1s4(idxobs(1):idxobs(2),:);
+                    sigint1s5 = out_interval1s5(idxobs(1):idxobs(2),:);
                 end
         end
         % Mmin = floor(min(sigint1));
@@ -735,9 +809,30 @@ for k = 1:Ntimes
         stats2.mean = mean(sigint2(:));
         dprime(end+1,1) = (stats2.mean - stats1.mean )/sigma;
 
-        decision(1) = optimaldetector(sigint1,template(idxobs(1):idxobs(2),:));
-        decision(2) = optimaldetector(sigint2,template(idxobs(1):idxobs(2),:));
-
+        tmp_mue1 = optimaldetector(  sigint1-sigint1s2,template(idxobs(1):idxobs(2),:));
+        tmp_mue2 = optimaldetector(sigint1s4-sigint1s5,template(idxobs(1):idxobs(2),:));
+        decision(1) = max([tmp_mue1 tmp_mue2]);
+        
+        decsign = sign([tmp_mue1 tmp_mue2]);
+        [dec2m idxtmp] = max([abs(tmp_mue1) abs(tmp_mue2)]); 
+        % dec2m = dec2m*decsign(idxtmp);
+        
+        decision(2) = optimaldetector(sigint2-sigint1s3,template(idxobs(1):idxobs(2),:));
+        finaldecision = ( decision(2)-decision(1) )/sigma;
+        fdec = (decision(2)-dec2m)/sigma;
+        dprimetmp(end+1) = finaldecision;
+        
+        % idx_com = idx_compare; % round(2*fs+1):round(3*fs);
+        % tmp_mue1 = optimaldetector(RM1_n(idx_com,:) - RM2_n(idx_com,:),T(idx_com,:)); % Noise alone
+        % tmp_mue2 = optimaldetector(RM3_n(idx_com,:) - RM4_n(idx_com,:),T(idx_com,:)); % Noise alone
+        % [mue(1,cont) mue(2,cont)] = max([tmp_mue1 tmp_mue2]); % noise sample with larger dprime is chosen
+        % 
+        % mue(3,cont) = optimaldetector(RMTc_n - RM5_n,T); % Signal + noise
+        % mue(4,cont) = mue(3,cont) - mue(1,cont);
+        % 
+        % dprimetmp(end+1)     = mue(4,cont)/sigma;
+        
+        
         decisionN(end+1,1) = decision(1);
         decisionSN(end+1,1) = decision(2);
 
@@ -746,9 +841,9 @@ for k = 1:Ntimes
         end
 
         Staircase = [Staircase; Level_current];
-
-        if abs( dprime(end) ) >= 1.26
-        % if decision(2) >= 1.025*decision(1) % test tone correctly identified
+        % error('continue here')
+        if dprime(end) >= 1.26
+        % if dprimetmp(end) >= 1.26
             if nCorrect == 0
 
                 nReversal = nReversal + 1;
@@ -764,7 +859,7 @@ for k = 1:Ntimes
 
         else % masker is chosen
             nWrong = nWrong+1;
-            if nWrong == 2
+            if nWrong == 1 %2
 
                 nWrong = 0;
                 nReversal = nReversal + 1;
@@ -777,8 +872,9 @@ for k = 1:Ntimes
             end
         end
 
-        if length(Staircase) > 100;
-            error('Too many simulated trials (more than 60), maybe you did something wrong in the parameter selection');
+        if Level_current < -120;
+            Level_current = -15; 
+            warning('non-ideal correction')
         end
 
         bPlotStimuli = 0;
@@ -789,8 +885,8 @@ for k = 1:Ntimes
         end
     end
     
-    Threshold(k) = median(Reversals(3:end,:));
-    DecisionCorr(k) = median(decisionSN(3:end,:));
+    Threshold(k) = median(Reversals(end-6+1:end,:));
+    DecisionCorr(k) = median(decisionSN(end-6+1:end,:));
     
     if bDeterministic
         figure; 
@@ -2986,6 +3082,29 @@ function popStochasticDuration_Callback(hObject, eventdata, handles)
 % --- Executes during object creation, after setting all properties.
 function popStochasticDuration_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to popStochasticDuration (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in popNsim.
+function popNsim_Callback(hObject, eventdata, handles)
+% hObject    handle to popNsim (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns popNsim contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popNsim
+
+
+% --- Executes during object creation, after setting all properties.
+function popNsim_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popNsim (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
