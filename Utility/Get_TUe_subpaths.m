@@ -78,7 +78,9 @@ elseif strcmp(type,'tb_AM_AddOns')
     misc.comp        = [path 'comp'        delim];
     misc.experiments = [path 'experiments' delim];
     misc.filters     = [path 'filters'     delim];
+    misc.GUI         = [path 'GUI'         delim];
     misc.modelstages = [path 'modelstages' delim];
+    misc.monaural    = [path 'monaural'    delim];
     
 elseif strcmp(type,'tb_Loudness_v12')
     

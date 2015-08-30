@@ -25,6 +25,7 @@ bDoTFMF     = 0;
 bDoTFDRNL   = 0;
 bDoTFDRNL2  = 1;
 
+h = [];
 dire = [Get_TUe_paths('outputs') 'AMTControl-examples' delim]; % 'D:\Output\AMTControl-examples\'
 dBFS = 100;
 
@@ -286,7 +287,7 @@ end
 if bDoTFDRNL2
     
     bFig2ab = 1;
-    bFig2c = 0;
+    bFig2c = 1;
     
     SPL = [0 20:10:90 100];
     SPL_fig2c = [30 60 90]; % dB
@@ -344,7 +345,7 @@ if bDoTFDRNL2
         ylabel('DRNL output [dB re max]')
 
         legend('DRNL','4th-order Gammatone')
-
+        h(end+1) = gcf;
     end
     
     %% Generation of Figure 2.a
@@ -438,7 +439,7 @@ if bDoTFDRNL2
         xlim([0 100])
         ylim([-100 0])
         grid on
-        
+        h(end+1) = gcf;
     end
     
 end

@@ -315,9 +315,9 @@ if bDFT
     
 end
 
-if get(handles.popNavg,'value') ~= 1 % then file 1 should be 'running'
+% if get(handles.popNavg,'value') ~= 1 % then file 1 should be 'running'
    handles.audio.insig1orig = insig1_orig;     
-end
+% end
 handles.audio.insig1 = insig1;
 handles.audio.insig2 = insig2;
 handles.audio.G1 = G1;
@@ -368,9 +368,15 @@ if nAnalyser == 100 | nAnalyser == 101 | nAnalyser == 103 | nAnalyser == 104
         fcmax   = audtofreq(max(fc2plot_idx)+2,'erb');
     end
     mu      = 0;
-    tmp     = get(handles.popInternalNoise,'string');
-    tmp_idx = get(handles.popInternalNoise,'value');
-    sigma   = str2num( tmp{tmp_idx} );
+    
+    bSigma = get(handles.chInternalNoise,'value');
+    if bSigma
+        tmp     = get(handles.popInternalNoise,'string');
+        tmp_idx = get(handles.popInternalNoise,'value');
+        sigma   = str2num( tmp{tmp_idx} );
+    else
+        sigma = 0;
+    end
     
     if length(fc2plot_idx) == 1
         bSingleChannel = 1;
@@ -392,22 +398,23 @@ else
     bDeterministic = 0;
 end
 
+bUseRamp = get(handles.chRampMasker,'value');
 out_1 = [];
 out_2 = [];
 
 switch nAnalyser
     case 100
         
-        insig1      = handles.audio.insig1;
         insig2supra = From_dB(Gain4supra) * insig2;
-        if bDeterministic == 1
-            % deterministic masker
-            error('not implemented yet, continue here');
+        
+        insig1 = handles.audio.insig1orig;
+        if bUseRamp
+            tmp.masker_ramp_ms = 20; % e-3
         else
-            % stochastic masker
-            [out_1Mean out_2Mean fs_intrep] = Get_internalrep_stochastic(insig1,insig2supra,fs,'dau1996',sigma,Ntimes,fc2plot_idx);
+            tmp.masker_ramp_ms = 0; 
         end
         
+        [out_1Mean out_2Mean fs_intrep] = Get_internalrep_stochastic(insig1,insig2supra,fs,'dau1996',sigma,Ntimes,fc2plot_idx,tmp);
         template_test = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
         
     case 101 % Still testing
@@ -494,83 +501,26 @@ switch nAnalyser
         % template_test = Get_template_append(out_1Mean,out_2Mean,fs);
     case 103
         
-        insig1 = handles.audio.insig1;
         insig2supra = From_dB(Gain4supra) * insig2;
         
-        if bDeterministic == 1
-            % deterministic masker
-            insig1s0 = handles.audio.insig1;
-            insig1s1 = handles.audio.insig1;
-            
-            error('not implemented yet, continue here');
+        insig1 = handles.audio.insig1orig;
+        if bUseRamp
+            tmp.masker_ramp_ms = 20; % e-3
         else
-            % stochastic masker
-            rampdn = 20; % e-3
-            fbstyle = 'modfilterbank'; % default
-            bMethod1 = 1;
-            bMethod2 = ~bMethod1;
-            if bMethod1 == 1
-                [out_1Mean out_2Mean fs_intrep] = Get_internalrep_stochastic(insig1,insig2supra,fs,'jepsen2008',sigma,Ntimes,fc2plot_idx);
-            end
-            
-            if bMethod2 == 1
-                
-                insig1s0 = il_randomise_insig(insig1);
-                insig1s0 = Do_cos_ramp( insig1s0(1:length(insig2)),fs,rampdn );
-                insig1s1 = il_randomise_insig(insig1);
-                insig1s0 = Do_cos_ramp( insig1s0(1:length(insig2)),fs,rampdn );
-                for i = 1:Ntimes
-
-                    if bMultiChannel
-                        [out_1pre , fc, xx, IntRep] = jepsen2008preproc_multi(insig1s0  ,fs,fcmin,fcmax,fbstyle,'resample_intrep');
-                        [out_2pre , fc] = jepsen2008preproc_multi(insig1s1 + insig2supra,fs,fcmin,fcmax,fbstyle,'resample_intrep');
-                        fs_intrep = IntRep.fs_intrep;
-
-                    end
-
-                    if bSingleChannel
-                        [out_1pre , fc, xx, IntRep] = jepsen2008preproc_1Ch(insig1s0  ,fs,fc,fbstyle);
-                        [out_2pre , fc] = jepsen2008preproc_1Ch(insig1s1 + insig2supra,fs,fc,fbstyle);
-                        fs_intrep = IntRep.fs_intrep;
-                    end
-
-                    out_1pre = il_pool_in_one_column(out_1pre);
-                    out_2pre = il_pool_in_one_column(out_2pre);
-
-                    if bDeterministic == 0
-                        % 'Running' noise
-                        tmp = Add_gaussian_noise(out_1pre(:),mu,sigma); % tmp = Add_gaussian_noise(out_1pre(:,fc2plot_idx),mu,sigma);
-                        out_1 = [out_1 tmp(:)]; 
-                        tmp = Add_gaussian_noise(out_2pre(:),mu,sigma); % tmp = Add_gaussian_noise(out_2pre(:,fc2plot_idx),mu,sigma);
-                        out_2 = [out_2 tmp(:)]; % Add internal noise
-                    end
-
-                end
-
-                tmp.fs = IntRep.fs_intrep;
-
-                if bDeterministic == 0
-                    out_1Mean = mean(out_1,2);
-                    out_2Mean = mean(out_2,2);
-
-                    Mtmp = length(fc2plot_idx);
-                    Ntmp = round(length(out_1Mean)/Mtmp);
-                    try
-                        out_1Mean = reshape(out_1Mean,Ntmp,Mtmp);
-                        out_2Mean = reshape(out_2Mean,Ntmp,Mtmp);
-                    catch
-                        warning('Template not reshaped, probably you are using the modulation filterbank and then not every filter has the same amount of elements');
-                    end
-                end
-                
-            end
+            tmp.masker_ramp_ms = 0; 
         end
+        fbstyle = 'modfilterbank'; % default
+        [out_1Mean out_2Mean fs_intrep] = Get_internalrep_stochastic(insig1,insig2supra,fs,'jepsen2008-modfilterbank',sigma,Ntimes,fc2plot_idx,tmp);
                 
         template_test = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
         
 	case 104
         
-        rampdn = 20; % e-3
+        if bUseRamp
+            tmp.masker_ramp_ms = 20; % e-3
+        else
+            tmp.masker_ramp_ms = 0; 
+        end
         insig2supra = From_dB(Gain4supra) * insig2;
         fbstyle = 'lowpass'; 
         
@@ -581,9 +531,9 @@ switch nAnalyser
                 insig1s1 = handles.audio.insig1;
             else
                 insig1s0 = il_randomise_insig( handles.audio.insig1orig );
-                insig1s0 = Do_cos_ramp( insig1s0(1:length(insig2)),fs,rampdn );
+                insig1s0 = Do_cos_ramp( insig1s0(1:length(insig2)),fs,tmp.masker_ramp_ms );
                 insig1s1 = il_randomise_insig( handles.audio.insig1orig );
-                insig1s1 = Do_cos_ramp( insig1s1(1:length(insig2)),fs,rampdn );
+                insig1s1 = Do_cos_ramp( insig1s1(1:length(insig2)),fs,tmp.masker_ramp_ms );
             end
             
             if bMultiChannel
@@ -675,9 +625,6 @@ handles.audio.bDeterministic= bDeterministic;
 % handles.audio.fc2plot_idx   = fc2plot_idx;
 handles.audio.Ntimes        = Ntimes;
 handles.audio.fs_intrep     = fs_intrep;
-if bDeterministic
-    handles.audio.noise = noise;
-end
 
 guidata(hObject,handles)
         
@@ -717,9 +664,6 @@ try
     insig2 = handles.audio.insig2;
     template = handles.audio.template;
     bDeterministic = handles.audio.bDeterministic;
-    if bDeterministic
-        noise = handles.audio.noise;
-    end
     
     fs = handles.audio.fs;
 catch
@@ -744,9 +688,15 @@ switch nAnalyser
         end
 
         mu      = 0;
-        tmp     = get(handles.popInternalNoise,'string');
-        tmp_idx = get(handles.popInternalNoise,'value');
-        sigma   = str2num( tmp{tmp_idx} );
+        
+        bSigma = get(handles.chInternalNoise,'value');
+        if bSigma
+            tmp     = get(handles.popInternalNoise,'string');
+            tmp_idx = get(handles.popInternalNoise,'value');
+            sigma   = str2num( tmp{tmp_idx} );
+        else
+            sigma = 0;
+        end
 
         if length(fc2plot_idx) == 1
             bSingleChannel = 1;
@@ -755,7 +705,7 @@ switch nAnalyser
         else
             bSingleChannel = 0;
             bMultiChannel = 1;
-            fc2plot_idx = 1:length(fc2plot_idx);
+            % fc2plot_idx = 1:length(fc2plot_idx);
         end
     
 end
@@ -774,20 +724,19 @@ for k = 1:Nsim
     
     if bStochastic == 1
         insig1s0 = il_randomise_insig(handles.audio.insig1orig);
-        insig1s0 = Do_cos_ramp( insig1s0( 1:length(insig2) ), fs, rampdn);
-        
         insig1s1 = il_randomise_insig(handles.audio.insig1orig);
-        insig1s1 = Do_cos_ramp( insig1s1( 1:length(insig2) ), fs, rampdn);
-        
         insig1s2 = il_randomise_insig(handles.audio.insig1orig);
-        insig1s2 = Do_cos_ramp( insig1s2( 1:length(insig2) ), fs, rampdn);
-        
     end
     if bDeterministic == 1
         insig1s0 = insig1;
         insig1s1 = insig1;
+        insig1s2 = insig1;
     end
     
+    insig1s0 = Do_cos_ramp( insig1s0( 1:length(insig2) ), fs, rampdn);
+    insig1s1 = Do_cos_ramp( insig1s1( 1:length(insig2) ), fs, rampdn);
+    insig1s2 = Do_cos_ramp( insig1s2( 1:length(insig2) ), fs, rampdn);
+        
     Level_current   = Level_start;
 
     Staircase = [];
@@ -830,6 +779,10 @@ for k = 1:Nsim
                         [out_interval1 , fc] = dau1996preproc(interval1,fs);
                         [out_interval2 , fc] = dau1996preproc(interval2,fs);
                         [out_interval1s2, fc] = dau1996preproc(interval1s2,fs);
+                        
+                        out_interval1 = out_interval1(:,fc2plot_idx);
+                        out_interval2 = out_interval2(:,fc2plot_idx);
+                        out_interval1s2 = out_interval1s2(:,fc2plot_idx);
                     end
                     if bSingleChannel
                         [out_interval1] = dau1996preproc_1Ch(interval1,fs,fc);
@@ -872,37 +825,21 @@ for k = 1:Nsim
                     end
                 end
                 
-                if bStochastic
-                    out_interval1 = Add_gaussian_noise(out_interval1,mu,sigma); % Add internal noise
-                    out_interval2 = Add_gaussian_noise(out_interval2,mu,sigma); % Add internal noise
-                    out_interval1s2 = Add_gaussian_noise(out_interval1s2,mu,sigma);
-                end
-                if bDeterministic
-                    out_interval1 = out_interval1 + noise;
-                    out_interval2 = out_interval2 + noise;
-                end
-
-                if (nAnalyser ~= 101)  & (nAnalyser ~= 103) & (nAnalyser ~= 104)
-                    sigint1 = out_interval1(idxobs(1):idxobs(2),fc2plot_idx);
-                    sigint2 = out_interval2(idxobs(1):idxobs(2),fc2plot_idx);
-                else
-                    % % one audio-frequency band but all the modulation filterbanks:
-                    % sigint1 = out_interval1(idxobs(1):idxobs(2),:);
-                    % sigint2 = out_interval2(idxobs(1):idxobs(2),:);
-                    % sigint1s2 = out_interval1s2(idxobs(1):idxobs(2),:);
-                    
-                    [a b] = size(template);
-                    % one audio-frequency band but all the modulation filterbanks:
-                    try
-                        sigint1 = reshape(out_interval1,a,b);
-                        sigint2 = reshape(out_interval2,a,b);
-                        sigint1s2 = reshape(out_interval1s2,a,b);
-                    catch
-                        error('Continue here')
-                        sigint1 = out_interval1(idxobs(1):idxobs(2),:);
-                        sigint2 = out_interval2(idxobs(1):idxobs(2),:);
-                        sigint1s2 = out_interval1s2(idxobs(1):idxobs(2),:);
-                    end
+                out_interval1 = Add_gaussian_noise(out_interval1,mu,sigma); % Add internal noise
+                out_interval2 = Add_gaussian_noise(out_interval2,mu,sigma); % Add internal noise
+                out_interval1s2 = Add_gaussian_noise(out_interval1s2,mu,sigma);
+                
+                [a b] = size(template);
+                % one audio-frequency band but all the modulation filterbanks:
+                try
+                    sigint1 = reshape(out_interval1,a,b);
+                    sigint2 = reshape(out_interval2,a,b);
+                    sigint1s2 = reshape(out_interval1s2,a,b);
+                catch
+                    error('Continue here')
+                    sigint1 = out_interval1(idxobs(1):idxobs(2),:);
+                    sigint2 = out_interval2(idxobs(1):idxobs(2),:);
+                    sigint1s2 = out_interval1s2(idxobs(1):idxobs(2),:);
                 end
         end
         
@@ -3225,3 +3162,12 @@ for k = 1:length(incell);
     out = [out; outtmp(:)];
 end
 y = out;
+
+
+% --- Executes on button press in chRampMasker.
+function chRampMasker_Callback(hObject, eventdata, handles)
+% hObject    handle to chRampMasker (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chRampMasker

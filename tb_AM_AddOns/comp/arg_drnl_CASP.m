@@ -4,8 +4,8 @@ function definput=arg_drnl_CASP(definput)
 % Created/edited by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Original filename: arg_drnl.m
 % Created on    : 15/08/2015
-% Last update on: 15/08/2015 
-% Last use on   : 15/08/2015
+% Last update on: 27/08/2015 
+% Last use on   : 27/08/2015
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   
 % 0. Parameters as in the Gammatone filterbank:
@@ -42,8 +42,7 @@ definput.keyvals.nlin_c = [log10(.25) 0];
 
 %% Other parameters of the CASP model
 % The first in the cell is the default setting:
-definput.flags.outerear         = {'outerear'};
-% definput.flags.middleear        = {'jepsenmiddleear','middleear','nomiddleear'};
+definput.flags.outerear         = {'outerear','noouterear'};
 definput.flags.middleear        = {'middleear','jepsenmiddleear','nomiddleear'};
 definput.flags.path             = {'bothparts','linonly','nlinonly'};
 definput.flags.ihctype          = {'ihc_jepsen'};

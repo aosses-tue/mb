@@ -70,6 +70,16 @@ if flags.do_middleear
     insig = filter(me_fir,1,insig);  
 end
 
+if  flags.do_nomiddleear % added by AO
+    
+    me_fir = middleearfilter(fs); % correction using middleear from Lopez-Poveda
+    me_gain_TF = max( 20*log10(abs(freqz(me_fir,1,8192))) ); % equivalent to FFT of 8192*2 points
+    insig = gaindb(insig,me_gain_TF);
+    
+    params.me_gain_TF = me_gain_TF;
+    
+end
+
 % find the center frequencies used in the filterbank, 1 ERB spacing
 fc = erbspacebw(flow, fhigh, kv.bwmul, kv.basef); % Exactly the same freqs as in BM.CenterFreqs;
 

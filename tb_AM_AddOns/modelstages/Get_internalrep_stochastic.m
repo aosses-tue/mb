@@ -1,5 +1,5 @@
-function [out_1avg out_2avg fs_intrep outs] = Get_internalrep_stochastic(in_masker_pre,in_signal_pre,fs,model,sigma,Ntimes,idx_fc)
-% function [out_1avg out_2avg fs_intrep outs] = Get_internalrep_stochastic(in_masker_pre,in_signal_pre,fs,model,sigma,Ntimes,idx_fc)
+function [out_1avg out_2avg fs_intrep outs] = Get_internalrep_stochastic(in_masker_pre,in_signal_pre,fs,model,sigma,Ntimes,idx_fc,opts)
+% function [out_1avg out_2avg fs_intrep outs] = Get_internalrep_stochastic(in_masker_pre,in_signal_pre,fs,model,sigma,Ntimes,idx_fc,opts)
 %
 % 1. Description:
 %       Obtains an averaged internal representation of the signal in_signal_pre
@@ -27,6 +27,10 @@ function [out_1avg out_2avg fs_intrep outs] = Get_internalrep_stochastic(in_mask
 % Last use on   : 13/08/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+if nargin < 8
+    opts = [];
+end 
+
 if nargin < 7
     fc = 1000;
     fctmp = ceil( freqtoaud(fc,'erb') );
@@ -50,6 +54,8 @@ end
 if nargin < 5
     sigma = 0.8;
 end
+% sigma = 0;
+% warning('temporal change: no variance for the noise...')
 
 if length(idx_fc) == 1
     bSingleChannel = 1;
@@ -64,15 +70,36 @@ mu = 0;
 
 out_1 = [];
 out_2 = [];
-rampdn = 20;
+
+opts = Ensure_field(opts,'masker_ramp_ms',0);
+
+masker_ramp_ms = opts.masker_ramp_ms;
+
+if Ntimes ~= 1
+    bStochastic = 1;
+else
+    bStochastic = 0;
+end
+bDeterministic = ~bStochastic;
+
 for i = 1:Ntimes
     
-    in_masker_s0 = Randomise_insig(in_masker_pre); % random sample of the noise
-    %in_masker_s0 = in_masker_s0(1:N,:);
-    in_masker_s0 = Do_cos_ramp( in_masker_s0(1:N),fs,rampdn );
-    in_masker_s1 = Randomise_insig(in_masker_pre); % random sample of the noise
-    %in_masker_s1 = in_masker_s1(1:N,:);
-    in_masker_s1 = Do_cos_ramp( in_masker_s1(1:N),fs,rampdn );
+    if bStochastic
+        in_masker_s0 = Randomise_insig(in_masker_pre); % random sample of the noise
+    end
+    if bDeterministic
+        in_masker_s0 = in_masker_pre; 
+    end
+    in_masker_s0 = Do_cos_ramp( in_masker_s0(1:N),fs,masker_ramp_ms );
+    
+    if bStochastic
+        in_masker_s1 = Randomise_insig(in_masker_pre); % random sample of the noise
+    end
+    if bDeterministic
+        in_masker_s1 = in_masker_pre; % random sample of the noise
+    end
+    in_masker_s1 = Do_cos_ramp( in_masker_s1(1:N),fs,masker_ramp_ms );
+    
     switch model
         case 'dau1996'
             
@@ -115,9 +142,14 @@ for i = 1:Ntimes
             out_1 = [out_1 Add_gaussian_noise(out_1pre(:),mu,sigma)]; 
             out_2 = [out_2 Add_gaussian_noise(out_2pre(:),mu,sigma)]; % Add internal noise
             
-        case 'jepsen2008'
+        case {'jepsen2008','jepsen2008-modfilterbank','jepsen2008-lowpass'}
             
-            fbstyle = 'modfilterbank';
+            switch model
+                case {'jepsen2008','jepsen2008-modfilterbank'}
+                    fbstyle = 'modfilterbank';
+                case 'jepsen2008-lowpass'
+                    fbstyle = 'lowpass';
+            end
             if bMultiChannel == 1
                 [out_1pre , fc, xx, IntRep] = jepsen2008preproc_multi(in_masker_s0  ,fs,fcmin,fcmax,fbstyle,'resample_intrep');
                 [out_2pre , fc] = jepsen2008preproc_multi(in_masker_s1 + in_signal_pre,fs,fcmin,fcmax,fbstyle,'resample_intrep');
