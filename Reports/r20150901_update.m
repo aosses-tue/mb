@@ -44,7 +44,7 @@ hFig1 = [];
 hFig2 = [];
 hFig3 = [];
 
-dirout = 'D:\Documenten-TUe\01-Text\05-Doc-TUe\lx2015-09-01-update\MATLAB\';
+dirout = [Get_TUe_paths('lx_Text') 'lx2015-09-01-update' delim 'MATLAB' delim];
 Mkdir(dirout);
 diroutfigs = [dirout 'Figures' delim];
 Mkdir(diroutfigs);
@@ -126,14 +126,15 @@ if bDoExcitation
 
     nfc = length(fton);
     
-    nSPL = length(SPL);
-    lvl = nan(nfc,length(ft2plotERB));
-    lvltot = nan(nfc,1);
+    nSPL     = length(SPL);
+    lvl_drnl = nan(nfc,length(ft2plotERB));
+    lvltot   = nan(nfc,1);
 
     lvl_gt = nan(nfc,length(ft2plotERB));
     lvltot_gt = nan(nfc,1);
     step_bands = 1; % set to 1 to analyse every band
 
+    insigS = [];
     insigBW100 = [];
     insigBW20 = [];
     ha1 = [];
@@ -145,6 +146,7 @@ if bDoExcitation
         switch typetone
             case 1 % sinusoid
                 insig = Create_sin(fton(j),dur,fs);
+                insigS = [insigS insig];
                 tonelabel = 'Test tone';
                 tonelabel_short = 'T';
             case 2 % 20-Hz Gaussian
@@ -178,15 +180,15 @@ if bDoExcitation
             Wavwrite(outsig_wav_onfreq ,fs,sprintf('%sdrnl-%s-fc-%.0f-Hz-%.0f-dB-onfreq'         ,diroutaudio,tonelabel_short,fton,SPL(k)))
             Wavwrite(outsig_wav_offfreq,fs,sprintf('%sdrnl-%s-fc-%.0f-Hz-%.0f-dB-offfreq-%.0f-Hz',diroutaudio,tonelabel_short,fton,SPL(k),ftoff))
             
-            lvl(j,:) = rmsdb(out_drnl) + dBFS; % level per band
+            lvl_drnl(j,:) = rmsdb(out_drnl) + dBFS; % level per band
             out_drnl_t(:,j) = outsig_wav_tot;
             out_drnl_on_t(:,j) = outsig_wav_onfreq;
             out_drnl_off_t(:,j) = outsig_wav_offfreq;
             
-            lvldrnl(j,1) = sum_db( rmsdb(out_drnl) ) + dBFS;
-            lvldrnl(j,2) = sum_db( rmsdb(paramsouts.outsiglin) ) + dBFS;
-            lvldrnl(j,3) = sum_db( rmsdb(paramsouts.outsignlin) ) + dBFS;
-            lvldrnl(j,4) = 100*sum(rms(paramsouts.outsignlin)) / sum(rms(out_drnl));
+            lvltotdrnl(j,1) = sum_db( rmsdb(out_drnl) ) + dBFS;
+            lvltotdrnl(j,2) = sum_db( rmsdb(paramsouts.outsiglin) ) + dBFS;
+            lvltotdrnl(j,3) = sum_db( rmsdb(paramsouts.outsignlin) ) + dBFS;
+            lvltotdrnl(j,4) = 100*sum(rms(paramsouts.outsignlin)) / sum(rms(out_drnl));
 
             ingamma = gaindb(paramsouts.insig_after_TF,-paramsouts.me_gain_TF);
             % ingamma = insigM;
@@ -207,7 +209,7 @@ if bDoExcitation
             out_gt_off_t(:,j) = outsig_wav_offfreq;
 
             figure; 
-            plot(1:31, lvl(j,:),'LineWidth',2), grid on, hold on
+            plot(1:31, lvl_drnl(j,:),'LineWidth',2), grid on, hold on
             plot(1:31, lvl_gt(j,:),'r')
             title(sprintf('Excitation pattern in DRNL filterbank (outer- and middle - ear compensation)\n%s centred at fc = %.1f [Hz]',tonelabel,fton(j)));
             legend('DRNL','4th-order gt','Location','SouthEast')
@@ -270,7 +272,7 @@ if bDoExcitation
             Wavwrite(outsig_wav_onfreq ,fs,sprintf('%sdrnlnoear-%s-fc-%.0f-Hz-%.0f-dB-onfreq'         ,diroutaudio,tonelabel_short,fton,SPL(k)))
             Wavwrite(outsig_wav_offfreq,fs,sprintf('%sdrnlnoear-%s-fc-%.0f-Hz-%.0f-dB-offfreq-%.0f-Hz',diroutaudio,tonelabel_short,fton,SPL(k),ftoff))
             
-            lvl(j,:) = rmsdb(out_drnl) + dBFS; % level per band
+            lvl_drnl(j,:) = rmsdb(out_drnl) + dBFS; % level per band
             out_drnl_noear_t(:,j) = outsig_wav_tot;
             out_drnl_noear_on_t(:,j) = outsig_wav_onfreq;
             out_drnl_noear_off_t(:,j) = outsig_wav_offfreq;
@@ -301,7 +303,7 @@ if bDoExcitation
             out_gt_noear_off_t(:,j) = outsig_wav_offfreq;
 
             figure; 
-            plot(1:31, lvl(j,:),'LineWidth',2), grid on, hold on
+            plot(1:31, lvl_drnl(j,:),'LineWidth',2), grid on, hold on
             plot(1:31, lvl_gt(j,:),'r')
             title(sprintf('Excitation pattern in DRNL filterbank (no outer- nor middle - ear compensation)\n%s centred at fc = %.1f [Hz]',tonelabel,fton(j)));
             legend('DRNL','4th-order gt','Location','SouthEast')
@@ -353,40 +355,43 @@ if bDoExcitation
 
     % Mixing 1, 2 and 3:
     %                                              % increase in total level and in non-linearity compared to no-ear
-    var2latex( round(10*[fton' lvldrnl lvldrnl_noear(:,[1 4]) lvldrnl(:,[1 4])-lvldrnl_noear(:,[1 4])])/10 );
+    var2latex( round(10*[fton' lvltotdrnl lvldrnl_noear(:,[1 4]) lvltotdrnl(:,[1 4])-lvldrnl_noear(:,[1 4])])/10 );
 
-    if (typetone == 2) | (typetone == 3)
-        for j = 1:step_bands:nfc
-            if typetone == 2
-                insig = insigBW20(:,j);
-            elseif typetone == 3
-                insig = insigBW100(:,j);
-            end
-            % Each row is the total output of each GN centred at different fcs:
-            WV(j,1) = Get_envelope_descriptors(insig,'W');
-            WV(j,2) = Get_envelope_descriptors(insig,'V');
-            WV_drnl(j,1) = Get_envelope_descriptors( out_drnl_t(:,j),'W');
-            WV_drnl(j,2) = Get_envelope_descriptors( out_drnl_t(:,j),'V');
-            WV_drnl_noear(j,1) = Get_envelope_descriptors( out_drnl_noear_t(:,j), 'W');
-            WV_drnl_noear(j,2) = Get_envelope_descriptors( out_drnl_noear_t(:,j), 'V');
-            WV_gt(j,1) = Get_envelope_descriptors( out_gt_t(:,j) ,'W');
-            WV_gt(j,2) = Get_envelope_descriptors( out_gt_t(:,j) ,'V');
+for j = 1:step_bands:nfc
+        if typetone == 1
+            insig = insigS(:,j);
+        elseif typetone == 2
+            insig = insigBW20(:,j);
+        elseif typetone == 3
+            insig = insigBW100(:,j);
+        end
+        % Each row is the total output of each GN centred at different fcs:
+        WV(j,1) = Get_envelope_descriptors(insig,'W');
+        WV(j,2) = Get_envelope_descriptors(insig,'V');
+        WV_drnl(j,1) = Get_envelope_descriptors( out_drnl_t(:,j),'W');
+        WV_drnl(j,2) = Get_envelope_descriptors( out_drnl_t(:,j),'V');
+        WV_drnl_noear(j,1) = Get_envelope_descriptors( out_drnl_noear_t(:,j), 'W');
+        WV_drnl_noear(j,2) = Get_envelope_descriptors( out_drnl_noear_t(:,j), 'V');
+        WV_gt(j,1) = Get_envelope_descriptors( out_gt_t(:,j) ,'W');
+        WV_gt(j,2) = Get_envelope_descriptors( out_gt_t(:,j) ,'V');
+        Vtot_on_off(1,1) = Get_envelope_descriptors( out_drnl_t    ,'V' );
+        Vtot_on_off(2,1) = Get_envelope_descriptors( out_drnl_on_t ,'V' );
+        Vtot_on_off(3,1) = Get_envelope_descriptors( out_drnl_off_t,'V' );
+        Vtot_on_off_gt(1,1) = Get_envelope_descriptors( out_gt_t    ,'V' );
+        Vtot_on_off_gt(2,1) = Get_envelope_descriptors( out_gt_on_t ,'V' );
+        Vtot_on_off_gt(3,1) = Get_envelope_descriptors( out_gt_off_t,'V' );
 
-        end  
-        Vtot = [WV(:,2) WV_drnl(:,2) WV_drnl_noear(:,2)  WV_gt(:,2)];
-        % V closer to 0 is more fluctuating, approaching -infinity fluctuate les
-        pV = [prctile(WV(:,2), 5)  prctile(WV_drnl(:,2), 5)  prctile(WV_drnl_noear(:,2), 5)  prctile(WV_gt(:,2), 5); ...
-             prctile(WV(:,2),50)  prctile(WV_drnl(:,2),50)  prctile(WV_drnl_noear(:,2),50)  prctile(WV_gt(:,2),50); ...
-             prctile(WV(:,2),95)  prctile(WV_drnl(:,2),95)  prctile(WV_drnl_noear(:,2),95)  prctile(WV_gt(:,2),95)];
+    end  
+    Vtot = [WV(:,2) WV_drnl(:,2) WV_drnl_noear(:,2)  WV_gt(:,2)];
 
-        PVdiffs = [WV_drnl(:,2)-WV(:,2)  WV_drnl_noear(:,2)-WV(:,2)  WV_gt(:,2)-WV(:,2)];
-        P2 = [prctile(PVdiffs,5); ... 
-              prctile(PVdiffs,50); ...
-              prctile(PVdiffs,95)]; 
+    % V closer to 0 is more fluctuating, approaching -infinity fluctuate les
+    
+    PVdiffs = [WV_drnl(:,2)-WV(:,2)  WV_drnl_noear(:,2)-WV(:,2)  WV_gt(:,2)-WV(:,2)];
 
-        var2latex([round(10*[fton nan(1,3)]')/10 round(1000*[Vtot PVdiffs; pV P2])/1000])
-
-    end
+    % at 1300-Hz  on frequency
+    var2display = [ft2plot(idxon) lvl_drnl(idxon) ; ft2plot(idxoff) lvl_drnl(idxoff); NaN lvltotdrnl(1)];
+    var2display = [var2display Vtot_on_off Vtot_on_off_gt];
+    var2latex( [round(var2display(:,1:2)*10)/10 round(var2display(:,3:end)*100)/100] );
 end
 
 if bDiary
