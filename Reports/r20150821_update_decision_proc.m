@@ -144,7 +144,7 @@ for idx = 1:length(testJND)
                     idx_compare(1) = [];
                 end
                 idx_compare = idx_compare(1:factor:end);
-                idxtodelete = length(idx_compare) - size(RM,1);
+                idxtodelete = max( length(idx_compare) - size(RM,1), 1);
                 idx_compare(end-idxtodelete+1) = [];
             end
         end
@@ -160,8 +160,8 @@ for idx = 1:length(testJND)
             if bDeterministicTemplate == 0
                 
                 mu = 0;
-                RM_avg       = il_get_avg_ir(RM(idx_compare,:)      ,mu,sigma,sigmaTimes);
-                RMTsupra_avg = il_get_avg_ir(RMTsupra(idx_compare,:),mu,sigma,sigmaTimes);
+                RM_avg       = il_get_avg_ir(RM(idx_compare,:)      ,mu,0,sigmaTimes);
+                RMTsupra_avg = il_get_avg_ir(RMTsupra(idx_compare,:),mu,0,sigmaTimes);
                                 
             else
                 RM_avg       = RM;

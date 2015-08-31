@@ -28,8 +28,8 @@ bDiary = 0;
 Diary(mfilename,bDiary);
 
 bPart1 = 0; % actual modelling part
-bPart2 = 0; % Plot results Weber's law
-bPart3 = 0;
+bPart2 = 1; % Plot results Weber's law
+bPart3 = 1; % Simulated thresholds
 bPart4 = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Params:
@@ -153,7 +153,7 @@ switch testtype
     case 3
         tmin = 0; tmax = 800e-3;
 end
-sigmaValues = 0.95; % 0.42;%[.3  .5:.1:1]; % [0 0.1 0.5]; % MU
+sigmaValues = 0.85; % 0.42;%[.3  .5:.1:1]; % [0 0.1 0.5]; % MU
 
 Nsigma      = length(sigmaValues);
 JNDcalc     = nan(Nlevels,Nsigma);
@@ -202,16 +202,39 @@ end % end bPart1
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if bPart2
+    
+    bBefore_20150831    = 0;
+    bAfter_20150831     = 1;
+    
+    % % From the paper:
     lvl_j2008 = 20:10:70;
     data_j2008_BBN = [0.49 0.55 0.67 0.62 0.83 0.97];
     data_j2008_1kHz = [0.65 0.65 0.52 0.52 0.68 0.68];
-                  % 20  30      40      50      60      70
-    data_own_BBN = [NaN 0.46981 0.45913 0.50751 0.61146 0.76693; ... 0.85   % NaN 0.47046 0.46591 0.50224 0.6161 0.72225; ... 0.85 old
-                    NaN 0.49807 0.48094 0.54841 0.66558 0.76845; ... 0.90   % NaN 0.4977  0.48393 0.54102 0.66287 0.76268; ... 0.90, old
-                    NaN 0.52576 0.50963 0.56151 0.692   0.81209]; % 0.95    % NaN 0.52348 0.51517 0.55842 0.6987  0.79719]; % 0.95, old
-	data_own_1kHz= [NaN 0.74964 0.69323 0.71756 0.75882 0.79411; ... % 0.85
-                    NaN 0.79373 0.73414 0.75991 0.80429 0.84142; ... 0.90
-                    NaN 0.83824 0.77472 0.80215 0.84836 0.8878]; % 0.95
+        
+    if bAfter_20150831 == 1
+        % % The template was obtained without internal noise:
+                          % 20  30      40      50      60      70
+        data_own_BBN = [NaN 0.4719  0.4591  0.4955 0.6082 0.7105; ... % 0.85 % r20150821_update(1000,2,'jepsen2008'); % run on 31/08/2015   
+                        NaN NaN NaN NaN NaN NaN; ... 0.90 
+                        NaN 0.5241 0.5133 0.5630 0.6950 0.7868];      % 0.95 % r20150821_update(1000,2,'jepsen2008'); % run on 31/08/2015
+                    
+        data_own_1kHz= [NaN 0.7443 0.6893 0.7147 0.7517 0.7888; ... % 0.85 % r20150821_update(1000,3,'jepsen2008'); % run on 31/08/2015
+                        NaN NaN NaN NaN NaN NaN; ... 0.90 
+                        NaN 0.8300 0.7685 0.7977 0.8414 0.8836]; % 0.95 % r20150821_update(1000,3,'jepsen2008'); % run on 31/08/2015
+    end
+    
+    if bBefore_20150831 == 1
+                          % 20  30      40      50      60      70
+        data_own_BBN = [NaN 0.46981 0.45913 0.50751 0.61146 0.76693; ... 0.85   % NaN 0.47046 0.46591 0.50224 0.6161 0.72225; ... 0.85 old
+                        NaN 0.49807 0.48094 0.54841 0.66558 0.76845; ... 0.90   % NaN 0.4977  0.48393 0.54102 0.66287 0.76268; ... 0.90, old
+                        NaN 0.52576 0.50963 0.56151 0.692   0.81209]; % 0.95    % NaN 0.52348 0.51517 0.55842 0.6987  0.79719]; % 0.95, old
+        data_own_1kHz= [NaN 0.74964 0.69323 0.71756 0.75882 0.79411; ... % 0.85
+                        NaN 0.79373 0.73414 0.75991 0.80429 0.84142; ... 0.90
+                        NaN 0.83824 0.77472 0.80215 0.84836 0.8878]; % 0.95
+    end
+    
+    
+    
     
 	compBBN = repmat(data_j2008_BBN,3,1) - data_own_BBN;
     MBBN = mean(compBBN(:,2:end),2);
@@ -221,6 +244,14 @@ if bPart2
     
     figure;
     plot(lvl_j2008,data_j2008_BBN,lvl_j2008,data_own_BBN)
+    legend('jepsen2008','0.85','0.90','0.95')
+    title('Results for Weber''s law, BBN')
+    
+    figure;
+    plot(lvl_j2008,data_j2008_1kHz,lvl_j2008,data_own_1kHz)
+    legend('jepsen2008','0.85','0.90','0.95')
+    title('Results for Weber''s law, 1-kHz tones')
+   
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

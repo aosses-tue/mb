@@ -402,6 +402,9 @@ bUseRamp = get(handles.chRampMasker,'value');
 out_1 = [];
 out_2 = [];
 
+sigma = 0;
+warning('Sigma with temporal assignment')
+
 switch nAnalyser
     case 100
         
@@ -711,7 +714,12 @@ switch nAnalyser
 end
 
 Threshold = [];
-rampdn = 20; % e-3 s
+bUseRamp = get(handles.chRampMasker,'value');
+if bUseRamp
+    rampdn = 20; % e-3 s
+else
+    rampdn = 0;
+end
 
 for k = 1:Nsim
     

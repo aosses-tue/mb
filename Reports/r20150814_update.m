@@ -1,5 +1,5 @@
-function y = r20150814_update(x)
-% function y = r20150814_update(x)
+function y = r20150814_update(bDoParts)
+% function y = r20150814_update(bDoParts)
 %
 % 1. Description:
 %
@@ -18,12 +18,15 @@ close all
 bDiary = 0;
 Diary(mfilename,bDiary);
 
+if nargin == 0
+    bDoParts = [0 0 0 0 1];
+end
 
-bDoEnveAMT  = 0;
-bDoHartmann = 0;
-bDoTFMF     = 0;
-bDoTFDRNL   = 0;
-bDoTFDRNL2  = 1;
+bDoEnveAMT  = bDoParts(1);
+bDoHartmann = bDoParts(2);
+bDoTFMF     = bDoParts(3);
+bDoTFDRNL   = bDoParts(4);
+bDoTFDRNL2  = bDoParts(5);
 
 h = [];
 dire = [Get_TUe_paths('outputs') 'AMTControl-examples' delim]; % 'D:\Output\AMTControl-examples\'
@@ -381,6 +384,10 @@ if bDoTFDRNL2
         xlim([0 100])
         ylim([-100 0])
         grid on
+        set(gca,'YTick',[-100:10:0])
+        set(gca,'YTickLabel',[-100:10:0])
+        set(gca,'XTick',[0:10:100])
+        set(gca,'XTickLabel',[0:10:100])
         
         % Figure 2.b
         for j = 1:4
@@ -410,6 +417,10 @@ if bDoTFDRNL2
         xlim([0 100])
         ylim([-100 0])
         grid on
+        set(gca,'YTick',[-100:10:0])
+        set(gca,'YTickLabel',[-100:10:0])
+        set(gca,'XTick',[0:10:100])
+        set(gca,'XTickLabel',[0:10:100])
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % Figure 2.a gamma
