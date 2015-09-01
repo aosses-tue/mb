@@ -80,9 +80,9 @@ params.a_mf1 = a_lowpass;
 for freqchannel=1:nfreqchannels
 
     % Cut away highest modulation frequencies
-    % outtmp = filter(b_highest,a_highest,insig(:,freqchannel));
-    outtmp = insig(:,freqchannel);
-    warning('highest filter by-passed')
+    outtmp = filter(b_highest,a_highest,insig(:,freqchannel));
+    % outtmp = insig(:,freqchannel);
+    % warning('highest filter by-passed')
     
     if umf(freqchannel)==0
         % ----------- only lowpass ---------------------

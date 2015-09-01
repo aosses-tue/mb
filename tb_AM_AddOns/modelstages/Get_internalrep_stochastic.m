@@ -23,8 +23,8 @@ function [out_1avg out_2avg fs_intrep outs] = Get_internalrep_stochastic(in_mask
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 11/08/2015
-% Last update on: 13/08/2015 
-% Last use on   : 13/08/2015 
+% Last update on: 01/09/2015 
+% Last use on   : 01/09/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 8
@@ -54,8 +54,6 @@ end
 if nargin < 5
     sigma = 0.8;
 end
-% sigma = 0;
-% warning('temporal change: no variance for the noise...')
 
 if length(idx_fc) == 1
     bSingleChannel = 1;
@@ -72,8 +70,10 @@ out_1 = [];
 out_2 = [];
 
 opts = Ensure_field(opts,'masker_ramp_ms',0);
+opts = ef(opts,'signal_ramp_ms',0);
 
 masker_ramp_ms = opts.masker_ramp_ms;
+signal_ramp_ms = opts.signal_ramp_ms;
 
 if Ntimes ~= 1
     bStochastic = 1;
@@ -81,6 +81,13 @@ else
     bStochastic = 0;
 end
 bDeterministic = ~bStochastic;
+
+if signal_ramp_ms ~= 0
+    display('Introducing ramp for the input signal as well')
+    in_signal = Do_cos_ramp(in_signal_pre,fs,signal_ramp_ms);
+else
+    in_signal = in_signal_pre;
+end
 
 for i = 1:Ntimes
     
@@ -90,7 +97,6 @@ for i = 1:Ntimes
     if bDeterministic
         in_masker_s0 = in_masker_pre; 
     end
-    in_masker_s0 = Do_cos_ramp( in_masker_s0(1:N),fs,masker_ramp_ms );
     
     if bStochastic
         in_masker_s1 = Randomise_insig(in_masker_pre); % random sample of the noise
@@ -98,7 +104,14 @@ for i = 1:Ntimes
     if bDeterministic
         in_masker_s1 = in_masker_pre; % random sample of the noise
     end
-    in_masker_s1 = Do_cos_ramp( in_masker_s1(1:N),fs,masker_ramp_ms );
+    
+    in_masker_s0 = in_masker_s0(1:N);
+    in_masker_s1 = in_masker_s1(1:N);
+    if masker_ramp_ms ~= 0 % introducing ramps into masker signals
+        if i == 1; display('Introducing ramp for the maskers'); end
+        in_masker_s0 = Do_cos_ramp( in_masker_s0,fs,masker_ramp_ms );
+        in_masker_s1 = Do_cos_ramp( in_masker_s1,fs,masker_ramp_ms );
+    end
     
     switch model
         case 'dau1996'
@@ -117,10 +130,10 @@ for i = 1:Ntimes
             out_1 = [out_1 tmp(:)]; % out_1 affected by internal noise
             
             if bMultiChannel == 1
-                [out_pre , fc] = dau1996preproc(in_masker_s1 + in_signal_pre,fs); % out_2pre affected by external noise
+                [out_pre , fc] = dau1996preproc(in_masker_s1 + in_signal,fs); % out_2pre affected by external noise
             end
             if bSingleChannel == 1
-                [out_pre , fc] = dau1996preproc_1Ch(in_masker_s1 + in_signal_pre,fs,fc); % out_1pre affected by external noise
+                [out_pre , fc] = dau1996preproc_1Ch(in_masker_s1 + in_signal,fs,fc); % out_1pre affected by external noise
             end
             
             tmp = Add_gaussian_noise(out_pre(:,idx_fc),mu,sigma);
@@ -132,8 +145,8 @@ for i = 1:Ntimes
                 error('Not implemented yet, continue here');
             end
             if bSingleChannel == 1
-                [out_1pre , fc, mfc] = dau1997preproc_1Ch(in_masker_s0                ,fs,fc);
-                [out_2pre , fc, mfc] = dau1997preproc_1Ch(in_masker_s1 + in_signal_pre,fs,fc);
+                [out_1pre , fc, mfc] = dau1997preproc_1Ch(in_masker_s0            ,fs,fc);
+                [out_2pre , fc, mfc] = dau1997preproc_1Ch(in_masker_s1 + in_signal,fs,fc);
                 fs_intrep = fs;
             end
             
@@ -151,13 +164,13 @@ for i = 1:Ntimes
                     fbstyle = 'lowpass';
             end
             if bMultiChannel == 1
-                [out_1pre , fc, xx, IntRep] = jepsen2008preproc_multi(in_masker_s0  ,fs,fcmin,fcmax,fbstyle,'resample_intrep');
-                [out_2pre , fc] = jepsen2008preproc_multi(in_masker_s1 + in_signal_pre,fs,fcmin,fcmax,fbstyle,'resample_intrep');
+                [out_1pre , fc, fmc, IntRep] = jepsen2008preproc_multi(in_masker_s0  ,fs,fcmin,fcmax,fbstyle,'resample_intrep');
+                [out_2pre , fc] = jepsen2008preproc_multi(in_masker_s1 + in_signal,fs,fcmin,fcmax,fbstyle,'resample_intrep');
                 [Ni,Mi] = size(out_1pre{1});
             end
             if bSingleChannel == 1
-                [out_1pre , fc, xx, IntRep] = jepsen2008preproc_1Ch(in_masker_s0  ,fs,fc,fbstyle);
-                [out_2pre , fc] = jepsen2008preproc_1Ch(in_masker_s1 + in_signal_pre,fs,fc,fbstyle);
+                [out_1pre , fc, fmc, IntRep] = jepsen2008preproc_1Ch(in_masker_s0  ,fs,fc,fbstyle);
+                [out_2pre , fc] = jepsen2008preproc_1Ch(in_masker_s1 + in_signal,fs,fc,fbstyle);
             end
             fs_intrep = IntRep.fs_intrep;
             
@@ -180,7 +193,13 @@ end
 out_1avg = mean(out_1,2);
 out_2avg = mean(out_2,2);
 
-try
+try 
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %                   Reshape tested/non-tested
+    %                   dau1996  dau1997  jepsen2008   jepsen2008-lp
+    % bSingleChannel    
+    % bMultiChannel
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     out_1avg = reshape(out_1avg,Ni,Mi);
     out_2avg = reshape(out_2avg,Ni,Mi);
 catch

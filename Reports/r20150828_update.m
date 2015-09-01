@@ -318,10 +318,6 @@ P2 = [prctile(PVdiffs,5); ...
 
 var2latex([round(10*[ft nan(1,3)]')/10 round(1000*[Vtot PVdiffs; pV P2])/1000])
 
- 
-% column 1 will be the reference:
-
-
 if bDiary
 	diary off
 end

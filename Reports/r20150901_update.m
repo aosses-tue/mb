@@ -23,8 +23,8 @@ function r20150901_update(typetone,SPL)
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 27/08/2015
-% Last update on: 27/08/2015 
-% Last use on   : 27/08/2015 
+% Last update on: 01/09/2015 
+% Last use on   : 01/09/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin == 0
@@ -56,7 +56,8 @@ dBFS = 100;
 
 bDoIOfunctions      = 0;
 do_outermiddleear   = 0;
-bDoExcitation       = 1;
+bDoExcitation       = 0;
+bAnalysisTemplates  = 1;
 
 fs = 44100;
 ft2plotERB = 3:33; % ERB
@@ -392,6 +393,80 @@ for j = 1:step_bands:nfc
     var2display = [ft2plot(idxon) lvl_drnl(idxon) ; ft2plot(idxoff) lvl_drnl(idxoff); NaN lvltotdrnl(1)];
     var2display = [var2display Vtot_on_off Vtot_on_off_gt];
     var2latex( [round(var2display(:,1:2)*10)/10 round(var2display(:,3:end)*100)/100] );
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if bAnalysisTemplates == 1
+    
+    [xx mfc] = modfilterbank_debug([1 0],44100,2000); 
+    fnames = {  '84','m04'; ...
+                '72','m22'; ...
+                '60','m30'};
+    for i = 1:3
+    
+        exp1 = sprintf('tmp = load(''template-GN-100-Hz-%s-dB-supra-%s-at-2000-Hz.mat'');',fnames{i,1},fnames{i,2}); % tmp = load('template-GN-100-Hz-84-dB-supra-m04-at-2000-Hz.mat');
+        eval(exp1);
+        templateGN100 = tmp.template;
+        
+        exp1 = sprintf('tmp = load(''template-GN-020-Hz-%s-dB-supra-%s-at-2000-Hz.mat'');',fnames{i,1},fnames{i,2}); % tmp = load('template-GN-020-Hz-84-dB-supra-m04-at-2000-Hz.mat');
+        eval(exp1);
+        templateGN020 = tmp.template;
+        
+        exp1 = sprintf('tmp = load(''template-S-%s-dB-supra-%s-at-2000-Hz.mat'');',fnames{i,1},fnames{i,2}); % tmp = load('template-S-84-dB-supra-m04-at-2000-Hz.mat');
+        eval(exp1);
+        templateS  = tmp.template;
+        
+        M = length(mfc);
+        N = length(templateGN100)/M;
+
+        t = (1:length(templateGN100))/fs;
+        figure;
+        plot(   t, templateS, ...
+                t, templateGN100, ...
+                t, templateGN020 )
+        legend('T','100-Hz GN','20-Hz GN')
+        grid on
+        templateGN100 = reshape(templateGN100,N,M);
+        templateGN020 = reshape(templateGN020,N,M);
+        templateS = reshape(templateS,N,M);
+
+        pGN100(i,:) = sum(templateGN100.*templateGN100)*100;
+        pGN020(i,:) = sum(templateGN020.*templateGN020)*100;
+        pS(i,:)     = sum(templateS.*templateS)*100;
+
+    end
+    
+    figure;
+    subplot(3,1,1)
+    plot(pS(1,:),'bs-.'), hold on, grid on
+    plot(pGN100(1,:),'ko-')
+    plot(pGN020(1,:),'rx-','LineWidth',2)
+    title('Masker level = 84 dB SPL')
+    ha = gca;
+    
+    subplot(3,1,2)
+    plot(pS(2,:),'bs-.'), hold on, grid on
+    plot(pGN100(2,:),'ko-')
+    plot(pGN020(2,:),'rx-','LineWidth',2)
+    title('Masker level = 72 dB SPL')
+    ha(end+1) = gca;
+    
+    subplot(3,1,3)
+    plot(pS(3,:),'bs-.'), hold on, grid on
+    plot(pGN100(3,:),'ko-')
+    plot(pGN020(3,:),'rx-','LineWidth',2)
+    title('Masker level = 60 dB SPL')
+    ha(end+1) = gca;
+    
+    legend('T','100-Hz GN','20-Hz GN')
+    linkaxes(ha,'xy');
+    
+    xlim([0.5 10.5])
+    set(ha,'XTick',1:10);
+    set(ha,'XTickLabel',round(mfc));
+    
+    xlabel('Centre frequency of the band f_c [Hz]')
+    ylabel('Energy [\%]')
 end
 
 if bDiary

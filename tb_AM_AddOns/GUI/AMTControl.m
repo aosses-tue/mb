@@ -339,7 +339,7 @@ catch
     error('Load any data before pressing this button...')
 end
 
-Gain4supra = 10;
+Gain4supra = il_get_value_numericPop(handles.popGainSupra);
 
 nAnalyser = il_get_nAnalyser(handles.popAnalyser);
 
@@ -398,132 +398,47 @@ else
     bDeterministic = 0;
 end
 
-bUseRamp = get(handles.chRampMasker,'value');
+bUseRamp  = get(handles.chRampMasker,'value');
+bUseRampS = get(handles.chRampSignal,'value');
+
 out_1 = [];
 out_2 = [];
 
 sigma = 0;
 warning('Sigma with temporal assignment')
 
+if bUseRamp;  tmp.masker_ramp_ms = 20; else; tmp.masker_ramp_ms = 0; end % ramp time in ms
+if bUseRampS; tmp.signal_ramp_ms = 20; else; tmp.signal_ramp_ms = 0; end % ramp time in ms
+        
 switch nAnalyser
     case 100
         
         insig2supra = From_dB(Gain4supra) * insig2;
-        
         insig1 = handles.audio.insig1orig;
-        if bUseRamp
-            tmp.masker_ramp_ms = 20; % e-3
-        else
-            tmp.masker_ramp_ms = 0; 
-        end
         
         [out_1Mean out_2Mean fs_intrep] = Get_internalrep_stochastic(insig1,insig2supra,fs,'dau1996',sigma,Ntimes,fc2plot_idx,tmp);
         template_test = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
         
     case 101 % Still testing
         
-        error('Continue here')
-        % insigBBN = Wavread(handles.audio.filenameBBN);
-        % handles.audio.insigBBN = insigBBN;
-        % BW = 314;
-        % dBFS = 100;
-        % 
-        % for i = 1:Ntimes
-        % 
-        %     if bDeterministic == 0
-        %         insig1 = il_randomise_insig(handles.audio.insig1);
-        %         insig2supra = il_randomise_insig(handles.audio.insig2);
-        % 
-        %         if get(handles.popStochasticDuration,'value') ~= 7
-        %             N = il_get_value_numericPop(handles.popStochasticDuration);
-        %             insig1 = insig1(1:N*fs);
-        %             insig2supra = insig2supra(1:N*fs);
-        %         end
-        %         r = cos_ramp(length(insig1),fs,200e-3); r=r(:);
-        %         insig1 = insig1.*r;
-        %         insig2supra = insig2supra.*r;
-        %     end
-        % 
-        %     [out_1Mean out_2Mean fs_intrep] = Get_internalrep_stochastic(insig1,insig2supra,fs,'dau1997',sigma,Ntimes,fc2plot_idx);
-        %     template_test = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
-        % 
-        %     [out_1pre , fc, mfc] = dau1997preproc_1Ch(insig1     ,fs,fc);
-        %     [out_2pre , fc, mfc] = dau1997preproc_1Ch(insig2supra,fs,fc);
-        %     fs_intrep = fs;
-        % 
-        %     bPlot = 0;
-        %     if bPlot
-        %         figure;
-        %         opts.bPlot3D = 0;
-        %         opts.XLabel = 'Time [s]';
-        %         opts.YLabel = 'Modulation frequency [Hz]';
-        %         opts.Zlabel = 'Normalised amplitude';
-        %         t = (1:size(out_1pre,1))/fs;
-        %         Mesh(t,mfc,transpose(out_1pre),opts)
-        %     end
-        % 
-        %     if bDeterministic == 1 
-        %         % Deterministic noise
-        %         [out_1 noise] = Add_gaussian_noise_deterministic(out_1pre,mu,sigma); 
-        %         out_2 = out_2pre+noise; % deterministic noise
-        % 
-        %     else
-        %         % 'Running' noise
-        %         [n m] = size(out_1pre);
-        %         out_1 = [out_1 Add_gaussian_noise(out_1pre(:),mu,sigma)]; 
-        %         out_2 = [out_2 Add_gaussian_noise(out_2pre(:),mu,sigma)]; % Add internal noise
-        %     end
-        % 
-        % end
-        % 
-        % tmp.fs = fs;
-        % if bDeterministic
-        % 
-        %     out_1Mean = out_1;
-        %     out_2Mean = out_2;
-        % 
-        % else
-        % 
-        %     out_1Mean = mean( out_1,2 );
-        %     out_2Mean = mean( out_2,2 );
-        % 
-        %     out_1Mean = reshape(out_1Mean,n,m);
-        %     out_2Mean = reshape(out_2Mean,n,m);
-        % 
-        %     bPlot = 0;
-        %     if bPlot
-        %         for i = 1:length(mfc)
-        %             figure;
-        %             plot(out_1Mean(:,i)), hold on;
-        %             plot(out_2Mean(:,i),'r'); grid on
-        %             plot(out_2Mean(:,i)-out_1Mean(:,i),'g')
-        %             title(sprintf('mfc=%.1f Hz',mfc(i)));
-        %         end
-        %     end
-        % end
-        % template_test = Get_template_append(out_1Mean,out_2Mean,fs);
+        insig2supra = From_dB(Gain4supra) * insig2;
+        insig1 = handles.audio.insig1orig;
+        
+        [out_1Mean out_2Mean fs_intrep] = Get_internalrep_stochastic(insig1,insig2supra,fs,'dau1997',sigma,Ntimes,fc2plot_idx,tmp);
+                
+        template_test = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
+        
     case 103
         
         insig2supra = From_dB(Gain4supra) * insig2;
-        
         insig1 = handles.audio.insig1orig;
-        if bUseRamp
-            tmp.masker_ramp_ms = 20; % e-3
-        else
-            tmp.masker_ramp_ms = 0; 
-        end
-        fbstyle = 'modfilterbank'; % default
+        
         [out_1Mean out_2Mean fs_intrep] = Get_internalrep_stochastic(insig1,insig2supra,fs,'jepsen2008-modfilterbank',sigma,Ntimes,fc2plot_idx,tmp);
                 
         template_test = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
         
 	case 104
         
-        if bUseRamp
-            tmp.masker_ramp_ms = 20; % e-3
-        else
-            tmp.masker_ramp_ms = 0; 
-        end
         insig2supra = From_dB(Gain4supra) * insig2;
         fbstyle = 'lowpass'; 
         
@@ -607,15 +522,18 @@ switch nAnalyser
         
     case 101
         figure;
-        opts.bPlot3D = 0;
-        opts.XLabel = 'Time [s]';
-        opts.YLabel = 'Modulation frequency [Hz]';
-        opts.Zlabel = 'Normalised amplitude';
-        t = (1:size(template,1))/fs;
-        warning('variable t only temporally defined')
-        % Mesh(t,mfc,transpose(out_2Mean-out_1Mean),opts)
-        opts.YLim = [min(min(abs(template))) max(max(abs(template)))];
-        Mesh(t,mfc,transpose( template ),opts)
+        plot(t,template); grid on
+        xlabel(sprintf('Time [s]\nFollow the instructions in the command window to continue with the AFC simulation'))
+        % figure;
+        % opts.bPlot3D = 0;
+        % opts.XLabel = 'Time [s]';
+        % opts.YLabel = 'Modulation frequency [Hz]';
+        % opts.Zlabel = 'Normalised amplitude';
+        % t = (1:size(template,1))/fs;
+        % warning('variable t only temporally defined')
+        % % Mesh(t,mfc,transpose(out_2Mean-out_1Mean),opts)
+        % opts.YLim = [min(min(abs(template))) max(max(abs(template)))];
+        % Mesh(t,mfc,transpose( template ),opts)
         
     case {103,104}
         figure;
@@ -628,6 +546,11 @@ handles.audio.bDeterministic= bDeterministic;
 % handles.audio.fc2plot_idx   = fc2plot_idx;
 handles.audio.Ntimes        = Ntimes;
 handles.audio.fs_intrep     = fs_intrep;
+
+bSave2workspace = get(handles.chSaveTemplate,'value');
+if bSave2workspace
+    assignin ('base','template',template)
+end
 
 guidata(hObject,handles)
         
@@ -714,11 +637,15 @@ switch nAnalyser
 end
 
 Threshold = [];
-bUseRamp = get(handles.chRampMasker,'value');
-if bUseRamp
-    rampdn = 20; % e-3 s
-else
-    rampdn = 0;
+bUseRamp       = get(handles.chRampMasker,'value');
+bUseRampSignal = get(handles.chRampSignal,'value');
+
+if bUseRamp;       rampdn = 20;     end % ramps in ms
+if bUseRampSignal; rampsl = rampdn; end
+
+if bUseRampSignal
+    fprintf('Introducing %.0f-ms ramps into test signals\n',rampsl);
+    insig2 = Do_cos_ramp(insig2,fs,rampsl);
 end
 
 for k = 1:Nsim
@@ -741,9 +668,15 @@ for k = 1:Nsim
         insig1s2 = insig1;
     end
     
-    insig1s0 = Do_cos_ramp( insig1s0( 1:length(insig2) ), fs, rampdn);
-    insig1s1 = Do_cos_ramp( insig1s1( 1:length(insig2) ), fs, rampdn);
-    insig1s2 = Do_cos_ramp( insig1s2( 1:length(insig2) ), fs, rampdn);
+    insig1s0 = insig1s0( 1:length(insig2) );
+    insig1s1 = insig1s1( 1:length(insig2) );
+    insig1s2 = insig1s2( 1:length(insig2) );
+    if bUseRamp
+        if k==1; fprintf('Introducing %.0f-ms ramps into maskers\n',rampdn); end
+        insig1s0 = Do_cos_ramp(insig1s0, fs, rampdn);
+        insig1s1 = Do_cos_ramp(insig1s1, fs, rampdn);
+        insig1s2 = Do_cos_ramp(insig1s2, fs, rampdn);
+    end
         
     Level_current   = Level_start;
 
@@ -954,11 +887,7 @@ for k = 1:Nsim
         grid on
     end
     
-    disp('')
-
 end
-
-disp('')
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 5. Calculations: 
@@ -3179,3 +3108,44 @@ function chRampMasker_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of chRampMasker
+
+
+% --- Executes on button press in chRampSignal.
+function chRampSignal_Callback(hObject, eventdata, handles)
+% hObject    handle to chRampSignal (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chRampSignal
+
+
+% --- Executes on selection change in popGainSupra.
+function popGainSupra_Callback(hObject, eventdata, handles)
+% hObject    handle to popGainSupra (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns popGainSupra contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popGainSupra
+
+
+% --- Executes during object creation, after setting all properties.
+function popGainSupra_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popGainSupra (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in chSaveTemplate.
+function chSaveTemplate_Callback(hObject, eventdata, handles)
+% hObject    handle to chSaveTemplate (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chSaveTemplate
