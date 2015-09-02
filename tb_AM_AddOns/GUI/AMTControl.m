@@ -586,6 +586,8 @@ idxobs = [s1 s2];
 Ntimes = handles.audio.Ntimes; %
 Nsim = il_get_value_numericPop(handles.popNsim);
 
+masker_interval_avg = [];
+
 try
     insig1 = handles.audio.insig1;
     insig2 = handles.audio.insig2;
@@ -650,6 +652,7 @@ end
 
 for k = 1:Nsim
     
+    Nmaskers = 0;
     Level_step = Level_step_i;
     if k > 1
         fprintf('Running simulation: %.0f of %.0f. Last computed threshold=%.2f [dB, relative]\n',k,Nsim,Threshold(k-1));
@@ -684,40 +687,39 @@ for k = 1:Nsim
     Reversals = [];
 
     dprime     = [];
-    dprimetmp = [];
-    dprimetmpsign = [];
-    changetrend = -1; % decreasing trend is the normal behaviour
     
     nWrong      = 0;
     nCorrect    = 1;
     nReversal   = 0;
     bSucceeded  = 1; % not failed
     
+    error('Get averaged masker alone from template determination...')
+    
     while (nReversal < Reversals_stop) & (bSucceeded ==  1) % up to line 765
 
-        Gain2apply = From_dB(Level_current);
-        insig2test = Gain2apply * insig2;
-        interval1 = insig1s0; % Only noise
-        interval2 = insig1s1 + insig2test; % Current signal
-        interval1s2 = insig1s2;
-            
+        Gain2apply  = From_dB(Level_current);
+        insig2test  = Gain2apply * insig2;
+        interval1   = insig1s0; % Only noise
+        interval1s2 = insig1s2; % Only noise 2
+        interval2 = insig1s1 + insig2test; % Noise + current signal
+                    
         switch nAnalyser
             case {100, 101, 103, 104}
 
                 if nAnalyser == 100;
                     if bMultiChannel
-                        [out_interval1 , fc] = dau1996preproc(interval1,fs);
-                        [out_interval2 , fc] = dau1996preproc(interval2,fs);
+                        [out_interval1  , fc] = dau1996preproc(interval1,fs);
                         [out_interval1s2, fc] = dau1996preproc(interval1s2,fs);
+                        [out_interval2  , fc] = dau1996preproc(interval2,fs);
                         
-                        out_interval1 = out_interval1(:,fc2plot_idx);
-                        out_interval2 = out_interval2(:,fc2plot_idx);
+                        out_interval1   = out_interval1(:,fc2plot_idx);
                         out_interval1s2 = out_interval1s2(:,fc2plot_idx);
+                        out_interval2   = out_interval2(:,fc2plot_idx);
                     end
                     if bSingleChannel
                         [out_interval1] = dau1996preproc_1Ch(interval1,fs,fc);
-                        [out_interval2] = dau1996preproc_1Ch(interval2,fs,fc);
                         [out_interval1s2] = dau1996preproc_1Ch(interval1s2,fs,fc);
+                        [out_interval2] = dau1996preproc_1Ch(interval2,fs,fc);
                     end
                     
                 elseif nAnalyser == 101
@@ -727,21 +729,21 @@ for k = 1:Nsim
                 elseif nAnalyser == 103
                     if bMultiChannel
                         [out_interval1] = jepsen2008preproc_multi(interval1,fs,fcmin,fcmax,'resample_intrep');
-                        [out_interval2] = jepsen2008preproc_multi(interval2,fs,fcmin,fcmax,'resample_intrep');
                         [out_interval1s2] = jepsen2008preproc_multi(interval1s2,fs,fcmin,fcmax,'resample_intrep');
+                        [out_interval2] = jepsen2008preproc_multi(interval2,fs,fcmin,fcmax,'resample_intrep');
                         
                         out_interval1   = il_pool_in_one_column(out_interval1);
-                        out_interval2   = il_pool_in_one_column(out_interval2);
                         out_interval1s2 = il_pool_in_one_column(out_interval1s2);
+                        out_interval2   = il_pool_in_one_column(out_interval2);
                     end
                     if bSingleChannel
                         [out_interval1] = jepsen2008preproc_1Ch(interval1,fs,fc);
-                        [out_interval2] = jepsen2008preproc_1Ch(interval2,fs,fc);
                         [out_interval1s2] = jepsen2008preproc_1Ch(interval1s2,fs,fc);
+                        [out_interval2] = jepsen2008preproc_1Ch(interval2,fs,fc);
                         
                         out_interval1   = il_pool_in_one_column(out_interval1);
-                        out_interval2   = il_pool_in_one_column(out_interval2);
                         out_interval1s2 = il_pool_in_one_column(out_interval1s2);
+                        out_interval2   = il_pool_in_one_column(out_interval2);
                     end
                     
                 elseif nAnalyser == 104
@@ -750,14 +752,15 @@ for k = 1:Nsim
                     end
                     if bSingleChannel
                         [out_interval1] = jepsen2008preproc_1Ch(interval1,fs,fc,'lowpass');
-                        [out_interval2] = jepsen2008preproc_1Ch(interval2,fs,fc,'lowpass');
                         [out_interval1s2] = jepsen2008preproc_1Ch(interval1s2,fs,fc,'lowpass');
+                        [out_interval2] = jepsen2008preproc_1Ch(interval2,fs,fc,'lowpass');
+                        
                     end
                 end
                 
                 out_interval1 = Add_gaussian_noise(out_interval1,mu,sigma); % Add internal noise
-                out_interval2 = Add_gaussian_noise(out_interval2,mu,sigma); % Add internal noise
                 out_interval1s2 = Add_gaussian_noise(out_interval1s2,mu,sigma);
+                out_interval2 = Add_gaussian_noise(out_interval2,mu,sigma); % Add internal noise
                 
                 [a b] = size(template);
                 % one audio-frequency band but all the modulation filterbanks:
@@ -773,44 +776,43 @@ for k = 1:Nsim
                 end
         end
         
+        Nmaskers_c = Nmaskers;
+        Nmaskers = Nmaskers + 2;
+        if Nmaskers_c > 0
+            masker_interval_avg = (masker_interval_avg*Nmaskers_c + out_interval1 + out_interval1s2 )/Nmaskers;
+        else
+            masker_interval_avg = (                                 out_interval1 + out_interval1s2 )/Nmaskers;
+        end
+        
         stats1.mean = mean(sigint1(:));
         stats2.mean = mean(sigint2(:));
         dprime(end+1,1) = (stats2.mean - stats1.mean )/sigma;
 
         try
-            tmp_mue1 = optimaldetector(  sigint1,template);
-            tmp_mue2 = optimaldetector(sigint1s2,template);
+            decision(1) = optimaldetector(  sigint1-masker_interval_avg,template);
+            decision(2) = optimaldetector(sigint1s2-masker_interval_avg,template);
         catch
             error('continue here')
-            tmp_mue1 = optimaldetector(  sigint1,template(idxobs(1):idxobs(2),:));
-            tmp_mue2 = optimaldetector(sigint1s2,template(idxobs(1):idxobs(2),:));
+            decision(1) = optimaldetector(  sigint1-masker_interval_avg,template(idxobs(1):idxobs(2),:));
+            decision(2) = optimaldetector(sigint1s2-masker_interval_avg,template(idxobs(1):idxobs(2),:));
         end
-        decision(1) = max([tmp_mue1 tmp_mue2]);
-        
-        decsign = sign([tmp_mue1 tmp_mue2]);
-        [dec2m idxtmp] = max([abs(tmp_mue1) abs(tmp_mue2)]); 
-        % dec2m = dec2m*decsign(idxtmp);
-        
-        try
-            decision(2) = optimaldetector(sigint2,template);
-        catch
-            error('continue here')
-            decision(2) = optimaldetector(sigint2,template(idxobs(1):idxobs(2),:));
-        end
-        
-        finaldecision = ( decision(2)-decision(1) )/sigma;
-        
-        fdec = (decision(2)-dec2m)/sigma;
-        dprimetmp(end+1) = finaldecision;
                 
-        if abs( dprime(end) ) < 1.26
-            disp('');
+        try
+            decision(3) = optimaldetector(sigint2-masker_interval_avg,template);
+        catch
+            error('continue here')
+            decision(3) = optimaldetector(sigint2-masker_interval_avg,template(idxobs(1):idxobs(2),:));
         end
-
+        
+        % The following was took out on 02/09/2015, because it is only 
+        % accounting the internal variability, so it is not completely correct:
+        % % finaldecision = ( decision(3)-max(decision(1),decision(2)) )/sigma; 
+        
+        [maxvalue, idx_decision] = max(decision);
+        
         Staircase = [Staircase; Level_current];
         
-        % if dprime(end) >= 1.26
-        if (abs(dprimetmp(end)) >= 1.26) % & (bHasChanged == 0)
+        if idx_decision == 3 % (abs(dprimetmp(end)) >= 1.26) 
             if nCorrect == 0
 
                 nReversal = nReversal + 1;
@@ -875,6 +877,8 @@ for k = 1:Nsim
         title(sprintf('Average threshold median (L25,L75) = %.2f dB (%.2f, %.2f)',prctile(Threshold,50),prctile(Threshold,25),prctile(Threshold,75)));
         grid on
     end
+    
+    masker_interval_avg = []; % make sure it is deleted
     
 end
 
