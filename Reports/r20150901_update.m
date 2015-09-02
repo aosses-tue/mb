@@ -399,74 +399,130 @@ end
 if bAnalysisTemplates == 1
     
     [xx mfc] = modfilterbank_debug([1 0],44100,2000); 
-    fnames = {  '84','m04'; ...
-                '72','m22'; ...
-                '60','m30'};
-    for i = 1:3
     
-        exp1 = sprintf('tmp = load(''template-GN-100-Hz-%s-dB-supra-%s-at-2000-Hz.mat'');',fnames{i,1},fnames{i,2}); % tmp = load('template-GN-100-Hz-84-dB-supra-m04-at-2000-Hz.mat');
+	[hFig data] = exp_heijden1995;
+    
+    bListSupra = 1; % this was done to know which where the suprathreshold levels, 10 dB above
+    if bListSupra
+        disp('Supra levels: 60,72,84 dB')
+        supradiff = 10;
+        levSupra = data.Thresholds + supradiff;
+        
+        for i = 1:5
+            fprintf('%s: (%.0f, %.0f, %.0f)\n',data.signaltypes{i},levSupra(i,1),levSupra(i,3),levSupra(i,5));
+        end
+    end
+    
+    % fnames = {  '84','m04','m04','m04'; ... % for values computed on 02/09/2015
+    %             '72','m22','m22','m22'; ...
+    %             '60','m30','m30','m30'};
+    
+    %                 T , 100-GN,20-GN,100-MN,20-MN
+    fnames = {  '84','m08','m21','m25','m29','m34'; ...
+                '72','m26','m35','m38','m39','m41'; ...
+                '60','m36','m38','m38','m38','m38'};
+    iTimes = size(fnames,1);
+    h1 = [];
+    
+    for i = 1:iTimes
+    
+        idxtone = 3;
+        exp1 = sprintf('tmp = load(''template-GN-100-Hz-%s-dB-supra-%s-at-2000-Hz.mat'');',fnames{i,1},fnames{i,idxtone}); % tmp = load('template-GN-100-Hz-84-dB-supra-m04-at-2000-Hz.mat');
         eval(exp1);
         templateGN100 = tmp.template;
         
-        exp1 = sprintf('tmp = load(''template-GN-020-Hz-%s-dB-supra-%s-at-2000-Hz.mat'');',fnames{i,1},fnames{i,2}); % tmp = load('template-GN-020-Hz-84-dB-supra-m04-at-2000-Hz.mat');
+        idxtone = 4;
+        exp1 = sprintf('tmp = load(''template-GN-020-Hz-%s-dB-supra-%s-at-2000-Hz.mat'');',fnames{i,1},fnames{i,idxtone}); % tmp = load('template-GN-020-Hz-84-dB-supra-m04-at-2000-Hz.mat');
         eval(exp1);
         templateGN020 = tmp.template;
         
-        exp1 = sprintf('tmp = load(''template-S-%s-dB-supra-%s-at-2000-Hz.mat'');',fnames{i,1},fnames{i,2}); % tmp = load('template-S-84-dB-supra-m04-at-2000-Hz.mat');
+        idxtone = 2;
+        exp1 = sprintf('tmp = load(''template-S-%s-dB-supra-%s-at-2000-Hz.mat'');',fnames{i,1},fnames{i,idxtone}); % tmp = load('template-S-84-dB-supra-m04-at-2000-Hz.mat');
         eval(exp1);
         templateS  = tmp.template;
+        
+        idxtone = 5;
+        exp1 = sprintf('tmp = load(''template-MN-100-Hz-%s-dB-supra-%s-at-2000-Hz.mat'');',fnames{i,1},fnames{i,idxtone}); % tmp = load('template-GN-100-Hz-84-dB-supra-m04-at-2000-Hz.mat');
+        eval(exp1);
+        templateMN100 = tmp.template;
+        
+        idxtone = 6;
+        exp1 = sprintf('tmp = load(''template-MN-020-Hz-%s-dB-supra-%s-at-2000-Hz.mat'');',fnames{i,1},fnames{i,idxtone}); % tmp = load('template-GN-020-Hz-84-dB-supra-m04-at-2000-Hz.mat');
+        eval(exp1);
+        templateMN020 = tmp.template;
         
         M = length(mfc);
         N = length(templateGN100)/M;
 
         t = (1:length(templateGN100))/fs;
+        % figure;
+        % plot(   t, templateS, ...
+        %         t, templateGN100, ...
+        %         t, templateGN020, ...
+        %         t, templateMN100, ...
+        %         t, templateMN020 )
+        % legend('T','100-Hz GN','20-Hz GN','100-Hz MN','20-Hz MN')
         figure;
+        subplot(1,2,1)
         plot(   t, templateS, ...
                 t, templateGN100, ...
                 t, templateGN020 )
         legend('T','100-Hz GN','20-Hz GN')
+        
+        subplot(1,2,2)
+        plot(   t, templateS, ...
+                t, templateMN100, ...
+                t, templateMN020 )
+        legend('T','100-Hz MN','20-Hz MN')
+        h1(end+1) = gcf;
+        
         grid on
         templateGN100 = reshape(templateGN100,N,M);
         templateGN020 = reshape(templateGN020,N,M);
         templateS = reshape(templateS,N,M);
-
+        templateMN100 = reshape(templateMN100,N,M);
+        templateMN020 = reshape(templateMN020,N,M);
+        
         pGN100(i,:) = sum(templateGN100.*templateGN100)*100;
         pGN020(i,:) = sum(templateGN020.*templateGN020)*100;
         pS(i,:)     = sum(templateS.*templateS)*100;
+        pMN100(i,:) = sum(templateMN100.*templateMN100)*100;
+        pMN020(i,:) = sum(templateMN020.*templateMN020)*100;
 
     end
     
+    plotOpts.bAddVertical = 0;
+    hh = Figure2paperfigureT2(h1,3,2,plotOpts);
+    
+    
+    idxlvlSupra = [5 3 1];
+    ha = [];
     figure;
-    subplot(3,1,1)
-    plot(pS(1,:),'bs-.'), hold on, grid on
-    plot(pGN100(1,:),'ko-')
-    plot(pGN020(1,:),'rx-','LineWidth',2)
-    title('Masker level = 84 dB SPL')
-    ha = gca;
-    
-    subplot(3,1,2)
-    plot(pS(2,:),'bs-.'), hold on, grid on
-    plot(pGN100(2,:),'ko-')
-    plot(pGN020(2,:),'rx-','LineWidth',2)
-    title('Masker level = 72 dB SPL')
-    ha(end+1) = gca;
-    
-    subplot(3,1,3)
-    plot(pS(3,:),'bs-.'), hold on, grid on
-    plot(pGN100(3,:),'ko-')
-    plot(pGN020(3,:),'rx-','LineWidth',2)
-    title('Masker level = 60 dB SPL')
-    ha(end+1) = gca;
-    
-    legend('T','100-Hz GN','20-Hz GN')
+    for i = 1:iTimes
+        subplot(3,1,i)
+        plot(pS(i,:),'bs-'), hold on, grid on
+        plot(pGN100(i,:),'mo-.','LineWidth',1.5)
+        plot(pGN020(i,:),'ro-','LineWidth',2,'MarkerFaceColor','r')
+        plot(pMN100(i,:),'k>-')
+        plot(pMN020(i,:),'k<-','LineWidth',2,'MarkerFaceColor','k')
+        
+        title(sprintf('Masker level = %s dB SPL, test level at suprathreshold: (%.0f,%.0f,%.0f,%.0f,%.0f) dB',fnames{i,1},levSupra(:,idxlvlSupra(i)))) %,levSupra(i,3),levSupra(i,5)))
+        if i == 1
+            legend(data.signaltypes,'Location','NorthEast') % legend('T','100-Hz GN','20-Hz GN')
+        end
+        ha(end+1) = gca;
+        ylabel('Energy [\%]')
+
+    end
     linkaxes(ha,'xy');
-    
+    ylim([0 45])
     xlim([0.5 10.5])
     set(ha,'XTick',1:10);
     set(ha,'XTickLabel',round(mfc));
-    
+
     xlabel('Centre frequency of the band f_c [Hz]')
-    ylabel('Energy [\%]')
+    
+        
 end
 
 if bDiary

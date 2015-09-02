@@ -32,6 +32,9 @@ plotOpts = ef(plotOpts,'I_FontSize',14);
 plotOpts = ef(plotOpts,'I_Width'   , 11);
 plotOpts = ef(plotOpts,'I_Height'  , 10);
 plotOpts = ef(plotOpts,'I_KeepColor',1);
+plotOpts = ef(plotOpts,'bAddVertical',1);
+
+bAddVertical = plotOpts.bAddVertical;
 
 I_FontSize = plotOpts.I_FontSize;
 I_Width    = plotOpts.I_Width;
@@ -57,7 +60,11 @@ hM.I_Handles     = nHandle;
 hM.prepareAllFigures;
 hM.arrayAddedHandles = 1;
 
-add2ArraySubplotVer(hM);
+if bAddVertical
+    add2ArraySubplotVer(hM);
+else
+    add2ArraySubplotHor(hM);
+end
 
 hOutput = gcf;
 

@@ -1,5 +1,5 @@
-function hFig = exp_heijden1995(fs,bParts)
-% function hFig = exp_heijden1995(fs,bParts)
+function [hFig data] = exp_heijden1995(fs,bParts)
+% function [hFig data] = exp_heijden1995(fs,bParts)
 %
 % 1. Description:
 %
@@ -7,9 +7,13 @@ function hFig = exp_heijden1995(fs,bParts)
 %       % To generate Figures 1 (no error bars) and 2 of Heijden1995. The 
 %       % figure handles are returned in hFig.
 %       fs      = 44100; 
-%       bParts  = [0 1]; 
+%       bParts  = [0 1 0]; 
 %       hFig = exp_heijden1995(fs,bParts);
 % 
+%       fs = 44100;
+%       bParts  = [0 0 1]; 
+%       hFig = exp_heijden1995(fs,bParts);
+%
 % 3. Additional info:
 %       Tested cross-platform: Yes
 %
@@ -24,11 +28,17 @@ if nargin < 1
 end
 
 if nargin < 2
-    bParts = [0 1];
+    bParts = [0 1 0];
+end
+
+if nargout == 2
+    bParts(2) = 1; 
 end
 
 bGenSignals         = bParts(1);
 bGenOriginalPlots   = bParts(2);
+bPlotSimulation     = bParts(3);
+
 hFig = [];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -147,9 +157,9 @@ if bGenOriginalPlots
     testLevels = 60:6:84;
     Tr = [  14 23 36 54 65.5; ...     % Sine tone masker
             12 18 27 40 52.5; ...     % 100-Hz GN
-            12 16 23.5 36.5 49; ... % 20-Hz GN
-            12 17 23 35 45; ...     % 100-Hz MN
-            11.5 14 21 29 40];      % 20-Hz MN
+            12 16 23.5 36.5 49; ...   % 20-Hz GN
+            12 17 23 35 45; ...       % 100-Hz MN
+            11.5  14 21 29 40];       % 20-Hz MN
 	
 	labels = {'T','100-Hz GN','20-Hz GN','100-Hz MN','20-Hz MN'};
     
@@ -179,6 +189,58 @@ if bGenOriginalPlots
     xlim([59 86])
     hFig(end+1) = gcf;
     set(gca,'FontSize',FontSize);
+    
+    data.Thresholds = Tr;
+    data.signaltypes = labels;
+    data.testLevels = testLevels;
+end
+
+if bPlotSimulation
+    
+    FontSize = 14;
+    
+    testLevels = 60:12:84;
+    Tr = [  -27.5 -24.5 -16; ...   % Sine tone masker
+            -34.8 -26.1 -22.8; ...   % 100-Hz GN
+            -41.5  -32  -26; ...   % 20-Hz GN
+            -41.9  -28  -25; ...     % 100-Hz MN
+            -43.5  -31.5 -33.5];      % 20-Hz MN
+	Tr(:,1) = Tr(:,1) + 60;
+    Tr(:,2) = Tr(:,2) + 72;
+    Tr(:,3) = Tr(:,3) + 84;
+    
+	labels = {'T','100-Hz GN','20-Hz GN','100-Hz MN','20-Hz MN'};
+    
+	figure;
+    plot(testLevels,Tr(1,:),'bo-','LineWidth',1), hold on
+    plot(testLevels,Tr(2,:),'rs--','LineWidth',2)
+    plot(testLevels,Tr(3,:),'ks-.','LineWidth',1)
+    plot(testLevels,Tr(4,:),'r>-.','LineWidth',2)
+    plot(testLevels,Tr(5,:),'k>-','LineWidth',1)
+    legend(labels,'Location','NorthWest')
+    grid on
+    xlabel('Masker level [dB SPL]','FontSize',FontSize)
+    ylabel('Threshold [dB SPL]','FontSize',FontSize)
+    xlim([59 86])
+    hFig(end+1) = gcf;
+    set(gca,'FontSize',FontSize);
+    
+    figure;
+    plot(testLevels,Tr(1,:)-Tr(2,:),'rs--','LineWidth',2), hold on
+    plot(testLevels,Tr(1,:)-Tr(3,:),'ks-.','LineWidth',1)
+    plot(testLevels,Tr(1,:)-Tr(4,:),'r>-.','LineWidth',2)
+    plot(testLevels,Tr(1,:)-Tr(5,:),'k>-','LineWidth',1)
+    legend(labels{2:end},'Location','NorthWest')
+    grid on
+    xlabel('Masker level [dB SPL]','FontSize',FontSize)
+    ylabel('Masking release [dB]','FontSize',FontSize)
+    xlim([59 86])
+    hFig(end+1) = gcf;
+    set(gca,'FontSize',FontSize);
+    
+    data.Thresholds = Tr;
+    data.signaltypes = labels;
+    data.testLevels = testLevels;
     
 end
 

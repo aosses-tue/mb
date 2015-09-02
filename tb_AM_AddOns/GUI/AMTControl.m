@@ -567,7 +567,8 @@ nAnalyser = il_get_nAnalyser(handles.popAnalyser);
 if nAnalyser == 101
     Level_start = 0; % above test-signal level
 else
-    Level_start = 10;
+    % Level_start = 10;
+    Level_start = il_get_value_numericPop(handles.popGainSupra);
 end
 
 Level_step_i    = il_get_value_numericPop(handles.popStepdB);
@@ -631,7 +632,6 @@ switch nAnalyser
         else
             bSingleChannel = 0;
             bMultiChannel = 1;
-            % fc2plot_idx = 1:length(fc2plot_idx);
         end
     
 end
@@ -685,6 +685,8 @@ for k = 1:Nsim
 
     dprime     = [];
     dprimetmp = [];
+    dprimetmpsign = [];
+    changetrend = -1; % decreasing trend is the normal behaviour
     
     nWrong      = 0;
     nCorrect    = 1;
@@ -693,25 +695,12 @@ for k = 1:Nsim
     
     while (nReversal < Reversals_stop) & (bSucceeded ==  1) % up to line 765
 
-        % if nAnalyser ~= 101
-            
         Gain2apply = From_dB(Level_current);
         insig2test = Gain2apply * insig2;
         interval1 = insig1s0; % Only noise
         interval2 = insig1s1 + insig2test; % Current signal
         interval1s2 = insig1s2;
             
-        % else
-        %     BW = 314;
-        %     fc = 5000;
-        %     dBFS = 100;
-        %     Fmod = 5;
-        %     depthDau = Level_current;
-        %     ModIndex = d2m(depthDau,'dau');
-        %     insigtmp = handles.audio.insigBBN;
-        %     [interval1 interval2] = il_random_sample_mod_experiment(insigtmp,fs,fc,BW,Fmod,ModIndex,dBFS);
-        % end
-
         switch nAnalyser
             case {100, 101, 103, 104}
 
@@ -813,16 +802,15 @@ for k = 1:Nsim
         
         fdec = (decision(2)-dec2m)/sigma;
         dprimetmp(end+1) = finaldecision;
-        
+                
         if abs( dprime(end) ) < 1.26
             disp('');
         end
 
         Staircase = [Staircase; Level_current];
-        % error('continue here')
         
         % if dprime(end) >= 1.26
-        if dprimetmp(end) >= 1.26
+        if (abs(dprimetmp(end)) >= 1.26) % & (bHasChanged == 0)
             if nCorrect == 0
 
                 nReversal = nReversal + 1;
@@ -834,8 +822,9 @@ for k = 1:Nsim
 
             end
             nCorrect = 1;
+            
             Level_current = Level_current - Level_step; % we make it more difficult
-
+            
         else % masker is chosen
             nWrong = nWrong+1;
             if nWrong == 2
