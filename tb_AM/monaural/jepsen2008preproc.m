@@ -85,7 +85,7 @@ if ~isnumeric(fs) || ~isscalar(fs) || fs<=0
 end;
 
 definput.import        ={'drnl_CASP' ,'ihcenvelope','adaptloop'};
-definput.importdefaults={'jepsen2008','ihc_jepsen' ,'adt_dau'};
+definput.importdefaults={'jepsen2008','ihc_jepsen' ,'adt_jepsen'};
 definput.keyvals.subfs=[];
 
 [flags,keyvals]  = ltfatarghelper({'flow','fhigh'},definput,varargin);
@@ -118,6 +118,10 @@ outsig = outsig.^2;
 
 %% 5. non-linear adaptation loops
 outsig = adaptloop(outsig,fs,'argimport',flags,keyvals);
+
+if flags.do_absolutethreshold
+    warning('absolute threshold only implemented in 1Ch version')
+end
 
 %% 6. Downsampling (of the internal representations)
 if flags.do_resample_intrep

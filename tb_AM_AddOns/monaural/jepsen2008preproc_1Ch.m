@@ -85,7 +85,7 @@ if ~isnumeric(fs) || ~isscalar(fs) || fs<=0
 end;
 
 definput.import        ={'drnl_CASP' ,'ihcenvelope','adaptloop'};
-definput.importdefaults={'jepsen2008','ihc_jepsen' ,'adt_dau'};
+definput.importdefaults={'jepsen2008','ihc_jepsen' ,'adt_jepsen'};
 definput.keyvals.subfs=[];
 
 [flags,keyvals]  = ltfatarghelper({'flow','fhigh'},definput,varargin);
@@ -117,6 +117,15 @@ outsig = gaindb(outsig,50); % linear gain to fit adaptation loops operating poin
 
 %% 4. Expansion stage
 outsig = outsig.^2;
+
+if flags.do_absolutethreshold
+    N = size(outsig,1);
+    M = size(outsig,2);
+    noise = rand(N,M)-0.5; 
+    noise = setdbspl(noise,keyvals.intnoise_dB); % rmsdb(noise) + 100;
+    
+    outsig = outsig + noise;
+end
 
 %% 5. non-linear adaptation loops
 outsig = adaptloop(outsig,fs,'argimport',flags,keyvals);

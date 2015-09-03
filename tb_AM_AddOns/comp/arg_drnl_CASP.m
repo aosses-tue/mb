@@ -45,6 +45,7 @@ definput.keyvals.nlin_c = [log10(.25) 0];
 definput.flags.outerear         = {'outerear','noouterear'};
 definput.flags.middleear        = {'middleear','jepsenmiddleear','nomiddleear'};
 definput.flags.path             = {'bothparts','linonly','nlinonly'};
+definput.flags.absolutethreshold = {'noabsolutethreshold','absolutethreshold'};
 definput.flags.ihctype          = {'ihc_jepsen'};
 definput.flags.modfiltertype    = {'modfilterbank','lowpass'};
 definput.flags.resample_intrep  = {'noresample_intrep','resample_intrep'};

@@ -5,11 +5,16 @@ function [out_1avg out_2avg fs_intrep outs] = Get_internalrep_stochastic(in_mask
 %       Obtains an averaged internal representation of the signal in_signal_pre
 %       superimposed on a random selected sample of the buffered noise in_masker_pre.
 %       
+%     Input parameters:
 %       in_masker_pre - buffered 'noise'
 %       in_signal_pre - current test signal
 % 
-%           ir1 - related to 'Noise alone'
-%           ir2 - related to 'Suprathreshold signal' (signal well above threshold)
+%     Output parameters:
+%       out_1avg corresponds to the averaged internal representation (but
+%           without internal noise) of the Masker alone interval.
+%       out_2avg corresponds to the averaged internal representation (but
+%           without internal noise) of the Masker plus signal interval.
+% 
 %           setup.fs - Sampling frequency: relevant for the normalisation process.
 % 
 % 2. Stand-alone example:
@@ -24,7 +29,7 @@ function [out_1avg out_2avg fs_intrep outs] = Get_internalrep_stochastic(in_mask
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 11/08/2015
 % Last update on: 01/09/2015 
-% Last use on   : 01/09/2015 
+% Last use on   : 02/09/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 8
@@ -65,6 +70,11 @@ end
 
 N = size(in_signal_pre,1);
 mu = 0;
+bAvgMethod = 2; % more optimised average method (not generating column array)
+
+if bAvgMethod == 2
+    Nmaskers = 0;
+end
 
 out_1 = [];
 out_2 = [];
@@ -113,6 +123,10 @@ for i = 1:Ntimes
         in_masker_s1 = Do_cos_ramp( in_masker_s1,fs,masker_ramp_ms );
     end
     
+    if sigma ~= 0
+        error('Sigma different of zero being used');
+    end
+    
     switch model
         case 'dau1996'
             
@@ -150,10 +164,26 @@ for i = 1:Ntimes
                 fs_intrep = fs;
             end
             
-            % 'Running' noise
             [n m] = size(out_1pre);
-            out_1 = [out_1 Add_gaussian_noise(out_1pre(:),mu,sigma)]; 
-            out_2 = [out_2 Add_gaussian_noise(out_2pre(:),mu,sigma)]; % Add internal noise
+            
+            if bAvgMethod == 1
+                
+                out_1 = [out_1 Add_gaussian_noise(out_1pre(:),mu,sigma)]; 
+                out_2 = [out_2 Add_gaussian_noise(out_2pre(:),mu,sigma)]; % Add internal noise
+                
+            elseif bAvgMethod == 2
+                
+                Nmaskers_c = Nmaskers;
+                Nmaskers = Nmaskers + 1;
+                if Nmaskers_c > 0
+                    out_1 = (out_1*Nmaskers_c + out_1pre(:) )/Nmaskers;
+                    out_2 = (out_2*Nmaskers_c + out_2pre(:) )/Nmaskers;
+                else
+                    out_1 = (                   out_1pre(:) )/Nmaskers;
+                    out_2 = (                   out_2pre(:) )/Nmaskers;
+                end
+                
+            end
             
         case {'jepsen2008','jepsen2008-modfilterbank','jepsen2008-lowpass'}
             
@@ -181,8 +211,25 @@ for i = 1:Ntimes
             
             % 'Running' noise
             [n m] = size(out_1pre);
-            out_1 = [out_1 Add_gaussian_noise(out_1pre(:),mu,sigma)]; 
-            out_2 = [out_2 Add_gaussian_noise(out_2pre(:),mu,sigma)]; % Add internal noise
+            
+            if bAvgMethod == 1
+                
+                out_1 = [out_1 Add_gaussian_noise(out_1pre(:),mu,sigma)]; 
+                out_2 = [out_2 Add_gaussian_noise(out_2pre(:),mu,sigma)]; % Add internal noise
+                
+            elseif bAvgMethod == 2
+                
+                Nmaskers_c = Nmaskers;
+                Nmaskers = Nmaskers + 1;
+                if Nmaskers_c > 0
+                    out_1 = (out_1*Nmaskers_c + out_1pre(:) )/Nmaskers;
+                    out_2 = (out_2*Nmaskers_c + out_2pre(:) )/Nmaskers;
+                else
+                    out_1 = (                   out_1pre(:) )/Nmaskers;
+                    out_2 = (                   out_2pre(:) )/Nmaskers;
+                end
+                
+            end
             
         otherwise
             error('Model not added yet')
@@ -190,8 +237,13 @@ for i = 1:Ntimes
     
 end
    
-out_1avg = mean(out_1,2);
-out_2avg = mean(out_2,2);
+if bAvgMethod == 1
+    out_1avg = mean(out_1,2);
+    out_2avg = mean(out_2,2);
+else
+    out_1avg = out_1; % average should not be strictly necessary...
+    out_2avg = out_2;
+end
 
 try 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -207,6 +259,8 @@ catch
 end
 
 outs.fc = fc;
+outs.inM = in_masker_s0;
+outs.inMT= in_masker_s1 + in_signal;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % EOF

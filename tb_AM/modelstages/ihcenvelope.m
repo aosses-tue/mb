@@ -172,7 +172,7 @@ end;
 
 %%
 if ~isempty(keyvals.minlvl)
-  inoutsig = max( inoutsig, keyvals.minlvl );
+    inoutsig = max( inoutsig, keyvals.minlvl );
 end;
 
 inoutsig=assert_sigreshape_post(inoutsig,dim,permutedsize,order);

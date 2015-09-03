@@ -47,7 +47,7 @@ switch nExample
         fs = 44100;
         f = 1000;
         dur = 4; % in seconds
-        SPLs = [60 42]; % see r20150522_update. Estimated dprime should be aroung 1.25
+        SPLs = [60 42]; % see r20150522_update. Estimated dprime should be around 1.25
         
         [outsig1 file1] = Il_create_tone(f,dur,fs,SPLs(1));
         [outsig2 file2] = Il_create_tone(f,dur,fs,SPLs(2));
@@ -145,10 +145,11 @@ switch nExample
         fmod = 0;
         SPL = 60;
         
-        BP = AM_random_noise(500,800,SPL-25,durM,fs); % background noise to avoid undesired cues
+        % BP = AM_random_noise(500,800,SPL-25,durM,fs); % background noise to avoid undesired cues
+        warning('BP bypassed');
         
         [outsig1 file1,  xx, outsigBBN] = AM_random_noise_BW(fc,BW,SPL,durM,fs,fmod,0);
-        outsig1 = outsig1 + BP;
+        % outsig1 = outsig1 + BP;
         
         filename1 = [dirout file1{1} '.wav'];
         
@@ -166,7 +167,7 @@ switch nExample
         % Multiplication noise:
         outsig3 = Multiplied_noise(fc,BW,SPL,durM,fs);
         outsig3 = setdbspl(outsig3,SPL);
-        outsig3 = outsig3 + BP;
+        % outsig3 = outsig3 + BP;
               
         fname = sprintf('%smult-noise-%.0f-Hz-BW-%.0f-Hz-%.0f-dB.wav',dirout,fc,BW,SPL);
         filename3 = fname;
@@ -194,10 +195,11 @@ switch nExample
         fmod = 0;
         SPL = 60;
         
-        BP = AM_random_noise(500,800,SPL-25,durM,fs); % background noise to avoid undesired cues
-                
+        %BP = AM_random_noise(500,800,SPL-25,durM,fs); % background noise to avoid undesired cues
+        warning('BP bypassed');
+        
         [outsig1 file1,  xx, outsigBBN] = AM_random_noise_BW(fc,BW,SPL,durM,fs,fmod,0);
-        outsig1 = outsig1 + BP;
+        % outsig1 = outsig1 + BP;
         
         filename1 = [dirout file1{1} '.wav'];
         
@@ -215,7 +217,7 @@ switch nExample
         % Multiplication noise:
         outsig3 = Multiplied_noise(fc,BW,SPL,durM,fs);
         outsig3 = setdbspl(outsig3,SPL);
-        outsig3 = outsig3 + BP;
+        % outsig3 = outsig3 + BP;
               
         fname = sprintf('%smult-noise-%.0f-Hz-BW-%.0f-Hz-%.0f-dB.wav',dirout,fc,BW,SPL);
         filename3 = fname;
@@ -240,12 +242,13 @@ switch nExample
         fc = 1300;
         SPL = 60;
         
-        BP = AM_random_noise(500,800,SPL-25,durM,fs); % background noise to avoid undesired cues
+        % BP = AM_random_noise(500,800,SPL-25,durM,fs); % background noise to avoid undesired cues
+        warning('BP bypassed');
         
         % Sine-masker:
         outsig1 = .5*Create_sin(fc,durM,fs,0);
         outsig1 = setdbspl(outsig1,SPL);
-        outsig1 = outsig1 + BP;
+        % outsig1 = outsig1 + BP;
         
         fname = sprintf('%ssine-%.0f-Hz-%.0f-dB.wav',dirout,fc,SPL);
         filename1 = fname;
