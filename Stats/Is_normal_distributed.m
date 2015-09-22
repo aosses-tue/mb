@@ -6,7 +6,7 @@ function [bNormal y] = Is_normal_distributed(x)
 % 2. Stand-alone example:
 %
 % 3. Additional info:
-%       Tested cross-platform: No
+%       Tested cross-platform: Yes
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 21/05/2015
@@ -14,11 +14,19 @@ function [bNormal y] = Is_normal_distributed(x)
 % Last use on   : 21/05/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-bNormal = ~kstest( (x-mean(x))/std(x) );
+x_s = std(x);
+x_m = mean(x);
 
-if bNormal
-    y = 'yes';
+if x_s ~= 0
+    bNormal = ~kstest( (x-x_m)/x_s );
+
+    if bNormal
+        y = 'yes';
+    else
+        y = 'no';
+    end
 else
+    bNormal = 0;
     y = 'no';
 end
 

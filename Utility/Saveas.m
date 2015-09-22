@@ -16,6 +16,12 @@ function Saveas(h, filename, option)
 
 if nargin < 3
     option = [];
+else
+    if ischar(option)
+        option.format = option;
+    else
+        option = ef(option,'format','epsc');
+    end
 end
 
 str = fileparts(filename);
@@ -31,7 +37,7 @@ end
 
 option = Ensure_field(option,'bPrint',1);
 option = Ensure_field(option,'bScale',0);
-option = ef(option,'format','epsc');
+
 
 set(h,'PaperType', 'A4')
 

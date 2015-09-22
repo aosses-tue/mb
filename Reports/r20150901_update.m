@@ -423,45 +423,60 @@ if bAnalysisTemplates == 1
                 '60','m36','m38','m38','m38','m38'};
     iTimes = size(fnames,1);
     h1 = [];
+    diffGN100 = [];
+    diffGN020 = [];
+    diffS = [];
+    diffMN020 = [];
+    diffMN100 = [];
+    S_SN = [];
+    S_N = [];
     
+    % fstring = '2000'; % if old measures
+    fstring = '1979'; % if new measures
     for i = 1:iTimes
     
         idxtone = 3;
-        exp1 = sprintf('tmp = load(''template-GN-100-Hz-%s-dB-supra-%s-at-2000-Hz.mat'');',fnames{i,1},fnames{i,idxtone}); % tmp = load('template-GN-100-Hz-84-dB-supra-m04-at-2000-Hz.mat');
+        exp1 = sprintf('tmp = load(''template-GN-100-Hz-%s-dB-supra-%s-at-%s-Hz.mat'');',fnames{i,1},fnames{i,idxtone},fstring); % tmp = load('template-GN-100-Hz-84-dB-supra-m04-at-2000-Hz.mat');
         eval(exp1);
         templateGN100 = tmp.template;
+        diffGN100 = [diffGN100 tmp.out_2Mean-tmp.out_1Mean];
         
         idxtone = 4;
-        exp1 = sprintf('tmp = load(''template-GN-020-Hz-%s-dB-supra-%s-at-2000-Hz.mat'');',fnames{i,1},fnames{i,idxtone}); % tmp = load('template-GN-020-Hz-84-dB-supra-m04-at-2000-Hz.mat');
+        exp1 = sprintf('tmp = load(''template-GN-020-Hz-%s-dB-supra-%s-at-%s-Hz.mat'');',fnames{i,1},fnames{i,idxtone},fstring); % tmp = load('template-GN-020-Hz-84-dB-supra-m04-at-2000-Hz.mat');
         eval(exp1);
         templateGN020 = tmp.template;
+        diffGN020 = [diffGN020 tmp.out_2Mean-tmp.out_1Mean];
         
         idxtone = 2;
-        exp1 = sprintf('tmp = load(''template-S-%s-dB-supra-%s-at-2000-Hz.mat'');',fnames{i,1},fnames{i,idxtone}); % tmp = load('template-S-84-dB-supra-m04-at-2000-Hz.mat');
+        exp1 = sprintf('tmp = load(''template-S-%s-dB-supra-%s-at-%s-Hz.mat'');',fnames{i,1},fnames{i,idxtone},fstring); % tmp = load('template-S-84-dB-supra-m04-at-2000-Hz.mat');
         eval(exp1);
         templateS  = tmp.template;
+        diffS = [diffS tmp.out_2Mean-tmp.out_1Mean];
         
+        %%%
+        % Non-normalised difference
+        disp('')
+        S_SN = [S_SN tmp.out_2Mean];
+        S_N  = [S_N  tmp.out_1Mean];
+                
+        %%%
         idxtone = 5;
-        exp1 = sprintf('tmp = load(''template-MN-100-Hz-%s-dB-supra-%s-at-2000-Hz.mat'');',fnames{i,1},fnames{i,idxtone}); % tmp = load('template-GN-100-Hz-84-dB-supra-m04-at-2000-Hz.mat');
+        exp1 = sprintf('tmp = load(''template-MN-100-Hz-%s-dB-supra-%s-at-%s-Hz.mat'');',fnames{i,1},fnames{i,idxtone},fstring); % tmp = load('template-GN-100-Hz-84-dB-supra-m04-at-2000-Hz.mat');
         eval(exp1);
         templateMN100 = tmp.template;
+        diffMN100 = [diffMN100 tmp.out_2Mean-tmp.out_1Mean];
         
         idxtone = 6;
-        exp1 = sprintf('tmp = load(''template-MN-020-Hz-%s-dB-supra-%s-at-2000-Hz.mat'');',fnames{i,1},fnames{i,idxtone}); % tmp = load('template-GN-020-Hz-84-dB-supra-m04-at-2000-Hz.mat');
+        exp1 = sprintf('tmp = load(''template-MN-020-Hz-%s-dB-supra-%s-at-%s-Hz.mat'');',fnames{i,1},fnames{i,idxtone},fstring); % tmp = load('template-GN-020-Hz-84-dB-supra-m04-at-2000-Hz.mat');
         eval(exp1);
         templateMN020 = tmp.template;
+        diffMN020 = [diffMN020 tmp.out_2Mean-tmp.out_1Mean];
         
         M = length(mfc);
         N = length(templateGN100)/M;
 
         t = (1:length(templateGN100))/fs;
-        % figure;
-        % plot(   t, templateS, ...
-        %         t, templateGN100, ...
-        %         t, templateGN020, ...
-        %         t, templateMN100, ...
-        %         t, templateMN020 )
-        % legend('T','100-Hz GN','20-Hz GN','100-Hz MN','20-Hz MN')
+        
         figure;
         subplot(1,2,1)
         plot(   t, templateS, ...
@@ -494,11 +509,13 @@ if bAnalysisTemplates == 1
     plotOpts.bAddVertical = 0;
     hh = Figure2paperfigureT2(h1,3,2,plotOpts);
     
-    
     idxlvlSupra = [5 3 1];
     ha = [];
+    
+    %%%%
     figure;
     for i = 1:iTimes
+        figure(3)
         subplot(3,1,i)
         plot(pS(i,:),'bs-'), hold on, grid on
         plot(pGN100(i,:),'mo-.','LineWidth',1.5)
@@ -512,7 +529,7 @@ if bAnalysisTemplates == 1
         end
         ha(end+1) = gca;
         ylabel('Energy [\%]')
-
+        
     end
     linkaxes(ha,'xy');
     ylim([0 45])
@@ -521,9 +538,32 @@ if bAnalysisTemplates == 1
     set(ha,'XTickLabel',round(mfc));
 
     xlabel('Centre frequency of the band f_c [Hz]')
-    
         
+    %%%%
+    ha1 = [];
+    
+    for i = 1:iTimes
+        figure;
+        subplot(2,1,1)
+        plot(S_SN(:,i),'b-'), hold on, grid on
+        plot(S_N(:,i),'r-.','LineWidth',1.5)
+        ha1(end+1) = gca;
+        
+        subplot(2,1,2)
+        plot(S_SN(:,i)-S_N(:,i),'k-'), grid on
+        ha1(end+1) = gca;
+        
+    end
+    linkaxes(ha,'xy');
+    % ylim([0 45])
+    xlim([0.5 10.5])
+    set(ha,'XTick',1:10);
+    set(ha,'XTickLabel',round(mfc));
+     
+    xlabel('Centre frequency of the band f_c [Hz]')
+
 end
+
 
 if bDiary
 	diary off

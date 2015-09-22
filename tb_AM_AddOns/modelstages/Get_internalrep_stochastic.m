@@ -145,9 +145,11 @@ for i = 1:Ntimes
             
             if bMultiChannel == 1
                 [out_pre , fc] = dau1996preproc(in_masker_s1 + in_signal,fs); % out_2pre affected by external noise
+                outs.script_template = 'dau1996preproc';
             end
             if bSingleChannel == 1
                 [out_pre , fc] = dau1996preproc_1Ch(in_masker_s1 + in_signal,fs,fc); % out_1pre affected by external noise
+                outs.script_template = 'dau1996preproc_1Ch';
             end
             
             tmp = Add_gaussian_noise(out_pre(:,idx_fc),mu,sigma);
@@ -162,6 +164,7 @@ for i = 1:Ntimes
                 [out_1pre , fc, mfc] = dau1997preproc_1Ch(in_masker_s0            ,fs,fc);
                 [out_2pre , fc, mfc] = dau1997preproc_1Ch(in_masker_s1 + in_signal,fs,fc);
                 fs_intrep = fs;
+                outs.script_template = 'dau1997preproc_1Ch';
             end
             
             [n m] = size(out_1pre);
@@ -197,10 +200,12 @@ for i = 1:Ntimes
                 [out_1pre , fc, fmc, IntRep] = jepsen2008preproc_multi(in_masker_s0  ,fs,fcmin,fcmax,fbstyle,'resample_intrep');
                 [out_2pre , fc] = jepsen2008preproc_multi(in_masker_s1 + in_signal,fs,fcmin,fcmax,fbstyle,'resample_intrep');
                 [Ni,Mi] = size(out_1pre{1});
+                outs.script_template = 'jepsen2008preproc_multi';
             end
             if bSingleChannel == 1
                 [out_1pre , fc, fmc, IntRep] = jepsen2008preproc_1Ch(in_masker_s0  ,fs,fc,fbstyle);
                 [out_2pre , fc] = jepsen2008preproc_1Ch(in_masker_s1 + in_signal,fs,fc,fbstyle);
+                outs.script_template = 'jepsen2008preproc_1Ch';
             end
             fs_intrep = IntRep.fs_intrep;
             

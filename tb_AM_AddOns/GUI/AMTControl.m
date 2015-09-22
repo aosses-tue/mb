@@ -332,7 +332,6 @@ function btnGetTemplate_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 try
-    insig1 = handles.audio.insig1;
     insig2 = handles.audio.insig2;
     fs = handles.audio.fs;
 catch
@@ -400,20 +399,22 @@ sigma = 0;
 if bUseRamp;  tmp.masker_ramp_ms = il_get_value_numericPop(handles.popDurRamps); else; tmp.masker_ramp_ms = 0; end % ramp time in ms
 if bUseRampS; tmp.signal_ramp_ms = il_get_value_numericPop(handles.popDurRamps); else; tmp.signal_ramp_ms = 0; end % ramp time in ms
         
+if bDeterministic == 0 % then stochastic
+    insig1 = handles.audio.insig1orig;
+else
+    insig1 = handles.audio.insig1;
+end
+
 switch nAnalyser
     case 100
         
         insig2supra = From_dB(Gain4supra) * insig2;
-        insig1 = handles.audio.insig1orig;
-        
         [out_1Mean out_2Mean fs_intrep tmp] = Get_internalrep_stochastic(insig1,insig2supra,fs,'dau1996',sigma,Ntimes,fc2plot_idx,tmp);
         template_test = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
         
     case 101 % Still testing
         
         insig2supra = From_dB(Gain4supra) * insig2;
-        insig1 = handles.audio.insig1orig;
-        
         [out_1Mean out_2Mean fs_intrep tmp] = Get_internalrep_stochastic(insig1,insig2supra,fs,'dau1997',sigma,Ntimes,fc2plot_idx,tmp);
                 
         template_test = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
@@ -421,8 +422,6 @@ switch nAnalyser
     case 103
         
         insig2supra = From_dB(Gain4supra) * insig2;
-        insig1 = handles.audio.insig1orig;
-        
         [out_1Mean out_2Mean fs_intrep tmp] = Get_internalrep_stochastic(insig1,insig2supra,fs,'jepsen2008-modfilterbank',sigma,Ntimes,fc2plot_idx,tmp);
                 
         template_test = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
@@ -520,7 +519,16 @@ bSave2workspace = get(handles.chSaveTemplate,'value');
 bListen = get(handles.chListenTemplate,'value');
 
 if bSave2workspace
-    assignin ('base','template',template)
+    
+    dir_output  = get(handles.txtOutputDir,'string');
+    assignin ('base','template',template);
+    
+    if Gain4supra < 0
+        fname = sprintf('%stemplate-TYPE-supra-m%.0f-at-%.0f-Hz',dir_output,abs(Gain4supra),fc(fc2plot_idx_1));
+    else
+        fname = sprintf('%stemplate-TYPE-supra-p%.0f-at-%.0f-Hz',dir_output,abs(Gain4supra),fc(fc2plot_idx_1));
+    end
+    save(fname,'template','out_1Mean','out_2Mean');
 end
 
 if bListen
@@ -532,6 +540,49 @@ if bListen
 end
 guidata(hObject,handles)
         
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% --- Executes on button press in btnStimuliPlay.
+function btnStimuliPlay_Callback(hObject, eventdata, handles)
+% hObject    handle to btnStimuliPlay (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+Level_start = il_get_value_numericPop(handles.popGainSupra);
+Level_step_i    = 2;
+
+fs = handles.audio.fs;
+
+t1 = str2num( get(handles.txtTimei,'string') ); 
+t2 = str2num( get(handles.txtTimef,'string') );
+bListen = get(handles.chListenTrials,'value');
+
+try
+    insig1 = handles.audio.insig1;
+    insig2 = handles.audio.insig2;
+    template = handles.audio.template;
+    bDeterministic = handles.audio.bDeterministic;
+    
+    fs = handles.audio.fs;
+end
+
+bUseRamp = get(handles.chRampMasker,'value');
+if bUseRamp;       rampdn = il_get_value_numericPop(handles.popDurRamps); end % ramps in ms
+
+for level = Level_start:-Level_step_i:-100;
+    insig1 = il_randomise_insig( handles.audio.insig1orig );
+    insig1 = insig1(1:length(insig2));
+    insig1 = Do_cos_ramp(insig1, fs, rampdn);
+    insig2 = Do_cos_ramp(handles.audio.insig2,fs,rampdn);
+    insig2s = From_dB(level)*insig2 + insig1;
+    
+    pause(1)
+    sound(insig1,fs);
+    fprintf('Level current = %.0f dB, actual level noise = %.1f dB\n',level,rmsdb(insig1)+100)
+                            
+    pause(1)
+    sound(insig2s,fs);
+    fprintf('Level current = %.0f dB, actual level signal+noise = %.1f dB\n',level,rmsdb(insig2s)+100)
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 5. Executes on button press in btnSimulateAFC.
@@ -540,13 +591,8 @@ function btnSimulateAFC_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-nAnalyser = il_get_nAnalyser(handles.popAnalyser);
-
-if nAnalyser == 101
-    Level_start = 0; % above test-signal level
-else
-    Level_start = il_get_value_numericPop(handles.popGainSupra);
-end
+nAnalyser   = il_get_nAnalyser(handles.popAnalyser);
+Level_start = il_get_value_numericPop(handles.popGainSupra);
 
 Level_step_i    = il_get_value_numericPop(handles.popStepdB);
 Reversals_stop  = il_get_value_numericPop(handles.popNreversals);
@@ -712,13 +758,27 @@ for k = 1:Nsim
                         error('not implemented yet');
                     end
                     if bSingleChannel
-                        [out_interval1  ,fc] = dau1997preproc_1Ch(interval1  ,fs,fc);
-                        [out_interval1s2,fc] = dau1997preproc_1Ch(interval1s2,fs,fc);
-                        [out_interval2  ,fc] = dau1997preproc_1Ch(interval2  ,fs,fc);
+                        [out_interval1  ,fc, xx, outsfilt11] = dau1997preproc_1Ch(interval1  ,fs,fc);
+                        [out_interval1s2,fc, xx, outsfilt12] = dau1997preproc_1Ch(interval1s2,fs,fc);
+                        [out_interval2  ,fc, xx, outsfilt2] = dau1997preproc_1Ch(interval2  ,fs,fc);
 
                         out_interval1   = out_interval1(:);
                         out_interval1s2 = out_interval1s2(:);
                         out_interval2   = out_interval2(:);
+                        
+                        bListenToFilter = 0;
+                        if bListenToFilter
+                            warning('Listen to filter...')
+                            fprintf('Level current = %.0f dB, actual level noise = %.1f dB\n',Level_current,rmsdb(outsfilt11.out01_filterbank)+100)
+                            sound(outsfilt11.out01_filterbank,fs)
+                            pause(0.5)
+                            sound(outsfilt12.out01_filterbank,fs)
+                            pause(0.5)
+                            fprintf('Level current = %.0f dB, actual level signal+noise = %.1f\n',Level_current,rmsdb(outsfilt2.out01_filterbank)+100)
+                            sound(outsfilt2.out01_filterbank,fs)
+                            disp('Press any key to continue...')
+                            pause();
+                        end
                     end
                     
                 elseif nAnalyser == 103
@@ -732,9 +792,24 @@ for k = 1:Nsim
                         out_interval2   = il_pool_in_one_column(out_interval2);
                     end
                     if bSingleChannel
-                        [out_interval1] = jepsen2008preproc_1Ch(interval1,fs,fc);
-                        [out_interval1s2] = jepsen2008preproc_1Ch(interval1s2,fs,fc);
-                        [out_interval2] = jepsen2008preproc_1Ch(interval2,fs,fc);
+                        [out_interval1 xx xx outsfilt11] = jepsen2008preproc_1Ch(interval1,fs,fc);
+                        [out_interval1s2 xx xx outsfilt12] = jepsen2008preproc_1Ch(interval1s2,fs,fc);
+                        [out_interval2 xx xx outsfilt2] = jepsen2008preproc_1Ch(interval2,fs,fc);
+                        
+                        bListenToFilter = 0;
+                        if bListenToFilter
+                            warning('Listen to filter')
+                            fprintf('Level current = %.0f dB, actual level noise = %.1f dB\n',Level_current,rmsdb(outsfilt11.out_filterbank)+100)
+                            sound(outsfilt11.out_filterbank,fs)
+                            pause(0.5)
+                            sound(outsfilt12.out_filterbank,fs)
+                            pause(0.5)
+                            fprintf('Level current = %.0f dB, actual level signal+noise = %.1f\n',Level_current,rmsdb(outsfilt2.out_filterbank)+100)
+                            sound(outsfilt2.out_filterbank,fs)
+                            disp('Press any key to continue...')
+                            pause();
+                            
+                        end
                         
                         out_interval1   = il_pool_in_one_column(out_interval1);
                         out_interval1s2 = il_pool_in_one_column(out_interval1s2);
@@ -746,28 +821,26 @@ for k = 1:Nsim
                         error('Not implemented yet (on 26/08/2015)');
                     end
                     if bSingleChannel
-                        [out_interval1] = jepsen2008preproc_1Ch(interval1,fs,fc,'lowpass');
+                        [out_interval1 xx xx outsfilt1] = jepsen2008preproc_1Ch(interval1,fs,fc,'lowpass');
                         [out_interval1s2] = jepsen2008preproc_1Ch(interval1s2,fs,fc,'lowpass');
-                        [out_interval2] = jepsen2008preproc_1Ch(interval2,fs,fc,'lowpass');
+                        [out_interval2 xx xx outsfilt2] = jepsen2008preproc_1Ch(interval2,fs,fc,'lowpass');
                         
                     end
                 end
                 
                 out_interval1   = Add_gaussian_noise(out_interval1,mu,sigma); % Add internal noise
                 out_interval1s2 = Add_gaussian_noise(out_interval1s2,mu,sigma);
-                out_interval2mod= out_interval2; warning('temporal');
                 out_interval2   = Add_gaussian_noise(out_interval2,mu,sigma); % Add internal noise
                     
                 [a b] = size(template);
                 % one audio-frequency band but all the modulation filterbanks:
                 try
+                    
                     sigint1 = reshape(out_interval1,a,b);
                     sigint1s2 = reshape(out_interval1s2,a,b);
                     sigint2 = reshape(out_interval2,a,b);
-                    sigint2mod = reshape(out_interval2mod,a,b);
                     
                 catch
-                    error('Continue here')
                     sigint1 = out_interval1(idxobs(1):idxobs(2),:);
                     sigint2 = out_interval2(idxobs(1):idxobs(2),:);
                     sigint1s2 = out_interval1s2(idxobs(1):idxobs(2),:);
@@ -779,38 +852,75 @@ for k = 1:Nsim
         if Nmaskers_c > 0
             masker_interval_avg = (masker_interval_avg*Nmaskers_c + out_interval1 + out_interval1s2 )/Nmaskers;
         else
-            masker_interval_avg = (                                 out_interval1 + out_interval1s2 )/Nmaskers;
+            masker_interval_avg = (   out_interval1 + out_interval1s2 )/Nmaskers;
         end
+        masker_int_currentavg = (out_interval1 + out_interval1s2 )/2;
         
-        intrep_M = masker_interval_avg;
-        
+        % intrep_M = masker_interval_avg;
+        intrep_M = masker_int_currentavg;
+                
         diff11 =   sigint1-intrep_M;
         diff12 = sigint1s2-intrep_M;
         diff20 =   sigint2-intrep_M; %tt = 1:length(diff11); figure; plot(tt,diff11+30,tt,diff12,tt,diff20-30); legend('11','12','20')
-        diff21 = sigint2mod-intrep_M;
+        
         try
-            decision(1) = optimaldetector(diff11,template);
-            decision(2) = optimaldetector(diff12,template);
+            [decision(1) corrmue(:,1)] = optimaldetector(diff11,template);
+            [decision(2) corrmue(:,2)] = optimaldetector(diff12,template);
         catch
-            error('continue here')
             decision(1) = optimaldetector(  sigint1-intrep_M,template(idxobs(1):idxobs(2),:));
             decision(2) = optimaldetector(sigint1s2-intrep_M,template(idxobs(1):idxobs(2),:));
         end
                 
         try
-            decision(3) = optimaldetector(diff20,template);
-            decision(4) = optimaldetector(diff21,template);
+            [decision(3) corrmue(:,3)] = optimaldetector(diff20,template);
         catch
             error('continue here')
             decision(3) = optimaldetector(sigint2-intrep_M,template(idxobs(1):idxobs(2),:));
         end
         
+        bDecisionMethod = 2; 
+        if bDecisionMethod == 4
+            warning('decision, method 2') 
+        end
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % 1. First decision used:
         % The following was took out on 02/09/2015, because it is only
         % accounting the internal variability, so it is not completely correct:
         % % finaldecision = ( decision(3)-max(decision(1),decision(2)) )/sigma; 
         
-        [maxvalue, idx_decision] = max(abs(decision(1:3)));
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % 2. Second decision used:
+        if bDecisionMethod == 2
+            [maxvalue, idx_decision] = max(abs(decision(1:3)));
+        end
         
+        % [maxvalue2, idx_tmp] = max(decision(1:2));
+        % if idx_tmp == 1
+        %     diffM = out_interval1;
+        % else
+        %     diffM = out_interval1s2;
+        % end
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % 3. Third decision used: it seems to be insensitive to standard deviation
+        % mm = 0.55653; stdstd = 1.30384; pCorrect = normcdf( (Mtmp(1)-mm)/stdstd )
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % 4. Fourth decision used:
+        if bDecisionMethod == 4
+            rule        = [1 2]; % 2-down, 1-up
+            numint      = 3;
+            Mtmp        = abs(mean([diff11 diff12 diff20]));
+            Stmp        = std([diff11 diff12 diff20]);
+            [bDecided(1) pr(1)] = caspmdecide( Mtmp(1), Stmp(1), rule, numint);
+            [bDecided(2) pr(2)] = caspmdecide( Mtmp(2), Stmp(2), rule, numint);
+            [bDecided(3) pr(3)] = caspmdecide( Mtmp(3), max(Stmp(1:2)), rule, numint);
+            idx_tmp = find(bDecided == 1);
+            [maxvalue, idx_decision] = max( pr );
+            if bDecided( idx_decision )~= 1
+                idx_decision = 1; % just random number
+            end
+        end
         Staircase = [Staircase; Level_current];
         
         if idx_decision == 3 % (abs(dprimetmp(end)) >= 1.26) 

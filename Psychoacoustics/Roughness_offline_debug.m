@@ -1,5 +1,5 @@
-function dataOut = Roughness_offline_debug(dataIn, Fs, N, optsDebug)
-% function dataOut = Roughness_offline_debug(dataIn, Fs, N, optsDebug)
+function [R dataOut out] = Roughness_offline_debug(dataIn, Fs, N, optsDebug)
+% function [R dataOut out] = Roughness_offline_debug(dataIn, Fs, N, optsDebug)
 %
 % 1. Description:
 %       Off-line implementation of the roughness algorithm. It implements 
@@ -492,6 +492,8 @@ end
 dataOut{1} = R;
 dataOut{2} = ri;
 dataOut{3} = SPL;
+
+out = [];
 
 if bDebug
     dataOut{4} = hFig;

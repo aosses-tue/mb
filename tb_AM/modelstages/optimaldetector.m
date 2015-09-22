@@ -1,5 +1,5 @@
-function mue = optimaldetector(ir_stim,template)
-% function mue = optimaldetector(ir_stim,template)
+function [mue corrmue] = optimaldetector(ir_stim,template)
+% function [mue corrmue] = optimaldetector(ir_stim,template)
 % 
 %   1. Description:
 %       OPTIMALDETECTOR  Generic optimal detector for the CASP and Breebaart models

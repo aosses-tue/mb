@@ -11,12 +11,12 @@ function cc = Correlation(x,y,method)
 %       CF = Correlation(data1,data2,'coefficient');
 
 % 3. Additional info:
-%       Tested cross-platform: No
+%       Tested cross-platform: Yes
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 01/05/2015
-% Last update on: 02/05/2015 % Update this date manually
-% Last use on   : 02/05/2015 % Update this date manually
+% Last update on: 02/05/2015 
+% Last use on   : 04/09/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 3
@@ -33,6 +33,11 @@ switch method
         else
           cc =	0;
         end
+    case 'coefficient-non-normalised'
+        cfac =	cov(x,y);
+        den	=	diag(cfac);
+        den	=	sqrt(den*den');
+        cc = cfac(2,1);
     otherwise
         error('Correlation method not recognised')
 end

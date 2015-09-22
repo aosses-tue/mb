@@ -25,10 +25,10 @@ else
     outputdir = 'D:\Documenten-TUe\01-Text\70-Presentaties-TUe\20150603-Euronoise\Figures\output-new\';
 end
 
-bFig3 = 0;
+bFig3 = 1;
 bFig4 = 0; 
 bFig5 = 0; 
-bFig6 = 1; 
+bFig6 = 0; 
 
 plotOptions.I_FontSize = 24;
 plotOptions.I_Width  = 10;

@@ -358,6 +358,11 @@ output.nAnalyser = 15;
 
 out.stats.rough_tot = mean( out.Data1 );
 
+out.mdept = mdept;
+out.ri = ri;
+out.ki = ki;
+out.gzi = gzi;
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
 % END: RoughBody
 

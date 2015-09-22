@@ -1,5 +1,5 @@
-function r20150727_get_simulated_sounds
-% function r20150727_get_simulated_sounds
+function h = r20150727_get_simulated_sounds
+% function h = r20150727_get_simulated_sounds
 %
 % 1. Description:
 %       Used to create figure to be presented at Mid-term BATWOMAN meeting
@@ -45,8 +45,9 @@ ha = gca;
 title('Hummer, acoustic mode 2')
 xlabel('Time [s]')
 ylabel('Pressure [Pa]')
-xlim([0 0.6])
-
+% xlim([0 0.6])
+xlim([0 0.35])
+set(gca,'XTick',[0.1:0.1:0.4])
 subplot(1,2,2)
 plot(tp,xp); grid on, hold on
 % plot(tenv,envp,'r')
@@ -55,13 +56,16 @@ ha(end+1) = gca;
 title('Piano C#5')
 xlabel('Time [s]')
 xlim([0.05 0.34])
-
+set(gca,'XTick',[0.1:0.1:0.4])
 linkaxes(ha,'y');
 ylim([-0.15 0.15])
 
 h = gcf;
 
 hOpts.I_KeepColor = 0;
+hOpts.I_FontSize = 24;
+hOpts.I_Width  = 20;
+hOpts.I_Height = 8;
 h(end+1) = Figure2paperfigureT2(h,1,2,hOpts);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -33,12 +33,14 @@ plotOpts = ef(plotOpts,'I_Width'   ,10);
 plotOpts = ef(plotOpts,'I_Height'  , 8);
 plotOpts = ef(plotOpts,'I_TitleInAxis',1);
 plotOpts = ef(plotOpts,'I_KeepColor',1);
+plotOpts = ef(plotOpts,'I_Legend','off');
 
 I_FontSize = plotOpts.I_FontSize;
 I_Width    = plotOpts.I_Width;
 I_Height   = plotOpts.I_Height;
 I_TitleInAxis = plotOpts.I_TitleInAxis;
 I_KeepColor = plotOpts.I_KeepColor;
+I_Legend    = plotOpts.I_Legend;
 
 hM = ImageSetup; 
 hM.I_Matrix      = [numRows,numCols];
@@ -48,7 +50,7 @@ hM.I_Width       = I_Width;
 hM.I_Height      = I_Height;
 hM.I_TitleInAxis = I_TitleInAxis;
 hM.I_Space       = [0.05,0.05];
-hM.I_Legend      = 'off';
+hM.I_Legend      = I_Legend;
 
 % hM.I_Ylim       = [-50,0]; % Uncomment for fixing the limits in the y-axis
 % hM.I_Xlim       = [0 24];
