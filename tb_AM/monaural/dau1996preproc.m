@@ -1,5 +1,5 @@
-function [outsig, fc, outs] = dau1996preproc(insig, fs, varargin);
-% function [outsig, fc, outs] = dau1996preproc(insig, fs, varargin);
+function [outsig, fc, outs] = dau1996preproc(insig, fs, varargin)
+% function [outsig, fc, outs] = dau1996preproc(insig, fs, varargin)
 %
 % 1. Description:
 %       Auditory model from Dau et. al. 1996.
@@ -43,8 +43,10 @@ function [outsig, fc, outs] = dau1996preproc(insig, fs, varargin);
 %   input signal would cause unnaturally big responses. This is described
 %   in Dau et. al. (1997a).
 %
-%   See also: auditoryfilterbank, ihcenvelope, adaptloop, dau1997preproc
-%
+% 2. Additional information:
+%       See also: auditoryfilterbank, ihcenvelope, adaptloop, dau1997preproc
+%       AMT Tollbox version: 0.9.5-0.9.7
+% 
 %   References:
 %     T. Dau, D. Pueschel, and A. Kohlrausch. A quantitative model of the
 %     effective signal processing in the auditory system. I. Model structure.
@@ -66,17 +68,14 @@ function [outsig, fc, outs] = dau1996preproc(insig, fs, varargin);
 %       fs = 44100;
 %       [outsig, fc] = dau1996preproc(insig, fs);
 % 
-% Author        : Torsten Dau, Morten L. Jepsen, Peter L. Sondergaard
+% Author        : Torsten Dau, Morten L. Jepsen, Peter L. Soendergaard
 % Downloaded on : 18/03/2014
 % Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Last update on: 15/10/2014 
-% Last use on   : 24/03/2015 
+% Last use on   : 23/09/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% % ------ Warning, Strube model not used ----------
-% time_pause = 0.1;
-% disp([mfilename '.m: the code of this function is incorrect, because it uses a GM filterbank instead of the Strube one, be aware of this...'])
-% pause(time_pause)
+% ------ Warning, Strube model not used ----------
 
 % ------ Checking of input parameters ------------
 
@@ -101,20 +100,25 @@ definput.keyvals.subfs=[];
 
 % ------ do the computation -------------------------
 
-% Apply the auditory filterbank
+%% Apply the auditory filterbank
 [outsig, fc] = auditoryfilterbank(insig,fs,'argimport',flags,keyvals);
-if nargout >= 3
+if nargout == 3
     outs.out_filterbank  = outsig; 
 end
 
-% 'haircell' envelope extraction
+%% 'haircell' envelope extraction
 outsig = ihcenvelope(outsig,fs,'argimport',flags,keyvals);
-extra.out_ihc         = outsig;
+if nargout == 3
+    extra.out_ihc         = outsig;
+end
 
-% non-linear adaptation loops
+%% non-linear adaptation loops
 outsig = adaptloop(outsig,fs,'argimport',flags,keyvals);
-extra.out_adaptloop   = outsig;
+if nargout == 3
+    extra.out_adaptloop   = outsig;
+end
 
+%% Modulation low-pass filter
 % Calculate filter coefficients for the 20 ms (approx.eq to 8 Hz) modulation
 % lowpass filter.
 % This filter places a pole /very/ close to the unit circle.
@@ -128,8 +132,11 @@ outsig = filter(mlp_b,mlp_a,outsig);
 % Apply final resampling to avoid excessive data
 if ~isempty(keyvals.subfs)
   outsig = fftresample(outsig,round(length(outsig)/fs*subfs));
-end;
-extra.out04_LPF = outsig;
+end
+
+if nargout == 3
+    extra.out_LPF = outsig;
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end

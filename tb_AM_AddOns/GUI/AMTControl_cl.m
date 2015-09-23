@@ -1,5 +1,5 @@
-function varargout = AMTControl_cl(varargin)
-% function varargout = AMTControl_cl(varargin)
+function varargout = AMTControl_cl(handles_man)
+% function varargout = AMTControl_cl(handles_man)
 %
 % 1. Description: 
 %       AMTCONTROL MATLAB code for AMTControl.fig
@@ -7,21 +7,6 @@ function varargout = AMTControl_cl(varargin)
 %       AMTCONTROL, by itself, creates a new AMTCONTROL or raises the 
 %       existing singleton*.
 %
-%       H = AMTCONTROL returns the handle to a new AMTCONTROL or the handle 
-%       to the existing singleton*.
-%
-%       AMTCONTROL('CALLBACK',hObject,eventData,handles,...) calls the local
-%       function named CALLBACK in AMTCONTROL.M with the given input arguments.
-%
-%       AMTCONTROL('Property','Value',...) creates a new AMTCONTROL or raises
-%       the existing singleton*.  Starting from the left, property value pairs are
-%       applied to the GUI before AMTControl_OpeningFcn gets called.  An
-%       unrecognised property name or invalid value makes property application
-%       stop.  All inputs are passed to AMTControl_OpeningFcn via varargin.
-%
-%       *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
-%       instance to run (singleton)".
-% 
 %       Line    Stage                               Last updated on
 %       101     3. btnLoad                          07/08/2015
 %       338     4. btnGetTemplate                   07/08/2015
@@ -41,19 +26,34 @@ function varargout = AMTControl_cl(varargin)
 % Last used on      : 14/09/2015 % Remember to check compatibility with template_PsySoundCL.m
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-close all
+if nargin == 0
+    handles_man = [];
+end
+
+handles_man = Ensure_field(handles_man,'Gain4supra',5);
+handles_man = Ensure_field(handles_man,'nAnalyser',100); % 100 = dau1996
+                                                         % 103 = jepsen2008
+handles_man = Ensure_field(handles_man,'bDecisionMethod',2); % 2 = cross-correlation criterion
+                                                             % 4 = m-AFC criterion
+handles_man = Ensure_field(handles_man,'DurRamps',150); % ms
 
 dir_out = Get_TUe_paths('outputs');
 
-filename1 = 'D:\Output\AMTControl-examples\tone-f-1000-Hz-at-60-dB-dur-800-ms.wav';
-filename2 = 'D:\Output\AMTControl-examples\tone-f-1000-Hz-at-42-dB-dur-800-ms.wav';
+handles_man = Ensure_field(handles_man,'filename1','D:\Output\AMTControl-examples\tone-f-1000-Hz-at-60-dB-dur-800-ms.wav');
+handles_man = Ensure_field(handles_man,'filename2','D:\Output\AMTControl-examples\tone-f-1000-Hz-at-42-dB-dur-800-ms.wav');
+handles_man = Ensure_field(handles_man,'do_template',1);
+handles_man = Ensure_field(handles_man,'do_simulation',1);
+
+filename1 = handles_man.filename1;
+filename2 = handles_man.filename2;
 handles.dir_out = dir_out;
+handles.audio = handles_man.audio;
 
 handles = il_btnLoad(filename1,filename2,handles);
 
-handles.Gain4supra = 5;
-handles.nAnalyser = 100; % dau1996
-% handles.nAnalyser = 103; % jepsen2008
+handles.Gain4supra  = handles_man.Gain4supra;
+handles.nAnalyser   = handles_man.nAnalyser;
+
 handles.fc2plot_idx  = ceil( freqtoaud(1000,'erb') )-2;
 handles.fc2plot_idx2 = ceil( freqtoaud(1000,'erb') )-2;
 
@@ -61,55 +61,50 @@ handles.Ntimes = 1; % 1 == deterministic
 
 handles.bUseRamp  = 1;
 handles.bUseRampS = 1;
-handles.DurRamps = 150; % ms
-handles = il_GetTemplate(handles);
+handles.DurRamps = handles_man.DurRamps; % ms
 
-handles.StepdB          = 4;
-handles.Nreversals      = 10;
-handles.bStepSizeHalved = 1;
-handles.Nsim = 1;
-handles.bInternalNoise = 1;
-handles.sigma = 1.7;
+if handles_man.do_template == 1
+    handles = il_GetTemplate(handles);
+end
 
-handles.bDecisionMethod = 2; % cross-correlation criterion
-% handles.bDecisionMethod = 4; % m-AFC criterion
-handles = il_SimulateAFC(handles);
+if handles_man.do_simulation == 1
+    handles.StepdB          = 4;
+    handles.Nreversals      = 10;
+    handles.bStepSizeHalved = 1;
+    handles.Nsim = 1;
+    handles.bInternalNoise = 1;
+    handles.sigma           = handles_man.sigma;
+    handles.bDecisionMethod = handles_man.bDecisionMethod;
 
-disp(['Threshold (rel. in dB): ' num2str(handles.Threshold)])
-disp(['Variance: ' num2str(handles.sigma)])
-disp(['Script in template   : ' handles.script_template])
-disp(['Script in simulations: ' handles.script_sim])
+    handles = il_SimulateAFC(handles);
 
-disp('')
+    disp(['Threshold (rel. in dB): ' num2str(handles.Threshold)])
+    disp(['Variance: ' num2str(handles.sigma)])
+    disp(['Script in template   : ' handles.script_template])
+    disp(['Script in simulations: ' handles.script_sim])
+
+    disp('')
+end
 
 %  jepsen2008preproc_1Ch
-%       criterion
-%       4    /   2
+%         criterion
+%         4    /   2
 % -------------------
-% 0.4   -1.5 /
-% 0.5   0.5  /
-% 0.7   3.5  /
-% 0.8   4.5  /
-% 0.9   5.5  /
+%   0.4   -1.5 /
+%** 0.5   0.5  /
+%   0.7   3.5  /
+%   0.8   4.5  /
+%   0.9   5.5  /
 
 %  dau1996preproc_1Ch
-%       criterion
-%       4      /   2
+%           criterion
+%           4    /   2
 % -------------------
-% 0.5   -10.5  /
-% 0.8    -6.5  /
-% 1.1    -3.5  /
-% 1.5    -0.5  /
-% 1.7     0.5  /
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 0. Begin initialization code - DO NOT EDIT
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 1. Executes just before AMTControl is made visible.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 2. Outputs from this function are returned to the command line.
+%   0.5   -10.5  /
+%   0.8    -6.5  /
+%   1.1    -3.5  /
+%   1.5    -0.5  /
+%** 1.7     0.5  /
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 3. Executes on button press in btnLoad.
@@ -124,13 +119,21 @@ G2 = 0; % gain in dB for audio file 2
 [insig1,fs]  = Wavread(filename1);
 [insig2,fs2] = Wavread(filename2);
 
-% This sould be the normal case:
-if fs == fs2
-    handles.audio.fs = fs;
+if fs ~= fs2
+    error('Two audio files should have the same sampling frequency');
+end
+
+handles.audio = Ensure_field(handles.audio,'fs',fs);
+
+if fs ~= handles.audio.fs
+    
+    insig1 = resample(insig1,handles.audio.fs,fs);
+    insig2 = resample(insig2,handles.audio.fs,fs);
+    fs = handles.audio.fs;
 end
 
 t1 = ( 0:length(insig1)-1 )/fs;
-t2 = ( 0:length(insig2)-1 )/fs2;
+t2 = ( 0:length(insig2)-1 )/fs;
 
 ti_samples  = 1; % handles.audio.ti_samples;
 tf_samples  = min(length(t1),length(t2)); % handles.audio.tf_samples;
@@ -215,35 +218,31 @@ fs = handles.audio.fs;
 
 Gain4supra = handles.Gain4supra;
 nAnalyser  = handles.nAnalyser;
+   
+fc2plot_idx = handles.fc2plot_idx;
+fc2plot_idx2= handles.fc2plot_idx2;
 
-if nAnalyser == 100 | nAnalyser == 101 | nAnalyser == 103 | nAnalyser == 104
-    
-    fc2plot_idx = handles.fc2plot_idx;
-    fc2plot_idx2= handles.fc2plot_idx2;
-    
-    fc_ERB      = fc2plot_idx+2;
-    
-    fc2plot_idx = fc2plot_idx:fc2plot_idx2;
-    
-    if length(fc2plot_idx) == 1
-        fc      = audtofreq(fc_ERB,'erb'); % used as input for single-channel modelling
-    else
-        fcmin   = audtofreq(min(fc2plot_idx)+2,'erb'); 
-        fcmax   = audtofreq(max(fc2plot_idx)+2,'erb');
-    end
-    
-    if length(fc2plot_idx) == 1
-        bSingleChannel = 1;
-        bMultiChannel = 0;
-        fc2plot_idx_1 = 1;
-    else
-        bSingleChannel = 0;
-        bMultiChannel = 1;
-        fc2plot_idx_1 = 1:length(fc2plot_idx);
-    end
-    
+fc_ERB      = fc2plot_idx+2;
+
+fc2plot_idx = fc2plot_idx:fc2plot_idx2;
+
+if length(fc2plot_idx) == 1
+    fc      = audtofreq(fc_ERB,'erb'); % used as input for single-channel modelling
+else
+    fcmin   = audtofreq(min(fc2plot_idx)+2,'erb'); 
+    fcmax   = audtofreq(max(fc2plot_idx)+2,'erb');
 end
 
+if length(fc2plot_idx) == 1
+    bSingleChannel = 1;
+    bMultiChannel = 0;
+    fc2plot_idx_1 = 1;
+else
+    bSingleChannel = 0;
+    bMultiChannel = 1;
+    fc2plot_idx_1 = 1:length(fc2plot_idx);
+end
+    
 template_test = [];
 Ntimes = handles.Ntimes;
 if Ntimes == 1
@@ -271,12 +270,42 @@ else
 end
 
 switch nAnalyser
+    
+    case 99
+        
+        insig2supra = From_dB(Gain4supra) * insig2;
+        [out_1Mean out_2Mean fs_intrep tmp] = Get_internalrep_stochastic(insig1,insig2supra,fs,'dau1996a',sigma,Ntimes,fc2plot_idx,tmp);
+        template_test = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
+        
+        handles.script_template = tmp.script_template;
+        
+    case 99.1
+        
+        insig2supra = From_dB(Gain4supra) * insig2;
+        
+        [template_test2 out_2Mean out_1Mean] = casptemplate(insig2supra+insig1,insig1,'dau1996apreproc',{fs});
+        template_test = template_test2(:,fc2plot_idx);
+        
+        fs_intrep = fs;
+        handles.script_template = 'dau1996apreproc';
+        
     case 100
         
         insig2supra = From_dB(Gain4supra) * insig2;
         [out_1Mean out_2Mean fs_intrep tmp] = Get_internalrep_stochastic(insig1,insig2supra,fs,'dau1996',sigma,Ntimes,fc2plot_idx,tmp);
         template_test = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
+        
         handles.script_template = tmp.script_template;
+        
+    case 100.1
+        
+        insig2supra = From_dB(Gain4supra) * insig2;
+        
+        [template_test2 out_2Mean out_1Mean] = casptemplate(insig2supra+insig1,insig1,'dau1996preproc',{fs});
+        template_test = template_test2(:,fc2plot_idx);
+        
+        fs_intrep = fs;
+        handles.script_template = 'dau1996preproc';
         
     case 101 % Still testing
         
@@ -361,7 +390,7 @@ template = template_test;
 t = ( 1:size(out_1Mean,1) )/fs_intrep;
 
 switch nAnalyser
-    case 100
+    case {99,99.1,100,100.1}
         figure;
         plot(t,template); grid on
         xlabel(sprintf('Time [s]\nFollow the instructions in the command window to continue with the AFC simulation'))
@@ -383,6 +412,10 @@ handles.audio.avg_intrep_M  = out_1Mean;
 handles.audio.avg_intrep_MT = out_2Mean;
 handles.audio.Ntimes        = Ntimes;
 handles.audio.fs_intrep     = fs_intrep;
+try
+    handles.xxir = out_1Mean;
+    warning('temporal')
+end
 
 bSave2workspace = 0;
 bListen         = 0;
@@ -674,9 +707,27 @@ for k = 1:Nsim
         % intrep_M = masker_interval_avg;
         intrep_M = masker_int_currentavg;
                 
-        diff11 =   sigint1-intrep_M;
-        diff12 = sigint1s2-intrep_M;
-        diff20 =   sigint2-intrep_M; %tt = 1:length(diff11); figure; plot(tt,diff11+30,tt,diff12,tt,diff20-30); legend('11','12','20')
+        % diff11 =   sigint1-intrep_M;
+        % diff12 = sigint1s2-intrep_M;
+        % diff20 =   sigint2-intrep_M; %tt = 1:length(diff11); figure; plot(tt,diff11+30,tt,diff12,tt,diff20-30); legend('11','12','20')
+        
+        out_interval1   = casprepresentation(interval1  ,'dau1996preproc',{fs});
+        out_interval1s2 = casprepresentation(interval1s2,'dau1996preproc',{fs});
+        out_interval2   = casprepresentation(interval2  ,'dau1996preproc',{fs});
+        
+        NN = 1;
+        diff11 = [];
+        diff12 = [];
+        diff20 = [];
+        
+        for kk = 1:NN
+            diff11(:,kk) = Add_gaussian_noise(out_interval1(:,fc2plot_idx2),mu,sigma); % Add internal noise
+            diff12(:,kk) = Add_gaussian_noise(out_interval1s2(:,fc2plot_idx2),mu,sigma);
+            diff20(:,kk) = Add_gaussian_noise(out_interval2(:,fc2plot_idx2),mu,sigma); % Add internal noise
+        end
+        diff11 = mean(diff11,2)-handles.xxir;
+        diff12 = mean(diff12,2)-handles.xxir;
+        diff20 = mean(diff20,2)-handles.xxir;
         
         bDecisionMethod = handles.bDecisionMethod; 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -698,7 +749,16 @@ for k = 1:Nsim
             [decision(2) corrmue(:,2)] = optimaldetector(diff12,template);
             [decision(3) corrmue(:,3)] = optimaldetector(diff20,template);
             
+            decision(3)-decision(2)
+            decision(3)-decision(1)
             [maxvalue, idx_decision] = max(abs(decision(1:3)));
+            
+            % stdnoise = max( std([diff11 diff12]) );
+            % if maxvalue < stdnoise
+            %     idx_decision = 1; % just random number
+            % end
+
+            disp(std([diff11 diff12 diff20]))
         end
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

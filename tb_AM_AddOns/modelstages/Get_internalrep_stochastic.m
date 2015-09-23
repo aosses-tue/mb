@@ -128,6 +128,34 @@ for i = 1:Ntimes
     end
     
     switch model
+
+        case 'dau1996a'
+            
+            if bMultiChannel == 1
+                [out_pre , fc] = dau1996preproc(in_masker_s0,fs);
+            end
+            if bSingleChannel == 1
+                [out_pre , fc] = dau1996preproc_1Ch(in_masker_s0,fs,fc); 
+            end
+            
+            [Ni,Mi] = size(out_pre(:,idx_fc));
+            fs_intrep = fs;
+            
+            tmp = Add_gaussian_noise(out_pre(:,idx_fc),mu,sigma);
+            out_1 = [out_1 tmp(:)]; % out_1 affected by internal noise
+            
+            if bMultiChannel == 1
+                [out_pre , fc] = dau1996preproc(in_masker_s1 + in_signal,fs); % out_2pre affected by external noise
+                outs.script_template = 'dau1996apreproc';
+            end
+            if bSingleChannel == 1
+                [out_pre , fc] = dau1996preproc_1Ch(in_masker_s1 + in_signal,fs,fc); % out_1pre affected by external noise
+                outs.script_template = 'dau1996apreproc_1Ch';
+            end
+            
+            tmp = Add_gaussian_noise(out_pre(:,idx_fc),mu,sigma);
+            out_2 = [out_2 tmp(:)]; % out_1 affected by internal noise
+            
         case 'dau1996'
             
             if bMultiChannel == 1

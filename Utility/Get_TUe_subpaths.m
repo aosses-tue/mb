@@ -75,6 +75,7 @@ elseif strcmp(type,'Psychoacoustics')
 
 elseif strcmp(type,'tb_AM_AddOns')
     
+    misc.arg         = [path 'arg'         delim];
     misc.comp        = [path 'comp'        delim];
     misc.experiments = [path 'experiments' delim];
     misc.filters     = [path 'filters'     delim];

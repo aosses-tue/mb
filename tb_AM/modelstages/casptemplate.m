@@ -1,9 +1,12 @@
-function [template,ir_reference]=casptemplate(target,reference,modelname,modelpars)
-%CASPTEMPLATE  Generate a template for the optimal detector
+function [template,ir_reference,ir_target]=casptemplate(target,reference,modelname,modelpars)
+% function [template,ir_reference,ir_target]=casptemplate(target,reference,modelname,modelpars)
+%
+% 1. Description:
+%       CASPTEMPLATE  Generate a template for the optimal detector
 %
 %  CASPTEMPLATE(target,reference,modelname,modelpars) generates the template
 %  needed for the optimal detector. CASPTEMPLATE will run the model
-%  specifief by modelname on the signals stored in target and reference
+%  specified by modelname on the signals stored in target and reference
 %  and generate the template from this.
 %
 %  If target or reference is a matrix, each column will be considered a
@@ -11,29 +14,22 @@ function [template,ir_reference]=casptemplate(target,reference,modelname,modelpa
 %  signals.
 %
 %   Url: http://amtoolbox.sourceforge.net/doc/modelstages/casptemplate.php
-
+%
+% 2. Stand-alone example:
+%   fs          = 44100; % sampling frequency of the waveforms insig1 and insig2supra
+%   target      = insig2supra + insig1;
+%   reference   = insig1;
+%   [template,ir_reference] = casptemplate(target,reference,'dau1996preproc',{fs});
+% 
 % Copyright (C) 2009-2014 Peter L. Soendergaard and Piotr Majdak.
 % This file is part of AMToolbox version 0.9.5
-%
-% This program is free software: you can redistribute it and/or modify
-% it under the terms of the GNU General Public License as published by
-% the Free Software Foundation, either version 3 of the License, or
-% (at your option) any later version.
-%
-% This program is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU General Public License for more details.
-%
-% You should have received a copy of the GNU General Public License
-% along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin<4
     modelpars={};
 end;
 
-ntargets    = size(target,2);
+ntargets    = size(   target,2);
 nreferences = size(reference,2);
 
 %% ----- Compute average internal representation of the targets
@@ -54,13 +50,14 @@ end;
 
 ir_reference=ir_reference/nreferences;
 
-% Compute the template as the difference between the average
-% representation of the targets and references.
+% Compute the template as the difference between the average representation 
+% of the targets and references.
 template = ir_target - ir_reference;
 
-%% ----- Normalize to compensate for the increase in level ----
+%% ----- Normalise to compensate for the increase in level ----
 
-% Normalize across all dimenstions of the internal representation.
-template=template/rms(tempate(:));
+% Normalise across all dimenstions of the internal representation.
+template=template/rms(template(:));
+
 %OLDFORMAT
 
