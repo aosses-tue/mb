@@ -1,5 +1,5 @@
-function [y y4optdet y3] = Normalise_signal(x,fs)
-% function [y y4optdet y3] = Normalise_signal(x,fs)
+function [y y4optdet y3] = Normalise_signal(x,fs,method)
+% function [y y4optdet y3] = Normalise_signal(x,fs,method)
 %
 % 1. Description:
 %       Normalisation of a signal x. If x has more than 1 column, each 
@@ -31,8 +31,12 @@ function [y y4optdet y3] = Normalise_signal(x,fs)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 20/10/2014
 % Last update on: 30/04/2015 
-% Last use on   : 18/08/2015 
+% Last use on   : 24/09/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+if nargin < 3
+    method = 1;
+end
 
 y = nan(size(x)); % just allocation
 
@@ -42,14 +46,24 @@ if size(x,1) ~= 1
         CalFactor = sqrt( N/(fs* sum(x(:,i).^2)) );
         y(:,i) = x(:,i) * CalFactor;
         y4optdet(:,i) = x(:,i) * CalFactor * fs^(1/4);
-        c = sqrt( 1/sum(x(:,i).^2) );
+        switch method
+            case 1
+                c = sqrt( 1/sum(x(:,i).^2) );
+            case 2
+                c = sqrt(fs/sum(x(:,i).^2) );
+        end
         y3(:,i) = c*x(:,i);
     end
 else
     CalFactor= 1/sqrt(fs) * sqrt( N/(sum(x.^2)));
     y        = x * CalFactor;
     y4optdet = x * CalFactor*fs^(1/4);
-    c = sqrt( 1/sum(x.*x) );
+    switch method
+        case 1
+            c = sqrt( 1/sum(x.*x) );
+        case 2
+            c = sqrt(fs/sum(x.*x) );
+    end
     y3 = c*x;
 end
 

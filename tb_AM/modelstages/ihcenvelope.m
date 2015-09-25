@@ -2,7 +2,7 @@ function inoutsig = ihcenvelope(inoutsig,fs,varargin)
 % function inoutsig = ihcenvelope(inoutsig,fs,varargin)
 %
 % 1. Description:
-%           Inner hair cell envelope extration
+%           Inner hair cell envelope extraction
 % 
 %   Usage:  outsig=ihcenvelope(insig,fs,methodname);
 %
@@ -56,6 +56,7 @@ function inoutsig = ihcenvelope(inoutsig,fs,varargin)
 %
 %     'dim',d          Work along dimension d.
 %
+% 2. Additional information:
 %   References:
 %     L. Bernstein, S. van de Par, and C. Trahiotis. The normalized
 %     interaural correlation: Accounting for NoSπ thresholds obtained with
@@ -76,11 +77,12 @@ function inoutsig = ihcenvelope(inoutsig,fs,varargin)
 %     contralateral inhibition. I. Simulation of lateralization for
 %     stationary signals. J. Acoust. Soc. Am., 80:1608-1622, 1986.
 %     
-%
 %   Url: http://amtoolbox.sourceforge.net/doc/modelstages/ihcenvelope.php
 %
+%   See also: bernstein1999normalized breebaart2001a gabor1946 lindemann1986a dau1996qmeI
+% 
 % Copyright (C) 2009-2014 Peter L. Soendergaard and Piotr Majdak.
-% This file is part of AMToolbox version 0.9.5
+% This file is part of AMToolbox version 0.9.5-0.9.7
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
 
@@ -124,14 +126,13 @@ if flags.do_ihc_bernstein
     [b, a] = butter(2, cutofffreq*2/fs);
     inoutsig = filter(b,a, inoutsig);
 end;
-
+  
 %% Breebaart2001a
 if flags.do_ihc_breebaart
   inoutsig = max( inoutsig, 0 );
-  cutofffreq=2000;  % cascade butter filters with fcut = 2000 Hz is equivalent
-                    % to 770 Hz
+  cutofffreq=2000;  % cascade butter filters with fcut = 2000 Hz is equivalent to 770 Hz
   [b, a] = butter(1, cutofffreq*2/fs);
-  for ii=1:5
+  for ii=1:keyvals.ihc_filter_order % by default ihc_filter_order = 5
     inoutsig = filter(b,a, inoutsig);
   end;
 end;

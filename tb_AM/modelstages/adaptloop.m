@@ -60,7 +60,7 @@ function inoutsig = adaptloop(inoutsig,fs,varargin);
 %     
 %   Url: http://amtoolbox.sourceforge.net/doc/modelstages/adaptloop.php
 %
-% Copyright (C) 2009-2014 Peter L. Søndergaard and Piotr Majdak.
+% Copyright (C) 2009-2014 Peter L. Soendergaard and Piotr Majdak.
 % This file is part of AMToolbox version 0.9.5
 %
 %

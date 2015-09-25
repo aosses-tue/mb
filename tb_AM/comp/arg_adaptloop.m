@@ -14,7 +14,7 @@ function definput=arg_adaptloop(definput)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 definput.keyvals.limit  = 10;
-definput.keyvals.minlvl =  0; % in dB
+definput.keyvals.minlvl =  0; 
 definput.keyvals.tau    = [0.005 0.050 0.129 0.253 0.500]; % default
 definput.keyvals.intnoise_dB = 0;
 

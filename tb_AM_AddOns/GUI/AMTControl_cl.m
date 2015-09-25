@@ -43,6 +43,8 @@ handles_man = Ensure_field(handles_man,'filename1','D:\Output\AMTControl-example
 handles_man = Ensure_field(handles_man,'filename2','D:\Output\AMTControl-examples\tone-f-1000-Hz-at-42-dB-dur-800-ms.wav');
 handles_man = Ensure_field(handles_man,'do_template',1);
 handles_man = Ensure_field(handles_man,'do_simulation',1);
+handles_man = Ensure_field(handles_man,'MethodIntRep',1); % my method to obtain internal representations
+handles_man = Ensure_field(handles_man,'Nreversals',12);
 
 filename1 = handles_man.filename1;
 filename2 = handles_man.filename2;
@@ -68,14 +70,14 @@ if handles_man.do_template == 1
 end
 
 if handles_man.do_simulation == 1
-    handles.StepdB          = 4;
-    handles.Nreversals      = 10;
+    handles.StepdB          = 2;
+    handles.Nreversals      = handles_man.Nreversals;
     handles.bStepSizeHalved = 1;
     handles.Nsim = 1;
     handles.bInternalNoise = 1;
     handles.sigma           = handles_man.sigma;
     handles.bDecisionMethod = handles_man.bDecisionMethod;
-
+    handles.MethodIntRep    = handles_man.MethodIntRep;
     handles = il_SimulateAFC(handles);
 
     disp(['Threshold (rel. in dB): ' num2str(handles.Threshold)])
@@ -86,6 +88,7 @@ if handles_man.do_simulation == 1
     disp('')
 end
 
+%%% In September 2015, old results: 
 %  jepsen2008preproc_1Ch
 %         criterion
 %         4    /   2
@@ -106,6 +109,29 @@ end
 %   1.5    -0.5  /
 %** 1.7     0.5  /
 
+
+%%% On 24/09/2015: 
+%  jepsen2008preproc_1Ch
+%         criterion
+%         4    /   2
+% -------------------
+%   0.4    /
+%** 0.5     /
+%   0.7     /
+%   0.8     /
+%   0.9     /
+
+%  dau1996preproc_1Ch
+%           criterion
+%           4    /   2
+% -------------------
+%   0.5   0   /
+%   0.8   2.5 /
+%   1.1     /
+%   1.5     /
+%** 1.7     /
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 3. Executes on button press in btnLoad.
 function handles = il_btnLoad(filename1, filename2, handles)
@@ -113,8 +139,10 @@ function handles = il_btnLoad(filename1, filename2, handles)
 dir_out = handles.dir_out;
 Mkdir(dir_out); % creates folder in case it does not exist:
 
-G1 = 0; % gain in dB for audio file 1
-G2 = 0; % gain in dB for audio file 2
+G1 = 20; % gain in dB for audio file 1
+G2 = 20; % gain in dB for audio file 2
+warning('Manual gain')
+pause(2)
 
 [insig1,fs]  = Wavread(filename1);
 [insig2,fs2] = Wavread(filename2);
@@ -473,37 +501,34 @@ end
 
 bStochastic = ~bDeterministic;
 
-switch nAnalyser
-    case {100, 101, 103, 104}
-    
-        fc2plot_idx = handles.fc2plot_idx;
-        fc2plot_idx2 = handles.fc2plot_idx2;
-        
-        if length(fc2plot_idx) == 1
-            fc      = audtofreq(fc2plot_idx+2,'erb'); % used as input for single-channel modelling
-        else
-            fcmin   = audtofreq(min(fc2plot_idx)+2,'erb'); 
-            fcmax   = audtofreq(max(fc2plot_idx)+2,'erb');
-        end
+fc2plot_idx = handles.fc2plot_idx;
+fc2plot_idx2 = handles.fc2plot_idx2;
 
-        mu      = 0;   
-        bSigma = handles.bInternalNoise;
-        if bSigma
-            sigma   = handles.sigma;
-        else
-            sigma = 0;
-        end
-
-        if length(fc2plot_idx) == 1
-            bSingleChannel = 1;
-            bMultiChannel = 0;
-            fc2plot_idx = 1;
-        else
-            bSingleChannel = 0;
-            bMultiChannel = 1;
-        end
-    
+%%%
+if length(fc2plot_idx) == 1
+    fc      = audtofreq(fc2plot_idx+2,'erb'); % used as input for single-channel modelling
+else
+    fcmin   = audtofreq(min(fc2plot_idx)+2,'erb'); 
+    fcmax   = audtofreq(max(fc2plot_idx)+2,'erb');
 end
+
+mu      = 0;   
+bSigma = handles.bInternalNoise;
+if bSigma
+    sigma   = handles.sigma;
+else
+    sigma = 0;
+end
+
+if length(fc2plot_idx) == 1
+    bSingleChannel = 1;
+    bMultiChannel = 0;
+    fc2plot_idx = 1;
+else
+    bSingleChannel = 0;
+    bMultiChannel = 1;
+end
+%%%
 
 Threshold = [];
 bUseRamp       = handles.bUseRamp;
@@ -575,159 +600,168 @@ for k = 1:Nsim
             sound(interval2, fs)
             pause(1)
         end
-                
-        switch nAnalyser
-            case {100, 101, 103, 104}
+             
+        switch handles.MethodIntRep
+            case 1
+            if nAnalyser == 100;
+                if bMultiChannel
+                    [out_interval1  , fc] = dau1996preproc(interval1,fs);
+                    [out_interval1s2, fc] = dau1996preproc(interval1s2,fs);
+                    [out_interval2  , fc] = dau1996preproc(interval2,fs);
 
-                if nAnalyser == 100;
-                    if bMultiChannel
-                        [out_interval1  , fc] = dau1996preproc(interval1,fs);
-                        [out_interval1s2, fc] = dau1996preproc(interval1s2,fs);
-                        [out_interval2  , fc] = dau1996preproc(interval2,fs);
-                        
-                        out_interval1   = out_interval1(:,fc2plot_idx);
-                        out_interval1s2 = out_interval1s2(:,fc2plot_idx);
-                        out_interval2   = out_interval2(:,fc2plot_idx);
-                        
-                        handles.script_sim = 'dau1996preproc';
-                    end
-                    if bSingleChannel
-                        [out_interval1]   = dau1996preproc_1Ch(interval1,fs,fc);
-                        [out_interval1s2] = dau1996preproc_1Ch(interval1s2,fs,fc);
-                        [out_interval2]   = dau1996preproc_1Ch(interval2,fs,fc);
-                        
-                        handles.script_sim = 'dau1996preproc_1Ch';
-                    end
-                    
-                elseif nAnalyser == 101
-                    
-                    if bMultiChannel
-                        error('not implemented yet');
-                    end
-                    if bSingleChannel
-                        [out_interval1  ,fc, xx, outsfilt11] = dau1997preproc_1Ch(interval1  ,fs,fc);
-                        [out_interval1s2,fc, xx, outsfilt12] = dau1997preproc_1Ch(interval1s2,fs,fc);
-                        [out_interval2  ,fc, xx, outsfilt2] = dau1997preproc_1Ch(interval2  ,fs,fc);
+                    out_interval1   = out_interval1(:,fc2plot_idx);
+                    out_interval1s2 = out_interval1s2(:,fc2plot_idx);
+                    out_interval2   = out_interval2(:,fc2plot_idx);
 
-                        out_interval1   = out_interval1(:);
-                        out_interval1s2 = out_interval1s2(:);
-                        out_interval2   = out_interval2(:);
-                        
-                        handles.script_sim = 'dau1997preproc_1Ch';
-                        
-                        bListenToFilter = 0;
-                        if bListenToFilter
-                            warning('Listen to filter...')
-                            fprintf('Level current = %.0f dB, actual level noise = %.1f dB\n',Level_current,rmsdb(outsfilt11.out01_filterbank)+100)
-                            sound(outsfilt11.out01_filterbank,fs)
-                            pause(0.5)
-                            sound(outsfilt12.out01_filterbank,fs)
-                            pause(0.5)
-                            fprintf('Level current = %.0f dB, actual level signal+noise = %.1f\n',Level_current,rmsdb(outsfilt2.out01_filterbank)+100)
-                            sound(outsfilt2.out01_filterbank,fs)
-                            disp('Press any key to continue...')
-                            pause();
-                        end
-                    end
-                    
-                elseif nAnalyser == 103
-                    if bMultiChannel
-                        [out_interval1] = jepsen2008preproc_multi(interval1,fs,fcmin,fcmax,'resample_intrep');
-                        [out_interval1s2] = jepsen2008preproc_multi(interval1s2,fs,fcmin,fcmax,'resample_intrep');
-                        [out_interval2] = jepsen2008preproc_multi(interval2,fs,fcmin,fcmax,'resample_intrep');
-                        
-                        out_interval1   = il_pool_in_one_column(out_interval1);
-                        out_interval1s2 = il_pool_in_one_column(out_interval1s2);
-                        out_interval2   = il_pool_in_one_column(out_interval2);
-                        
-                        handles.script_sim = 'jepsen2008preproc_multi';
-                    end
-                    if bSingleChannel
-                        [out_interval1 xx xx outsfilt11]   = jepsen2008preproc_1Ch(interval1,fs,fc);
-                        [out_interval1s2 xx xx outsfilt12] = jepsen2008preproc_1Ch(interval1s2,fs,fc);
-                        [out_interval2 xx xx outsfilt2]    = jepsen2008preproc_1Ch(interval2,fs,fc);
-                        
-                        handles.script_sim = 'jepsen2008preproc_1Ch';
-                        
-                        bListenToFilter = 0;
-                        if bListenToFilter
-                            warning('Listen to filter')
-                            fprintf('Level current = %.0f dB, actual level noise = %.1f dB\n',Level_current,rmsdb(outsfilt11.out_filterbank)+100)
-                            sound(outsfilt11.out_filterbank,fs)
-                            pause(0.5)
-                            sound(outsfilt12.out_filterbank,fs)
-                            pause(0.5)
-                            fprintf('Level current = %.0f dB, actual level signal+noise = %.1f\n',Level_current,rmsdb(outsfilt2.out_filterbank)+100)
-                            sound(outsfilt2.out_filterbank,fs)
-                            disp('Press any key to continue...')
-                            pause();
-                            
-                        end
-                        
-                        out_interval1   = il_pool_in_one_column(out_interval1);
-                        out_interval1s2 = il_pool_in_one_column(out_interval1s2);
-                        out_interval2   = il_pool_in_one_column(out_interval2);
-                    end
-                    
-                elseif nAnalyser == 104
-                    if bMultiChannel
-                        error('Not implemented yet (on 26/08/2015)');
-                    end
-                    if bSingleChannel
-                        [out_interval1 xx xx outsfilt1] = jepsen2008preproc_1Ch(interval1,fs,fc,'lowpass');
-                        [out_interval1s2] = jepsen2008preproc_1Ch(interval1s2,fs,fc,'lowpass');
-                        [out_interval2 xx xx outsfilt2] = jepsen2008preproc_1Ch(interval2,fs,fc,'lowpass');
-                        
-                        handles.script_sim = 'jepsen2008preproc_1Ch';
+                    handles.script_sim = 'dau1996preproc';
+                end
+                if bSingleChannel
+                    [out_interval1]   = dau1996preproc_1Ch(interval1,fs,fc);
+                    [out_interval1s2] = dau1996preproc_1Ch(interval1s2,fs,fc);
+                    [out_interval2]   = dau1996preproc_1Ch(interval2,fs,fc);
+
+                    handles.script_sim = 'dau1996preproc_1Ch';
+                end
+
+            elseif nAnalyser == 101
+
+                if bMultiChannel
+                    error('not implemented yet');
+                end
+                if bSingleChannel
+                    [out_interval1  ,fc, xx, outsfilt11] = dau1997preproc_1Ch(interval1  ,fs,fc);
+                    [out_interval1s2,fc, xx, outsfilt12] = dau1997preproc_1Ch(interval1s2,fs,fc);
+                    [out_interval2  ,fc, xx, outsfilt2] = dau1997preproc_1Ch(interval2  ,fs,fc);
+
+                    out_interval1   = out_interval1(:);
+                    out_interval1s2 = out_interval1s2(:);
+                    out_interval2   = out_interval2(:);
+
+                    handles.script_sim = 'dau1997preproc_1Ch';
+
+                    bListenToFilter = 0;
+                    if bListenToFilter
+                        warning('Listen to filter...')
+                        fprintf('Level current = %.0f dB, actual level noise = %.1f dB\n',Level_current,rmsdb(outsfilt11.out01_filterbank)+100)
+                        sound(outsfilt11.out01_filterbank,fs)
+                        pause(0.5)
+                        sound(outsfilt12.out01_filterbank,fs)
+                        pause(0.5)
+                        fprintf('Level current = %.0f dB, actual level signal+noise = %.1f\n',Level_current,rmsdb(outsfilt2.out01_filterbank)+100)
+                        sound(outsfilt2.out01_filterbank,fs)
+                        disp('Press any key to continue...')
+                        pause();
                     end
                 end
-                
-                out_interval1   = Add_gaussian_noise(out_interval1,mu,sigma); % Add internal noise
-                out_interval1s2 = Add_gaussian_noise(out_interval1s2,mu,sigma);
-                out_interval2   = Add_gaussian_noise(out_interval2,mu,sigma); % Add internal noise
-                    
-                [a b] = size(template);
-                % one audio-frequency band but all the modulation filterbanks:
-               
-                sigint1 = reshape(out_interval1,a,b);
-                sigint1s2 = reshape(out_interval1s2,a,b);
-                sigint2 = reshape(out_interval2,a,b);
-                
+
+            elseif nAnalyser == 103
+                if bMultiChannel
+                    [out_interval1] = jepsen2008preproc_multi(interval1,fs,fcmin,fcmax,'resample_intrep');
+                    [out_interval1s2] = jepsen2008preproc_multi(interval1s2,fs,fcmin,fcmax,'resample_intrep');
+                    [out_interval2] = jepsen2008preproc_multi(interval2,fs,fcmin,fcmax,'resample_intrep');
+
+                    out_interval1   = il_pool_in_one_column(out_interval1);
+                    out_interval1s2 = il_pool_in_one_column(out_interval1s2);
+                    out_interval2   = il_pool_in_one_column(out_interval2);
+
+                    handles.script_sim = 'jepsen2008preproc_multi';
+                end
+                if bSingleChannel
+                    [out_interval1 xx xx outsfilt11]   = jepsen2008preproc_1Ch(interval1,fs,fc);
+                    [out_interval1s2 xx xx outsfilt12] = jepsen2008preproc_1Ch(interval1s2,fs,fc);
+                    [out_interval2 xx xx outsfilt2]    = jepsen2008preproc_1Ch(interval2,fs,fc);
+
+                    handles.script_sim = 'jepsen2008preproc_1Ch';
+
+                    bListenToFilter = 0;
+                    if bListenToFilter
+                        warning('Listen to filter')
+                        fprintf('Level current = %.0f dB, actual level noise = %.1f dB\n',Level_current,rmsdb(outsfilt11.out_filterbank)+100)
+                        sound(outsfilt11.out_filterbank,fs)
+                        pause(0.5)
+                        sound(outsfilt12.out_filterbank,fs)
+                        pause(0.5)
+                        fprintf('Level current = %.0f dB, actual level signal+noise = %.1f\n',Level_current,rmsdb(outsfilt2.out_filterbank)+100)
+                        sound(outsfilt2.out_filterbank,fs)
+                        disp('Press any key to continue...')
+                        pause();
+
+                    end
+
+                    out_interval1   = il_pool_in_one_column(out_interval1);
+                    out_interval1s2 = il_pool_in_one_column(out_interval1s2);
+                    out_interval2   = il_pool_in_one_column(out_interval2);
+                end
+
+            elseif nAnalyser == 104
+                if bMultiChannel
+                    error('Not implemented yet (on 26/08/2015)');
+                end
+                if bSingleChannel
+                    [out_interval1 xx xx outsfilt1] = jepsen2008preproc_1Ch(interval1,fs,fc,'lowpass');
+                    [out_interval1s2] = jepsen2008preproc_1Ch(interval1s2,fs,fc,'lowpass');
+                    [out_interval2 xx xx outsfilt2] = jepsen2008preproc_1Ch(interval2,fs,fc,'lowpass');
+
+                    handles.script_sim = 'jepsen2008preproc_1Ch';
+                end
+            end
+
+            out_interval1no = out_interval1; % without internal noise
+            out_interval1s2no = out_interval1s2;
+            
+            out_interval1   = Add_gaussian_noise(out_interval1,mu,sigma); % Add internal noise
+            out_interval1s2 = Add_gaussian_noise(out_interval1s2,mu,sigma);
+            out_interval2   = Add_gaussian_noise(out_interval2,mu,sigma); % Add internal noise
+
+            [a b] = size(template);
+            % one audio-frequency band but all the modulation filterbanks:
+
+            sigint1 = reshape(out_interval1,a,b);
+            sigint1s2 = reshape(out_interval1s2,a,b);
+            sigint2 = reshape(out_interval2,a,b);
+            %%%        
+
+            intrep_M = Add_gaussian_noise(out_interval1s2,mu,sigma);
+            intrep_M2 = Add_gaussian_noise(out_interval1,mu,sigma);
+            intrep_M3 = Add_gaussian_noise(out_interval1,mu,sigma);
+            
+            diff11 =   sigint1-intrep_M;
+            diff12 = sigint1s2-intrep_M2;
+            diff20 =   sigint2-intrep_M3; %tt = 1:length(diff11); figure; plot(tt,diff11+30,tt,diff12,tt,diff20-30); legend('11','12','20')
+        
+        case 2
+            
+            out_interval1   = casprepresentation(interval1  ,'dau1996preproc',{fs});
+            out_interval1s2 = casprepresentation(interval1s2,'dau1996preproc',{fs});
+            out_interval2   = casprepresentation(interval2  ,'dau1996preproc',{fs});
+        
+            NN = 1;
+            diff11 = [];
+            diff12 = [];
+            diff20 = [];
+
+            for kk = 1:NN
+                diff11(:,kk) = Add_gaussian_noise(out_interval1(:,fc2plot_idx2),mu,sigma); % Add internal noise
+                diff12(:,kk) = Add_gaussian_noise(out_interval1s2(:,fc2plot_idx2),mu,sigma);
+                diff20(:,kk) = Add_gaussian_noise(out_interval2(:,fc2plot_idx2),mu,sigma); % Add internal noise
+            end
+            diff11 = mean(diff11,2)-handles.xxir;
+            diff12 = mean(diff12,2)-handles.xxir;
+            diff20 = mean(diff20,2)-handles.xxir;
+            
         end
         
-        Nmaskers_c = Nmaskers;
-        Nmaskers = Nmaskers + 2;
-        if Nmaskers_c > 0
-            masker_interval_avg = (masker_interval_avg*Nmaskers_c + out_interval1 + out_interval1s2 )/Nmaskers;
-        else
-            masker_interval_avg = (   out_interval1 + out_interval1s2 )/Nmaskers;
+        bDebug = 1;
+        if bDebug == 1
+            figure; 
+            subplot(4,1,1); plot(interval2,'r'); hold on; plot(interval1); ha = gca;
+            subplot(4,1,2); plot(out_interval2,'r'); hold on; plot(out_interval1); ha(end+1) = gca; 
+            subplot(4,1,3); plot(diff20,'r'); hold on; plot(diff11); ha(end+1) = gca; 
+            subplot(4,1,4); plot(out_interval2-out_interval1); % hold on; plot(diff11); ha(end+1) = gca; 
+            title(sprintf('current level = %.1f',Level_current))
+            disp('')
+            close
         end
-        masker_int_currentavg = (out_interval1 + out_interval1s2 )/2;
-        
-        % intrep_M = masker_interval_avg;
-        intrep_M = masker_int_currentavg;
-                
-        % diff11 =   sigint1-intrep_M;
-        % diff12 = sigint1s2-intrep_M;
-        % diff20 =   sigint2-intrep_M; %tt = 1:length(diff11); figure; plot(tt,diff11+30,tt,diff12,tt,diff20-30); legend('11','12','20')
-        
-        out_interval1   = casprepresentation(interval1  ,'dau1996preproc',{fs});
-        out_interval1s2 = casprepresentation(interval1s2,'dau1996preproc',{fs});
-        out_interval2   = casprepresentation(interval2  ,'dau1996preproc',{fs});
-        
-        NN = 1;
-        diff11 = [];
-        diff12 = [];
-        diff20 = [];
-        
-        for kk = 1:NN
-            diff11(:,kk) = Add_gaussian_noise(out_interval1(:,fc2plot_idx2),mu,sigma); % Add internal noise
-            diff12(:,kk) = Add_gaussian_noise(out_interval1s2(:,fc2plot_idx2),mu,sigma);
-            diff20(:,kk) = Add_gaussian_noise(out_interval2(:,fc2plot_idx2),mu,sigma); % Add internal noise
-        end
-        diff11 = mean(diff11,2)-handles.xxir;
-        diff12 = mean(diff12,2)-handles.xxir;
-        diff20 = mean(diff20,2)-handles.xxir;
         
         bDecisionMethod = handles.bDecisionMethod; 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -745,19 +779,31 @@ for k = 1:Nsim
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % 2. Second decision used:
         if bDecisionMethod == 2
-            [decision(1) corrmue(:,1)] = optimaldetector(diff11,template);
-            [decision(2) corrmue(:,2)] = optimaldetector(diff12,template);
-            [decision(3) corrmue(:,3)] = optimaldetector(diff20,template);
+            switch handles.MethodIntRep
+                case 1
+                    if fs == fs_intrep
+                        [decision(1) corrmue(:,1)] = optimaldetector(diff11,template,fs_intrep);
+                        [decision(2) corrmue(:,2)] = optimaldetector(diff12,template,fs_intrep);
+                        [decision(3) corrmue(:,3)] = optimaldetector(diff20,template,fs_intrep);
+                    end
+                case 2
+                    [decision(1) corrmue(:,1)] = optimaldetector(diff11,template);
+                    [decision(2) corrmue(:,2)] = optimaldetector(diff12,template);
+                    [decision(3) corrmue(:,3)] = optimaldetector(diff20,template);
+            end
+            diffs = [diff11 diff12 diff20];
             
-            decision(3)-decision(2)
-            decision(3)-decision(1)
-            [maxvalue, idx_decision] = max(abs(decision(1:3)));
+            % [decision(3)-decision(2) decision(3)-decision(1)]
+            [mean(diffs) mean(corrmue);std(diffs) std(corrmue)]
+            %[maxvalue, idx_decision] = max(abs(decision(1:3)));
             
-            % stdnoise = max( std([diff11 diff12]) );
-            % if maxvalue < stdnoise
-            %     idx_decision = 1; % just random number
-            % end
-
+            Tr = sigma;
+            if decision(3) > Tr
+                idx_decision = 3;
+            else
+                idx_decision = 1;
+            end
+            
             disp(std([diff11 diff12 diff20]))
         end
         
@@ -790,7 +836,7 @@ for k = 1:Nsim
                 Reversals = [Reversals; Level_current];
 
                 if mod(nReversal,2) == 0 & bHalveStepSize
-                    Level_step = max( Level_step/2, 1 );
+                    Level_step = max( Level_step/2, 0.2 );
                 end
 
             end
@@ -806,7 +852,7 @@ for k = 1:Nsim
                 nReversal = nReversal + 1;
                 Reversals = [Reversals; Level_current];
                 if mod(nReversal,2) == 0 & bHalveStepSize
-                    Level_step = max( Level_step/2, 1 );
+                    Level_step = max( Level_step/2, 0.2 );
                 end
                 Level_current = Level_current + Level_step; % we make it easier after two mistakes
                 nCorrect = 0;

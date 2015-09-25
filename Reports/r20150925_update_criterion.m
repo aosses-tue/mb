@@ -18,15 +18,16 @@ bDiary = 0;
 Diary(mfilename,bDiary);
 close all
 
-fs = 44100;
+fs = 22050;
 
 bPart1 = 0;
 bPart2 = 1;
 
-opts.bDecisionMethod = 2;
-opts.sigma      = 5.5; % 0.5
+opts.bDecisionMethod = 4;
+opts.sigma      = 1.85; % 0.5
 opts.audio.fs   = fs;
 opts.nAnalyser  = 100; % 99.1, 100 - dau1996, my template estimation
+opts.MethodIntRep = 1; % 1 - my method; 2 - using casptemplate.m
 
 if bPart1
     [masker,insig] = exp_dau1996b(fs);
@@ -60,10 +61,9 @@ if bPart2
     opts.do_simulation = 1;
     opts.DurRamps = 150; % additional cosine ramps
     opts.Gain4supra = 5; % dB
-    opts.nAnalyser = 100; % dau1996
-    opts.sigma      = .5; % 0.5
     opts.audio.fs   = fs;
-
+    opts.Nreversals = 12;
+    
     AMTControl_cl(opts);
 end
 

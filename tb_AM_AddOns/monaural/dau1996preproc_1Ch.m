@@ -65,7 +65,8 @@ function [outsig, fc, extra] = dau1996preproc_1Ch(insig, fs, fc, varargin);
 %       [insig,fs] = greasy;
 %       insig = resample(insig,44100,fs);
 %       fs = 44100;
-%       [outsig, fc] = dau1996preproc(insig, fs);
+%       fc = 800; 
+%       [outsig, fc] = dau1996preproc_1Ch(insig, fs, fc);
 % 
 % Author        : Torsten Dau, Morten L. Jepsen, Peter L. Soendergaard
 % Downloaded on : 18/03/2014
@@ -102,6 +103,19 @@ keyvals.fhigh   = fc;
 % Apply the auditory filterbank
 [outsig, fc] = auditoryfilterbank(insig,fs,'argimport',flags,keyvals);
 extra.out_filterbank  = outsig; 
+
+do_internal_noise = 0;
+if do_internal_noise
+    for i = 1:size(outsig,2)
+        if i==1
+            warning('temporal arrangement of internal noise')
+        end
+        
+        dur = size(outsig,1)/fs;
+        n = AM_random_noise(0,fs/2,9.7+3,dur,fs); % 9.7 dB SPL per band
+        outsig(:,i) = outsig(:,i)+n;
+    end
+end
 
 % 'haircell' envelope extraction
 outsig = ihcenvelope(outsig,fs,'argimport',flags,keyvals);

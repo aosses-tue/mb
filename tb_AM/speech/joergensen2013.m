@@ -364,7 +364,6 @@ mn = Un + (.577 /Un);% F^(-1)[1/n] Basically gives the value that would be drawn
 sig_n=  1.28255/Un;
 Pcorrect = normcdf(d_prime,mn,sqrt(sigma_s.^2+sig_n.^2))*100;
 
-
 % Green, D. M. and Birdsall, T. G. (1964). "The effect of vocabulary size",
 % In Signal Detection and Recognition by Human Observers,
 % edited by John A. Swets (John Wiley & Sons, New York)

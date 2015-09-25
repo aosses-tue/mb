@@ -1,32 +1,19 @@
 function definput=arg_ihcenvelope(definput)
 % function definput=arg_ihcenvelope(definput)
 %
-% 'ihc_jepsen added by AO'
+%  1. Description:
+%   'ihc_jepsen added by AO'
 %
-% Last update on: 28/06/2015 % Update this manually
-% Last use on   : 28/06/2015 % Update this manually
+% Last update on: 28/06/2015 
+% Last use on   : 24/09/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
   definput.flags.ihctype={'nodefault','ihc_bernstein','ihc_breebaart','ihc_dau', ...
                           'hilbert','ihc_lindemann','ihc_meddis','ihc_jepsen'};
 
   definput.keyvals.minlvl=[];
+  definput.keyvals.minlvl=[];
+  definput.keyvals.ihc_filter_order=5; % added in v. 0.9.7 and only used as parameter
+                                       % in flags.do_ihc_breebaart
 
 %   Url: http://amtoolbox.sourceforge.net/doc/comp/arg_ihcenvelope.php
-
-% Copyright (C) 2009-2014 Peter L. Soendergaard and Piotr Majdak.
-% This file is part of AMToolbox version 0.9.5
-%
-% This program is free software: you can redistribute it and/or modify
-% it under the terms of the GNU General Public License as published by
-% the Free Software Foundation, either version 3 of the License, or
-% (at your option) any later version.
-%
-% This program is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU General Public License for more details.
-%
-% You should have received a copy of the GNU General Public License
-% along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
