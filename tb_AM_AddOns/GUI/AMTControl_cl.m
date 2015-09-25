@@ -1,5 +1,5 @@
-function varargout = AMTControl_cl(handles_man)
-% function varargout = AMTControl_cl(handles_man)
+function outs = AMTControl_cl(handles_man)
+% function outs = AMTControl_cl(handles_man)
 %
 % 1. Description: 
 %       AMTCONTROL MATLAB code for AMTControl.fig
@@ -39,12 +39,17 @@ handles_man = Ensure_field(handles_man,'DurRamps',150); % ms
 
 dir_out = Get_TUe_paths('outputs');
 
-handles_man = Ensure_field(handles_man,'filename1','D:\Output\AMTControl-examples\tone-f-1000-Hz-at-60-dB-dur-800-ms.wav');
-handles_man = Ensure_field(handles_man,'filename2','D:\Output\AMTControl-examples\tone-f-1000-Hz-at-42-dB-dur-800-ms.wav');
+handles_man = Ensure_field(handles_man,'filename1',[Get_TUe_paths('outputs') 'AMTControl-examples' delim 'tone-f-1000-Hz-at-60-dB-dur-800-ms.wav']);
+handles_man = Ensure_field(handles_man,'filename2',[Get_TUe_paths('outputs') 'AMTControl-examples' delim 'tone-f-1000-Hz-at-42-dB-dur-800-ms.wav']);
 handles_man = Ensure_field(handles_man,'do_template',1);
 handles_man = Ensure_field(handles_man,'do_simulation',1);
 handles_man = Ensure_field(handles_man,'MethodIntRep',1); % my method to obtain internal representations
 handles_man = Ensure_field(handles_man,'Nreversals',12);
+handles_man = Ensure_field(handles_man,'Ntimes',1); % deterministic
+
+handles_man = Ensure_field(handles_man,'StepdB',2); 
+handles_man = Ensure_field(handles_man,'StepdBmin',1); 
+handles_man = Ensure_field(handles_man,'Reversals4avg',6); 
 
 filename1 = handles_man.filename1;
 filename2 = handles_man.filename2;
@@ -59,10 +64,10 @@ handles.nAnalyser   = handles_man.nAnalyser;
 handles.fc2plot_idx  = ceil( freqtoaud(1000,'erb') )-2;
 handles.fc2plot_idx2 = ceil( freqtoaud(1000,'erb') )-2;
 
-handles.Ntimes = 1; % 1 == deterministic
+handles.Ntimes = handles_man.Ntimes; % 1 == deterministic
 
-handles.bUseRamp  = 1;
-handles.bUseRampS = 1;
+handles.bUseRamp  = handles_man.bUseRamp;
+handles.bUseRampS = handles_man.bUseRampS;
 handles.DurRamps = handles_man.DurRamps; % ms
 
 if handles_man.do_template == 1
@@ -70,9 +75,11 @@ if handles_man.do_template == 1
 end
 
 if handles_man.do_simulation == 1
-    handles.StepdB          = 2;
+    handles.StepdB          = handles_man.StepdB;
+    handles.StepdBmin       = handles_man.StepdBmin;
     handles.Nreversals      = handles_man.Nreversals;
     handles.bStepSizeHalved = 1;
+    handles.Reversals4avg   = handles_man.Reversals4avg;
     handles.Nsim = 1;
     handles.bInternalNoise = 1;
     handles.sigma           = handles_man.sigma;
@@ -85,7 +92,7 @@ if handles_man.do_simulation == 1
     disp(['Script in template   : ' handles.script_template])
     disp(['Script in simulations: ' handles.script_sim])
 
-    disp('')
+    outs.Threshold = handles.Threshold;
 end
 
 %%% In September 2015, old results: 
@@ -139,8 +146,8 @@ function handles = il_btnLoad(filename1, filename2, handles)
 dir_out = handles.dir_out;
 Mkdir(dir_out); % creates folder in case it does not exist:
 
-G1 = 20; % gain in dB for audio file 1
-G2 = 20; % gain in dB for audio file 2
+G1 = 0; % gain in dB for audio file 1
+G2 = 0; % gain in dB for audio file 2
 warning('Manual gain')
 pause(2)
 
@@ -478,6 +485,8 @@ Level_start = handles.Gain4supra;
 Level_step_i    = handles.StepdB;
 Reversals_stop  = handles.Nreversals;
 bHalveStepSize  = handles.bStepSizeHalved;
+Reversals4avg   = handles.Reversals4avg;
+StepdBmin       = handles.StepdBmin;
 
 fs = handles.audio.fs;
 fs_intrep = handles.audio.fs_intrep;
@@ -708,6 +717,7 @@ for k = 1:Nsim
 
             out_interval1no = out_interval1; % without internal noise
             out_interval1s2no = out_interval1s2;
+            out_interval2no = out_interval2;
             
             out_interval1   = Add_gaussian_noise(out_interval1,mu,sigma); % Add internal noise
             out_interval1s2 = Add_gaussian_noise(out_interval1s2,mu,sigma);
@@ -721,14 +731,14 @@ for k = 1:Nsim
             sigint2 = reshape(out_interval2,a,b);
             %%%        
 
-            intrep_M = Add_gaussian_noise(out_interval1s2,mu,sigma);
-            intrep_M2 = Add_gaussian_noise(out_interval1,mu,sigma);
-            intrep_M3 = Add_gaussian_noise(out_interval1,mu,sigma);
+            intrep_M = handles.xxir; % Add_gaussian_noise(out_interval1s2,mu,sigma);
+            %     intrep_M2 = handles.xxir; % Add_gaussian_noise(out_interval1,mu,sigma);
+            %     intrep_M3 = handles.xxir; % Add_gaussian_noise(out_interval1,mu,sigma);
             
             diff11 =   sigint1-intrep_M;
-            diff12 = sigint1s2-intrep_M2;
-            diff20 =   sigint2-intrep_M3; %tt = 1:length(diff11); figure; plot(tt,diff11+30,tt,diff12,tt,diff20-30); legend('11','12','20')
-        
+            diff12 = sigint1s2-intrep_M;
+            diff20 =   sigint2-intrep_M; %tt = 1:length(diff11); figure; plot(tt,diff11+30,tt,diff12,tt,diff20-30); legend('11','12','20')
+            disp('');
         case 2
             
             out_interval1   = casprepresentation(interval1  ,'dau1996preproc',{fs});
@@ -792,12 +802,13 @@ for k = 1:Nsim
                     [decision(3) corrmue(:,3)] = optimaldetector(diff20,template);
             end
             diffs = [diff11 diff12 diff20];
-            
+     
             % [decision(3)-decision(2) decision(3)-decision(1)]
-            [mean(diffs) mean(corrmue);std(diffs) std(corrmue)]
+            % [mean(diffs) mean(diffsno);std(diffs) std(diffsno)]
             %[maxvalue, idx_decision] = max(abs(decision(1:3)));
             
-            Tr = sigma;
+            % varn = std(abs(corrmue(:,1:2)));
+            Tr = sigma; % max(varn); % sigma;
             if decision(3) > Tr
                 idx_decision = 3;
             else
@@ -836,7 +847,7 @@ for k = 1:Nsim
                 Reversals = [Reversals; Level_current];
 
                 if mod(nReversal,2) == 0 & bHalveStepSize
-                    Level_step = max( Level_step/2, 0.2 );
+                    Level_step = max( Level_step/2, StepdBmin );
                 end
 
             end
@@ -852,7 +863,7 @@ for k = 1:Nsim
                 nReversal = nReversal + 1;
                 Reversals = [Reversals; Level_current];
                 if mod(nReversal,2) == 0 & bHalveStepSize
-                    Level_step = max( Level_step/2, 0.2 );
+                    Level_step = max( Level_step/2, StepdBmin );
                 end
                 Level_current = Level_current + Level_step; % we make it easier after two mistakes
                 nCorrect = 0;
@@ -872,7 +883,7 @@ for k = 1:Nsim
     end
     
     if bSucceeded
-        Threshold(k) = median(Reversals(end-6+1:end,:));
+        Threshold(k) = median(Reversals(end-Reversals4avg+1:end,:));
     else
         Threshold(k) = NaN;
     end

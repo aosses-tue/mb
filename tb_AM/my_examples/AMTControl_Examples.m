@@ -46,11 +46,11 @@ switch nExample
         
         fs = 44100;
         f = 1000;
-        dur = 4; % in seconds
+        dur = 800e-3; % in seconds
         SPLs = [60 42]; % see r20150522_update. Estimated dprime should be around 1.25
         
-        [outsig1 file1] = Il_create_tone(f,dur,fs,SPLs(1));
-        [outsig2 file2] = Il_create_tone(f,dur,fs,SPLs(2));
+        [outsig1 file1] = Il_create_tone(f,dur,fs,SPLs(1),0,0);
+        [outsig2 file2] = Il_create_tone(f,dur,fs,SPLs(2),0,0);
         
         filename{1} = [dirout file1];
         filename{2} = [dirout file2];

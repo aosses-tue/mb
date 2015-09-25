@@ -1,4 +1,8 @@
 function bp = amtbasepath;
+% function bp = amtbasepath;
+% 
+% 1. Description:
+% 
 %AMTBASEPATH  The base path of the AMT installation
 %   Usage: bp = amtbasepath;
 %
@@ -29,3 +33,5 @@ f=mfilename('fullpath');
 
 bp = f(1:end-11);
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+end

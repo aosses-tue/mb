@@ -19,10 +19,10 @@ function [y t] = Create_sin(f,dur,fs,window)
 %   [y, t]  = Create_sin(f,dur);
 %   plot(t,y); xlabel('time [s]'); ylabel('Amplitude')
 % 
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 26/05/2014
-% Last update on: 26/06/2014 % Update this date manually
-% Last use on   : 21/10/2014 % Update this date manually
+% Last update on: 26/06/2014 
+% Last use on   : 25/09/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 1

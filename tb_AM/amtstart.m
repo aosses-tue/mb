@@ -1,7 +1,12 @@
-function amtstart()
-%AMTSTART   Start the Auditory Modeling Toolbox
+function amtstart(varargin)
+% function amtstart(varargin)
+% 
+% 1. Description:
+%       Start the Auditory Modeling Toolbox
+% 
 %   Usage:  amtstart;
-%
+%           amtstart(flags);
+% 
 %   AMTSTART starts the Auditory Modeling Toolbox. This command must be
 %   run before using any of the function in the toolbox.
 %
@@ -23,7 +28,6 @@ function amtstart()
 %
 %   See also:  amthelp
 %
-%
 %   Url: http://amtoolbox.sourceforge.net/doc/amtstart.php
 
 % Copyright (C) 2009-2014 Peter L. Søndergaard and Piotr Majdak.
@@ -34,32 +38,51 @@ function amtstart()
 % the Free Software Foundation, either version 3 of the License, or
 % (at your option) any later version.
 %
-% This program is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU General Public License for more details.
-%
-% You should have received a copy of the GNU General Public License
-% along with this program.  If not, see <http://www.gnu.org/licenses/>.
-  
-%   AUTHOR : Peter L. Søndergaard, Piotr Majdak 
+%   AUTHOR : Peter L. Soendergaard, Piotr Majdak 
+% Last update: 25/09/2015 by AO
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%% LTFAT package
+bp=amtbasepath; % bp - basepath
 
 % Search for LTAFT package
-basepath=which('amtstart');
-basepath=basepath(1:end-11);
+
 if ~exist('ltfatstart','file')
-  ltfatpath=fullfile(basepath,'thirdparty','ltfat');
+  ltfatpath=fullfile(bp,'thirdparty','ltfat');
   if exist(ltfatpath,'dir')
     addpath(ltfatpath);
   end
 end
 
-% Start LTFAT
-disp('*** Starting LTFAT ***');
+% Load the version number
+[FID, MSG] = fopen ([bp,'amtoolbox_version'],'r');
+if FID == -1
+    error(MSG);
+else
+    amt_version = fgetl (FID);
+    fclose(FID);
+end
+
+% Check if 'silent' present in the flags
+silent=0;
+if exist('OCTAVE_VERSION','builtin'), args=argv; else args=varargin; end
+for ii=1:numel(args)
+    s=lower(args{ii});
+    if strcmp(s,'silent') || strcmp(s,'-q')
+        silent=1;
+    end;
+end;
+
+if ~silent
+    disp('  ');
+    disp(['AMT version ',amt_version,'. (C) Piotr Majdak and Peter L. Soendergaard.']);
+    disp('  ');
+    disp('Starting toolboxes...');
+end;
+ 
+%% LTFAT package
+
 if exist('ltfatstart','file')
-  ltfatstart;
+  if silent, ltfatstart(0); else ltfatstart; end;
 else
   error(['LTFAT package could not be found. Unable to continue.' 10 ...
         'Download LTFAT from http://ltfat.sourceforge.net ' 10 ...
@@ -69,6 +92,9 @@ end
 % Check for the correct version. 
 s=ltfathelp('version'); 
 s_r='1.0.9'; % set the required version
+warning('Update LTFAT version')
+% % For AMT version 0.9.7
+% s_r='2.0.0'; % set the required version
 v=sscanf(s,'%d.%d.%d'); v(4)=0;
 v_r=sscanf(s_r,'%d.%d.%d');
 if ~(v(1)>v_r(1) || (v(1)>=v_r(1) && v(2)>v_r(2)) || (v(1)>=v_r(1) && v(2)>=v_r(2) && v(3)>=v_r(3)) ),
@@ -79,35 +105,40 @@ end
 %% SOFA package
 
 % Search for SOFA package
-basepath=which('amtstart');
-basepath=basepath(1:end-11);
 if ~exist('SOFAstart','file')
-  sofapath=fullfile(basepath,'thirdparty','SOFA','API_MO');
-  if exist(sofapath,'dir')
-    addpath(sofapath);
-  end
+    sofapath=fullfile(bp,'thirdparty','SOFA','API_MO');
+    if exist(sofapath,'dir')
+        addpath(sofapath);
+    end
 end
 
 % Start SOFA
-disp('*** Starting SOFA ***');
 if exist('SOFAstart','file')
-  SOFAdbPath(fullfile(basepath,'hrtf'));
-  SOFAdbURL('http://www.sofacoustics.org/data/amt');
-  SOFAstart;
+    SOFAdbPath(fullfile(bp,'hrtf'));
+    SOFAdbURL('http://www.sofacoustics.org/data'); % This is a default path and will be overwritten later
+    if silent, SOFAstart('silent'); else SOFAstart('short'); end
+    warning('off','SOFA:upgrade');	% disable warning on upgrading older SOFA files
+	warning('off','SOFA:load'); % disable warnings on loading SOFA files
 else
   disp(['SOFA package could not be found. Continue without SOFA support.']);
   disp(['For SOFA support please download the package ' ...
         'from http://sofacoustics.sourceforge.net ' ...
         'and copy to amtoolbox/thirdparty/SOFA.']); 
+    if ~silent,
+        disp('SOFA package could not be found. Continue without SOFA support.');
+        disp(['For SOFA support please download the package ' ...
+            'from http://sofacoustics.sourceforge.net ' ...
+            'and copy to amtoolbox/thirdparty/SOFA.']); 
+    end
 end
 
 %% SFS package
 
 % Search for the package
-basepath=which('amtstart');
-basepath=basepath(1:end-11);
+bp=which('amtstart');
+bp=bp(1:end-11);
 if ~exist('SFS_start','file')
-  sfspath=fullfile(basepath,'thirdparty','SFS');
+  sfspath=fullfile(bp,'thirdparty','SFS');
   if exist(sfspath,'dir')
     addpath(sfspath);
   end
@@ -141,14 +172,14 @@ printbanner=1;
 % Get the basepath as the directory this function resides in.
 % The 'which' solution below is more portable than 'mfilename'
 % becase old versions of Matlab does not have "mfilename('fullpath')"
-basepath=which('amtstart');
-basepath=basepath(1:end-11);
+bp=which('amtstart');
+bp=bp(1:end-11);
 if exist('addpath','var')>0
-  addpath(basepath);
+  addpath(bp);
 else
-  path(path,basepath);
+  path(path,bp);
 end
-bp=[basepath,filesep];
+bp=[bp,filesep];
 
 % Load the version number
 [FID, MSG] = fopen ([bp,'amtoolbox_version'],'r');
@@ -165,7 +196,7 @@ modules={};
 nplug=0;
 
 % List all files in base directory
-d=dir(basepath);
+d=dir(bp);
 
 for ii=1:length(d)
   if d(ii).isdir
