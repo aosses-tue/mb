@@ -6,7 +6,7 @@ function r20150925_update_criterion
 % 2. Stand-alone example:
 %
 % 3. Additional info:
-%       Tested cross-platform: No
+%       Tested cross-platform: Yes
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 22/09/2015
@@ -21,11 +21,11 @@ close all
 fs = 44100;
 
 bPart1 = 0;
-bPart2 = 1; % Calibration of the model: sigma = 1.85 for bDecisionMethod = 2
-bPart3 = 0; % Deterministic
+bPart2 = 0; % Calibration of the model: sigma = 1.85 for bDecisionMethod = 2
+bPart3 = 1; % Deterministic
 
 opts.bDecisionMethod = 2;
-opts.sigma      = 0.95; 
+opts.sigma      = 1.32; % 0.95; 
 opts.audio.fs   = fs;
 opts.nAnalyser  = 100; % 99.1, 100 - dau1996, my template estimation
 opts.MethodIntRep = 1; % 1 - my method; 2 - using casptemplate.m
@@ -90,7 +90,7 @@ if bPart3
     fsignals{3} = [Get_TUe_paths('outputs') 'sig3.wav'];
     
     try
-        Wavread(fmaskerdet);
+        Wavread(fmaskerdet{1});
         bCreate = 0;
     catch
         bCreate = 1;
@@ -128,13 +128,19 @@ if bPart3
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Stochastic thresholds:
+    close all
     
     opts.Ntimes = 100;
     opts.filename1 = fmaskerbuf;
+    Nsims = 4;
     for i = 1:3
-        opts.filename2 = fsignals{i};
-        tmp = AMTControl_cl(opts);
-        th_sto(i) = tmp.Threshold;
+        for j = 1:Nsims
+            opts.filename2 = fsignals{i};
+            tmp = AMTControl_cl(opts);
+            th_sto(i,j) = tmp.Threshold;
+            
+            disp('')
+        end
     end
     
     figure;
@@ -143,7 +149,6 @@ if bPart3
     legend('Deterministic','Stochastic')
     
 end
-
 
 if bDiary
 	diary off

@@ -447,10 +447,6 @@ handles.audio.avg_intrep_M  = out_1Mean;
 handles.audio.avg_intrep_MT = out_2Mean;
 handles.audio.Ntimes        = Ntimes;
 handles.audio.fs_intrep     = fs_intrep;
-try
-    handles.xxir = out_1Mean;
-    warning('temporal')
-end
 
 bSave2workspace = 0;
 bListen         = 0;
@@ -577,29 +573,50 @@ for k = 1:Nsim
             insig1s0 = il_randomise_insig(handles.audio.insig1orig);
             insig1s1 = il_randomise_insig(handles.audio.insig1orig);
             insig1s2 = il_randomise_insig(handles.audio.insig1orig);
+            
+            insig30 = il_randomise_insig(handles.audio.insig1orig);
+            insig31 = il_randomise_insig(handles.audio.insig1orig);
+            insig32 = il_randomise_insig(handles.audio.insig1orig);
         end
         if bDeterministic == 1
             insig1s0 = insig1;
             insig1s1 = insig1;
             insig1s2 = insig1;
+            
+            insig30 = insig1;
+            insig31 = insig1;
+            insig32 = insig1;
         end
 
         insig1s0 = insig1s0( 1:length(insig2) );
         insig1s1 = insig1s1( 1:length(insig2) );
         insig1s2 = insig1s2( 1:length(insig2) );
+        insig30 = insig30( 1:length(insig2) );
+        insig31 = insig31( 1:length(insig2) );
+        insig32 = insig32( 1:length(insig2) );
+        
         if bUseRamp
             if k==1; fprintf('Introducing %.0f-ms ramps into maskers\n',rampdn); end
             insig1s0 = Do_cos_ramp(insig1s0, fs, rampdn);
             insig1s1 = Do_cos_ramp(insig1s1, fs, rampdn);
             insig1s2 = Do_cos_ramp(insig1s2, fs, rampdn);
+            
+            insig30 = Do_cos_ramp(insig30, fs, rampdn);
+            insig31 = Do_cos_ramp(insig31, fs, rampdn);
+            insig32 = Do_cos_ramp(insig32, fs, rampdn);
         end
         
         Gain2apply  = From_dB(Level_current);
         insig2test  = Gain2apply * insig2;
         interval1   = insig1s0; % Only noise
         interval1s2 = insig1s2; % Only noise 2
+        
         interval2 = insig1s1 + insig2test; % Noise + current signal
-             
+        
+        intervalN0 = insig30;
+        intervalN1 = insig31;
+        intervalN2 = insig32;
+        
         if bListen
             pause(2)
             sound(interval1, fs)
@@ -617,7 +634,7 @@ for k = 1:Nsim
                     [out_interval1  , fc] = dau1996preproc(interval1,fs);
                     [out_interval1s2, fc] = dau1996preproc(interval1s2,fs);
                     [out_interval2  , fc] = dau1996preproc(interval2,fs);
-
+                    
                     out_interval1   = out_interval1(:,fc2plot_idx);
                     out_interval1s2 = out_interval1s2(:,fc2plot_idx);
                     out_interval2   = out_interval2(:,fc2plot_idx);
@@ -628,6 +645,10 @@ for k = 1:Nsim
                     [out_interval1]   = dau1996preproc_1Ch(interval1,fs,fc);
                     [out_interval1s2] = dau1996preproc_1Ch(interval1s2,fs,fc);
                     [out_interval2]   = dau1996preproc_1Ch(interval2,fs,fc);
+                    
+                    [out_N0]   = dau1996preproc_1Ch(intervalN0,fs,fc);
+                    [out_N1]   = dau1996preproc_1Ch(intervalN1,fs,fc);
+                    [out_N2]   = dau1996preproc_1Ch(intervalN2,fs,fc);
 
                     handles.script_sim = 'dau1996preproc_1Ch';
                 end
@@ -722,22 +743,31 @@ for k = 1:Nsim
             out_interval1   = Add_gaussian_noise(out_interval1,mu,sigma); % Add internal noise
             out_interval1s2 = Add_gaussian_noise(out_interval1s2,mu,sigma);
             out_interval2   = Add_gaussian_noise(out_interval2,mu,sigma); % Add internal noise
+            
+            % out_N0 = Add_gaussian_noise(out_N0,mu,sigma);
+            % out_N1 = Add_gaussian_noise(out_N1,mu,sigma);
+            % out_N2 = Add_gaussian_noise(out_N2,mu,sigma);
 
             [a b] = size(template);
             % one audio-frequency band but all the modulation filterbanks:
 
-            sigint1 = reshape(out_interval1,a,b);
-            sigint1s2 = reshape(out_interval1s2,a,b);
-            sigint2 = reshape(out_interval2,a,b);
+            sigint1     = reshape(out_interval1,a,b);
+            sigint1s2   = reshape(out_interval1s2,a,b);
+            sigint2     = reshape(out_interval2,a,b);
             %%%        
 
-            intrep_M = handles.xxir; % Add_gaussian_noise(out_interval1s2,mu,sigma);
-            %     intrep_M2 = handles.xxir; % Add_gaussian_noise(out_interval1,mu,sigma);
-            %     intrep_M3 = handles.xxir; % Add_gaussian_noise(out_interval1,mu,sigma);
+            % intrep_M0 = handles.audio.avg_intrep_M; % Add_gaussian_noise(out_interval1s2,mu,sigma);
+            % intrep_M1 = intrep_M0; % Add_gaussian_noise(out_interval1,mu,sigma);
+            % intrep_M2 = intrep_M0; % Add_gaussian_noise(out_interval1,mu,sigma);
             
-            diff11 =   sigint1-intrep_M;
-            diff12 = sigint1s2-intrep_M;
-            diff20 =   sigint2-intrep_M; %tt = 1:length(diff11); figure; plot(tt,diff11+30,tt,diff12,tt,diff20-30); legend('11','12','20')
+            intM = handles.audio.avg_intrep_M; % mean([out_N0 out_N1 out_N2],2);
+            intrep_M0   = intM; % out_N0; % Add_gaussian_noise(out_interval1s2,mu,sigma);
+            intrep_M1   = intM; % out_N1; % Add_gaussian_noise(out_interval1,mu,sigma);
+            intrep_M2   = intM; % out_N2; % Add_gaussian_noise(out_interval1,mu,sigma);
+
+            diff11 =   sigint1-intrep_M0;
+            diff12 = sigint1s2-intrep_M1;
+            diff20 =   sigint2-intrep_M2; %tt = 1:length(diff11); figure; plot(tt,diff11+30,tt,diff12,tt,diff20-30); legend('11','12','20')
             disp('');
         case 2
             
@@ -807,8 +837,8 @@ for k = 1:Nsim
             % [mean(diffs) mean(diffsno);std(diffs) std(diffsno)]
             %[maxvalue, idx_decision] = max(abs(decision(1:3)));
             
-            % varn = std(abs(corrmue(:,1:2)));
-            Tr = sigma; % max(varn); % sigma;
+            varn = std(diffs(:,1:2));
+            Tr = max(varn); % sigma;
             if decision(3) > Tr
                 idx_decision = 3;
             else
