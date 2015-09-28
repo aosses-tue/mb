@@ -51,8 +51,12 @@ hM.I_TitleInAxis = 1;
 hM.I_Space       = [0.05,0.05];
 hM.I_Legend      = 'off';
 
-% hM.I_Ylim       = [-50,0]; % Uncomment for fixing the limits in the y-axis
-% hM.I_Xlim       = [0 24];
+if isfield(plotOpts,'I_Ylim')
+    hM.I_Ylim    = plotOpts.I_Ylim; 
+end
+if isfield(plotOpts,'I_Xlim')
+    hM.I_Xlim    = plotOpts.I_Xlim; 
+end
 
 hM.I_Grid        = 'on'; 
 hM.I_KeepColor   = I_KeepColor; 

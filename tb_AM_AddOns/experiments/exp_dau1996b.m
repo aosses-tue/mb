@@ -37,10 +37,10 @@ switch nFig
         masker = Do_cos_ramp(masker,fs,durramp);
         masker = setdbspl(masker,77);
 
-        dur = [10 20 40]; % ms
+        dur = [10 20 40 70 150]; % ms
 
         insig = [];
-        for i = 1:3
+        for i = 1:length(dur)
             insigtmp = Create_sin(f,dur(i)*1e-3,fs);
             insigtmp = Do_cos_ramp(insigtmp,fs,durramp);
             insigtmp = setdbspl(insigtmp,lvl);
@@ -54,13 +54,13 @@ switch nFig
         masker = setdbspl(masker,77);
 
         dur = 5e-3; % s
-        tonset = [0 20 100]*1e-3;
+        tonset = [0 10 20 50 100]*1e-3;
         durn = 300*1e-3; %
         durs = durn - dur;
         durnN = durn*fs;
         
         insig = [];
-        for i = 1:3
+        for i = 1:length(tonset)
             insigtmp = Create_sin(f,dur,fs,'hanning'); % hanning-windowed over entire duration
             insigtmp = setdbspl(insigtmp,lvl);
             insigtmp = [Gen_silence(tonset(i),fs); insigtmp; Gen_silence((durn-tonset(i)-dur),fs)]; 

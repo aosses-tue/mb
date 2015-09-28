@@ -1,5 +1,5 @@
-function Save_all_figures(Handles, outputdir)
-% function Save_all_figures(Handles, outputdir)
+function Save_all_figures(Handles, outputdir, counter_i)
+% function Save_all_figures(Handles, outputdir, counter_i)
 %
 % 1. Description:
 %
@@ -26,8 +26,12 @@ if nargin < 2
     outputdir = Get_TUe_paths('outputs');
 end
 
+if nargin < 3
+    counter_i = 1;
+end
+
 for i = 1:length(Handles)
-    Saveas(Handles(i), [outputdir 'fig-' num2str(i)]);
+    Saveas(Handles(i), [outputdir 'fig-' num2str(i+counter_i-1)]);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -10,15 +10,15 @@ function y = r20150320_update_dau
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 19/03/2015
-% Last update on: 20/03/2015 % Update this date manually
-% Last use on   : 20/03/2015 % Update this date manually
+% Last update on: 20/03/2015 
+% Last use on   : 20/03/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 close all
 
 bDiary = 0;
 Diary(mfilename,bDiary);
 
-bCalculate      = 0;
+bCalculate      = 1;
 bCreateAudio    = 0;
 bPart3          = 1;
 h               = [];

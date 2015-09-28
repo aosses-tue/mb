@@ -23,6 +23,7 @@ else
         option = ef(option,'format','epsc');
     end
 end
+option = ef(option,'format','epsc');
 
 str = fileparts(filename);
 

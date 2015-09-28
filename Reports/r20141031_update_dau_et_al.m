@@ -44,7 +44,7 @@ close all
 options.dB_SPL_noise = 77;
 criterion_corr  = 6.5; % Arbitrary number
 
-bDeterThres     = 0;
+bDeterThres     = 1;
 bIntRepr        = 0;
 
 % options = Ensure_field(options,'method','dau1996a'); % no overshoot limit
@@ -623,8 +623,8 @@ disp(['Variable saved as: ' filename_Sref '.mat']);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
 
-%% Backward masking:
-if bExpIC0 == 1;
+%% Backward masking: % 627-706
+if bExpIC0 == 1; 
 
 Threshold = [];
 mue = [];

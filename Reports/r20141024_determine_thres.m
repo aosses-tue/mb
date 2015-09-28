@@ -58,6 +58,9 @@ if bNew
     
 end
 
+% pathaudio = 'D:\Documenten-TUe\02-Experiments\2015-APEX-my-experiments\Masking\dau1996b\Stimuli\';
+% warning('Temporally changed')
+
 if nargin == 0
     close all
     nStimuli = 1;

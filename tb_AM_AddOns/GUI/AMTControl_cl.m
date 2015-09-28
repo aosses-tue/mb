@@ -72,6 +72,8 @@ handles.DurRamps = handles_man.DurRamps; % ms
 
 if handles_man.do_template == 1
     handles = il_GetTemplate(handles);
+else
+    handles.audio.template = handles_man.audio.template;
 end
 
 if handles_man.do_simulation == 1
@@ -89,10 +91,13 @@ if handles_man.do_simulation == 1
 
     disp(['Threshold (rel. in dB): ' num2str(handles.Threshold)])
     disp(['Variance: ' num2str(handles.sigma)])
-    disp(['Script in template   : ' handles.script_template])
-    disp(['Script in simulations: ' handles.script_sim])
+    try
+        disp(['Script in template   : ' handles.script_template])
+        disp(['Script in simulations: ' handles.script_sim])
+    end
 
     outs.Threshold = handles.Threshold;
+    outs.audio = handles.audio; % it includes template
 end
 
 %%% In September 2015, old results: 
@@ -448,20 +453,7 @@ handles.audio.avg_intrep_MT = out_2Mean;
 handles.audio.Ntimes        = Ntimes;
 handles.audio.fs_intrep     = fs_intrep;
 
-bSave2workspace = 0;
 bListen         = 0;
-
-if bSave2workspace
-    
-    dir_output  = handles.dir_out;
-    
-    if Gain4supra < 0
-        fname = sprintf('%stemplate-TYPE-supra-m%.0f-at-%.0f-Hz',dir_output,abs(Gain4supra),fc(fc2plot_idx_1));
-    else
-        fname = sprintf('%stemplate-TYPE-supra-p%.0f-at-%.0f-Hz',dir_output,abs(Gain4supra),fc(fc2plot_idx_1));
-    end
-    save(fname,'template','out_1Mean','out_2Mean');
-end
 
 if bListen
     sound(tmp.inM, fs)
@@ -629,7 +621,32 @@ for k = 1:Nsim
              
         switch handles.MethodIntRep
             case 1
-            if nAnalyser == 100;
+            
+            if nAnalyser == 99;
+                if bMultiChannel
+                    error('Continue here')
+                    % [out_interval1  , fc] = dau1996preproc(interval1,fs);
+                    % [out_interval1s2, fc] = dau1996preproc(interval1s2,fs);
+                    % [out_interval2  , fc] = dau1996preproc(interval2,fs);
+                    % 
+                    % out_interval1   = out_interval1(:,fc2plot_idx);
+                    % out_interval1s2 = out_interval1s2(:,fc2plot_idx);
+                    % out_interval2   = out_interval2(:,fc2plot_idx);
+                    % 
+                    % handles.script_sim = 'dau1996preproc';
+                end
+                if bSingleChannel
+                    [out_interval1]   = dau1996apreproc_1Ch(interval1,fs,fc);
+                    [out_interval1s2] = dau1996apreproc_1Ch(interval1s2,fs,fc);
+                    [out_interval2]   = dau1996apreproc_1Ch(interval2,fs,fc);
+                    
+                    [out_N0]   = dau1996apreproc_1Ch(intervalN0,fs,fc);
+                    [out_N1]   = dau1996apreproc_1Ch(intervalN1,fs,fc);
+                    [out_N2]   = dau1996apreproc_1Ch(intervalN2,fs,fc);
+
+                    handles.script_sim = 'dau1996preproc_1Ch';
+                end
+            elseif nAnalyser == 100;
                 if bMultiChannel
                     [out_interval1  , fc] = dau1996preproc(interval1,fs);
                     [out_interval1s2, fc] = dau1996preproc(interval1s2,fs);
@@ -838,14 +855,13 @@ for k = 1:Nsim
             %[maxvalue, idx_decision] = max(abs(decision(1:3)));
             
             varn = std(diffs(:,1:2));
-            Tr = max(varn); % sigma;
+            Tr = sigma; % max(varn); 
             if decision(3) > Tr
                 idx_decision = 3;
             else
                 idx_decision = 1;
             end
             
-            disp(std([diff11 diff12 diff20]))
         end
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

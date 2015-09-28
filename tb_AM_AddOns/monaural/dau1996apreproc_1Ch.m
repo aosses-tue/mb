@@ -91,6 +91,19 @@ keyvals.fhigh   = fc;
 [outsig, fc]            = auditoryfilterbank(insig,fs,'argimport',flags,keyvals);
 outs.out01_filterbank   = outsig; 
 
+do_internal_noise = 0;
+if do_internal_noise
+    for i = 1:size(outsig,2)
+        if i==1
+            warning('temporal arrangement of internal noise')
+        end
+        
+        dur = size(outsig,1)/fs;
+        n = AM_random_noise(0,fs/2,9.7+3,dur,fs); % 9.7 dB SPL per band
+        outsig(:,i) = outsig(:,i)+n;
+    end
+end
+
 % 'haircell' envelope extraction
 outsig                  = ihcenvelope(outsig,fs,'argimport',flags,keyvals);
 outs.out02_ihc          = outsig;
