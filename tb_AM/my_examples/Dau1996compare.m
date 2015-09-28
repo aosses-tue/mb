@@ -12,8 +12,8 @@ function outs = Dau1996compare(insig1,insig2,fs,opts)
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 08/10/2014
-% Last update on: 24/10/2014 % Update this date manually
-% Last use on   : 24/03/2015 % Update this date manually
+% Last update on: 24/10/2014 
+% Last use on   : 28/09/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 h = [];
@@ -53,7 +53,12 @@ haxis = [];
 % Normalisation of the template:
 % outs.template_no_norm   = outsig2.out04_LPF-outsig1.out04_LPF;
 outs.template_no_norm   = out2(:,idx)-out1(:,idx);
-outs.template           = Normalise_signal(outs.template_no_norm,fs);
+switch opts.calc_method
+    case 1
+        outs.template   = Normalise_signal(outs.template_no_norm,fs);
+    case 2
+        [xx xx outs.template] = Normalise_signal(outs.template_no_norm,fs,opts.calc_method);
+end
 
 outs.idx                = idx; % plotted/to be plotted idx
 
