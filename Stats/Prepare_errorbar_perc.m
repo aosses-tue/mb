@@ -14,7 +14,8 @@ function [Median,errorL,errorU] = Prepare_errorbar_perc(y,percL,percU)
 % Last use on   : 02/08/2015 % Update this date manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-perc = [percentile(y,50) percentile(y,percL) percentile(y,percU)];
+perc = [percentile(y,50); percentile(y,percL); percentile(y,percU)];
+perc = transpose(perc);
 Median = perc(:,1);
 errorL = Median-perc(:,2);
 errorU = perc(:,3)-Median;

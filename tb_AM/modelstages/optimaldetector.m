@@ -17,23 +17,24 @@ function [mue corrmue] = optimaldetector(ir_stim,template,fs)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 3
-    normmethod = 2; % default in AMT
+    normmethod = 1; % default in AMT
 else
-    normmethod = 1;
+    normmethod = 2;
 end
 
 corrmue = ir_stim.*template;
 
 switch normmethod
-    case 1
+    case 2
         optfactor = 1/fs;
         mue = sum(corrmue(:))*optfactor;
-    case 2
+    case 1
         optfactor = sqrt(numel(corrmue)); % default in AMT
         % Take mean over all dimensions of internal representation and correct for
         % optimalityfactor.
         mue = mean(corrmue(:))*optfactor;
 end
 
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % EOF

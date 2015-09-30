@@ -53,6 +53,8 @@ handles_man = Ensure_field(handles_man,'Reversals4avg',6);
 
 filename1 = handles_man.filename1;
 filename2 = handles_man.filename2;
+
+handles.bDebug = handles_man.bDebug;
 handles.dir_out = dir_out;
 handles.audio = handles_man.audio;
 
@@ -97,6 +99,8 @@ if handles_man.do_simulation == 1
     end
 
     outs.Threshold = handles.Threshold;
+    outs.Staircase = handles.Staircase;
+    outs.StaircaseCC = handles.StaircaseCC;
     outs.audio = handles.audio; % it includes template
 end
 
@@ -184,14 +188,16 @@ handles.audio.tf_samples = tf_samples;
 xliminf = ti_samples/fs;
 xlimsup = tf_samples/fs;
 
-figure;
-subplot(2,1,1)
-plot(t1,From_dB(G1)*insig1);
-xlim([xliminf xlimsup])
+if handles.bDebug
+    figure;
+    subplot(2,1,1)
+    plot(t1,From_dB(G1)*insig1);
+    xlim([xliminf xlimsup])
 
-subplot(2,1,2)
-plot(t2,From_dB(G2)*insig2,'r');
-xlim([xliminf xlimsup])
+    subplot(2,1,2)
+    plot(t2,From_dB(G2)*insig2,'r');
+    xlim([xliminf xlimsup])
+end
 
 adjustmentvalue = 0; % values calibrated to 100 dB RMS = 0 dBFS
 
@@ -215,7 +221,7 @@ thres_silence = 1/3; % one-third of the median value of the envelope
 fprintf('RMS1 = %.1f [dB SPL] (%.1f no silent)\n',RMS1,RMS1nosil + dBFS);
 fprintf('RMS2 = %.1f [dB SPL] (%.1f no silent)\n',RMS2,RMS2nosil + dBFS);
 
-bDFT = 1;
+bDFT = handles.bDebug;
 
 if bDFT
     windowtype = 'hanning';
@@ -429,22 +435,24 @@ template = template_test;
 
 t = ( 1:size(out_1Mean,1) )/fs_intrep;
 
-switch nAnalyser
-    case {99,99.1,100,100.1}
-        figure;
-        plot(t,template); grid on
-        xlabel(sprintf('Time [s]\nFollow the instructions in the command window to continue with the AFC simulation'))
-        
-    case 101
-        figure;
-        plot(t,template); grid on
-        xlabel(sprintf('Time [s]\nFollow the instructions in the command window to continue with the AFC simulation'))
-                
-    case {103,104}
-        figure;
-        plot(t,template); grid on
-        xlabel(sprintf('Time [s]\nFollow the instructions in the command window to continue with the AFC simulation'))
-end
+% if handles.bDebug
+    switch nAnalyser
+        case {99,99.1,100,100.1}
+            figure;
+            plot(t,template); grid on
+            xlabel(sprintf('Time [s]\nFollow the instructions in the command window to continue with the AFC simulation'))
+
+        case 101
+            figure;
+            plot(t,template); grid on
+            xlabel(sprintf('Time [s]\nFollow the instructions in the command window to continue with the AFC simulation'))
+
+        case {103,104}
+            figure;
+            plot(t,template); grid on
+            xlabel(sprintf('Time [s]\nFollow the instructions in the command window to continue with the AFC simulation'))
+    end
+% end
 
 handles.audio.template      = template;
 handles.audio.bDeterministic= bDeterministic;
@@ -551,12 +559,13 @@ for k = 1:Nsim
     
     Level_current   = Level_start;
 
-    Staircase = [];
-    Reversals = [];
+    Staircase   = [];
+    StaircaseCC = [];
+    Reversals   = [];
 
     nWrong      = 0;
-    nCorrect    = 1;
-    nReversal   = 0;
+    nCorrect    = 0;
+    nReversal   = -1;
     bSucceeded  = 1; % not failed
     
     while (nReversal < Reversals_stop) & (bSucceeded ==  1) % up to line 765
@@ -856,10 +865,10 @@ for k = 1:Nsim
             
             varn = std(diffs(:,1:2));
             Tr = sigma; % max(varn); 
-            if decision(3) > Tr
+            if decision(3)-max(decision(1:2)) > Tr
                 idx_decision = 3;
             else
-                idx_decision = 1;
+                idx_decision = randi(3);
             end
             
         end
@@ -885,35 +894,46 @@ for k = 1:Nsim
             end
         end
         Staircase = [Staircase; Level_current];
+        StaircaseCC = [StaircaseCC decision'];
         
         if idx_decision == 3 % (abs(dprimetmp(end)) >= 1.26) 
-            if nCorrect == 0
+            if nCorrect >= 1
 
-                nReversal = nReversal + 1;
-                Reversals = [Reversals; Level_current];
-
-                if mod(nReversal,2) == 0 & bHalveStepSize
-                    Level_step = max( Level_step/2, StepdBmin );
+                if nWrong == 1
+                    nReversal = nReversal + 1;
+                    Reversals = [Reversals; Level_current];
+                    if mod(nReversal,2) == 0 & bHalveStepSize & nReversal~= 0
+                        Level_step = max( Level_step/2, StepdBmin );
+                    end
+                    nWrong = 0;
                 end
 
-            end
-            nCorrect = 1;
-            
-            Level_current = Level_current - Level_step; % we make it more difficult
+                if mod(nCorrect,2) == 1 
+                    Level_current = Level_current - Level_step; % we make it more difficult
+                end
+            else
+                
+                nWrong = 0;
+            end 
+            nCorrect = nCorrect+1;
             
         else % masker is chosen
-            nWrong = nWrong+1;
-            if nWrong == 2
+            if nWrong == 0
 
-                nWrong = 0;
-                nReversal = nReversal + 1;
-                Reversals = [Reversals; Level_current];
-                if mod(nReversal,2) == 0 & bHalveStepSize
-                    Level_step = max( Level_step/2, StepdBmin );
+                if nCorrect >= 1
+                    nReversal = nReversal + 1;
+                    Reversals = [Reversals; Level_current];
+                    if mod(nReversal,2) == 0 & bHalveStepSize 
+                        Level_step = max( Level_step/2, StepdBmin );
+                    end
                 end
-                Level_current = Level_current + Level_step; % we make it easier after two mistakes
+                
                 nCorrect = 0;
+                
             end
+            nWrong = nWrong+1;
+            Level_current = Level_current + Level_step; % we make it easier after two mistakes
+            
         end
 
         if (Level_current < -120)
@@ -934,23 +954,25 @@ for k = 1:Nsim
         Threshold(k) = NaN;
     end
     
-    if bDeterministic
-        figure; 
-        plot(Staircase,'o');
-        xlabel('Presentation order')
-        ylabel('Relative level')
-        title(sprintf('Reversals median = %.2f [dB]',Threshold(k)));
-        grid on
-    end
-    
-    if bStochastic & k == Nsim
-        if nargout == 0
-            figure;
-            plot(Threshold,'o');
-            xlabel('Running noise nr.')
-            ylabel('Level at threshold (relative level)')
-            title(sprintf('Average threshold median (L25,L75) = %.2f dB (%.2f, %.2f)',prctile(Threshold,50),prctile(Threshold,25),prctile(Threshold,75)));
+    if handles.bDebug
+        if bDeterministic
+            figure; 
+            plot(Staircase,'o');
+            xlabel('Presentation order')
+            ylabel('Relative level')
+            title(sprintf('Reversals median = %.2f [dB]',Threshold(k)));
             grid on
+        end
+
+        if bStochastic & k == Nsim
+            if nargout == 0
+                figure;
+                plot(Threshold,'o');
+                xlabel('Running noise nr.')
+                ylabel('Level at threshold (relative level)')
+                title(sprintf('Average threshold median (L25,L75) = %.2f dB (%.2f, %.2f)',prctile(Threshold,50),prctile(Threshold,25),prctile(Threshold,75)));
+                grid on
+            end
         end
     end
     
@@ -958,6 +980,8 @@ for k = 1:Nsim
     
 end
 handles.Threshold = Threshold;
+handles.Staircase = Staircase;
+handles.StaircaseCC = StaircaseCC;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 5. Calculations: 

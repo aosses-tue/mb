@@ -21,14 +21,14 @@ outputdir = Get_TUe_paths('outputs');
 
 fs = 44100;
 
-bPart1 = 1; % Calibration of the model: sigma = 1.85 for bDecisionMethod = 2
-bPart2 = 1; % Deterministic
-bPart3 = 1; % Stochastic
+bPart1 = 0; % Calibration of the model: sigma = 1.85 for bDecisionMethod = 2
+bPart2 = 0; % Deterministic
+bPart3 = 0; % Stochastic
 bPart4 = 1; % Deterministic
 bPart5 = 1; % Stochastic
 
 opts.bDecisionMethod = 2;
-opts.sigma        = 1.7; % 0.95; 
+opts.sigma        = 1.75; % 1.7; 
 opts.audio.fs     = fs;
 opts.nAnalyser    = 100; % 99 - dau1996a, 99.1, 100 - dau1996, my template estimation
 opts.MethodIntRep = 1; % 1 - my method; 2 - using casptemplate.m
@@ -38,6 +38,9 @@ opts.Reversals4avg = 10;
 opts.do_template    =  1;
 opts.do_simulation  =  1;
 opts.Nreversals     = 12;
+
+bDebug = 0;
+opts.bDebug = bDebug;
 
 count_saved_figures = 1;
 if bPart1
@@ -120,7 +123,14 @@ if bPart2
         opts.filename1 = fmaskerdet{i};
         opts.filename2 = fsignals{i};
         tmp = AMTControl_cl(opts);
+        if bDebug
+            figure; 
+            subplot(2,1,1); plot(tmp.Staircase);  hold on; plot([0 length(tmp.Staircase)],[tmp.Threshold tmp.Threshold],'LineWidth',2)
+            subplot(2,1,2); plot(tmp.StaircaseCC')
+            close
+        end
         th_det(i) = tmp.Threshold;
+        disp('')
     end
     figHandles = findobj('Type','figure'); % 20 generated figures
     figHandles = figHandles(end:-1:1);
@@ -128,7 +138,11 @@ if bPart2
     % 2 - noise
     % 3 - templates
     % 4 - staircase
-    h_template = figHandles(3:4:end); % Figure '3 - templates' pooled
+    if bDebug
+        h_template = figHandles(3:4:end); % Figure '3 - templates' pooled
+    else
+        h_template = figHandles;
+    end
     plotopts.I_Ylim = [-7 12];
     plotopts.I_Xlim = [0 0.3];
     plotopts.I_Width = 25;
@@ -145,7 +159,7 @@ if bPart3
     % Stochastic thresholds:
     close all
     
-    opts.Ntimes = 100;
+    opts.Ntimes = 25;
     opts.filename1 = fmaskerbuf;
     Nsims = 4;
     for i = 1:5
@@ -160,12 +174,27 @@ if bPart3
             tmp = AMTControl_cl(opts);
             th_sto(i,j) = tmp.Threshold;
             
-            disp('')
+            if bDebug
+                figure; 
+                subplot(2,1,1); plot(tmp.Staircase);  hold on; plot([0 length(tmp.Staircase)],[tmp.Threshold tmp.Threshold],'LineWidth',2)
+                subplot(2,1,2); plot(tmp.StaircaseCC'); hold on;
+                ttmp = tmp.StaircaseCC(3,:)-max(tmp.StaircaseCC(1:2,:));
+                plot(ttmp,'r','LineWidth',2)
+                disp('')
+                close
+            end
+            
         end
         disp('')
     end
+    figHandles = findobj('Type','figure'); % 20 generated figures
+    figHandles = figHandles(end:-1:1);
     
-    h_template = figHandles(3:9:end); % Figure '3 - templates' pooled
+    if bDebug
+        h_template = figHandles(3:9:end); % Figure '3 - templates' pooled
+    else
+        h_template = figHandles;
+    end
     plotopts.I_Ylim = [-7 12];
     plotopts.I_Xlim = [0 0.3];
     plotopts.I_Width = 25;
@@ -180,7 +209,9 @@ if bPart3
     if bPart2
         plot(th_det+75,'ro-'); hold on
     end
-    plot(median(th_sto,2)+75,'b<--','LineWidth',2); grid on
+    [th_sto_median,errorL,errorU] = Prepare_errorbar_perc(th_sto',25,75);
+    % errorbar(median(th_sto,2)+75,'b<--','LineWidth',2); grid on
+    errorbar(1:5,th_sto_median+75,errorL,errorU,'b<--','LineWidth',2); grid on
     ha = gca;
     set(gca,'XTick',1:length(th_det))
     set(gca,'XTickLabel',[0 10 20 50 100])
@@ -191,8 +222,11 @@ if bPart3
         legend('Stochastic')
     end
     
+    Save_all_figures(gcf,outputdir,count_saved_figures);
+    count_saved_figures = count_saved_figures + 1;
 end
 
+count_saved_figures = 4; warning('temporal')
 if bPart4
     
     close all
@@ -259,7 +293,11 @@ if bPart4
     % 2 - noise
     % 3 - templates
     % 4 - staircase
-    h_template = figHandles(3:4:end); % Figure '3 - templates' pooled
+    if bDebug
+        h_template = figHandles(3:4:end); % Figure '3 - templates' pooled
+    else
+        h_template = figHandles;
+    end
     plotopts.I_Ylim = [-7 12];
     plotopts.I_Xlim = [0 0.3];
     plotopts.I_Width = 25;
@@ -297,7 +335,11 @@ if bPart5
         disp('')
     end
     
-    h_template = figHandles(3:9:end); % Figure '3 - templates' pooled
+    if bDebug
+        h_template = figHandles(3:9:end); % Figure '3 - templates' pooled
+    else
+        h_template = figHandles;
+    end
     plotopts.I_Ylim = [-7 12];
     plotopts.I_Xlim = [0 0.3];
     plotopts.I_Width = 25;
@@ -309,19 +351,25 @@ if bPart5
     count_saved_figures = count_saved_figures + 1;
     
     figure;
-    if bPart2
+    if bPart4
         plot(th_det_int+75,'ro-'); hold on
     end
-    plot(median(th_sto_int,2)+75,'b<--','LineWidth',2); grid on
+    
+    [th_sto_int_median,errorL,errorU] = Prepare_errorbar_perc(th_sto_int',25,75);
+    errorbar(1:5,th_sto_int_median+75,errorL,errorU,'b<--','LineWidth',2); grid on
     ha = gca;
-    set(gca,'XTick',1:length(th_det_int))
-    set(gca,'XTickLabel',dur)
+    set(ha,'XTick',1:length(th_det_int))
+    set(ha,'XTickLabel',dur)
     xlabel('Signal duration [ms]')
-    if bPart2
+    if bPart4
         legend('Deterministic','Stochastic')
     else
         legend('Stochastic')
     end
+    
+    Save_all_figures(gcf,outputdir,count_saved_figures);
+    count_saved_figures = count_saved_figures + 1;
+    
 end
 
 if bDiary

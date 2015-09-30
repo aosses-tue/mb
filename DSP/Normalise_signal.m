@@ -1,5 +1,5 @@
-function [y y4optdet y3] = Normalise_signal(x,fs,method)
-% function [y y4optdet y3] = Normalise_signal(x,fs,method)
+function y = Normalise_signal(x,fs,method)
+% function y = Normalise_signal(x,fs,method)
 %
 % 1. Description:
 %       Normalisation of a signal x. If x has more than 1 column, each 
@@ -20,9 +20,9 @@ function [y y4optdet y3] = Normalise_signal(x,fs,method)
 % 
 %       fs = 44100;
 %       x = wgn(1,3.65*fs,1); % 3.65-s length white noise
-%       [y y4opt] = Normalise_signal(x,fs);
+%       method = 0;
+%       y = Normalise_signal(x,fs,method);
 %       disp(num2str(sum(y.*y))) % this should give 3.65 of total energy
-%       disp(num2str(optimaldetector(y4opt,y4opt))) % correlation with itself (autocorrelation) = 1
 % 
 % 3. Additional info:
 %       Tested cross-platform: Yes
@@ -41,30 +41,35 @@ end
 y = nan(size(x)); % just allocation
 
 N = length(x);
-if size(x,1) ~= 1
+if size(x,2) ~= 1
+    error('Have a look at this...')
     for i = 1:size(x,2)
-        CalFactor = sqrt( N/(fs* sum(x(:,i).^2)) );
-        y(:,i) = x(:,i) * CalFactor;
-        y4optdet(:,i) = x(:,i) * CalFactor * fs^(1/4);
+        
         switch method
+            case 0
+                c = sqrt( N/(fs* sum(x(:,i).^2)) );
             case 1
                 c = sqrt( 1/sum(x(:,i).^2) );
             case 2
                 c = sqrt(fs/sum(x(:,i).^2) );
         end
-        y3(:,i) = c*x(:,i);
+        y(:,i) = x(:,i) * c;
     end
 else
-    CalFactor= 1/sqrt(fs) * sqrt( N/(sum(x.^2)));
-    y        = x * CalFactor;
-    y4optdet = x * CalFactor*fs^(1/4);
+    
     switch method
+        case 0
+            c = sqrt( N/(fs * sum(x.^2)));
         case 1
             c = sqrt( 1/sum(x.*x) );
         case 2
             c = sqrt(fs/sum(x.*x) );
     end
-    y3 = c*x;
+    y = c*x;
+end
+
+if nargout > 1
+    error('New definition of this function')
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

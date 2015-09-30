@@ -30,12 +30,9 @@ end
 ir1 = ir1(:);
 ir2 = ir2(:);
 
-method = 2;
-if method == 2
-    warning('temporarily arranged');
-end
-[xx xx out] = Normalise_signal(ir2-ir1,fs,method);
-out     = reshape(out,N,M);   
+method = 2; % new
+out = Normalise_signal(ir2-ir1,fs,method);
+out = reshape(out,N,M);   
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
