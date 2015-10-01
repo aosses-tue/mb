@@ -11,7 +11,7 @@ function r20150925_update_criterion
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 22/09/2015
 % Last update on: 22/09/2015 
-% Last use on   : 22/09/2015 
+% Last use on   : 29/09/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 bDiary = 0;
@@ -21,19 +21,19 @@ outputdir = Get_TUe_paths('outputs');
 
 fs = 44100;
 
-bPart1 = 0; % Calibration of the model: sigma = 1.85 for bDecisionMethod = 2
-bPart2 = 0; % Deterministic
-bPart3 = 0; % Stochastic
-bPart4 = 1; % Deterministic
-bPart5 = 1; % Stochastic
+bPart1 = 1; % Calibration of the model: sigma = 1.85 for bDecisionMethod = 2
+bPart2 = 0; % Simultaneous masking, deterministic
+bPart3 = 0; % Simultaneous masking, stochastic
+bPart4 = 1; % Signal integration, deterministic
+bPart5 = 1; % Signal integration, stochastic
 
 opts.bDecisionMethod = 2;
-opts.sigma        = 1.75; % 1.7; 
-opts.audio.fs     = fs;
-opts.nAnalyser    = 100; % 99 - dau1996a, 99.1, 100 - dau1996, my template estimation
-opts.MethodIntRep = 1; % 1 - my method; 2 - using casptemplate.m
+opts.sigma          = 1.75; % 1.7; 
+opts.audio.fs       = fs;
+opts.nAnalyser      = 100; % 99 - dau1996a, 99.1, 100 - dau1996, my template estimation
+opts.MethodIntRep   = 1; % 1 - my method; 2 - using casptemplate.m
 
-opts.Reversals4avg = 10;
+opts.Reversals4avg  = 10;
 
 opts.do_template    =  1;
 opts.do_simulation  =  1;

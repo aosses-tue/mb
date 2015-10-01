@@ -1,16 +1,20 @@
-function y = r20150320_update_dauN
-% function y = r20150320_update_dauN
+function r20150320_update_dauN
+% function r20150320_update_dauN
 %
 % 1. Description:
-%
+%       This script is a copy of r20150320_update_dau.m, but re-run in Sept
+%       2015, where some parts of the code were optimised (and updated).
+% 
 % 2. Stand-alone example:
-%
+%       r20150320_update_dauN;
+% 
 % 3. Additional info:
 %       Tested cross-platform: Yes
-%
+%       See also: r20150320_update
+% 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
-% Created on    : 19/03/2015
-% Last update on: 20/03/2015 
+% Created on    : 28/09/2015
+% Last update on: 28/09/2015 
 % Last use on   : 29/09/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 close all
@@ -37,7 +41,7 @@ pathaudiosrc  = [tmp 'new' delim '48000' delim];
 pathaudiodst1 = [tmp 'new' delim '44100' delim];% 'D:\Output\r20141031_update_dau_et_al20150318\';
 pathaudiodst2 = 'D:\Documenten-TUe\02-Experiments\2015-APEX-my-experiments\Masking\dau1996b\'; % APEX results
 pathaudiodst3 = [tmp 'new' delim 'Experiment' delim];
-output_dir = ['D:\Documenten-TUe\01-Text\05-Doc-TUe\lx2015-03-20-update\Figures' delim];
+output_dir = [Get_TUe_paths('lx_Text') 'lx2015-03-20-update' delim 'Figures' delim];
 
 test_onset_ref  = [-20:5:10]*1e-3;
 

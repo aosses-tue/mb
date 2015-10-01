@@ -31,7 +31,7 @@ function misc = Get_TUe_paths(type)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 15/03/2014
 % Last update on: 14/08/2015
-% Last use on   : 14/08/2015
+% Last use on   : 29/09/2015
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Alejandro's paths
