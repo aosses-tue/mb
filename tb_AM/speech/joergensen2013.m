@@ -332,7 +332,6 @@ x_filt = real(ifft(X_filt,N,2));
 
 end
 
-
 function Pcorrect  = IdealObserver_v1(SNRenv_lin,parameters)
 %%
 % IdealObserver: Converts the overall SNRenv to percent correct.
