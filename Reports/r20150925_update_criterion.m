@@ -1,5 +1,5 @@
-function r20150925_update_criterion
-% function r20150925_update_criterion
+function th = r20150925_update_criterion(bParts)
+% function th = r20150925_update_criterion(bParts)
 %
 % 1. Description:
 %
@@ -19,18 +19,38 @@ Diary(mfilename,bDiary);
 close all
 outputdir = Get_TUe_paths('outputs');
 
+if nargin == 0
+    bParts = [1 0 0 0 0 0];
+end
+
 fs = 44100;
 
-bPart1 = 1; % Calibration of the model: sigma = 1.85 for bDecisionMethod = 2
-bPart2 = 0; % Simultaneous masking, deterministic
-bPart3 = 0; % Simultaneous masking, stochastic
-bPart4 = 1; % Signal integration, deterministic
-bPart5 = 1; % Signal integration, stochastic
+bPart1 = bParts(1); % Calibration of the model: sigma = 1.85 for bDecisionMethod = 2
+bPart2 = bParts(2); % Simultaneous masking, deterministic
+bPart3 = bParts(3); % Simultaneous masking, stochastic
+bPart4 = bParts(4); % Signal integration, deterministic
+bPart5 = bParts(5); % Signal integration, stochastic
+bPart6 = bParts(6);
 
-opts.bDecisionMethod = 2;
-opts.sigma          = 1.75; % 1.7; 
-opts.audio.fs       = fs;
 opts.nAnalyser      = 100; % 99 - dau1996a, 99.1, 100 - dau1996, my template estimation
+
+opts.bDecisionMethod = 2; % 2 - cc; 4 - dprime
+switch opts.bDecisionMethod
+    case 2
+        switch opts.nAnalyser
+            case 99
+                opts.sigma   = 1.95; 
+            case 100
+                opts.sigma   = 2.45; % 1.72; % cc. 1.32 = sqrt(1.75)
+        end
+    case 3
+        opts.sigma   = 0.85; % dprime NOT GIVING RELIABLE RESULTS
+    case 4
+        opts.sigma   = 1.12; % dprime
+end
+    
+opts.var            = opts.sigma.*opts.sigma;
+opts.audio.fs       = fs;
 opts.MethodIntRep   = 1; % 1 - my method; 2 - using casptemplate.m
 
 opts.Reversals4avg  = 10;
@@ -38,6 +58,14 @@ opts.Reversals4avg  = 10;
 opts.do_template    =  1;
 opts.do_simulation  =  1;
 opts.Nreversals     = 12;
+
+erbc2analyse = ceil( freqtoaud(1000,'erb') )-2; % 14 for 1000 Hz (approx.)  
+opts.fc2plot_idx    = erbc2analyse-1;
+opts.fc2plot_idx2   = erbc2analyse;
+
+% dir_where = Get_TUe_paths('outputs');
+dir_where = [Get_TUe_paths('outputs') 'audio-20150928' delim];
+dir_where2 = [Get_TUe_paths('outputs') 'new' delim 'Experiment' delim];
 
 bDebug = 0;
 opts.bDebug = bDebug;
@@ -55,12 +83,21 @@ if bPart1
     opts.StepdBmin = 0.2;
     opts.filename1 = [Get_TUe_paths('outputs') 'AMTControl-examples' delim 'tone-f-1000-Hz-at-60-dB-dur-800-ms.wav'];
     opts.filename2 = [Get_TUe_paths('outputs') 'AMTControl-examples' delim 'tone-f-1000-Hz-at-42-dB-dur-800-ms.wav'];
-    refSPL  = 60;
-    testSPL = 42;
-    tr_tmp = AMTControl_cl(opts);
+    refSPL  = [20 30 40 50 60 70 80];
     
-    th_JND = sum_dB_arit([refSPL testSPL+tr_tmp.Threshold]) - refSPL;
+    for i=1:length(refSPL)
+        testSPL = refSPL(i)-18; % 42 dB for 60 dB    
+        opts.Gain2file1 = refSPL(i) - 60;
+        opts.Gain2file2 = refSPL(i) - 60;
+        tr_tmp = AMTControl_cl(opts);
+
+        th_JND(i) = sum_dB_arit([refSPL(i) testSPL+tr_tmp.Threshold]) - refSPL(i);
+    end
     
+    if nargout > 0
+        th = th_JND; % 60 -> 0.6639
+        return;
+    end
 end
 
 close all
@@ -68,18 +105,18 @@ opts.StepdB    = 4;
 opts.StepdBmin = 1;
 if bPart2 | bPart3
     
-    fmaskerdet{1}  = [Get_TUe_paths('outputs') 'masker-det-1.wav'];
-    fmaskerdet{2}  = [Get_TUe_paths('outputs') 'masker-det-2.wav'];
-    fmaskerdet{3}  = [Get_TUe_paths('outputs') 'masker-det-3.wav'];
-    fmaskerdet{4}  = [Get_TUe_paths('outputs') 'masker-det-4.wav'];
-    fmaskerdet{5}  = [Get_TUe_paths('outputs') 'masker-det-5.wav'];
+    fmaskerdet{1}  = [dir_where 'masker-det-1.wav'];
+    fmaskerdet{2}  = [dir_where 'masker-det-2.wav'];
+    fmaskerdet{3}  = [dir_where 'masker-det-3.wav'];
+    fmaskerdet{4}  = [dir_where 'masker-det-4.wav'];
+    fmaskerdet{5}  = [dir_where 'masker-det-5.wav'];
     idxstart = [0 10 20 50 100]*1e-3*fs;
-    fmaskerbuf  = [Get_TUe_paths('outputs') 'masker-buf.wav'];
-    fsignals{1} = [Get_TUe_paths('outputs') 'sig1.wav'];
-    fsignals{2} = [Get_TUe_paths('outputs') 'sig2.wav'];
-    fsignals{3} = [Get_TUe_paths('outputs') 'sig3.wav'];
-    fsignals{4} = [Get_TUe_paths('outputs') 'sig4.wav'];
-    fsignals{5} = [Get_TUe_paths('outputs') 'sig5.wav'];
+    fmaskerbuf  = [dir_where 'masker-buf.wav'];
+    fsignals{1} = [dir_where 'sig1.wav'];
+    fsignals{2} = [dir_where 'sig2.wav'];
+    fsignals{3} = [dir_where 'sig3.wav'];
+    fsignals{4} = [dir_where 'sig4.wav'];
+    fsignals{5} = [dir_where 'sig5.wav'];
     
     try
         Wavread(fmaskerdet{1});
@@ -132,6 +169,12 @@ if bPart2
         th_det(i) = tmp.Threshold;
         disp('')
     end
+    
+    if nargout > 0
+        th = th_det;
+        return;
+    end
+        
     figHandles = findobj('Type','figure'); % 20 generated figures
     figHandles = figHandles(end:-1:1);
     % 1 - noise + tone waveform
@@ -172,7 +215,7 @@ if bPart3
             end
             opts.filename2 = fsignals{i};
             tmp = AMTControl_cl(opts);
-            th_sto(i,j) = tmp.Threshold;
+            th_sto(j,i) = tmp.Threshold;
             
             if bDebug
                 figure; 
@@ -185,8 +228,14 @@ if bPart3
             end
             
         end
-        disp('')
+        
     end
+    
+    if nargout > 0
+        th = th_sto;
+        return;
+    end
+    
     figHandles = findobj('Type','figure'); % 20 generated figures
     figHandles = figHandles(end:-1:1);
     
@@ -232,18 +281,18 @@ if bPart4
     close all
     nFig = 3;
     [masker,insig] = exp_dau1996b(fs,nFig);
-    fmaskerdet{1}  = [Get_TUe_paths('outputs') 'masker-det-10.wav'];
-    fmaskerdet{2}  = [Get_TUe_paths('outputs') 'masker-det-20.wav'];
-    fmaskerdet{3}  = [Get_TUe_paths('outputs') 'masker-det-30.wav'];
-    fmaskerdet{4}  = [Get_TUe_paths('outputs') 'masker-det-40.wav'];
-    fmaskerdet{5}  = [Get_TUe_paths('outputs') 'masker-det-50.wav'];
+    fmaskerdet{1}  = [dir_where 'masker-det-10.wav'];
+    fmaskerdet{2}  = [dir_where 'masker-det-20.wav'];
+    fmaskerdet{3}  = [dir_where 'masker-det-30.wav'];
+    fmaskerdet{4}  = [dir_where 'masker-det-40.wav'];
+    fmaskerdet{5}  = [dir_where 'masker-det-50.wav'];
     dur = [10 20 40 70 150]; % ms
-    fmaskerbuf  = [Get_TUe_paths('outputs') 'masker-buf0.wav'];
-    fsignals{1} = [Get_TUe_paths('outputs') 'sig10.wav'];
-    fsignals{2} = [Get_TUe_paths('outputs') 'sig20.wav'];
-    fsignals{3} = [Get_TUe_paths('outputs') 'sig30.wav'];
-    fsignals{4} = [Get_TUe_paths('outputs') 'sig40.wav'];
-    fsignals{5} = [Get_TUe_paths('outputs') 'sig50.wav'];
+    fmaskerbuf  = [dir_where 'masker-buf0.wav'];
+    fsignals{1} = [dir_where 'sig10.wav'];
+    fsignals{2} = [dir_where 'sig20.wav'];
+    fsignals{3} = [dir_where 'sig30.wav'];
+    fsignals{4} = [dir_where 'sig40.wav'];
+    fsignals{5} = [dir_where 'sig50.wav'];
 
     try
         Wavread(fmaskerdet{1});
@@ -284,7 +333,11 @@ if bPart4
         tmp = AMTControl_cl(opts);
         th_det_int(i) = tmp.Threshold;
         
-        disp('')
+    end
+    
+    if nargout > 0
+        th = th_det_int;
+        return;
     end
     
     figHandles = findobj('Type','figure'); % 20 generated figures
@@ -315,7 +368,7 @@ if bPart5
     % Stochastic thresholds:
     close all
     
-    opts.Ntimes = 100;
+    opts.Ntimes = 25;
     opts.filename1 = fmaskerbuf;
     Nsims = 4;
     for i = 1:5
@@ -369,6 +422,69 @@ if bPart5
     
     Save_all_figures(gcf,outputdir,count_saved_figures);
     count_saved_figures = count_saved_figures + 1;
+    
+end
+
+if bPart6
+    
+    fmaskerdet{1}  = [dir_where2 'dau1996b_expI_noisemasker-50-ms.wav'];
+    
+    try
+        [x fs] = Wavread(fmaskerdet{1});
+    catch
+        fmaskertmp  = [dir_where2 'dau1996b_expI_noisemasker'];
+        [x fs] = Wavread([fmaskertmp '.wav']);
+        x = [Gen_silence(50e-3,fs); x];
+        Wavwrite(x,fs,fmaskerdet{1});
+        
+    end
+    % idxstart = [0 10 20 50 100]*1e-3*fs;
+    fsignals{1} = [dir_where2 'dau1996b_expIB0_stim-10ms-76-onset-30-ms.wav'];
+    fsignals{2} = [dir_where2 'dau1996b_expIB0_stim-10ms-76-onset-35-ms.wav'];
+    fsignals{3} = [dir_where2 'dau1996b_expIB0_stim-10ms-76-onset-40-ms.wav'];
+    fsignals{4} = [dir_where2 'dau1996b_expIB0_stim-10ms-76-onset-45-ms.wav'];
+    fsignals{5} = [dir_where2 'dau1996b_expIB0_stim-10ms-76-onset-50-ms.wav'];
+    fsignals{6} = [dir_where2 'dau1996b_expIB0_stim-10ms-76-onset-55-ms.wav'];
+    fsignals{7} = [dir_where2 'dau1996b_expIB0_stim-10ms-76-onset-60-ms.wav'];
+    fsignals{8} = [dir_where2 'dau1996b_expIB0_stim-10ms-76-onset-65-ms.wav'];
+    
+    tonsets = [-20 -15 -10 -5 0 5 10 15];
+    
+    t = ( 1:length(x) )/fs;
+    figure; plot(t,x); grid on
+       
+    opts.DurRamps = 0; % additional cosine ramps
+    opts.Ntimes = 1;
+    opts.Gain4supra =  10; % when creating: lvl = 75 dB; lvl supra = 75 dB + Gain4supra
+    opts.audio.fs   =  fs;
+    
+    opts.bUseRamp  = 0; % additional cosine ramps
+    opts.bUseRampS = 0; % additional cosine ramps
+    
+    opts.filename1 = fmaskerdet{1};
+    % Deterministic thresholds:
+    for i = 1:length(tonsets)
+        opts.filename2 = fsignals{i};
+        
+        opts.do_template = 1;
+        opts.do_simulation = 1;
+        tmp = AMTControl_cl(opts);
+        th_det_pre(i) = tmp.Threshold;
+                
+    end
+    
+    if nargout > 0
+        th = th_det_pre;
+        return;
+    end
+    
+    figure;
+    plot(th_det_pre + 75,'ro-','LineWidth',2); grid on; hold on
+    xlabel('Signal onset relative to masker onset [ms]')
+    ylabel('Masked threshold [dB]')
+    
+    set(gca,'XTick',1:length(tonsets));
+    set(gca,'XTickLabel',tonsets);
     
 end
 

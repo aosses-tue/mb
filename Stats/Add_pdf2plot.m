@@ -19,36 +19,39 @@ function [PDF yi] = Add_pdf2plot(x, Handle)
 %   x = wgn(1000,1,1);
 %   Add_pdf2plot(x);
 % 
-% Programmed by Alejandro Osses, HIT, TU/e, the Netherlands, 2014
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on  : 21/05/2014
-% Last update : 21/05/2014 % Update this date manually
-% Last used on: 28/05/2014 % Update this date manually
+% Last update : 21/05/2014 
+% Last used on: 02/10/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if nargin < 2
-    figure;
-    plot(x);
-    grid on
-    xlabel('[samples]')
-    ylabel('Amplitude')
-    Handle      = gcf;
+if nargout == 0
+    if nargin < 2
+        figure;
+        plot(x);
+        grid on
+        xlabel('[samples]')
+        ylabel('Amplitude')
+        Handle      = gcf;
+    end
+    Handle_axis = gca;
 end
-Handle_axis = gca;
 
-N = 20; % PDF-resolution
+N = 1000; % PDF-resolution
 [PDF yi] = Probability_density_function(x,N);
 
-delta_x = max(get(Handle_axis,'XLim'))*0.1;
-Xlimits = get(Handle_axis,'XLim');
+if nargout == 0
+    delta_x = max(get(Handle_axis,'XLim'))*0.1;
+    Xlimits = get(Handle_axis,'XLim');
 
-off_setx = Xlimits(2); 
-set(Handle_axis, 'XLim',[Xlimits(1) Xlimits(2)+delta_x])
+    off_setx = Xlimits(2); 
+    set(Handle_axis, 'XLim',[Xlimits(1) Xlimits(2)+delta_x])
 
-figure(Handle);
-hold on
-plot(delta_x*PDF/max(PDF)+off_setx,yi,'r')
-legend('Series','pdf')
+    figure(Handle);
+    hold on
+    plot(delta_x*PDF/max(PDF)+off_setx,yi,'r')
+    legend('Series','pdf')
+end
 
-% rectangle('Position',[-50 0.01 50 20-0.05],'FaceColor','w'), hold on
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-disp(['EOF: ' mfilename '.m'])
+% EOF

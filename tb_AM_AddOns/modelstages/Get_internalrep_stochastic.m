@@ -133,19 +133,35 @@ for i = 1:Ntimes
             
             if bMultiChannel == 1
                 [out_pre , fc] = dau1996apreproc(in_masker_s0,fs);
+                out_pre = out_pre(:,idx_fc);
             end
             if bSingleChannel == 1
                 [out_pre , fc] = dau1996apreproc_1Ch(in_masker_s0,fs,fc); 
             end
             
-            [Ni,Mi] = size(out_pre(:,idx_fc));
+            [Ni,Mi] = size(out_pre);
             fs_intrep = fs;
             
-            tmp = Add_gaussian_noise(out_pre(:,idx_fc),mu,sigma);
-            out_1 = [out_1 tmp(:)]; % out_1 affected by internal noise
+            if bAvgMethod == 1
+            
+                tmp = Add_gaussian_noise(out_pre(:,idx_fc),mu,sigma);
+                out_1 = [out_1 tmp(:)]; % out_1 affected by internal noise
+                
+            elseif bAvgMethod == 2
+                
+                Nmaskers_c = Nmaskers;
+                Nmaskers = Nmaskers + 1;
+                if Nmaskers_c > 0
+                    out_1 = (out_1*Nmaskers_c + out_pre(:) )/Nmaskers;
+                else
+                    out_1 = (                   out_pre(:) )/Nmaskers;
+                end
+                
+            end
             
             if bMultiChannel == 1
                 [out_pre , fc] = dau1996apreproc(in_masker_s1 + in_signal,fs); % out_2pre affected by external noise
+                out_pre = out_pre(:,idx_fc);
                 outs.script_template = 'dau1996apreproc';
             end
             if bSingleChannel == 1
@@ -153,19 +169,32 @@ for i = 1:Ntimes
                 outs.script_template = 'dau1996apreproc_1Ch';
             end
             
-            tmp = Add_gaussian_noise(out_pre(:,idx_fc),mu,sigma);
-            out_2 = [out_2 tmp(:)]; % out_1 affected by internal noise
+            if bAvgMethod == 1
+            
+                tmp = Add_gaussian_noise(out_pre(:,idx_fc),mu,sigma);
+                out_2 = [out_2 tmp(:)]; 
+            
+            elseif bAvgMethod == 2
+                
+                if Nmaskers_c > 0
+                    out_2 = (out_2*Nmaskers_c + out_pre(:) )/Nmaskers;
+                else
+                    out_2 = (                   out_pre(:) )/Nmaskers;
+                end
+                
+            end
             
         case 'dau1996'
             
             if bMultiChannel == 1
                 [out_pre , fc] = dau1996preproc(in_masker_s0,fs);
+                out_pre = out_pre(:,idx_fc);
             end
             if bSingleChannel == 1
                 [out_pre , fc] = dau1996preproc_1Ch(in_masker_s0,fs,fc); 
             end
             
-            [Ni,Mi] = size(out_pre(:,idx_fc));
+            [Ni,Mi] = size(out_pre);
             fs_intrep = fs;
             
             if bAvgMethod == 1
@@ -187,6 +216,7 @@ for i = 1:Ntimes
             
             if bMultiChannel == 1
                 [out_pre , fc] = dau1996preproc(in_masker_s1 + in_signal,fs); % out_2pre affected by external noise
+                out_pre = out_pre(:,idx_fc);
                 outs.script_template = 'dau1996preproc';
             end
             if bSingleChannel == 1

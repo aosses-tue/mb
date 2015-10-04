@@ -59,7 +59,7 @@ s = setfielddefault(s, 'Tiling',[]);
 %   while axes a2 will be reproduced as a subplot occupying tile 2 (upper
 %   right corner) and a3 occupying tile 4 (lower right corner).
 
-%   Original version by Fran�ois Bouffard (fbouffard@gmail.com)
+%   Original version by Francois Bouffard (fbouffard@gmail.com)
 %   Legend copy code by Zoran Pasaric (pasaric@rudjer.irb.hr)
 
 %% Parsing handles vector
@@ -232,7 +232,6 @@ for i = 1:m
     end
 end
 
-
 removeXTicks = true;
 removeXLabels = true;
 for i = 1:n
@@ -278,6 +277,8 @@ for i = naxes+1:numel(hNewSubplots)
     delete(hNewSubplots(orderaxes(i)));
 end
 
+removeYTicks = ~obj.I_KeepYTicks;
+
 %now we put the axes
 for k = 1:naxes
     caxeidx = orderaxes(k);
@@ -290,11 +291,11 @@ for k = 1:naxes
             set(na(k),'XTickLabel',[]);
         end;
     end
-    %if removeYTicks
+    if removeYTicks
         if n > 1 
             set(na(k),'YTickLabel',[]);
         end
-    %end
+    end
     if removeXLabels
         if m ~= fnRows
             hxlabel = get(na(k),'xlabel');

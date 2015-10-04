@@ -41,15 +41,19 @@ dir_out = Get_TUe_paths('outputs');
 
 handles_man = Ensure_field(handles_man,'filename1',[Get_TUe_paths('outputs') 'AMTControl-examples' delim 'tone-f-1000-Hz-at-60-dB-dur-800-ms.wav']);
 handles_man = Ensure_field(handles_man,'filename2',[Get_TUe_paths('outputs') 'AMTControl-examples' delim 'tone-f-1000-Hz-at-42-dB-dur-800-ms.wav']);
-handles_man = Ensure_field(handles_man,'do_template',1);
-handles_man = Ensure_field(handles_man,'do_simulation',1);
-handles_man = Ensure_field(handles_man,'MethodIntRep',1); % my method to obtain internal representations
-handles_man = Ensure_field(handles_man,'Nreversals',12);
-handles_man = Ensure_field(handles_man,'Ntimes',1); % deterministic
+handles_man = Ensure_field(handles_man,'do_template'  , 1);
+handles_man = Ensure_field(handles_man,'do_simulation', 1);
+handles_man = Ensure_field(handles_man,'MethodIntRep' , 1); % my method to obtain internal representations
+handles_man = Ensure_field(handles_man,'Nreversals'   ,12);
+handles_man = Ensure_field(handles_man,'Ntimes'       , 1); % deterministic
 
 handles_man = Ensure_field(handles_man,'StepdB',2); 
 handles_man = Ensure_field(handles_man,'StepdBmin',1); 
 handles_man = Ensure_field(handles_man,'Reversals4avg',6); 
+handles_man = Ensure_field(handles_man,'Gain2file1',0);
+handles_man = Ensure_field(handles_man,'Gain2file2',0);
+handles_man = Ensure_field(handles_man,'fc2plot_idx' ,ceil( freqtoaud(1000,'erb') )-2);
+handles_man = Ensure_field(handles_man,'fc2plot_idx2',ceil( freqtoaud(1000,'erb') )-2);
 
 filename1 = handles_man.filename1;
 filename2 = handles_man.filename2;
@@ -57,14 +61,15 @@ filename2 = handles_man.filename2;
 handles.bDebug = handles_man.bDebug;
 handles.dir_out = dir_out;
 handles.audio = handles_man.audio;
-
+handles.Gain2file1 = handles_man.Gain2file1;
+handles.Gain2file2 = handles_man.Gain2file2;
 handles = il_btnLoad(filename1,filename2,handles);
 
 handles.Gain4supra  = handles_man.Gain4supra;
 handles.nAnalyser   = handles_man.nAnalyser;
 
-handles.fc2plot_idx  = ceil( freqtoaud(1000,'erb') )-2;
-handles.fc2plot_idx2 = ceil( freqtoaud(1000,'erb') )-2;
+handles.fc2plot_idx  = handles_man.fc2plot_idx;
+handles.fc2plot_idx2 = handles_man.fc2plot_idx2;
 
 handles.Ntimes = handles_man.Ntimes; % 1 == deterministic
 
@@ -86,7 +91,7 @@ if handles_man.do_simulation == 1
     handles.Reversals4avg   = handles_man.Reversals4avg;
     handles.Nsim = 1;
     handles.bInternalNoise = 1;
-    handles.sigma           = handles_man.sigma;
+    handles.sigma             = handles_man.sigma;
     handles.bDecisionMethod = handles_man.bDecisionMethod;
     handles.MethodIntRep    = handles_man.MethodIntRep;
     handles = il_SimulateAFC(handles);
@@ -155,10 +160,8 @@ function handles = il_btnLoad(filename1, filename2, handles)
 dir_out = handles.dir_out;
 Mkdir(dir_out); % creates folder in case it does not exist:
 
-G1 = 0; % gain in dB for audio file 1
-G2 = 0; % gain in dB for audio file 2
-warning('Manual gain')
-pause(2)
+G1 = handles.Gain2file1; % gain in dB for audio file 1
+G2 = handles.Gain2file2; % gain in dB for audio file 2
 
 [insig1,fs]  = Wavread(filename1);
 [insig2,fs2] = Wavread(filename2);
@@ -304,7 +307,7 @@ out_1 = [];
 out_2 = [];
 
 mu    = 0;
-sigma = 0;
+sigma   = 0;
 
 if bUseRamp;  tmp.masker_ramp_ms = handles.DurRamps; else; tmp.masker_ramp_ms = 0; end % ramp time in ms
 if bUseRampS; tmp.signal_ramp_ms = handles.DurRamps; else; tmp.signal_ramp_ms = 0; end % ramp time in ms
@@ -510,8 +513,12 @@ fc2plot_idx = handles.fc2plot_idx;
 fc2plot_idx2 = handles.fc2plot_idx2;
 
 %%%
-if length(fc2plot_idx) == 1
+if length(fc2plot_idx) == 1 & fc2plot_idx2 == fc2plot_idx;
     fc      = audtofreq(fc2plot_idx+2,'erb'); % used as input for single-channel modelling
+elseif length(fc2plot_idx) == 1 & fc2plot_idx2 ~= fc2plot_idx;
+    fcmin   = audtofreq(min(fc2plot_idx)+2,'erb'); 
+    fcmax   = audtofreq(max(fc2plot_idx2)+2,'erb');
+    fc2plot_idx = fc2plot_idx:fc2plot_idx2;
 else
     fcmin   = audtofreq(min(fc2plot_idx)+2,'erb'); 
     fcmax   = audtofreq(max(fc2plot_idx)+2,'erb');
@@ -525,7 +532,7 @@ else
     sigma = 0;
 end
 
-if length(fc2plot_idx) == 1
+if length(fc2plot_idx) == 1 & fc2plot_idx2 == fc2plot_idx;
     bSingleChannel = 1;
     bMultiChannel = 0;
     fc2plot_idx = 1;
@@ -653,7 +660,7 @@ for k = 1:Nsim
                     [out_N1]   = dau1996apreproc_1Ch(intervalN1,fs,fc);
                     [out_N2]   = dau1996apreproc_1Ch(intervalN2,fs,fc);
 
-                    handles.script_sim = 'dau1996preproc_1Ch';
+                    handles.script_sim = 'dau1996apreproc_1Ch';
                 end
             elseif nAnalyser == 100;
                 if bMultiChannel
@@ -766,7 +773,7 @@ for k = 1:Nsim
             out_interval1s2no = out_interval1s2;
             out_interval2no = out_interval2;
             
-            out_interval1   = Add_gaussian_noise(out_interval1,mu,sigma); % Add internal noise
+            [out_interval1 tmp] = Add_gaussian_noise(out_interval1,mu,sigma); % Add internal noise
             out_interval1s2 = Add_gaussian_noise(out_interval1s2,mu,sigma);
             out_interval2   = Add_gaussian_noise(out_interval2,mu,sigma); % Add internal noise
             
@@ -794,7 +801,20 @@ for k = 1:Nsim
             diff11 =   sigint1-intrep_M0;
             diff12 = sigint1s2-intrep_M1;
             diff20 =   sigint2-intrep_M2; %tt = 1:length(diff11); figure; plot(tt,diff11+30,tt,diff12,tt,diff20-30); legend('11','12','20')
+            
+            switch handles.bDecisionMethod 
+                case{2,3,4}
+                    cc1 = optimaldetector(sigint2, sigint1);
+                    cc2 = optimaldetector(sigint2, sigint1s2);
+                    if cc2 > cc1
+                        diffGreatestCC = sigint2-sigint1s2;
+                    else
+                        diffGreatestCC = sigint2-sigint1;
+                    end
+            end
+                
             disp('');
+            
         case 2
             
             out_interval1   = casprepresentation(interval1  ,'dau1996preproc',{fs});
@@ -830,6 +850,7 @@ for k = 1:Nsim
         end
         
         bDecisionMethod = handles.bDecisionMethod; 
+        
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % 1. First decision used:
         % The following was took out on 02/09/2015, because it is only
@@ -848,55 +869,77 @@ for k = 1:Nsim
             switch handles.MethodIntRep
                 case 1
                     if fs == fs_intrep
-                        [decision(1) corrmue(:,1)] = optimaldetector(diff11,template,fs_intrep);
-                        [decision(2) corrmue(:,2)] = optimaldetector(diff12,template,fs_intrep);
-                        [decision(3) corrmue(:,3)] = optimaldetector(diff20,template,fs_intrep);
+                        decision(1) = optimaldetector(diff11,template,fs_intrep);
+                        decision(2) = optimaldetector(diff12,template,fs_intrep);
+                        decision(3) = optimaldetector(diffGreatestCC,template,fs_intrep); % diff20
                     end
                 case 2
+                    error('continue')
                     [decision(1) corrmue(:,1)] = optimaldetector(diff11,template);
                     [decision(2) corrmue(:,2)] = optimaldetector(diff12,template);
-                    [decision(3) corrmue(:,3)] = optimaldetector(diff20,template);
+                    [decision(3) corrmue(:,3)] = optimaldetector(diffGreatestCC,template);
             end
             diffs = [diff11 diff12 diff20];
      
-            % [decision(3)-decision(2) decision(3)-decision(1)]
-            % [mean(diffs) mean(diffsno);std(diffs) std(diffsno)]
-            %[maxvalue, idx_decision] = max(abs(decision(1:3)));
+            % varn = std(diffs(:,1:2));
+            varn = mean(std(buffer(diff20(:),100))); % buffered in 2-ms sections
+            % varn = mean(std(buffer(sigint2,100)));
             
-            varn = std(diffs(:,1:2));
-            Tr = sigma; % max(varn); 
-            if decision(3)-max(decision(1:2)) > Tr
+            value_Tr = varn; % sigma; % max(varn); 
+            value_De = decision(3);% -max(decision(1:2));
+            if value_De > value_Tr
                 idx_decision = 3;
             else
-                idx_decision = randi(3);
+                idx_decision = 1; % randi(3);
             end
             
         end
         
+
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        % 3. Third decision used: it seems to be insensitive to standard deviation
-        % mm = 0.55653; stdstd = 1.30384; pCorrect = normcdf( (Mtmp(1)-mm)/stdstd )
+        % 3. Fourth decision used:
+        if bDecisionMethod == 3
+            rule        = [1 2]; % 2-down, 1-up
+            numint      = 3;
+            Mtmp        = mean([diff11 diff12 diffGreatestCC]);
+            Stmp        = sigma*[1 1 1];
+            
+            [bDecided(1) pr(1)] = ideal_observer( Mtmp(1), Stmp(1), numint, rule(2));
+            [bDecided(2) pr(2)] = ideal_observer( Mtmp(2), Stmp(2), numint, rule(2));
+            [bDecided(3) pr(3)] = ideal_observer( Mtmp(3), max(Stmp(1:2)), numint, rule(2));
+            idx_tmp = find(bDecided == 1);
+            [maxvalue, idx_decision] = max( pr );
+            if bDecided( idx_decision )~= 1
+                idx_decision = 1; % randi(3); % just random number
+            end
+            
+            decision = pr(idx_decision);
+        end
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % 4. Fourth decision used:
         if bDecisionMethod == 4
             rule        = [1 2]; % 2-down, 1-up
             numint      = 3;
-            Mtmp        = abs(mean([diff11 diff12 diff20]));
-            Stmp        = std([diff11 diff12 diff20]);
+            % Mtmp        = abs(mean([diff11 diff12 diff20]));
+            Mtmp        = abs( mean([diff11 diff12 diffGreatestCC]) );
+            % Stmp        = std([diff11 diff12 diff20]);
+            Stmp        = sigma*[1 1 1];
             [bDecided(1) pr(1)] = caspmdecide( Mtmp(1), Stmp(1), rule, numint);
             [bDecided(2) pr(2)] = caspmdecide( Mtmp(2), Stmp(2), rule, numint);
             [bDecided(3) pr(3)] = caspmdecide( Mtmp(3), max(Stmp(1:2)), rule, numint);
-            idx_tmp = find(bDecided == 1);
+            % idx_tmp = find(bDecided == 1);
             [maxvalue, idx_decision] = max( pr );
             if bDecided( idx_decision )~= 1
-                idx_decision = 1; % just random number
+                idx_decision = 1; % randi(3); % just random number
             end
+            
+            decision = pr(idx_decision);
         end
         Staircase = [Staircase; Level_current];
         StaircaseCC = [StaircaseCC decision'];
         
-        if idx_decision == 3 % (abs(dprimetmp(end)) >= 1.26) 
+        if idx_decision == 3 
             if nCorrect >= 1
 
                 if nWrong == 1

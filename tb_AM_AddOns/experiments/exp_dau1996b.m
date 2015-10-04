@@ -14,7 +14,7 @@ function [masker,insig] = exp_dau1996b(fs,nFig)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 23/09/2015
 % Last update on: 23/09/2015 
-% Last use on   : 23/09/2015 
+% Last use on   : 02/10/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin == 0 

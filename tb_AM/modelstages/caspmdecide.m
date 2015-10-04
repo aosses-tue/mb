@@ -12,7 +12,7 @@ function [detect,prob] = caspmdecide(mu,in_var,rule,numint)
 % This file is part of AMToolbox version 0.9.5
 %
 % 1. Stand-alone example:
-%   mu = 45
+%   mu = 4.5;
 %   in_var = 1.1;
 %   rule = [1 2]; % 2-down, 1-up
 %   numint = 3;
