@@ -27,7 +27,7 @@ function r20150821_update(f,testtype,model)
 bDiary = 0;
 Diary(mfilename,bDiary);
 
-bPart1 = 0; % actual modelling part
+bPart1 = 1; % actual modelling part
 bPart2 = 1; % Plot results Weber's law
 bPart3 = 1; % Simulated thresholds
 bPart4 = 1;

@@ -573,37 +573,22 @@ for k = 1:Nsim
             insig1s0 = il_randomise_insig(handles.audio.insig1orig);
             insig1s1 = il_randomise_insig(handles.audio.insig1orig);
             insig1s2 = il_randomise_insig(handles.audio.insig1orig);
-            
-            insig30 = il_randomise_insig(handles.audio.insig1orig);
-            insig31 = il_randomise_insig(handles.audio.insig1orig);
-            insig32 = il_randomise_insig(handles.audio.insig1orig);
         end
         if bDeterministic == 1
             insig1s0 = insig1;
             insig1s1 = insig1;
             insig1s2 = insig1;
-            
-            insig30 = insig1;
-            insig31 = insig1;
-            insig32 = insig1;
         end
 
         insig1s0 = insig1s0( 1:length(insig2) );
         insig1s1 = insig1s1( 1:length(insig2) );
         insig1s2 = insig1s2( 1:length(insig2) );
-        insig30 = insig30( 1:length(insig2) );
-        insig31 = insig31( 1:length(insig2) );
-        insig32 = insig32( 1:length(insig2) );
         
         if bUseRamp
             if k==1; fprintf('Introducing %.0f-ms ramps into maskers\n',rampdn); end
             insig1s0 = Do_cos_ramp(insig1s0, fs, rampdn);
             insig1s1 = Do_cos_ramp(insig1s1, fs, rampdn);
             insig1s2 = Do_cos_ramp(insig1s2, fs, rampdn);
-            
-            insig30 = Do_cos_ramp(insig30, fs, rampdn);
-            insig31 = Do_cos_ramp(insig31, fs, rampdn);
-            insig32 = Do_cos_ramp(insig32, fs, rampdn);
         end
         
         Gain2apply  = From_dB(Level_current);
@@ -612,10 +597,6 @@ for k = 1:Nsim
         interval1s2 = insig1s2; % Only noise 2
         
         interval2 = insig1s1 + insig2test; % Noise + current signal
-        
-        intervalN0 = insig30;
-        intervalN1 = insig31;
-        intervalN2 = insig32;
         
         if bListen
             pause(2)
@@ -648,10 +629,6 @@ for k = 1:Nsim
                     [out_interval1s2] = dau1996apreproc_1Ch(interval1s2,fs,fc);
                     [out_interval2]   = dau1996apreproc_1Ch(interval2,fs,fc);
                     
-                    [out_N0]   = dau1996apreproc_1Ch(intervalN0,fs,fc);
-                    [out_N1]   = dau1996apreproc_1Ch(intervalN1,fs,fc);
-                    [out_N2]   = dau1996apreproc_1Ch(intervalN2,fs,fc);
-
                     handles.script_sim = 'dau1996apreproc_1Ch';
                 end
             elseif nAnalyser == 100;
@@ -671,10 +648,6 @@ for k = 1:Nsim
                     [out_interval1s2] = dau1996preproc_1Ch(interval1s2,fs,fc);
                     [out_interval2]   = dau1996preproc_1Ch(interval2,fs,fc);
                     
-                    [out_N0]   = dau1996preproc_1Ch(intervalN0,fs,fc);
-                    [out_N1]   = dau1996preproc_1Ch(intervalN1,fs,fc);
-                    [out_N2]   = dau1996preproc_1Ch(intervalN2,fs,fc);
-
                     handles.script_sim = 'dau1996preproc_1Ch';
                 end
 
@@ -768,19 +741,11 @@ for k = 1:Nsim
                     handles.script_sim = 'jepsen2008preproc_1Ch';
                 end
             end
-
-            out_interval1no = out_interval1; % without internal noise
-            out_interval1s2no = out_interval1s2;
-            out_interval2no = out_interval2;
             
             [out_interval1 tmp] = Add_gaussian_noise(out_interval1,mu,sigma); % Add internal noise
             out_interval1s2 = Add_gaussian_noise(out_interval1s2,mu,sigma);
             out_interval2   = Add_gaussian_noise(out_interval2,mu,sigma); % Add internal noise
             
-            % out_N0 = Add_gaussian_noise(out_N0,mu,sigma);
-            % out_N1 = Add_gaussian_noise(out_N1,mu,sigma);
-            % out_N2 = Add_gaussian_noise(out_N2,mu,sigma);
-
             [a b] = size(template);
             % one audio-frequency band but all the modulation filterbanks:
 
@@ -789,10 +754,6 @@ for k = 1:Nsim
             sigint2     = reshape(out_interval2,a,b);
             %%%        
 
-            % intrep_M0 = handles.audio.avg_intrep_M; % Add_gaussian_noise(out_interval1s2,mu,sigma);
-            % intrep_M1 = intrep_M0; % Add_gaussian_noise(out_interval1,mu,sigma);
-            % intrep_M2 = intrep_M0; % Add_gaussian_noise(out_interval1,mu,sigma);
-            
             intM = handles.audio.avg_intrep_M; % mean([out_N0 out_N1 out_N2],2);
             intrep_M0   = intM; % out_N0; % Add_gaussian_noise(out_interval1s2,mu,sigma);
             intrep_M1   = intM; % out_N1; % Add_gaussian_noise(out_interval1,mu,sigma);
@@ -837,7 +798,7 @@ for k = 1:Nsim
             
         end
         
-        bDebug = 1;
+        bDebug = 0;
         if bDebug == 1
             figure; 
             subplot(4,1,1); plot(interval2,'r'); hold on; plot(interval1); ha = gca;
@@ -881,9 +842,11 @@ for k = 1:Nsim
             end
             diffs = [diff11 diff12 diff20];
      
-            % varn = std(diffs(:,1:2));
-            varn = mean(std(buffer(diff20(:),100))); % buffered in 2-ms sections
-            % varn = mean(std(buffer(sigint2,100)));
+            time4var = 2.5e-3;
+            samples4var = floor(time4var * fs_intrep);
+            
+            varn = mean(std(buffer(diff20(:),samples4var))); % buffered in 2.5-ms sections
+            % varn2 = mean(std(buffer(diff20(:),100)));
             
             value_Tr = varn; % sigma; % max(varn); 
             value_De = decision(3);% -max(decision(1:2));

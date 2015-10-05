@@ -10,8 +10,8 @@ function th = r20150925_update_criterion(bParts)
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 22/09/2015
-% Last update on: 22/09/2015 
-% Last use on   : 29/09/2015 
+% Last update on: 02/10/2015 
+% Last use on   : 02/10/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 bDiary = 0;
@@ -20,7 +20,7 @@ close all
 outputdir = Get_TUe_paths('outputs');
 
 if nargin == 0
-    bParts = [0 0 0 0 0 0 1];
+    bParts = [1 0 0 0 0 0 1];
 end
 
 fs = 44100;
@@ -47,7 +47,7 @@ switch opts.bDecisionMethod
             case 101
                 opts.sigma   = 5.8;  % tone: 3.45 = band 14 (all); 1.88 = band 14 (1,2); 1.38 = band 14 (1)
             case 103
-                opts.sigma   = 9.366; %   BW:                                        1.95 = band 14; (target = 0.83 = -2 dB);
+                opts.sigma   = 21;  %   BW:  21 = band 2-33 (all); 1.95 = band 14; (target = 0.83 = -2 dB);
         end
     case 3
         opts.sigma   = 0.85; % dprime NOT GIVING RELIABLE RESULTS
@@ -65,9 +65,9 @@ opts.do_template    =  1;
 opts.do_simulation  =  1;
 opts.Nreversals     =  8;
 
-erbc2analyse        = ceil( freqtoaud(1000,'erb') )-2; % 14 for 1000 Hz (approx.)  
-opts.fc2plot_idx    = erbc2analyse-5;
-opts.fc2plot_idx2   = erbc2analyse+5;
+erbc2analyse        = freqtoaud([500 2000],'erb'); % 14 for 1000 Hz (approx.)  
+opts.fc2plot_idx    = ceil(erbc2analyse(1))-2;
+opts.fc2plot_idx2   = floor(erbc2analyse(end))-2;
 
 % dir_where = Get_TUe_paths('outputs');
 dir_where = [Get_TUe_paths('outputs') 'audio-20150928' delim];
@@ -503,6 +503,7 @@ if bPart7
     opts.bUseRampS  =   0; % additional cosine ramps
     opts.Gain4supra =   5; % dB
     opts.audio.fs   =  fs;
+    opts.Ntimes = 1;
     
     opts.StepdB = 2; 
     opts.StepdBmin = 0.2;
