@@ -20,7 +20,7 @@ close all
 outputdir = Get_TUe_paths('outputs');
 
 if nargin == 0
-    bParts = [1 0 0 0 0 0];
+    bParts = [0 0 0 0 0 0 1];
 end
 
 fs = 44100;
@@ -30,18 +30,24 @@ bPart2 = bParts(2); % Simultaneous masking, deterministic
 bPart3 = bParts(3); % Simultaneous masking, stochastic
 bPart4 = bParts(4); % Signal integration, deterministic
 bPart5 = bParts(5); % Signal integration, stochastic
-bPart6 = bParts(6);
+bPart6 = bParts(6); % Backward masking, deterministic
+bPart7 = bParts(7); % Intensity discrimination with BBN
 
-opts.nAnalyser      = 100; % 99 - dau1996a, 99.1, 100 - dau1996, my template estimation
+opts.nAnalyser      = 103; % 99 - dau1996a, 99.1, 100 - dau1996, my template estimation
 
 opts.bDecisionMethod = 2; % 2 - cc; 4 - dprime
 switch opts.bDecisionMethod
     case 2
         switch opts.nAnalyser
             case 99
-                opts.sigma   = 1.95; 
+                opts.sigma   = 3.25; % tone: 3.25 = band 13-15; 2.7 = band 13-14; 1.9 = band 14; 
             case 100
-                opts.sigma   = 2.45; % 1.72; % cc. 1.32 = sqrt(1.75)
+                opts.sigma   = 1.35; % tone: 3 = band 13-15; % 2.45 = band 13-14; % 1.72 = band 14;
+                                     %   BW:                                        1.35 = band 14; (target = 0.83 = -2 dB);
+            case 101
+                opts.sigma   = 5.8;  % tone: 3.45 = band 14 (all); 1.88 = band 14 (1,2); 1.38 = band 14 (1)
+            case 103
+                opts.sigma   = 9.366; %   BW:                                        1.95 = band 14; (target = 0.83 = -2 dB);
         end
     case 3
         opts.sigma   = 0.85; % dprime NOT GIVING RELIABLE RESULTS
@@ -53,15 +59,15 @@ opts.var            = opts.sigma.*opts.sigma;
 opts.audio.fs       = fs;
 opts.MethodIntRep   = 1; % 1 - my method; 2 - using casptemplate.m
 
-opts.Reversals4avg  = 10;
+opts.Reversals4avg  =  6; % 10
 
 opts.do_template    =  1;
 opts.do_simulation  =  1;
-opts.Nreversals     = 12;
+opts.Nreversals     =  8;
 
-erbc2analyse = ceil( freqtoaud(1000,'erb') )-2; % 14 for 1000 Hz (approx.)  
-opts.fc2plot_idx    = erbc2analyse-1;
-opts.fc2plot_idx2   = erbc2analyse;
+erbc2analyse        = ceil( freqtoaud(1000,'erb') )-2; % 14 for 1000 Hz (approx.)  
+opts.fc2plot_idx    = erbc2analyse-5;
+opts.fc2plot_idx2   = erbc2analyse+5;
 
 % dir_where = Get_TUe_paths('outputs');
 dir_where = [Get_TUe_paths('outputs') 'audio-20150928' delim];
@@ -81,9 +87,11 @@ if bPart1
     
     opts.StepdB = 2; 
     opts.StepdBmin = 0.2;
+    
     opts.filename1 = [Get_TUe_paths('outputs') 'AMTControl-examples' delim 'tone-f-1000-Hz-at-60-dB-dur-800-ms.wav'];
     opts.filename2 = [Get_TUe_paths('outputs') 'AMTControl-examples' delim 'tone-f-1000-Hz-at-42-dB-dur-800-ms.wav'];
-    refSPL  = [20 30 40 50 60 70 80];
+    
+    refSPL  = 60; % [20 30 40 50 60 70 80];
     
     for i=1:length(refSPL)
         testSPL = refSPL(i)-18; % 42 dB for 60 dB    
@@ -486,6 +494,37 @@ if bPart6
     set(gca,'XTick',1:length(tonsets));
     set(gca,'XTickLabel',tonsets);
     
+end
+
+if bPart7
+    % To do: save template
+    opts.DurRamps   =   0; % additional cosine ramps
+    opts.bUseRamp   =   0; % additional cosine ramps
+    opts.bUseRampS  =   0; % additional cosine ramps
+    opts.Gain4supra =   5; % dB
+    opts.audio.fs   =  fs;
+    
+    opts.StepdB = 2; 
+    opts.StepdBmin = 0.2;
+    
+    opts.filename1 = [Get_TUe_paths('outputs') 'AMTControl-examples' delim 'jepsen2008-BW-at-60-dB-dur-500-ms.wav'];
+    opts.filename2 = [Get_TUe_paths('outputs') 'AMTControl-examples' delim 'jepsen2008-BW-at-42-dB-dur-500-ms.wav'];
+    
+    refSPL  = 60; % [20 30 40 50 60 70 80];
+    
+    for i=1:length(refSPL)
+        testSPL = refSPL(i)-18; % 42 dB for 60 dB    
+        opts.Gain2file1 = refSPL(i) - 60;
+        opts.Gain2file2 = refSPL(i) - 60;
+        tr_tmp = AMTControl_cl(opts);
+
+        th_JND(i) = sum_dB_arit([refSPL(i) testSPL+tr_tmp.Threshold]) - refSPL(i);
+    end
+    
+    if nargout > 0
+        th = th_JND; % 60 -> 0.6639
+        return;
+    end
 end
 
 if bDiary

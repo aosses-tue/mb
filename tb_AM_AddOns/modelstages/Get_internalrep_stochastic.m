@@ -243,11 +243,34 @@ for i = 1:Ntimes
         case 'dau1997'
             
             if bMultiChannel == 1
-                error('Not implemented yet, continue here');
+                
+                tmp = nan(size(in_masker_s0,1),12*length(idx_fc));
+                [out_1pre, fc, mfc] = dau1997preproc(in_masker_s0, fs);
+                
+                for j = 1:length(idx_fc)
+                    L = size(out_1pre{idx_fc(j)},2);
+                    tmp(:,1+12*(j-1):L+12*(j-1)) = out_1pre{idx_fc(j)};
+                end
+                out_1pre = tmp;
+                
+                tmp = nan(size(in_masker_s0,1),12*length(idx_fc));
+                [out_2pre , fc, mfc] = dau1997preproc(in_masker_s1 + in_signal,fs);
+                for j = 1:length(idx_fc)
+                    L = size(out_2pre{idx_fc(j)},2);
+                    tmp(:,1+12*(j-1):L+12*(j-1)) = out_2pre{idx_fc(j)};
+                end
+                out_2pre = tmp;
+                
+                fs_intrep = fs;
+                outs.script_template = 'dau1997preproc';
             end
+            
             if bSingleChannel == 1
                 [out_1pre , fc, mfc] = dau1997preproc_1Ch(in_masker_s0            ,fs,fc);
                 [out_2pre , fc, mfc] = dau1997preproc_1Ch(in_masker_s1 + in_signal,fs,fc);
+                % idxtmp = 1:2;
+                out_1pre = out_1pre(:,:);
+                out_2pre = out_2pre(:,:);
                 fs_intrep = fs;
                 outs.script_template = 'dau1997preproc_1Ch';
             end

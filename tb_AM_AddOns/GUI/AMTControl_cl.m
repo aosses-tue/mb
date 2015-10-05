@@ -318,19 +318,18 @@ else
     insig1 = handles.audio.insig1;
 end
 
+insig2supra = From_dB(Gain4supra) * insig2;
+
 switch nAnalyser
     
     case 99
         
-        insig2supra = From_dB(Gain4supra) * insig2;
         [out_1Mean out_2Mean fs_intrep tmp] = Get_internalrep_stochastic(insig1,insig2supra,fs,'dau1996a',sigma,Ntimes,fc2plot_idx,tmp);
         template_test = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
         
         handles.script_template = tmp.script_template;
         
     case 99.1
-        
-        insig2supra = From_dB(Gain4supra) * insig2;
         
         [template_test2 out_2Mean out_1Mean] = casptemplate(insig2supra+insig1,insig1,'dau1996apreproc',{fs});
         template_test = template_test2(:,fc2plot_idx);
@@ -340,7 +339,6 @@ switch nAnalyser
         
     case 100
         
-        insig2supra = From_dB(Gain4supra) * insig2;
         [out_1Mean out_2Mean fs_intrep tmp] = Get_internalrep_stochastic(insig1,insig2supra,fs,'dau1996',sigma,Ntimes,fc2plot_idx,tmp);
         template_test = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
         
@@ -348,25 +346,23 @@ switch nAnalyser
         
     case 100.1
         
-        insig2supra = From_dB(Gain4supra) * insig2;
-        
         [template_test2 out_2Mean out_1Mean] = casptemplate(insig2supra+insig1,insig1,'dau1996preproc',{fs});
         template_test = template_test2(:,fc2plot_idx);
         
         fs_intrep = fs;
         handles.script_template = 'dau1996preproc';
         
-    case 101 % Still testing
+    case 101 
         
-        insig2supra = From_dB(Gain4supra) * insig2;
         [out_1Mean out_2Mean fs_intrep tmp] = Get_internalrep_stochastic(insig1,insig2supra,fs,'dau1997',sigma,Ntimes,fc2plot_idx,tmp);
                 
         template_test = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
+        idxnan = find(isnan(out_1Mean)); out_1Mean(idxnan) = []; out_2Mean(idxnan) = [];
+        
         handles.script_template = tmp.script_template;
         
     case 103
         
-        insig2supra = From_dB(Gain4supra) * insig2;
         [out_1Mean out_2Mean fs_intrep tmp] = Get_internalrep_stochastic(insig1,insig2supra,fs,'jepsen2008-modfilterbank',sigma,Ntimes,fc2plot_idx,tmp);
                 
         template_test = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
@@ -375,8 +371,6 @@ switch nAnalyser
 	case 104
         
         error('Continue here')
-        
-        insig2supra = From_dB(Gain4supra) * insig2;
         fbstyle = 'lowpass'; 
         
         for i = 1:Ntimes
@@ -438,24 +432,22 @@ template = template_test;
 
 t = ( 1:size(out_1Mean,1) )/fs_intrep;
 
-% if handles.bDebug
-    switch nAnalyser
-        case {99,99.1,100,100.1}
-            figure;
-            plot(t,template); grid on
-            xlabel(sprintf('Time [s]\nFollow the instructions in the command window to continue with the AFC simulation'))
+switch nAnalyser
+    case {99,99.1,100,100.1}
+        figure;
+        plot(t,template); grid on
+        xlabel(sprintf('Time [s]\nFollow the instructions in the command window to continue with the AFC simulation'))
 
-        case 101
-            figure;
-            plot(t,template); grid on
-            xlabel(sprintf('Time [s]\nFollow the instructions in the command window to continue with the AFC simulation'))
+    case 101
+        figure;
+        plot(t,template); grid on
+        xlabel(sprintf('Time [s]\nFollow the instructions in the command window to continue with the AFC simulation'))
 
-        case {103,104}
-            figure;
-            plot(t,template); grid on
-            xlabel(sprintf('Time [s]\nFollow the instructions in the command window to continue with the AFC simulation'))
-    end
-% end
+    case {103,104}
+        figure;
+        plot(t,template); grid on
+        xlabel(sprintf('Time [s]\nFollow the instructions in the command window to continue with the AFC simulation'))
+end
 
 handles.audio.template      = template;
 handles.audio.bDeterministic= bDeterministic;
@@ -640,16 +632,16 @@ for k = 1:Nsim
             
             if nAnalyser == 99;
                 if bMultiChannel
-                    error('Continue here')
-                    % [out_interval1  , fc] = dau1996preproc(interval1,fs);
-                    % [out_interval1s2, fc] = dau1996preproc(interval1s2,fs);
-                    % [out_interval2  , fc] = dau1996preproc(interval2,fs);
-                    % 
-                    % out_interval1   = out_interval1(:,fc2plot_idx);
-                    % out_interval1s2 = out_interval1s2(:,fc2plot_idx);
-                    % out_interval2   = out_interval2(:,fc2plot_idx);
-                    % 
-                    % handles.script_sim = 'dau1996preproc';
+                    
+                    [out_interval1  , fc] = dau1996apreproc(interval1,fs);
+                    [out_interval1s2, fc] = dau1996apreproc(interval1s2,fs);
+                    [out_interval2  , fc] = dau1996apreproc(interval2,fs);
+                     
+                    out_interval1   = out_interval1(:,fc2plot_idx);
+                    out_interval1s2 = out_interval1s2(:,fc2plot_idx);
+                    out_interval2   = out_interval2(:,fc2plot_idx);
+                     
+                    handles.script_sim = 'dau1996apreproc';
                 end
                 if bSingleChannel
                     [out_interval1]   = dau1996apreproc_1Ch(interval1,fs,fc);
@@ -689,17 +681,25 @@ for k = 1:Nsim
             elseif nAnalyser == 101
 
                 if bMultiChannel
-                    error('not implemented yet');
+                    [out_interval1  ,fc] = dau1997preproc(interval1  ,fs);
+                    [out_interval1s2,fc] = dau1997preproc(interval1s2,fs);
+                    [out_interval2  ,fc] = dau1997preproc(interval2  ,fs);
+                    
+                    out_interval1   = il_pool_in_one_column(out_interval1(fc2plot_idx));
+                    out_interval1s2 = il_pool_in_one_column(out_interval1s2(fc2plot_idx));
+                    out_interval2   = il_pool_in_one_column(out_interval2(fc2plot_idx));
+                                    
+                    handles.script_sim = 'dau1997preproc';
                 end
                 if bSingleChannel
                     [out_interval1  ,fc, xx, outsfilt11] = dau1997preproc_1Ch(interval1  ,fs,fc);
                     [out_interval1s2,fc, xx, outsfilt12] = dau1997preproc_1Ch(interval1s2,fs,fc);
                     [out_interval2  ,fc, xx, outsfilt2] = dau1997preproc_1Ch(interval2  ,fs,fc);
-
-                    out_interval1   = out_interval1(:);
-                    out_interval1s2 = out_interval1s2(:);
-                    out_interval2   = out_interval2(:);
-
+                    
+                    out_interval1   = out_interval1(:,:);
+                    out_interval1s2 = out_interval1s2(:,:);
+                    out_interval2   = out_interval2(:,:);
+                    
                     handles.script_sim = 'dau1997preproc_1Ch';
 
                     bListenToFilter = 0;
@@ -868,11 +868,11 @@ for k = 1:Nsim
         if bDecisionMethod == 2
             switch handles.MethodIntRep
                 case 1
-                    if fs == fs_intrep
-                        decision(1) = optimaldetector(diff11,template,fs_intrep);
-                        decision(2) = optimaldetector(diff12,template,fs_intrep);
-                        decision(3) = optimaldetector(diffGreatestCC,template,fs_intrep); % diff20
-                    end
+                    % if fs == fs_intrep
+                    decision(1) = optimaldetector(diff11,template,fs_intrep);
+                    decision(2) = optimaldetector(diff12,template,fs_intrep);
+                    decision(3) = optimaldetector(diffGreatestCC,template,fs_intrep); % diff20
+                    % end
                 case 2
                     error('continue')
                     [decision(1) corrmue(:,1)] = optimaldetector(diff11,template);

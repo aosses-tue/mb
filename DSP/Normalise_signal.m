@@ -1,5 +1,5 @@
-function y = Normalise_signal(x,fs,method)
-% function y = Normalise_signal(x,fs,method)
+function [y idx] = Normalise_signal(x,fs,method)
+% function [y idx] = Normalise_signal(x,fs,method)
 %
 % 1. Description:
 %       Normalisation of a signal x. If x has more than 1 column, each 
@@ -36,6 +36,12 @@ function y = Normalise_signal(x,fs,method)
 
 if nargin < 3
     method = 1;
+end
+
+idx = find(isnan(x));
+if length(idx)~=0
+    x(idx) = [];
+    warning('NaN elements were found and deleted');
 end
 
 y = nan(size(x)); % just allocation

@@ -32,7 +32,12 @@ ir2 = ir2(:);
 
 method = 2; % new
 out = Normalise_signal(ir2-ir1,fs,method);
-out = reshape(out,N,M);   
+
+try
+    out = reshape(out,N,M);
+catch
+    warning('Not reshaped')
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end

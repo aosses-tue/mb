@@ -92,15 +92,34 @@ definput.keyvals.subfs=[];
 
 % Apply the auditory filterbank
 [outsig, fc]            = auditoryfilterbank(insig,fs,'argimport',flags,keyvals);
-outs.out01_filterbank   = outsig; 
+if nargout == 3
+    outs.out_filterbank = outsig;
+end
+
+do_internal_noise = 0;
+if do_internal_noise
+    for i = 1:size(outsig,2)
+        if i==1
+            warning('temporal arrangement of internal noise')
+        end
+        
+        dur = size(outsig,1)/fs;
+        n = AM_random_noise(0,fs/2,9.7+3,dur,fs); % 9.7 dB SPL per band
+        outsig(:,i) = outsig(:,i)+n;
+    end
+end
 
 % 'haircell' envelope extraction
 outsig                  = ihcenvelope(outsig,fs,'argimport',flags,keyvals);
-outs.out02_ihc          = outsig;
+if nargout == 3
+    outs.out_ihc        = outsig;
+end
 
 % non-linear adaptation loops
 outsig                  = adaptloop(outsig,fs,'argimport',flags,keyvals);
-outs.out03_adaptloop    = outsig;
+if nargout == 3
+    outs.out_adaptloop  = outsig;
+end
 
 % Calculate filter coefficients for the 20 ms (approx.eq to 8 Hz) modulation
 % lowpass filter.
@@ -116,7 +135,10 @@ outsig = filter(mlp_b,mlp_a,outsig);
 if ~isempty(keyvals.subfs)
   outsig = fftresample(outsig,round(length(outsig)/fs*subfs));
 end;
-outs.out04_LPF = outsig;
+
+if nargout == 3
+    outs.out_LPF = outsig;
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end

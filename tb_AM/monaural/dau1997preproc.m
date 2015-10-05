@@ -34,9 +34,9 @@ function [outsig, fc, mfc] = dau1997preproc(insig, fs, varargin)
 %
 %   4) a modulation filterbank
 %
-%   Any of the optinal parameters for AUDITORYFILTERBANK,
-%   IHCENVELOPE and ADAPTLOOP may be optionally specified for this
-%   function. They will be passed to the corresponding functions.
+%   Any of the optinal parameters for AUDITORYFILTERBANK, IHCENVELOPE and 
+%   ADAPTLOOP may be optionally specified for this function. They will be 
+%   passed to the corresponding functions.
 %
 %   See also: auditoryfilterbank, ihcenvelope, adaptloop, modfilterbank
 %
@@ -47,8 +47,8 @@ function [outsig, fc, mfc] = dau1997preproc(insig, fs, varargin)
 % Author        : Torsten Dau, Morten L. Jepsen, Peter L. Soendergaard
 % Downloaded on : 18/03/2014
 % Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
-% Last update on: 25/07/2015 % Update this date manually
-% Last use on   : 25/07/2015 % Update this date manually
+% Last update on: 25/07/2015 
+% Last use on   : 25/07/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % ------ Checking of input parameters ------------
