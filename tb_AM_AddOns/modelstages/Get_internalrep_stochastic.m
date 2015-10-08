@@ -68,6 +68,10 @@ else
     bMultiChannel = 1;
 end 
 
+if strcmp(model,'dau1997')
+    opts = ef(opts,'chn_modfilt',1:12);
+end
+
 N = size(in_signal_pre,1);
 mu = 0;
 bAvgMethod = 2; % more optimised average method (not generating column array)
@@ -278,9 +282,14 @@ for i = 1:Ntimes
             if bSingleChannel == 1
                 [out_1pre , fc, mfc] = dau1997preproc_1Ch(intervalN0,fs,fc);
                 [out_2pre , fc, mfc] = dau1997preproc_1Ch(intervalSN,fs,fc);
-                % idxtmp = 1:2;
-                out_1pre = out_1pre(:,:);
-                out_2pre = out_2pre(:,:);
+                
+                chn_modfilt = opts.chn_modfilt;
+                if length(chn_modfilt) > length(mfc)
+                    chn_modfilt = 1:length(mfc);
+                end
+                    
+                out_1pre = [out_1pre(:,chn_modfilt)]; %out_1pre(:,2);out_1pre(:,2)];
+                out_2pre = [out_2pre(:,chn_modfilt)]; %out_2pre(:,2);out_2pre(:,2)];
                 fs_intrep = fs;
                 outs.script_template = 'dau1997preproc_1Ch';
             end

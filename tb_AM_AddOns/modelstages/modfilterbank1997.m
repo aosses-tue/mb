@@ -59,15 +59,15 @@ outsig=cell(nfreqchannels,1);
 
 % second order modulation Butterworth LPF with a cut-off frequency of 2.5 Hz.
 [b_lowpass,a_lowpass] = butter(2,2.5/(fs/2));
-
-% Set the highest modulation frequency as proportion of the corresponding
-% center frequency.
-umf = min(fc.*0.25, 1000);  
+[b_highest,a_highest] = butter(1,150/(fs/2));
+% % Set the highest modulation frequency as proportion of the corresponding
+% % center frequency.
+umf = 1000;  
 
 for freqchannel=1:nfreqchannels
 
-    outtmp = insig(:,freqchannel);
-
+    %outtmp = insig(:,freqchannel);
+    outtmp = filter(b_highest,a_highest,insig(:,freqchannel));
     if umf(freqchannel)==0
         % ----------- only lowpass ---------------------
         outsigblock = filter(b_lowpass,a_lowpass,outtmp);

@@ -392,6 +392,8 @@ switch nAnalyser
         
     case 101 
         
+        tmp.chn_modfilt = 1:12;%:12;
+        handles.chn_modfilt = tmp.chn_modfilt;
         [out_1Mean out_2Mean fs_intrep tmp] = Get_internalrep_stochastic(insig1,insig2supra,fs,'dau1997',sigma,Ntimes,fc2plot_idx,tmp);
                 
         template_test = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
@@ -676,6 +678,7 @@ for k = 1:Nsim
             case 1
             
             if nAnalyser == 99;
+                
                 if bMultiChannel
                     
                     [out_interval1  , fc] = dau1996apreproc(interval1,fs);
@@ -718,9 +721,14 @@ for k = 1:Nsim
             elseif nAnalyser == 101
 
                 if bMultiChannel
-                    [out_interval1  ,fc] = dau1997preproc(interval1  ,fs);
+                    [out_interval1  ,fc,mfc] = dau1997preproc(interval1  ,fs);
                     [out_interval1s2,fc] = dau1997preproc(interval1s2,fs);
                     [out_interval2  ,fc] = dau1997preproc(interval2  ,fs);
+                    
+                    chn_modfilt = handles.chn_modfilt;
+                    if length(chn_modfilt) > length(mfc)
+                        chn_modfilt = 1:length(mfc);
+                    end
                     
                     out_interval1   = il_pool_in_one_column(out_interval1(fc2plot_idx));
                     out_interval1s2 = il_pool_in_one_column(out_interval1s2(fc2plot_idx));
@@ -729,13 +737,18 @@ for k = 1:Nsim
                     handles.script_sim = 'dau1997preproc';
                 end
                 if bSingleChannel
-                    [out_interval1  ,fc, xx, outsfilt11] = dau1997preproc_1Ch(interval1  ,fs,fc);
-                    [out_interval1s2,fc, xx, outsfilt12] = dau1997preproc_1Ch(interval1s2,fs,fc);
-                    [out_interval2  ,fc, xx, outsfilt2] = dau1997preproc_1Ch(interval2  ,fs,fc);
+                    [out_interval1  ,fc, mfc, outsfilt11] = dau1997preproc_1Ch(interval1  ,fs,fc);
+                    [out_interval1s2,fc, xxx, outsfilt12] = dau1997preproc_1Ch(interval1s2,fs,fc);
+                    [out_interval2  ,fc, xxx, outsfilt2] = dau1997preproc_1Ch(interval2  ,fs,fc);
                     
-                    out_interval1   = out_interval1(:,:);
-                    out_interval1s2 = out_interval1s2(:,:);
-                    out_interval2   = out_interval2(:,:);
+                    chn_modfilt = handles.chn_modfilt;
+                    if length(chn_modfilt) > length(mfc)
+                        chn_modfilt = 1:length(mfc);
+                    end
+                    out_interval1   = [out_interval1(:,chn_modfilt)];%out_interval1(:,2);out_interval1(:,2)];
+                    out_interval1s2 = [out_interval1s2(:,chn_modfilt)];%out_interval1s2(:,2);out_interval1s2(:,2)];
+                    out_interval2   = [out_interval2(:,chn_modfilt)];%out_interval2(:,nchn_modfilt);out_interval2(:,2)];
+                    nchn_dec = size(out_interval1,2);
                     
                     handles.script_sim = 'dau1997preproc_1Ch';
 
@@ -896,7 +909,9 @@ for k = 1:Nsim
                     % if fs == fs_intrep
                     decision(1) = optimaldetector(diff11,template,fs_intrep);
                     decision(2) = optimaldetector(diff12,template,fs_intrep);
-                    decision(3) = optimaldetector(diffGreatestCC,template,fs_intrep); % diff20
+                    decision(3) = optimaldetector(diffGreatestCC,template,fs_intrep); 
+                    
+                    decision = decision / sqrt(nchn_dec);
                     % end
                 case 2
                     error('continue')
@@ -904,8 +919,7 @@ for k = 1:Nsim
                     [decision(2) corrmue(:,2)] = optimaldetector(diff12,template);
                     [decision(3) corrmue(:,3)] = optimaldetector(diffGreatestCC,template);
             end
-            diffs = [diff11 diff12 diff20];
-     
+            
             time4var = 10e-3;
             samples4var = floor(time4var * fs_intrep);
             

@@ -135,8 +135,8 @@ for freqchannel=1:nfreqchannels
             outsigblock(:,nmfc) = 1/sqrt(2)*abs(outsigblock(:,nmfc));
         end
     end
-  
-  outsig{freqchannel}=outsigblock;
+    outsig{freqchannel}=outsigblock;
+    
 end;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

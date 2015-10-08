@@ -35,7 +35,7 @@ end
 if bCreate
     [masker BWs] = exp_dau1997b(fs,2);
     for i = 1:size(masker,2)
-        fname = sprintf('NBN-fc-5000-Hz-BW-%.0f-Hz-65-dB',BWs(i));
+        fname = sprintf('NBN-fc-1000-Hz-BW-%.0f-Hz-65-dB',BWs(i));
         Wavwrite(masker(:,i),fs,fname);
     end
     % Wavwrite.m: file NBN-fc-5000-Hz-BW-10-Hz-65-dB created
@@ -67,7 +67,7 @@ switch opts.bDecisionMethod
                 opts.sigma   = 1.35; % tone: 3 = band 13-15; % 2.45 = band 13-14; % 1.72 = band 14;
                                      %   BW:                                        1.35 = band 14; (target = 0.83 = -2 dB);
             case 101
-                opts.sigma   = 3.45; % tone: 3.45 = band 14 (all); 1.88 = band 14 (1,2); 1.38 = band 14 (1)
+                opts.sigma   = 1.35; % tone: 1.23 = band 14 (all); 1.30 = band 14 (1,2); 1.35 = band 14 (1)
             case 103
                 opts.sigma   = 21;  %   BW:  21 = band 2-33 (all); 1.95 = band 14; (target = 0.83 = -2 dB);
         end
@@ -87,7 +87,7 @@ opts.do_template    =  1;
 opts.do_simulation  =  1;
 opts.Nreversals     =  8;
 
-erbc2analyse        = freqtoaud([5000],'erb'); % 14 for 1000 Hz (approx.)  
+erbc2analyse        = freqtoaud([1000 5000],'erb'); % 14 for 1000 Hz (approx.)  
 opts.fc2plot_idx    = ceil(erbc2analyse(1))-2;
 if length(erbc2analyse) > 1
     opts.fc2plot_idx2 = floor(erbc2analyse(end))-2;
@@ -173,7 +173,7 @@ if bPart3
               [dir_where 'NBN-fc-5000-Hz-BW-10000-Hz-65-dB.wav']}
    
     opts.DurRamps   =  50; % additional cosine ramps
-    opts.Gain4supra =  -3; 
+    opts.Gain4supra =  0; 
     opts.audio.fs   =  fs;
     
     opts.bUseRamp  = 1; % additional cosine ramps
@@ -195,6 +195,7 @@ if bPart3
         TTh(i) = median(tmp.Threshold);
         disp('')
     end
+    figure; plot(TTh);
     
     if nargout > 0
         th = th_det;
