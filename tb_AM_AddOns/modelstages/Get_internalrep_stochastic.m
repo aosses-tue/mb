@@ -81,6 +81,8 @@ out_2 = [];
 
 opts = Ensure_field(opts,'masker_ramp_ms',0);
 opts = ef(opts,'signal_ramp_ms',0);
+opts = ef(opts,'increment_method','level'); % default
+increment_method = opts.increment_method;
 
 masker_ramp_ms = opts.masker_ramp_ms;
 signal_ramp_ms = opts.signal_ramp_ms;
@@ -127,16 +129,24 @@ for i = 1:Ntimes
         error('Sigma different of zero being used');
     end
     
+    intervalN0 = in_masker_s0;
+    switch increment_method
+        case 'level' % default
+            intervalSN = in_masker_s1 + in_signal;
+        case 'modulation-depth'
+            intervalSN = in_signal;
+    end
+    
     switch model
-
+        
         case 'dau1996a'
             
             if bMultiChannel == 1
-                [out_pre , fc] = dau1996apreproc(in_masker_s0,fs);
+                [out_pre , fc] = dau1996apreproc(intervalN0,fs);
                 out_pre = out_pre(:,idx_fc);
             end
             if bSingleChannel == 1
-                [out_pre , fc] = dau1996apreproc_1Ch(in_masker_s0,fs,fc); 
+                [out_pre , fc] = dau1996apreproc_1Ch(intervalN0,fs,fc); 
             end
             
             [Ni,Mi] = size(out_pre);
@@ -160,12 +170,12 @@ for i = 1:Ntimes
             end
             
             if bMultiChannel == 1
-                [out_pre , fc] = dau1996apreproc(in_masker_s1 + in_signal,fs); % out_2pre affected by external noise
+                [out_pre , fc] = dau1996apreproc(intervalSN,fs); % out_2pre affected by external noise
                 out_pre = out_pre(:,idx_fc);
                 outs.script_template = 'dau1996apreproc';
             end
             if bSingleChannel == 1
-                [out_pre , fc] = dau1996apreproc_1Ch(in_masker_s1 + in_signal,fs,fc); % out_1pre affected by external noise
+                [out_pre , fc] = dau1996apreproc_1Ch(intervalSN,fs,fc); % out_1pre affected by external noise
                 outs.script_template = 'dau1996apreproc_1Ch';
             end
             
@@ -187,11 +197,11 @@ for i = 1:Ntimes
         case 'dau1996'
             
             if bMultiChannel == 1
-                [out_pre , fc] = dau1996preproc(in_masker_s0,fs);
+                [out_pre , fc] = dau1996preproc(intervalN0,fs);
                 out_pre = out_pre(:,idx_fc);
             end
             if bSingleChannel == 1
-                [out_pre , fc] = dau1996preproc_1Ch(in_masker_s0,fs,fc); 
+                [out_pre , fc] = dau1996preproc_1Ch(intervalN0,fs,fc); 
             end
             
             [Ni,Mi] = size(out_pre);
@@ -215,12 +225,12 @@ for i = 1:Ntimes
             end
             
             if bMultiChannel == 1
-                [out_pre , fc] = dau1996preproc(in_masker_s1 + in_signal,fs); % out_2pre affected by external noise
+                [out_pre , fc] = dau1996preproc(intervalSN,fs); % out_2pre affected by external noise
                 out_pre = out_pre(:,idx_fc);
                 outs.script_template = 'dau1996preproc';
             end
             if bSingleChannel == 1
-                [out_pre , fc] = dau1996preproc_1Ch(in_masker_s1 + in_signal,fs,fc); % out_1pre affected by external noise
+                [out_pre , fc] = dau1996preproc_1Ch(intervalSN,fs,fc); % out_1pre affected by external noise
                 outs.script_template = 'dau1996preproc_1Ch';
             end
             
@@ -244,8 +254,8 @@ for i = 1:Ntimes
             
             if bMultiChannel == 1
                 
-                tmp = nan(size(in_masker_s0,1),12*length(idx_fc));
-                [out_1pre, fc, mfc] = dau1997preproc(in_masker_s0, fs);
+                tmp = nan(size(intervalN0,1),12*length(idx_fc));
+                [out_1pre, fc, mfc] = dau1997preproc(intervalN0, fs);
                 
                 for j = 1:length(idx_fc)
                     L = size(out_1pre{idx_fc(j)},2);
@@ -253,8 +263,8 @@ for i = 1:Ntimes
                 end
                 out_1pre = tmp;
                 
-                tmp = nan(size(in_masker_s0,1),12*length(idx_fc));
-                [out_2pre , fc, mfc] = dau1997preproc(in_masker_s1 + in_signal,fs);
+                tmp = nan(size(intervalN0,1),12*length(idx_fc));
+                [out_2pre , fc, mfc] = dau1997preproc(intervalSN,fs);
                 for j = 1:length(idx_fc)
                     L = size(out_2pre{idx_fc(j)},2);
                     tmp(:,1+12*(j-1):L+12*(j-1)) = out_2pre{idx_fc(j)};
@@ -266,8 +276,8 @@ for i = 1:Ntimes
             end
             
             if bSingleChannel == 1
-                [out_1pre , fc, mfc] = dau1997preproc_1Ch(in_masker_s0            ,fs,fc);
-                [out_2pre , fc, mfc] = dau1997preproc_1Ch(in_masker_s1 + in_signal,fs,fc);
+                [out_1pre , fc, mfc] = dau1997preproc_1Ch(intervalN0,fs,fc);
+                [out_2pre , fc, mfc] = dau1997preproc_1Ch(intervalSN,fs,fc);
                 % idxtmp = 1:2;
                 out_1pre = out_1pre(:,:);
                 out_2pre = out_2pre(:,:);
@@ -305,14 +315,14 @@ for i = 1:Ntimes
                     fbstyle = 'lowpass';
             end
             if bMultiChannel == 1
-                [out_1pre , fc, fmc, IntRep] = jepsen2008preproc_multi(in_masker_s0  ,fs,fcmin,fcmax,fbstyle,'resample_intrep');
-                [out_2pre , fc] = jepsen2008preproc_multi(in_masker_s1 + in_signal,fs,fcmin,fcmax,fbstyle,'resample_intrep');
+                [out_1pre , fc, fmc, IntRep] = jepsen2008preproc_multi(intervalN0,fs,fcmin,fcmax,fbstyle,'resample_intrep');
+                [out_2pre , fc] = jepsen2008preproc_multi(intervalSN,fs,fcmin,fcmax,fbstyle,'resample_intrep');
                 [Ni,Mi] = size(out_1pre{1});
                 outs.script_template = 'jepsen2008preproc_multi';
             end
             if bSingleChannel == 1
-                [out_1pre , fc, fmc, IntRep] = jepsen2008preproc_1Ch(in_masker_s0  ,fs,fc,fbstyle);
-                [out_2pre , fc] = jepsen2008preproc_1Ch(in_masker_s1 + in_signal,fs,fc,fbstyle);
+                [out_1pre , fc, fmc, IntRep] = jepsen2008preproc_1Ch(intervalN0,fs,fc,fbstyle);
+                [out_2pre , fc]              = jepsen2008preproc_1Ch(intervalSN,fs,fc,fbstyle);
                 outs.script_template = 'jepsen2008preproc_1Ch';
             end
             fs_intrep = IntRep.fs_intrep;

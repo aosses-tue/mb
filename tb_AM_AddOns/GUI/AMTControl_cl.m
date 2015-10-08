@@ -39,8 +39,16 @@ handles_man = Ensure_field(handles_man,'DurRamps',150); % ms
 
 dir_out = Get_TUe_paths('outputs');
 
+handles_man = Ensure_field(handles_man,'increment_method','level'); % 'modulation-depth'
 handles_man = Ensure_field(handles_man,'filename1',[Get_TUe_paths('outputs') 'AMTControl-examples' delim 'tone-f-1000-Hz-at-60-dB-dur-800-ms.wav']);
-handles_man = Ensure_field(handles_man,'filename2',[Get_TUe_paths('outputs') 'AMTControl-examples' delim 'tone-f-1000-Hz-at-42-dB-dur-800-ms.wav']);
+switch handles_man.increment_method
+    case 'level'
+        handles_man = Ensure_field(handles_man,'filename2',[Get_TUe_paths('outputs') 'AMTControl-examples' delim 'tone-f-1000-Hz-at-42-dB-dur-800-ms.wav']);
+    case 'modulation-depth'
+        handles_man = Ensure_field(handles_man,'filename2',handles_man.filename1);
+        handles_man = Ensure_field(handles_man,'fmod',5); % Hz
+        handles_man = Ensure_field(handles_man,'dur_test',1); % s
+end
 handles_man = Ensure_field(handles_man,'do_template'  , 1);
 handles_man = Ensure_field(handles_man,'do_simulation', 1);
 handles_man = Ensure_field(handles_man,'MethodIntRep' , 1); % my method to obtain internal representations
@@ -54,34 +62,41 @@ handles_man = Ensure_field(handles_man,'Gain2file1',0);
 handles_man = Ensure_field(handles_man,'Gain2file2',0);
 handles_man = Ensure_field(handles_man,'fc2plot_idx' ,ceil( freqtoaud(1000,'erb') )-2);
 handles_man = Ensure_field(handles_man,'fc2plot_idx2',ceil( freqtoaud(1000,'erb') )-2);
-
+handles_man = Ensure_field(handles_man,'Nsim',1);
 filename1 = handles_man.filename1;
 filename2 = handles_man.filename2;
 
-handles.bDebug = handles_man.bDebug;
-handles.dir_out = dir_out;
-handles.audio = handles_man.audio;
+handles.increment_method = handles_man.increment_method;
+if strcmp(handles.increment_method,'modulation-depth')
+    handles.fmod    = handles_man.fmod;
+    handles.dur_test= handles_man.dur_test;
+end
+handles.bDebug     = handles_man.bDebug;
+handles.dir_out    = dir_out;
+handles.audio      = handles_man.audio;
 handles.Gain2file1 = handles_man.Gain2file1;
 handles.Gain2file2 = handles_man.Gain2file2;
+
+%%%
 handles = il_btnLoad(filename1,filename2,handles);
+%%%
 
 handles.Gain4supra  = handles_man.Gain4supra;
 handles.nAnalyser   = handles_man.nAnalyser;
+handles.fc2plot_idx = handles_man.fc2plot_idx;
+handles.fc2plot_idx2= handles_man.fc2plot_idx2;
+handles.Ntimes      = handles_man.Ntimes; % 1 == deterministic
+handles.bUseRamp    = handles_man.bUseRamp;
+handles.bUseRampS   = handles_man.bUseRampS;
+handles.DurRamps    = handles_man.DurRamps; % ms
 
-handles.fc2plot_idx  = handles_man.fc2plot_idx;
-handles.fc2plot_idx2 = handles_man.fc2plot_idx2;
-
-handles.Ntimes = handles_man.Ntimes; % 1 == deterministic
-
-handles.bUseRamp  = handles_man.bUseRamp;
-handles.bUseRampS = handles_man.bUseRampS;
-handles.DurRamps = handles_man.DurRamps; % ms
-
+%%%
 if handles_man.do_template == 1
     handles = il_GetTemplate(handles);
 else
     handles.audio.template = handles_man.audio.template;
 end
+%%%
 
 if handles_man.do_simulation == 1
     handles.StepdB          = handles_man.StepdB;
@@ -89,8 +104,8 @@ if handles_man.do_simulation == 1
     handles.Nreversals      = handles_man.Nreversals;
     handles.bStepSizeHalved = 1;
     handles.Reversals4avg   = handles_man.Reversals4avg;
-    handles.Nsim = 1;
-    handles.bInternalNoise = 1;
+    handles.Nsim            = handles_man.Nsim;
+    handles.bInternalNoise  = 1;
     handles.sigma             = handles_man.sigma;
     handles.bDecisionMethod = handles_man.bDecisionMethod;
     handles.MethodIntRep    = handles_man.MethodIntRep;
@@ -168,6 +183,14 @@ G2 = handles.Gain2file2; % gain in dB for audio file 2
 
 if fs ~= fs2
     error('Two audio files should have the same sampling frequency');
+end
+
+if strcmp(handles.increment_method,'modulation-depth')
+    try
+        insig2 = insig2(1:round(handles.dur_test*fs));
+    catch
+        error('dur_test field is longer than the length of filename1, please re-assign this parameter and re-run the code');
+    end
 end
 
 handles.audio = Ensure_field(handles.audio,'fs',fs);
@@ -266,6 +289,7 @@ insig2 = handles.audio.insig2;
 fs = handles.audio.fs;
 
 Gain4supra = handles.Gain4supra;
+increment_method = handles.increment_method;
 nAnalyser  = handles.nAnalyser;
    
 fc2plot_idx = handles.fc2plot_idx;
@@ -314,11 +338,25 @@ if bUseRampS; tmp.signal_ramp_ms = handles.DurRamps; else; tmp.signal_ramp_ms = 
         
 if bDeterministic == 0 % then stochastic
     insig1 = handles.audio.insig1orig;
+    
+    L = length(insig2);
+    insig2 = il_randomise_insig(insig1);
+    insig2 = insig2(1:L); % we re-assign insig2
 else
     insig1 = handles.audio.insig1;
 end
 
-insig2supra = From_dB(Gain4supra) * insig2;
+switch increment_method
+    case 'level' % default case
+        insig2supra = From_dB(Gain4supra) * insig2;
+    case 'modulation-depth'
+        mdepth = d2m(Gain4supra,'dau');
+        fmod = handles.fmod;
+                
+        insig2supra = Do_AM(insig2,fs,fmod,mdepth);
+        tmp.increment_method = 'modulation-depth';
+end
+    
 
 switch nAnalyser
     
@@ -541,9 +579,12 @@ bUseRampSignal = handles.bUseRampS;
 if bUseRamp;       rampdn = handles.DurRamps; end % ramps in ms
 if bUseRampSignal; rampsl = rampdn; end
 
-if bUseRampSignal
-    fprintf('Introducing %.0f-ms ramps into test signals\n',rampsl);
-    insig2 = Do_cos_ramp(insig2,fs,rampsl);
+switch handles.increment_method
+    case 'level'
+        if bUseRampSignal
+            fprintf('Introducing %.0f-ms ramps into test signals\n',rampsl);
+            insig2 = Do_cos_ramp(insig2,fs,rampsl);
+        end
 end
 
 for k = 1:Nsim
@@ -569,20 +610,34 @@ for k = 1:Nsim
     
     while (nReversal < Reversals_stop) & (bSucceeded ==  1) % up to line 765
 
-        if bStochastic == 1
-            insig1s0 = il_randomise_insig(handles.audio.insig1orig);
-            insig1s1 = il_randomise_insig(handles.audio.insig1orig);
-            insig1s2 = il_randomise_insig(handles.audio.insig1orig);
-        end
+        L = length(insig2);
         if bDeterministic == 1
             insig1s0 = insig1;
             insig1s1 = insig1;
             insig1s2 = insig1;
         end
+        if bStochastic == 1
+            
+            switch handles.increment_method
+                case 'modulation-depth'
+                    insig2 = il_randomise_insig(handles.audio.insig1orig);
+                    insig2 = insig2(1:L); % we re-assign insig2
+                    
+                    if bUseRampSignal
+                        if k == 1; fprintf('Introducing %.0f-ms ramps into test signals\n',rampsl); end;
+                        insig2 = Do_cos_ramp(insig2,fs,rampsl);
+                    end
 
-        insig1s0 = insig1s0( 1:length(insig2) );
-        insig1s1 = insig1s1( 1:length(insig2) );
-        insig1s2 = insig1s2( 1:length(insig2) );
+            end
+            
+            insig1s0 = il_randomise_insig(handles.audio.insig1orig);
+            insig1s1 = il_randomise_insig(handles.audio.insig1orig);
+            insig1s2 = il_randomise_insig(handles.audio.insig1orig);
+        end
+        
+        insig1s0 = insig1s0( 1:L );
+        insig1s1 = insig1s1( 1:L );
+        insig1s2 = insig1s2( 1:L );
         
         if bUseRamp
             if k==1; fprintf('Introducing %.0f-ms ramps into maskers\n',rampdn); end
@@ -592,11 +647,20 @@ for k = 1:Nsim
         end
         
         Gain2apply  = From_dB(Level_current);
-        insig2test  = Gain2apply * insig2;
+        
+        switch handles.increment_method
+            case 'level'
+                insig2test  = Gain2apply * insig2;
+                interval2 = insig1s1 + insig2test; % Noise + current signal
+                
+            case 'modulation-depth'
+                mdepth = Gain2apply; % d2m(Gain2apply,'dau');
+                fmod = handles.fmod;
+                insig2test = Do_AM(insig2,fs,fmod,mdepth);
+                interval2 = insig2test;
+        end
         interval1   = insig1s0; % Only noise
         interval1s2 = insig1s2; % Only noise 2
-        
-        interval2 = insig1s1 + insig2test; % Noise + current signal
         
         if bListen
             pause(2)
@@ -842,15 +906,18 @@ for k = 1:Nsim
             end
             diffs = [diff11 diff12 diff20];
      
-            time4var = 2.5e-3;
+            time4var = 10e-3;
             samples4var = floor(time4var * fs_intrep);
             
             varn = mean(std(buffer(diff20(:),samples4var))); % buffered in 2.5-ms sections
             % varn2 = mean(std(buffer(diff20(:),100)));
             
-            value_Tr = varn; % sigma; % max(varn); 
+            [xx idx_decision] = max(decision);
+            
+            value_Tr = sigma; % varn; % sigma; % max(varn); 
             value_De = decision(3);% -max(decision(1:2));
-            if value_De > value_Tr
+            
+            if idx_decision == 3 & value_De > value_Tr
                 idx_decision = 3;
             else
                 idx_decision = 1; % randi(3);
@@ -858,7 +925,6 @@ for k = 1:Nsim
             
         end
         
-
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % 3. Fourth decision used:
         if bDecisionMethod == 3
