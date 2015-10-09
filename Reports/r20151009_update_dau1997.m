@@ -68,6 +68,7 @@ switch opts.bDecisionMethod
                                      %   BW:                                        1.35 = band 14; (target = 0.83 = -2 dB);
             case 101
                 opts.sigma   = 1.35; % tone: 1.23 = band 14 (all); 1.30 = band 14 (1,2); 1.35 = band 14 (1)
+                opts.modfiltertype = 'dau1997wLP';
             case 103
                 opts.sigma   = 21;  %   BW:  21 = band 2-33 (all); 1.95 = band 14; (target = 0.83 = -2 dB);
         end
@@ -87,7 +88,7 @@ opts.do_template    =  1;
 opts.do_simulation  =  1;
 opts.Nreversals     =  8;
 
-erbc2analyse        = freqtoaud([1000 5000],'erb'); % 14 for 1000 Hz (approx.)  
+erbc2analyse        = freqtoaud([5000],'erb'); % 14 for 1000 Hz (approx.)  
 opts.fc2plot_idx    = ceil(erbc2analyse(1))-2;
 if length(erbc2analyse) > 1
     opts.fc2plot_idx2 = floor(erbc2analyse(end))-2;

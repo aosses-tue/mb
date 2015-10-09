@@ -65,8 +65,8 @@ if ~isnumeric(fs) || ~isscalar(fs) || fs<=0
   error('%s: fs must be a positive scalar.',upper(mfilename));
 end;
 
-definput.import={'auditoryfilterbank','ihcenvelope','adaptloop'};
-definput.importdefaults={'ihc_dau','adt_dau'};
+definput.import={'auditoryfilterbank','ihcenvelope','adaptloop','modfilterbank'};
+definput.importdefaults={'ihc_dau','adt_dau','dau1997'};
 definput.keyvals.subfs=[];
 
 [flags,keyvals]  = ltfatarghelper({'flow','fhigh'},definput,varargin);
@@ -85,7 +85,7 @@ outsig          = ihcenvelope(outsig,fs,'argimport',flags,keyvals);
 outsig          = adaptloop(outsig,fs,'argimport',flags,keyvals);
 
 % Modulation filterbank
-[outsig,mfc]    = modfilterbank1997(outsig,fs,fc);
+[outsig,mfc]    = modfilterbank1997(outsig,fs,fc,'argimport',flags,keyvals);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end

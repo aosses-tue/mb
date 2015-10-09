@@ -1,5 +1,5 @@
-function definput=arg_drnl_CASP(definput)
-% function definput=arg_drnl_CASP(definput)
+function definput = arg_drnl_CASP(definput)
+% function definput = arg_drnl_CASP(definput)
 %
 % Created/edited by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Original filename: arg_drnl.m
@@ -49,9 +49,6 @@ definput.flags.absolutethreshold = {'noabsolutethreshold','absolutethreshold'};
 definput.flags.ihctype          = {'ihc_jepsen'};
 definput.flags.modfiltertype    = {'modfilterbank','lowpass'};
 definput.flags.resample_intrep  = {'noresample_intrep','resample_intrep'};
-
-% This parameter set is not supported anymore, as there is no evince as
-% to whether or not this is actually the dataset that was used in the paper.  
 
 definput.groups.lopezpoveda2001 = {... % taken from Lopez-Poveda, Table III
                             'lin_lp_cutoff'  , [-0.06762 1.01679], ...

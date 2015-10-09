@@ -39,7 +39,7 @@ function [outsig, fc, mfc, extra] = dau1997preproc_1Ch(insig, fs, fc, varargin)
 %
 %   References: dau1997mapI dau1997mapII
 %
-% Author        : Torsten Dau, Morten L. Jepsen, Peter L. S�ndergaard
+% Author        : Torsten Dau, Morten L. Jepsen, Peter L. Soendergaard
 % Downloaded on : 18/03/2014
 % Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Last update on: 07/10/2014 
@@ -60,7 +60,7 @@ if ~isnumeric(fs) || ~isscalar(fs) || fs<=0
   error('%s: fs must be a positive scalar.',upper(mfilename));
 end;
 
-definput.import={'auditoryfilterbank','ihcenvelope','adaptloop'};
+definput.import={'auditoryfilterbank','ihcenvelope','adaptloop','modfilterbank'};
 definput.importdefaults={'ihc_dau','adt_dau'};
 definput.keyvals.subfs=[];
 
@@ -95,7 +95,7 @@ outsig                  = adaptloop(outsig,fs,'argimport',flags,keyvals);
 extra.out03_adaptloop   = outsig;
 
 % Modulation filterbank
-[outsig,mfc] = modfilterbank1997(outsig,fs,fc);
+[outsig,mfc] = modfilterbank1997(outsig,fs,fc,'argimport',flags,keyvals);
 
 outsig = outsig{1};
 

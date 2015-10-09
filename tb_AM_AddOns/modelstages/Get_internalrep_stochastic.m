@@ -88,6 +88,11 @@ opts = ef(opts,'signal_ramp_ms',0);
 opts = ef(opts,'increment_method','level'); % default
 increment_method = opts.increment_method;
 
+switch model
+    case 'dau1997'
+        opts = Ensure_field(opts,'modfiltertype','dau1997');
+end
+
 masker_ramp_ms = opts.masker_ramp_ms;
 signal_ramp_ms = opts.signal_ramp_ms;
 
@@ -253,25 +258,24 @@ for i = 1:Ntimes
                 
             end
             
-            
         case 'dau1997'
             
             if bMultiChannel == 1
                 
-                tmp = nan(size(intervalN0,1),12*length(idx_fc));
-                [out_1pre, fc, mfc] = dau1997preproc(intervalN0, fs);
+                chn_modfilt = opts.chn_modfilt;
+                Lt = 1:chn_modfilt; % Lt = 12, by default
+                tmp = []; 
+                [out_1pre, fc, mfc] = dau1997preproc(intervalN0, fs,opts.modfiltertype);
                 
-                for j = 1:length(idx_fc)
-                    L = size(out_1pre{idx_fc(j)},2);
-                    tmp(:,1+12*(j-1):L+12*(j-1)) = out_1pre{idx_fc(j)};
+                for j = 1:length(idx_fc) % default:  1:12
+                    tmp = [tmp out_1pre{idx_fc(j)}];
                 end
                 out_1pre = tmp;
                 
-                tmp = nan(size(intervalN0,1),12*length(idx_fc));
-                [out_2pre , fc, mfc] = dau1997preproc(intervalSN,fs);
-                for j = 1:length(idx_fc)
-                    L = size(out_2pre{idx_fc(j)},2);
-                    tmp(:,1+12*(j-1):L+12*(j-1)) = out_2pre{idx_fc(j)};
+                tmp = [];
+                [out_2pre , fc, mfc] = dau1997preproc(intervalSN,fs,opts.modfiltertype);
+                for j = 1:length(idx_fc) % default:  1:12
+                    tmp = [tmp out_2pre{idx_fc(j)}];
                 end
                 out_2pre = tmp;
                 
@@ -280,8 +284,8 @@ for i = 1:Ntimes
             end
             
             if bSingleChannel == 1
-                [out_1pre , fc, mfc] = dau1997preproc_1Ch(intervalN0,fs,fc);
-                [out_2pre , fc, mfc] = dau1997preproc_1Ch(intervalSN,fs,fc);
+                [out_1pre , fc, mfc] = dau1997preproc_1Ch(intervalN0,fs,fc,opts.modfiltertype);
+                [out_2pre , fc, mfc] = dau1997preproc_1Ch(intervalSN,fs,fc,opts.modfiltertype);
                 
                 chn_modfilt = opts.chn_modfilt;
                 if length(chn_modfilt) > length(mfc)

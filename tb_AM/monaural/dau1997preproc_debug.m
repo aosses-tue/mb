@@ -1,5 +1,5 @@
-function [outsig, fc, mfc, extra] = dau1997preproc(insig, fs, varargin)
-% function [outsig, fc, mfc, extra] = dau1997preproc(insig, fs, varargin)
+function [outsig, fc, mfc, extra] = dau1997preproc_debug(insig, fs, varargin)
+% function [outsig, fc, mfc, extra] = dau1997preproc_debug(insig, fs, varargin)
 %
 % 1. Description:
 %       Auditory model from Dau et. al. 1997
@@ -39,6 +39,13 @@ function [outsig, fc, mfc, extra] = dau1997preproc(insig, fs, varargin)
 %
 %   References: dau1997mapI dau1997mapII
 %
+%   Examples:
+%       insig = 1;
+%       fs = 44100;
+%       dau1997preproc_debug(insig, fs,'dau1997'); % to use modfilterbank as in dau1997b, dau1997c
+%       dau1997preproc_debug(insig, fs,'jepsen2008'); % to use modfilterbank as in jepsen2008
+%       dau1997preproc_debug(insig, fs,'derleth2000'); % to use modfilterbank as in derleth2000 (same as verhey1999)
+%   
 % Author        : Torsten Dau, Morten L. Jepsen, Peter L. Soendergaard
 % Downloaded on : 18/03/2014
 % Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
@@ -60,7 +67,7 @@ if ~isnumeric(fs) || ~isscalar(fs) || fs<=0
   error('%s: fs must be a positive scalar.',upper(mfilename));
 end;
 
-definput.import={'auditoryfilterbank','ihcenvelope','adaptloop'};
+definput.import={'auditoryfilterbank','ihcenvelope','adaptloop','modfilterbank'};
 definput.importdefaults={'ihc_dau','adt_dau'};
 definput.keyvals.subfs=[];
 
@@ -85,7 +92,7 @@ outsig                  = adaptloop(outsig,fs,'argimport',flags,keyvals);
 extra.out_adaptloop     = outsig;
 
 % Modulation filterbank
-[outsig,mfc] = modfilterbank1997(outsig,fs,fc);
+[outsig,mfc] = modfilterbank1997(outsig,fs,fc,'argimport',flags,keyvals);
 extra.out04_modfilterbank = outsig;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

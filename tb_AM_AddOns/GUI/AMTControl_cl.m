@@ -67,6 +67,9 @@ filename1 = handles_man.filename1;
 filename2 = handles_man.filename2;
 
 handles.increment_method = handles_man.increment_method;
+if handles_man.nAnalyser
+    handles_man = Ensure_field(handles_man,'modfiltertype','dau1997'); % dau1997wLP, derleth2000, jepsen2008
+end
 if strcmp(handles.increment_method,'modulation-depth')
     handles.fmod    = handles_man.fmod;
     handles.dur_test= handles_man.dur_test;
@@ -83,6 +86,10 @@ handles = il_btnLoad(filename1,filename2,handles);
 
 handles.Gain4supra  = handles_man.Gain4supra;
 handles.nAnalyser   = handles_man.nAnalyser;
+if handles.nAnalyser == 101
+    handles.modfiltertype = handles_man.modfiltertype;
+end
+
 handles.fc2plot_idx = handles_man.fc2plot_idx;
 handles.fc2plot_idx2= handles_man.fc2plot_idx2;
 handles.Ntimes      = handles_man.Ntimes; % 1 == deterministic
@@ -363,14 +370,14 @@ switch nAnalyser
     case 99
         
         [out_1Mean out_2Mean fs_intrep tmp] = Get_internalrep_stochastic(insig1,insig2supra,fs,'dau1996a',sigma,Ntimes,fc2plot_idx,tmp);
-        template_test = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
+        template = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
         
         handles.script_template = tmp.script_template;
         
     case 99.1
         
         [template_test2 out_2Mean out_1Mean] = casptemplate(insig2supra+insig1,insig1,'dau1996apreproc',{fs});
-        template_test = template_test2(:,fc2plot_idx);
+        template = template_test2(:,fc2plot_idx);
         
         fs_intrep = fs;
         handles.script_template = 'dau1996apreproc';
@@ -378,26 +385,27 @@ switch nAnalyser
     case 100
         
         [out_1Mean out_2Mean fs_intrep tmp] = Get_internalrep_stochastic(insig1,insig2supra,fs,'dau1996',sigma,Ntimes,fc2plot_idx,tmp);
-        template_test = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
+        template = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
         
         handles.script_template = tmp.script_template;
         
     case 100.1
         
         [template_test2 out_2Mean out_1Mean] = casptemplate(insig2supra+insig1,insig1,'dau1996preproc',{fs});
-        template_test = template_test2(:,fc2plot_idx);
+        template = template_test2(:,fc2plot_idx);
         
         fs_intrep = fs;
         handles.script_template = 'dau1996preproc';
         
     case 101 
         
+        tmp.modfiltertype = handles.modfiltertype;
         tmp.chn_modfilt = 1:12;%:12;
         handles.chn_modfilt = tmp.chn_modfilt;
         [out_1Mean out_2Mean fs_intrep tmp] = Get_internalrep_stochastic(insig1,insig2supra,fs,'dau1997',sigma,Ntimes,fc2plot_idx,tmp);
                 
-        template_test = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
-        idxnan = find(isnan(out_1Mean)); out_1Mean(idxnan) = []; out_2Mean(idxnan) = [];
+        template = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
+        idxnan = find(isnan(out_1Mean)); out_1Mean(idxnan) = 0; out_2Mean(idxnan) = 0;
         
         handles.script_template = tmp.script_template;
         
@@ -405,7 +413,7 @@ switch nAnalyser
         
         [out_1Mean out_2Mean fs_intrep tmp] = Get_internalrep_stochastic(insig1,insig2supra,fs,'jepsen2008-modfilterbank',sigma,Ntimes,fc2plot_idx,tmp);
                 
-        template_test = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
+        template = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
         handles.script_template = tmp.script_template;
         
 	case 104
@@ -464,13 +472,11 @@ switch nAnalyser
             out_2Mean = reshape(out_2Mean,Ntmp,Mtmp);
         end
         
-        template_test = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
+        template = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
         
 end
 
-template = template_test;
-
-t = ( 1:size(out_1Mean,1) )/fs_intrep;
+t = ( 1:size(template,1) )/fs_intrep;
 
 switch nAnalyser
     case {99,99.1,100,100.1}
@@ -733,7 +739,8 @@ for k = 1:Nsim
                     out_interval1   = il_pool_in_one_column(out_interval1(fc2plot_idx));
                     out_interval1s2 = il_pool_in_one_column(out_interval1s2(fc2plot_idx));
                     out_interval2   = il_pool_in_one_column(out_interval2(fc2plot_idx));
-                                    
+                             
+                    nchn_dec = size(out_interval1,1) / length(interval1);
                     handles.script_sim = 'dau1997preproc';
                 end
                 if bSingleChannel
@@ -745,9 +752,9 @@ for k = 1:Nsim
                     if length(chn_modfilt) > length(mfc)
                         chn_modfilt = 1:length(mfc);
                     end
-                    out_interval1   = [out_interval1(:,chn_modfilt)];%out_interval1(:,2);out_interval1(:,2)];
-                    out_interval1s2 = [out_interval1s2(:,chn_modfilt)];%out_interval1s2(:,2);out_interval1s2(:,2)];
-                    out_interval2   = [out_interval2(:,chn_modfilt)];%out_interval2(:,nchn_modfilt);out_interval2(:,2)];
+                    out_interval1   = [out_interval1(:,chn_modfilt)];
+                    out_interval1s2 = [out_interval1s2(:,chn_modfilt)];
+                    out_interval2   = [out_interval2(:,chn_modfilt)];
                     nchn_dec = size(out_interval1,2);
                     
                     handles.script_sim = 'dau1997preproc_1Ch';

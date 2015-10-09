@@ -1,8 +1,10 @@
 function [outsig,mfc] = modfilterbank1997(insig,fs,fc,varargin)
 % function [outsig,mfc] = modfilterbank1997(insig,fs,fc,varargin)
+% function [outsig,mfc] = modfilterbank1997(insig,fs,fc,flags,varargin)
 % 
 % 1. Descrption: 
-%       Modulation filter bank as used in Dau1997.
+%       Modulation filter bank. The option 'dau1997' will give the parameters
+%       exactly as described in the papers dau1997b and dau1997c
 % 
 %   Input parameters:
 %      insig  : Input signal(s)
@@ -42,7 +44,7 @@ function [outsig,mfc] = modfilterbank1997(insig,fs,fc,varargin)
 %  
 % AUTHOR: Stephan Ewert
 %
-% Modifications by Morten L. Jepsen and Peter L. Soendergaard.
+% Modifications by Moerten L. Jepsen and Peter L. Soendergaard.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 definput.keyvals.mfc=[];
@@ -59,15 +61,36 @@ outsig=cell(nfreqchannels,1);
 
 % second order modulation Butterworth LPF with a cut-off frequency of 2.5 Hz.
 [b_lowpass,a_lowpass] = butter(2,2.5/(fs/2));
-[b_highest,a_highest] = butter(1,150/(fs/2));
-% % Set the highest modulation frequency as proportion of the corresponding
-% % center frequency.
-umf = 1000;  
+
+% first-order LPF with cut-off of 150 Hz
+if flags.do_LP_150_Hz
+    [b_highest,a_highest] = butter(1,150/(fs/2));
+end
+
+if flags.do_modfilter_onequarter
+    % Set the highest modulation frequency as proportion of the corresponding center frequency.
+    umf = min(fc.*0.25, 1000); 
+end
+if flags.do_modfilter_1kHz_limit
+    umf = 1000*ones(1,length(fc));
+end
+
+if flags.do_att_factor
+    AttFactor = 1/sqrt(2);
+end
+if flags.do_no_att_factor
+    AttFactor = 1;
+end
 
 for freqchannel=1:nfreqchannels
 
-    %outtmp = insig(:,freqchannel);
-    outtmp = filter(b_highest,a_highest,insig(:,freqchannel));
+    if flags.do_no_LP_150_Hz % this should be the default for dau1997a,b
+        outtmp = insig(:,freqchannel);
+    end
+    if flags.do_LP_150_Hz
+        outtmp = filter(b_highest,a_highest,insig(:,freqchannel));
+    end
+    
     if umf(freqchannel)==0
         % ----------- only lowpass ---------------------
         outsigblock = filter(b_lowpass,a_lowpass,outtmp);
@@ -111,7 +134,7 @@ for freqchannel=1:nfreqchannels
         if mfc(nmfc) <= 10 % f below 10 Hz
             outsigblock(:,nmfc) = 1*real(outsigblock(:,nmfc));
         else
-            outsigblock(:,nmfc) = abs(outsigblock(:,nmfc)); 
+            outsigblock(:,nmfc) = AttFactor*abs(outsigblock(:,nmfc)); 
         end
     end
     outsig{freqchannel}=outsigblock;
