@@ -6,7 +6,7 @@ function r20151009_update_dau1997(bParts)
 % 2. Stand-alone example:
 %
 % 3. Additional info:
-%       Tested cross-platform: No
+%       Tested cross-platform: Yes
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 06/10/2015
@@ -46,7 +46,7 @@ if bCreate
 end
 
 if nargin == 0
-    bParts = [0 0 1 0 0 0 1];
+    bParts = [1 0 1 0 0 0 1];
 end
 
 fs = 44100;
@@ -67,7 +67,8 @@ switch opts.bDecisionMethod
                 opts.sigma   = 1.35; % tone: 3 = band 13-15; % 2.45 = band 13-14; % 1.72 = band 14;
                                      %   BW:                                        1.35 = band 14; (target = 0.83 = -2 dB);
             case 101
-                opts.sigma   = 1.35; % tone: 1.23 = band 14 (all); 1.30 = band 14 (1,2); 1.35 = band 14 (1)
+                opts.sigma   = 1.08;    % 11/10/2015, BBN: bands 1-30 = 1.08; band 14 = 0.95 (target = 0.83 dB)
+                                        % old -- tone: 1.23 = band 14 (all); 1.30 = band 14 (1,2); 1.35 = band 14 (1)
                 opts.modfiltertype = 'dau1997wLP';
             case 103
                 opts.sigma   = 21;  %   BW:  21 = band 2-33 (all); 1.95 = band 14; (target = 0.83 = -2 dB);
@@ -88,7 +89,7 @@ opts.do_template    =  1;
 opts.do_simulation  =  1;
 opts.Nreversals     =  8;
 
-erbc2analyse        = freqtoaud([5000],'erb'); % 14 for 1000 Hz (approx.)  
+erbc2analyse        = freqtoaud([500 2000],'erb'); % 14 for 1000 Hz (approx.)  
 opts.fc2plot_idx    = ceil(erbc2analyse(1))-2;
 if length(erbc2analyse) > 1
     opts.fc2plot_idx2 = floor(erbc2analyse(end))-2;
@@ -102,17 +103,28 @@ opts.bDebug = bDebug;
 count_saved_figures = 1;
 if bPart1
     % To do: save template
-    opts.DurRamps   = 125; % additional cosine ramps
-    opts.bUseRamp   = 1; % additional cosine ramps
-    opts.bUseRampS  = 1; % additional cosine ramps
+    bTones = 1;
+    bBBN = ~bTones;
+    if bTones
+        opts.DurRamps   = 125; % additional cosine ramps
+        opts.bUseRamp   = 1; % additional cosine ramps
+        opts.bUseRampS  = 1; % additional cosine ramps
+        opts.filename1 = [Get_TUe_paths('outputs') 'AMTControl-examples' delim 'tone-f-1000-Hz-at-60-dB-dur-800-ms.wav'];
+        opts.filename2 = [Get_TUe_paths('outputs') 'AMTControl-examples' delim 'tone-f-1000-Hz-at-42-dB-dur-800-ms.wav'];
+    end
+    if bBBN
+        opts.DurRamps   = 0; % additional cosine ramps
+        opts.bUseRamp   = 0; % additional cosine ramps
+        opts.bUseRampS  = 0;
+        opts.filename1 = [Get_TUe_paths('outputs') 'audio-20151006' delim 'jepsen2008-BW-at-60-dB-dur-500-ms.wav'];
+        opts.filename2 = [Get_TUe_paths('outputs') 'audio-20151006' delim 'jepsen2008-BW-at-42-dB-dur-500-ms.wav'];    
+    end
+    
     opts.Gain4supra = 5; % dB
     opts.audio.fs   = fs;
     
     opts.StepdB = 2; 
     opts.StepdBmin = 0.2;
-    
-    opts.filename1 = [Get_TUe_paths('outputs') 'AMTControl-examples' delim 'tone-f-1000-Hz-at-60-dB-dur-800-ms.wav'];
-    opts.filename2 = [Get_TUe_paths('outputs') 'AMTControl-examples' delim 'tone-f-1000-Hz-at-42-dB-dur-800-ms.wav'];
     
     refSPL  = 60; % [20 30 40 50 60 70 80];
     

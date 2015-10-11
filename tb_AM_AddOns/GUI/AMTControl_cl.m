@@ -726,27 +726,28 @@ for k = 1:Nsim
 
             elseif nAnalyser == 101
 
+                modfiltertype = handles.modfiltertype;
                 if bMultiChannel
-                    [out_interval1  ,fc,mfc] = dau1997preproc(interval1  ,fs);
-                    [out_interval1s2,fc] = dau1997preproc(interval1s2,fs);
-                    [out_interval2  ,fc] = dau1997preproc(interval2  ,fs);
+                    [out_interval1  ,fc,mfc] = dau1997preproc_multi(interval1,fs,fcmin,fcmax,modfiltertype);
+                    [out_interval1s2,fc] = dau1997preproc_multi(interval1s2,fs,fcmin,fcmax,modfiltertype);
+                    [out_interval2  ,fc] = dau1997preproc_multi(interval2  ,fs,fcmin,fcmax,modfiltertype);
                     
                     chn_modfilt = handles.chn_modfilt;
                     if length(chn_modfilt) > length(mfc)
                         chn_modfilt = 1:length(mfc);
                     end
                     
-                    out_interval1   = il_pool_in_one_column(out_interval1(fc2plot_idx));
-                    out_interval1s2 = il_pool_in_one_column(out_interval1s2(fc2plot_idx));
-                    out_interval2   = il_pool_in_one_column(out_interval2(fc2plot_idx));
+                    out_interval1   = il_pool_in_one_column(out_interval1);
+                    out_interval1s2 = il_pool_in_one_column(out_interval1s2);
+                    out_interval2   = il_pool_in_one_column(out_interval2);
                              
-                    nchn_dec = size(out_interval1,1) / length(interval1);
+                    nchn_dec = size(out_interval1,1) / length(interval1);% / length(fc); warning('adjusting');
                     handles.script_sim = 'dau1997preproc';
                 end
                 if bSingleChannel
-                    [out_interval1  ,fc, mfc, outsfilt11] = dau1997preproc_1Ch(interval1  ,fs,fc);
-                    [out_interval1s2,fc, xxx, outsfilt12] = dau1997preproc_1Ch(interval1s2,fs,fc);
-                    [out_interval2  ,fc, xxx, outsfilt2] = dau1997preproc_1Ch(interval2  ,fs,fc);
+                    [out_interval1  ,fc, mfc, outsfilt11] = dau1997preproc_1Ch(interval1  ,fs,fc, modfiltertype);
+                    [out_interval1s2,fc, xxx, outsfilt12] = dau1997preproc_1Ch(interval1s2,fs,fc, modfiltertype);
+                    [out_interval2  ,fc, xxx, outsfilt2] = dau1997preproc_1Ch(interval2  ,fs,fc, modfiltertype);
                     
                     chn_modfilt = handles.chn_modfilt;
                     if length(chn_modfilt) > length(mfc)
@@ -757,7 +758,7 @@ for k = 1:Nsim
                     out_interval2   = [out_interval2(:,chn_modfilt)];
                     nchn_dec = size(out_interval1,2);
                     
-                    handles.script_sim = 'dau1997preproc_1Ch';
+                    handles.script_sim = 'dau1997preproc_1Ch';  warning('adjusting');
 
                     bListenToFilter = 0;
                     if bListenToFilter

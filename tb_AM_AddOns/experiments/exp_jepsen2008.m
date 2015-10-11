@@ -46,8 +46,8 @@ switch nFig
             f2 = [Get_TUe_paths('outputs') 'jepsen2008-BW-at-42-dB-dur-500-ms.wav'];
             f3 = [Get_TUe_paths('outputs') 'jepsen2008-BW-at-60-dB-dur-10-s.wav'];
             f4 = [Get_TUe_paths('outputs') 'jepsen2008-BW-at-42-dB-dur-10-s.wav'];
-            % Wavwrite(          masker,fs,f1); % sound(masker,fs);
-            % Wavwrite(gaindb(masker,-18),fs,f2); % sound(gaindb(masker,-18),fs);
+            Wavwrite(       masker,fs,f1); % sound(masker,fs);
+            Wavwrite(gaindb(masker,-18),fs,f2); % sound(gaindb(masker,-18),fs);
             Wavwrite(       maskerbuf,fs,f3); % sound(masker,fs);
             Wavwrite(gaindb(maskerbuf,-18),fs,f4); % sound(gaindb(masker,-18),fs);
         end

@@ -141,6 +141,7 @@ for freqchannel=1:nfreqchannels
     
 end;
 
+disp('')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Inline functions:
 
