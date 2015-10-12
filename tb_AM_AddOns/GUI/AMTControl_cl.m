@@ -694,13 +694,8 @@ for k = 1:Nsim
         interval1s2 = insig1s2; % Only noise 2
         
         if bListen
-            pause(2)
-            sound(interval1, fs)
-            pause(1);
-            sound(interval1s2, fs)
-            pause(1)
-            sound(interval2, fs)
-            pause(1)
+            pause(2); sound(interval1, fs); pause(1); sound(interval1s2, fs);
+            pause(1); sound(interval2, fs); pause(1);
         end
              
         switch handles.MethodIntRep
@@ -1053,665 +1048,630 @@ handles.Threshold = Threshold;
 handles.Staircase = Staircase;
 handles.StaircaseCC = StaircaseCC;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 5. Calculations: 
-%   Executes on button press in calculate.
-function btnCalculate_Callback(hObject, eventdata, handles)
-% hObject    handle to calculate (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Needed: 
-%       Num2str
-%       ef
-
-bUsePsySound = get(handles.rbPsySound,'value');
-options.bUsePsySound = bUsePsySound;
-
-bSave = get(handles.bSave,'value');
-
-nAnalyser = il_get_nAnalyser(handles.popAnalyser);
-
-dir_output  = get(handles.txtOutputDir,'string');
-
-nSkipStart  = str2num( get(handles.txtAnalysisStart,'string') );
-nSkipEnd    = str2num( get(handles.txtAnalysisEnd  ,'string') );
-
-if nAnalyser == 15 | bUsePsySound
-    HopSize = str2num( get(handles.txtOverlap,'string') );
-    CParams.HopSize = HopSize;
-end
-
-if nAnalyser == 100 | nAnalyser == 101
-    
-    fc2plot_idx = get(handles.popFc ,'value'); 
-    fc_ERB = fc2plot_idx+2;
-    fc     = audtofreq(fc_ERB,'erb');
-    mu      = 0;
-    tmp     = get(handles.popInternalNoise,'string');
-    tmp_idx = get(handles.popInternalNoise,'value');
-    sigma   = str2num( tmp{tmp_idx} );
-    
-end
-
-options.bLogScale = get(handles.cbLogAxis,'value'); % to be used in PsySound_Figures
-
-fs         = handles.audio.fs;
-sample_inf = handles.audio.ti_samples;
-sample_sup = handles.audio.tf_samples;
-
-toffset = handles.audio.toffset; % time offset of audio 2 in relation to audio 1
-
-options.bGenerateExcerpt= handles.audio.bGenerateExcerpt;
-bGenerateExcerpt        = handles.audio.bGenerateExcerpt;
-
-if bGenerateExcerpt
-    options.tanalysis = [sample_inf-1 sample_sup-1]/fs;
-    set( handles.txtExcerpt,'visible','on');
- else
-    set( handles.txtExcerpt,'visible','off');
-end
-
-eval( sprintf('options.bDoAnalyser%s=1;',Num2str(nAnalyser,2)) ); % activates selected processor
-
-filename1 = handles.audio.filename1; % get(handles.txtFile1,'string');
-filename2 = handles.audio.filename2; % get(handles.txtFile2,'string');
-
-options.nAnalyser   = nAnalyser;
-options.bSave       = bSave;
-
-if bSave == 1
-    options.dest_folder_fig = dir_output;
-end
-    
-% Plot options:
-options.label1 = get(handles.txtLabel1,'string');
-options.label2 = get(handles.txtLabel2,'string');
-
-% options     = Ensure_field(options,'bPlot',1);
-options          = Ensure_field(options,'label','');
-options.SPLrange = [str2num(get(handles.txtlvlmin ,'string'))  str2num(get(handles.txtlvlmax ,'string'))];
-options.frange   = [str2num(get(handles.txtFreqmin,'string'))  str2num(get(handles.txtFreqmax,'string'))];
-options.zrange   = [str2num(get(handles.txtZmin   ,'string'))  str2num(get(handles.txtZmax   ,'string'))];
-options.trange   = [str2num(get(handles.txtTimei  ,'string'))  str2num(get(handles.txtTimef  ,'string'))];
-options          = Ensure_field(options,'ylim_bExtend',0);
-options          = Ensure_field(options,'ylim_bDrawLine',0);
-options.bLoudnessContrained = get(handles.chAvgLoudnessLimits,'Value'); % only validated for Analyser 12
-options.zlim4assessment = options.zrange; 
-
-if bUsePsySound
-    
-    options.calfile = [Get_TUe_paths('db_calfiles') 'track_03.wav'];
-    
-    callevel = str2num( get(handles.txtCalLevel,'string') ); % rms 90 dB SPL = 0 dBFS 
-
-    options     = ef(options,'bDoAnalyser08',0);
-    options     = ef(options,'bDoAnalyser10',0);
-    options     = ef(options,'bDoAnalyser11',0);
-    options     = ef(options,'bDoAnalyser12',0);
-    options     = ef(options,'bDoAnalyser15',0);
-
-    tmp_h = [];
-    tmp_h = [];
-
-    options = Ensure_field(options,'calfile',[Get_TUe_paths('db_calfiles') 'track_03.wav']);
-    
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-    options.bCosineRamp = 0; % Cos ramp not yet applied for Loudness calculations
-    options.bCosineRampOnset = 0; %ms
-
-    options.bPlot = 0;
-
-    options.callevel = callevel + handles.audio.G1;
-    options.nSkipStart = nSkipStart;
-    options.nSkipEnd   = nSkipEnd;
-    [out_1 tmp_h tmp_ha]   = PsySoundCL(filename1,options,CParams);
-    
-    options.callevel = callevel + handles.audio.G2;
-    options.nSkipStart = nSkipStart;
-    options.nSkipEnd   = nSkipEnd;
-    [out_2 tmp_h tmp_ha]   = PsySoundCL(filename2,options,CParams);
-    
-else % if NOT PsySound
-    
-    callevel = str2num( get(handles.txtCalLevel,'string') ); % rms 90 dB SPL = 0 dBFS 
-    warning('callevel not used at all for m-file scripts...');
-    
-    insig1 = handles.audio.insig1; % [insig1 fs1] = Wavread(filename1);
-    insig2 = handles.audio.insig2; % [insig2 fs2] = Wavread(filename2);
-    
-    lvl_m_30_dBFS = str2num( get(handles.txtCalLevel,'string') );
-    calvalue = lvl_m_30_dBFS-70; 
-    
-    switch nAnalyser
-        
-        case 1
-            
-            windowtype = 'hanning';
-            dBFS = lvl_m_30_dBFS + 30;
-
-            K  = length(insig1)/2;
-            [xx y1dB f] = freqfft2(insig1,K,fs,windowtype,dBFS);   
-            [xx y2dB  ] = freqfft2(insig2,K,fs,windowtype,dBFS);
-
-            out_1.t = ( 1:length(insig1) )/fs;
-            out_1.f = f;
-            out_1.Data1 = y1dB;
-            
-            nParam = 2;
-            out_1.name{nParam} = 'Log-spectrum';
-            out_1.param{nParam} = strrep( lower( out_1.name{nParam} ),' ','-');
-            
-            out_2.t = ( 1:length(insig2) )/fs;
-            out_2.f = f;
-            out_2.Data1 = y2dB;
-                        
-            nParam = 2;
-            out_2.name{nParam} = 'Log-spectrum';
-            out_2.param{nParam} = strrep( lower( out_2.name{nParam} ),' ','-');
-
-
-        case 12 % Loudness
-            
-            % Only loudness fluctuation:
-            dBFS = lvl_m_30_dBFS + 30 - calvalue;
-            
-            tinsig = ( 0:length(insig1)-1 )/fs1;
-            idx = find( tinsig>=options.trange(1) & tinsig<=options.trange(2) );
-            
-            if length(idx) ~= length(tinsig)
-                insig1 = insig1(idx);
-                insig2 = insig2(idx);
-                warning('Truncating insig, check if it is working properly when using a non-zero off-set');
-            end
-                
-            [xx out_1] = LoudnessFluctuation_offline(insig1,[],fs,dBFS);
-            [xx out_2] = LoudnessFluctuation_offline(insig2,[],fs,dBFS);
-              
-        case 15 % Roughness
-            
-            N = 8192; % default frame length
-            opts.nSkipStart = nSkipStart;
-            opts.nSkipEnd   = nSkipEnd;
-            [xx xx out_1] = Roughness_offline(insig1,fs,N,opts,CParams,0);
-            [xx xx out_2] = Roughness_offline(insig2,fs,N,opts,CParams,0);
-            
-        case 20 % Fluctuation strength, see also r20141126_fluctuation
-            
-            N = 44100*4; % 8192*4;
-            opts.nSkipStart = nSkipStart;
-            opts.nSkipEnd   = nSkipEnd;
-            warning('Fluctuation strength: temporal value...')
-            [xx out_1] = FluctuationStrength_offline_debug(insig1(1:N),fs,N,0);
-            [xx out_2] = FluctuationStrength_offline_debug(insig2(1:N),fs,N,0);
-            
-        case 100
-            
-            bPlotParams = il_get_plotParams(handles);
-            
-            if sum( bPlotParams(2:4) ) == 0 % we need only the final outout of the peripheral processing
-                
-                [out_1 , fc] = dau1996preproc(insig1,fs);
-                [out_1 xx] = Add_gaussian_noise(out_1,mu,sigma); % Add internal noise
-                
-            else
-                
-                % [out_1 , fc, extraouts] = dau1996preproc_1Ch(insig1,fs,fc);
-                % if bPlotParams(2) == 1
-                %     filteroutsig = extraouts.out_filterbank;
-                % 
-                %     f1 = sprintf('%sAMTControl-Examples%sfile1-audfilter-fc-%.0f-Hz.wav',Get_TUe_paths('outputs'),delim,fc);
-                %     Wavwrite(filteroutsig,fs,f1);
-                % end
-                [out_1 , fcs, extraouts] = dau1996preproc(insig1,fs); % [out_2 , fc, extraouts] = dau1996preproc_1Ch(insig2,fs,fc);
-                idx_tmp = find(fc >= fcs); idx_tmp = idx_tmp(end);
-                out_1 = out_1(:,idx_tmp);
-                
-                filteroutsig = extraouts.out_filterbank;
-                dirtmp = sprintf('%sAMTControl-Examples%sGammatone-out%s',Get_TUe_paths('outputs'),delim,delim);
-                Mkdir(dirtmp);
-                for i = 1:length(fcs)
-                    f1 = sprintf('%sfile1-audfilter-fc-%.0f-Hz.wav',dirtmp,fcs(i));
-                    Wavwrite(filteroutsig(:,i),fs,f1);
-                end
-            end
-            
-            out_1.out   = out_1;
-            out_1.fs    = fs;
-            out_1.fc    = fc;
-            
-            if sum( bPlotParams(2:4) ) == 0 % we need only the final outout of the peripheral processing
-                
-                [out_2 , fc] = dau1996preproc(insig2,fs);
-                out_2 = Add_gaussian_noise(out_2,mu,sigma); % Add internal noise
-                
-            else
-                
-                [out_2 , fcs, extraouts] = dau1996preproc(insig2,fs);
-                idx_tmp = find(fc >= fcs); idx_tmp = idx_tmp(end);
-                out_2 = out_2(:,idx_tmp);
-                
-                filteroutsig = extraouts.out_filterbank;
-                dirtmp = sprintf('%sAMTControl-Examples%sGammatone-out%s',Get_TUe_paths('outputs'),delim,delim);
-                for i = 1:length(fcs)
-                    f1 = sprintf('%sfile2-audfilter-fc-%.0f-Hz.wav',dirtmp,fcs(i));
-                    Wavwrite(filteroutsig(:,i),fs,f1);
-                end
-                
-                % if bPlotParams(2) == 1
-                %     filteroutsig = extraouts.out_filterbank;
-                % 
-                %     f1 = sprintf('%sAMTControl-Examples%sfile2-audfilter-fc-%.0f-Hz.wav',Get_TUe_paths('outputs'),delim,fc);
-                %     Wavwrite(filteroutsig,fs,f1);
-                % end
-                
-            end
-            
-            out_2.out   = out_2;
-            out_2.fs    = fs;
-            out_2.fc    = fc;
-            
-        case 101
-            
-            bPlotParams = il_get_plotParams(handles);
-            
-            if sum( bPlotParams(2:4) ) == 0 % we need only the final outout of the peripheral processing
-                
-                [out_1 , fc ,fcm] = dau1997preproc(insig1,fs);
-                out_1 = Add_gaussian_noise(out_1{fc2plot_idx},mu,sigma); % Add internal noise
-                
-            else
-                
-                [out_1 , fc ,fcm, extraouts] = dau1997preproc_1Ch(insig1,fs,fc);
-                if bPlotParams(2) == 1
-                    filteroutsig = extraouts.out01_filterbank;
-                    
-                    f1 = sprintf('%sAMTControl-Examples%sfile1-audfilter-fc-%.0f-Hz.wav',Get_TUe_paths('outputs'),delim,fc);
-                    Wavwrite(filteroutsig,fs,f1);
-                end
-            end
-            
-            out_1.out   = out_1;
-            
-            out_1.fs    = fs;
-            out_1.fc    = fc;
-            out_1.fcm   = fcm;
-            
-            if sum( bPlotParams(2:4) ) == 0 % we need only the final outout of the peripheral processing
-                
-                [out_2 , fc, fcm] = dau1997preproc(insig2,fs);
-                out_2 = Add_gaussian_noise(out_2{fc2plot_idx},mu,sigma); % Add internal noise
-                
-            else
-                
-                [out_2 , fc, fcm, extraouts] = dau1997preproc_1Ch(insig2,fs,fc);
-                if bPlotParams(2) == 1
-                    filteroutsig = extraouts.out01_filterbank;
-                    
-                    f1 = sprintf('%sAMTControl-Examples%sfile2-audfilter-fc-%.0f-Hz.wav',Get_TUe_paths('outputs'),delim,fc);
-                    Wavwrite(filteroutsig,fs,f1);
-                end
-                
-            end
-            out_2.out   = out_2;
-            out_2.fs    = fs;
-            out_2.fc    = fc;
-            out_2.fcm   = fcm;
-            
-        case 104
-            
-            bPlotParams = il_get_plotParams(handles);
-            
-            if sum( bPlotParams(2:4) ) == 0 % we need only the final outout of the peripheral processing
-                
-                [out_1, fc, fcm] = jepsen2008preproc(insig1,fs,'lowpass');
-                [out_1 xx] = Add_gaussian_noise(out_1,mu,sigma); % Add internal noise
-                
-            else
-                
-                [out_1, fc, fcm, extraouts] = jepsen2008preproc(insig1,fs,'lowpass');
-                if bPlotParams(2) == 1
-                    filteroutsig = extraouts.out_filterbank;
-                    
-                    dirtmp = sprintf('%sAMTControl-Examples%sDRNL-out%s',Get_TUe_paths('outputs'),delim,delim);
-                    Mkdir(dirtmp);
-                    for i = 1:length(fc)
-                        f1 = sprintf('%sfile1-audfilter-fc-%.0f-Hz.wav',dirtmp,fc(i));
-                        Wavwrite(filteroutsig(:,i),fs,f1);
-                    end
-                end
-            end
-            
-            out_1.out   = out_1;
-            out_1.fs    = fs;
-            out_1.fc    = fc;
-            out_1.fcm   = fcm;
-            
-            if sum( bPlotParams(2:4) ) == 0 % we need only the final outout of the peripheral processing
-                
-                [out_2, fc, fcm] = jepsen2008preproc(insig2,fs,'lowpass');
-                out_2 = Add_gaussian_noise(out_2,mu,sigma); % Add internal noise
-                
-            else
-                
-                [out_2, fc, fcm, extraouts] = jepsen2008preproc(insig2,fs,'lowpass');
-                if bPlotParams(2) == 1
-                    filteroutsig = extraouts.out_filterbank;
-                    
-                    dirtmp = sprintf('%sAMTControl-Examples%sDRNL-out%s',Get_TUe_paths('outputs'),delim,delim);
-                    for i = 1:length(fc)
-                        f1 = sprintf('%sfile2-audfilter-fc-%.0f-Hz.wav',dirtmp,fc(i));
-                        Wavwrite(filteroutsig(:,i),fs,f1);
-                    end
-                end
-            end
-            
-            out_2.out   = out_2;
-            out_2.fs    = fs;
-            out_2.fc    = fc;
-            out_2.fcm   = fcm;
-            
-    end
-    
-end
-
-param   = [];
-h       = []; % handles figures
-ha      = [];
-
-for i = 1:7
-    exp1 = sprintf('bPlotParam%.0f = get(handles.chParam%.0f,''value''); labelParam%.0f = get(handles.chParam%.0f,''string'');',i,i,i,i);
-    eval( exp1 );
-    
-    % To generate automatically the script:
-    exp1 = sprintf('str.bPlotParam%.0f = get(handles.chParam%.0f,''value''); str.labelParam%.0f = get(handles.chParam%.0f,''string'');',i,i,i,i);
-    eval( exp1 );
-end
-
-%% Plots
-    
-switch nAnalyser
-    case 100
-        
-        if bPlotParams(1) == 1
-            optsTmp = [];
-            optsTmp.bSave  = 0;
-            optsTmp.Title  = sprintf('%s',options.label1); 
-            h(end+1) = il_Plot_dau1996(out_1,optsTmp);
-            param{end+1}   = sprintf('%s-analyser-%s-file1','MU',Num2str(options.nAnalyser));
-                    
-            optsTmp = [];
-            optsTmp.bSave  = 0;
-            optsTmp.Title  = sprintf('%s',options.label2); 
-            h(end+1) = il_Plot_dau1996(out_2,optsTmp);
-            param{end+1}   = sprintf('%s-analyser-%s-file2','MU',Num2str(options.nAnalyser));
-        end
-        
-    case 101
-        
-        if length(fc) > 1
-            fc2plot = fc(fc2plot_idx);
-        else
-            fc2plot = fc;
-        end
-        
-        if bPlotParams(1) == 1
-            optsTmp = [];
-            optsTmp.bSave  = 0; % is going to be saved by this GUI, later
-            optsTmp.Title  = sprintf('%s, fc=%.0f [Hz]',options.label1,fc2plot); 
-            % optsTmp.YLim   = [-105 400];
-            h(end+1) = il_Plot_dau1997(out_1,optsTmp);
-            param{end+1}   = sprintf('%s-analyser-%s-file1','MU',Num2str(options.nAnalyser));
-
-            optsTmp = [];
-            optsTmp.bSave  = 0;
-            optsTmp.Title  = sprintf('%s, fc=%.0f [Hz]',options.label2,fc2plot); 
-            % optsTmp.YLim   = [-105 400];
-            h(end+1) = il_Plot_dau1997(out_2,optsTmp);
-            param{end+1}   = sprintf('%s-analyser-%s-file2','MU',Num2str(options.nAnalyser));
-        end
-        
-    % case 1
-    % 
-    %     if bUsePsySound == 0
-    % 
-    %         if bPlotParam2 == 1
-    %             figure;
-    %             plot(f,y1dB,'b',f,y2dB,'r'); grid on
-    %             min2plot = max( min(min([y1dB y2dB])),0 ); % minimum of 0 dB
-    %             max2plot = max(max([y1dB y2dB]))+5; % maximum exceeded in 5 dB
-    %             ylim([min2plot max2plot])
-    %             xlabel('Frequency [Hz]')
-    %             ylabel('Log-spectrum [dB]')
-    % 
-    %             legend(options.label1,options.label2);
-    % 
-    %         end
-    % 
-    %     end
-        
-    otherwise
-        
-        bPercentiles = get(handles.chPercentiles,'value'); % only for loudness
-
-        if bPercentiles & nAnalyser == 12
-            param{end+1} = 'loudness-percentiles';
-            [h(end+1) xx stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
-            param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
-        end
-
-        if bPlotParam1
-            % Loudness, Roughness
-            param{end+1} = labelParam1; % to be used in PsySoundCL_Figures
-            [h(end+1) ha(end+1) stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
-            param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
-
-            if isfield(options,'ylim') % ylim_loudness, ylim_roughness
-                ylim(options.ylim);
-            end
-            if isfield(options,'ylim_bExtend')
-
-                if options.ylim_bExtend == 1
-                    y_old = get(gca,'YLim');
-                    x_old = get(gca,'XLim');
-                    ylim_extend(gca,1.25);
-
-                    if options.ylim_bDrawLine == 1
-                        plot([x_old],[y_old(2) y_old(2)],'k'); % horizontal line
-                    end
-                end
-            end
-
-        end
-
-        if bPlotParam2
-            % Log-spectrum, Specific loudness, roughness
-            param{end+1}        = labelParam2;
-            [h(end+1) ha(end+1) stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
-        end
-
-        if bPlotParam3
-            param{end+1}        = labelParam3;
-            [h(end+1) ha(end+1) stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
-        end
-
-        if bPlotParam4
-            param{end+1}        = labelParam4;
-            [h(end+1) ha(end+1) stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
-        end
-
-        if bPlotParam5
-            param{end+1}        = labelParam5;
-            [h(end+1) ha(end+1) stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
-        end
-
-        if bPlotParam6
-            param{end+1}        = labelParam6;
-            [h(end+1) ha(end+1) stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
-        end
-
-        if bPlotParam7
-            % 12 - Loudness fluctuation
-            if strcmp(labelParam7,'loudness-fluctuation')
-                param{end+1} = [labelParam7 '-max'];
-                [h(end+1) xx  stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
-                param{end+1} = [labelParam7 '-min'];
-                [h(end+1) xx  stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
-            else
-                param{end+1}        = labelParam7;
-                [h(end+1) xx  stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
-            end
-        end
-        param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
-
-end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-assignin('base', 'h', h);
-assignin('base', 'ha', ha);
-
-if options.bSave
-    
-    disp('Figures are going to be stored... Press ctr+C to cancel')
-    
-    try
-        paths.outputs = options.dst_folder_fig;
-    catch
-        paths.outputs   = Get_TUe_paths('outputs');
-    end
-    
-    for i = 1:length(h)
-        % options.format = 'emf';
-        % Saveas(h(i),[options.dest_folder_fig 'psycho-fig-' param{i} options.label],options);
-        options.format = 'fig';
-        Saveas(h(i),[options.dest_folder_fig 'fig-' param{i} options.label],options);
-        options.format = 'epsc';
-        Saveas(h(i),[options.dest_folder_fig 'fig-' param{i} options.label],options);
-        
-        % Generating txt/log-file, once per analyser:
-        if i == 1
-            
-            options.tanalysis = [sample_inf-1 sample_sup-1]/fs;
-            
-            fndiary = [options.dest_folder_fig 'fig-log-analyser-' num2str(nAnalyser) '.txt'];
-            diary(fndiary)
-
-            p = Get_date;
-            str.functionname = sprintf('PS_CL_%s_%s',Num2str(nAnalyser),p.date4files); 
-            str.ifile = [Get_TUe_paths('MATLAB') 'template_PsySoundCL.m'];
-            str.bSave = bSave;
-            str.f1 = filename1;
-            str.f2 = filename2;
-            str.ofile = [Get_TUe_paths('MATLAB') str.functionname '.m'];
-            str.nSkipStart = nSkipStart;
-            str.nSkipEnd = nSkipEnd;
-            str.bUsePsySound = bUsePsySound;
-            str.fs = fs;
-            str.sample_inf = sample_inf;
-            str.sample_sup = sample_sup;
-            str.HopSize = HopSize;
-            str.toffset = toffset;
-            str.bGenerateExcerpt = options.bGenerateExcerpt;
-            str.tanalysis = options.tanalysis;
-            str.nAnalyser = nAnalyser;
-            str.label1 = options.label1;
-            str.label2 = options.label2;
-            str.SPLrange = options.SPLrange;
-            str.frange = options.frange;
-            str.zrange = options.zrange;
-            str.trange = options.trange;
-            str.bLoudnessContrained = options.bLoudnessContrained;
-            str.G1 = handles.audio.G1;
-            str.G2 = handles.audio.G2;
-            str.callevel = callevel;
-            try
-                str.bPercentiles = bPercentiles;
-            end
-
-            o2write = readfile_replace(str.ifile,str);
-
-            ofile = str.ofile;
-
-            fid=fopen(ofile, 'w'); 
-            fwrite(fid, o2write); 
-            fclose(fid);
-        
-            fprintf('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n');
-            fprintf('Date/time of processing: %s\n', Get_date_ddmmyyyy(1));
-            fprintf('Output directory: %s\n'    ,options.dest_folder_fig);
-            fprintf('Level ref. tone: %.1f dB\n',callevel);
-            fprintf('File name 1: %s (gain = %.2f dB)\n',filename1,handles.audio.G1);
-            fprintf('File name 2: %s (gain = %.2f dB)\n',filename2,handles.audio.G2);
-            fprintf('Initial/final sample: %.0f, %.0f\n',sample_inf,sample_sup);
-            fprintf('trange = (%.3f, %.3f) [s]\n',options.trange(1),options.trange(2));
-            fprintf('label 1: %s',options.label1);
-            fprintf('label 2: %s',options.label2);
-            
-            if bUsePsySound 
-                fprintf('Processed using PsySound \n');
-            else
-                fprintf('Processed using m-files (not PsySound) \n');
-            end
-            fprintf('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n');
-                
-            diary off
-        end
-        
-    end
-    
-else
-    
-    disp('Figures are NOT going to be stored... Set options.bSave to 1 and re-run the scripts in case you want to save the figures')
-    pause(1)
-    
-end
-
-if ~bUsePsySound
-    
-    try
-        delete( fname1_excerpt );
-        delete( fname2_excerpt );
-        disp('...deleting temporal audio file...');
-    end
-    
-end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% X. Executes on button press in btnChange.
-function btnChange_Callback(hObject, eventdata, handles)
-%   - hObject    handle to btnChange (see GCBO)
-%   - eventdata  reserved - to be defined in a future version of MATLAB
-%   - handles    structure with handles and user data (see GUIDATA)
-
-string1 = get(handles.txtFile1,'String');
-string2 = get(handles.txtFile2,'String');
-lbl1 = get(handles.txtLabel1,'String');
-lbl2 = get(handles.txtLabel2,'String');
-
-set(handles.txtFile1,'String',string2);
-set(handles.txtFile2,'String',string1);
-set(handles.txtLabel1,'String',lbl2);
-set(handles.txtLabel2,'String',lbl1);
-
-% --- Executes on selection change in popExamples.
-function popExamples_Callback(hObject, eventdata, handles)
-% hObject    handle to popExamples (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-nExample = il_get_nAnalyser( handles.popExamples );
-
-filename = AMTControl_Examples(nExample);
-
-set(handles.txtFile1,'String',filename{1});
-set(handles.txtFile2,'String',filename{2});
-if nExample == 3
-    handles.audio.filenameBBN = filename{3};
-end
-
-guidata(hObject,handles);
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % 5. Calculations: 
+% %   Executes on button press in calculate.
+% function btnCalculate_Callback(hObject, eventdata, handles)
+% % hObject    handle to calculate (see GCBO)
+% % eventdata  reserved - to be defined in a future version of MATLAB
+% % handles    structure with handles and user data (see GUIDATA)
+% 
+% % Needed: 
+% %       Num2str
+% %       ef
+% 
+% bUsePsySound = get(handles.rbPsySound,'value');
+% options.bUsePsySound = bUsePsySound;
+% 
+% bSave = get(handles.bSave,'value');
+% 
+% nAnalyser = il_get_nAnalyser(handles.popAnalyser);
+% 
+% dir_output  = get(handles.txtOutputDir,'string');
+% 
+% nSkipStart  = str2num( get(handles.txtAnalysisStart,'string') );
+% nSkipEnd    = str2num( get(handles.txtAnalysisEnd  ,'string') );
+% 
+% if nAnalyser == 15 | bUsePsySound
+%     HopSize = str2num( get(handles.txtOverlap,'string') );
+%     CParams.HopSize = HopSize;
+% end
+% 
+% if nAnalyser == 100 | nAnalyser == 101
+%     
+%     fc2plot_idx = get(handles.popFc ,'value'); 
+%     fc_ERB = fc2plot_idx+2;
+%     fc     = audtofreq(fc_ERB,'erb');
+%     mu      = 0;
+%     tmp     = get(handles.popInternalNoise,'string');
+%     tmp_idx = get(handles.popInternalNoise,'value');
+%     sigma   = str2num( tmp{tmp_idx} );
+%     
+% end
+% 
+% options.bLogScale = get(handles.cbLogAxis,'value'); % to be used in PsySound_Figures
+% 
+% fs         = handles.audio.fs;
+% sample_inf = handles.audio.ti_samples;
+% sample_sup = handles.audio.tf_samples;
+% 
+% toffset = handles.audio.toffset; % time offset of audio 2 in relation to audio 1
+% 
+% options.bGenerateExcerpt= handles.audio.bGenerateExcerpt;
+% bGenerateExcerpt        = handles.audio.bGenerateExcerpt;
+% 
+% if bGenerateExcerpt
+%     options.tanalysis = [sample_inf-1 sample_sup-1]/fs;
+%     set( handles.txtExcerpt,'visible','on');
+%  else
+%     set( handles.txtExcerpt,'visible','off');
+% end
+% 
+% eval( sprintf('options.bDoAnalyser%s=1;',Num2str(nAnalyser,2)) ); % activates selected processor
+% 
+% filename1 = handles.audio.filename1; % get(handles.txtFile1,'string');
+% filename2 = handles.audio.filename2; % get(handles.txtFile2,'string');
+% 
+% options.nAnalyser   = nAnalyser;
+% options.bSave       = bSave;
+% 
+% if bSave == 1
+%     options.dest_folder_fig = dir_output;
+% end
+%     
+% % Plot options:
+% options.label1 = get(handles.txtLabel1,'string');
+% options.label2 = get(handles.txtLabel2,'string');
+% 
+% % options     = Ensure_field(options,'bPlot',1);
+% options          = Ensure_field(options,'label','');
+% options.SPLrange = [str2num(get(handles.txtlvlmin ,'string'))  str2num(get(handles.txtlvlmax ,'string'))];
+% options.frange   = [str2num(get(handles.txtFreqmin,'string'))  str2num(get(handles.txtFreqmax,'string'))];
+% options.zrange   = [str2num(get(handles.txtZmin   ,'string'))  str2num(get(handles.txtZmax   ,'string'))];
+% options.trange   = [str2num(get(handles.txtTimei  ,'string'))  str2num(get(handles.txtTimef  ,'string'))];
+% options          = Ensure_field(options,'ylim_bExtend',0);
+% options          = Ensure_field(options,'ylim_bDrawLine',0);
+% options.bLoudnessContrained = get(handles.chAvgLoudnessLimits,'Value'); % only validated for Analyser 12
+% options.zlim4assessment = options.zrange; 
+% 
+% if bUsePsySound
+%     
+%     options.calfile = [Get_TUe_paths('db_calfiles') 'track_03.wav'];
+%     
+%     callevel = str2num( get(handles.txtCalLevel,'string') ); % rms 90 dB SPL = 0 dBFS 
+% 
+%     options     = ef(options,'bDoAnalyser08',0);
+%     options     = ef(options,'bDoAnalyser10',0);
+%     options     = ef(options,'bDoAnalyser11',0);
+%     options     = ef(options,'bDoAnalyser12',0);
+%     options     = ef(options,'bDoAnalyser15',0);
+% 
+%     tmp_h = [];
+%     tmp_h = [];
+% 
+%     options = Ensure_field(options,'calfile',[Get_TUe_paths('db_calfiles') 'track_03.wav']);
+%     
+%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%     options.bCosineRamp = 0; % Cos ramp not yet applied for Loudness calculations
+%     options.bCosineRampOnset = 0; %ms
+% 
+%     options.bPlot = 0;
+% 
+%     options.callevel = callevel + handles.audio.G1;
+%     options.nSkipStart = nSkipStart;
+%     options.nSkipEnd   = nSkipEnd;
+%     [out_1 tmp_h tmp_ha]   = PsySoundCL(filename1,options,CParams);
+%     
+%     options.callevel = callevel + handles.audio.G2;
+%     options.nSkipStart = nSkipStart;
+%     options.nSkipEnd   = nSkipEnd;
+%     [out_2 tmp_h tmp_ha]   = PsySoundCL(filename2,options,CParams);
+%     
+% else % if NOT PsySound
+%     
+%     callevel = str2num( get(handles.txtCalLevel,'string') ); % rms 90 dB SPL = 0 dBFS 
+%     warning('callevel not used at all for m-file scripts...');
+%     
+%     insig1 = handles.audio.insig1; % [insig1 fs1] = Wavread(filename1);
+%     insig2 = handles.audio.insig2; % [insig2 fs2] = Wavread(filename2);
+%     
+%     lvl_m_30_dBFS = str2num( get(handles.txtCalLevel,'string') );
+%     calvalue = lvl_m_30_dBFS-70; 
+%     
+%     switch nAnalyser
+%         
+%         case 1
+%             
+%             windowtype = 'hanning';
+%             dBFS = lvl_m_30_dBFS + 30;
+% 
+%             K  = length(insig1)/2;
+%             [xx y1dB f] = freqfft2(insig1,K,fs,windowtype,dBFS);   
+%             [xx y2dB  ] = freqfft2(insig2,K,fs,windowtype,dBFS);
+% 
+%             out_1.t = ( 1:length(insig1) )/fs;
+%             out_1.f = f;
+%             out_1.Data1 = y1dB;
+%             
+%             nParam = 2;
+%             out_1.name{nParam} = 'Log-spectrum';
+%             out_1.param{nParam} = strrep( lower( out_1.name{nParam} ),' ','-');
+%             
+%             out_2.t = ( 1:length(insig2) )/fs;
+%             out_2.f = f;
+%             out_2.Data1 = y2dB;
+%                         
+%             nParam = 2;
+%             out_2.name{nParam} = 'Log-spectrum';
+%             out_2.param{nParam} = strrep( lower( out_2.name{nParam} ),' ','-');
+% 
+% 
+%         case 12 % Loudness
+%             
+%             % Only loudness fluctuation:
+%             dBFS = lvl_m_30_dBFS + 30 - calvalue;
+%             
+%             tinsig = ( 0:length(insig1)-1 )/fs1;
+%             idx = find( tinsig>=options.trange(1) & tinsig<=options.trange(2) );
+%             
+%             if length(idx) ~= length(tinsig)
+%                 insig1 = insig1(idx);
+%                 insig2 = insig2(idx);
+%                 warning('Truncating insig, check if it is working properly when using a non-zero off-set');
+%             end
+%                 
+%             [xx out_1] = LoudnessFluctuation_offline(insig1,[],fs,dBFS);
+%             [xx out_2] = LoudnessFluctuation_offline(insig2,[],fs,dBFS);
+%               
+%         case 15 % Roughness
+%             
+%             N = 8192; % default frame length
+%             opts.nSkipStart = nSkipStart;
+%             opts.nSkipEnd   = nSkipEnd;
+%             [xx xx out_1] = Roughness_offline(insig1,fs,N,opts,CParams,0);
+%             [xx xx out_2] = Roughness_offline(insig2,fs,N,opts,CParams,0);
+%             
+%         case 20 % Fluctuation strength, see also r20141126_fluctuation
+%             
+%             N = 44100*4; % 8192*4;
+%             opts.nSkipStart = nSkipStart;
+%             opts.nSkipEnd   = nSkipEnd;
+%             warning('Fluctuation strength: temporal value...')
+%             [xx out_1] = FluctuationStrength_offline_debug(insig1(1:N),fs,N,0);
+%             [xx out_2] = FluctuationStrength_offline_debug(insig2(1:N),fs,N,0);
+%             
+%         case 100
+%             
+%             bPlotParams = il_get_plotParams(handles);
+%             
+%             if sum( bPlotParams(2:4) ) == 0 % we need only the final outout of the peripheral processing
+%                 
+%                 [out_1 , fc] = dau1996preproc(insig1,fs);
+%                 [out_1 xx] = Add_gaussian_noise(out_1,mu,sigma); % Add internal noise
+%                 
+%             else
+%                 
+%                 % [out_1 , fc, extraouts] = dau1996preproc_1Ch(insig1,fs,fc);
+%                 % if bPlotParams(2) == 1
+%                 %     filteroutsig = extraouts.out_filterbank;
+%                 % 
+%                 %     f1 = sprintf('%sAMTControl-Examples%sfile1-audfilter-fc-%.0f-Hz.wav',Get_TUe_paths('outputs'),delim,fc);
+%                 %     Wavwrite(filteroutsig,fs,f1);
+%                 % end
+%                 [out_1 , fcs, extraouts] = dau1996preproc(insig1,fs); % [out_2 , fc, extraouts] = dau1996preproc_1Ch(insig2,fs,fc);
+%                 idx_tmp = find(fc >= fcs); idx_tmp = idx_tmp(end);
+%                 out_1 = out_1(:,idx_tmp);
+%                 
+%                 filteroutsig = extraouts.out_filterbank;
+%                 dirtmp = sprintf('%sAMTControl-Examples%sGammatone-out%s',Get_TUe_paths('outputs'),delim,delim);
+%                 Mkdir(dirtmp);
+%                 for i = 1:length(fcs)
+%                     f1 = sprintf('%sfile1-audfilter-fc-%.0f-Hz.wav',dirtmp,fcs(i));
+%                     Wavwrite(filteroutsig(:,i),fs,f1);
+%                 end
+%             end
+%             
+%             out_1.out   = out_1;
+%             out_1.fs    = fs;
+%             out_1.fc    = fc;
+%             
+%             if sum( bPlotParams(2:4) ) == 0 % we need only the final outout of the peripheral processing
+%                 
+%                 [out_2 , fc] = dau1996preproc(insig2,fs);
+%                 out_2 = Add_gaussian_noise(out_2,mu,sigma); % Add internal noise
+%                 
+%             else
+%                 
+%                 [out_2 , fcs, extraouts] = dau1996preproc(insig2,fs);
+%                 idx_tmp = find(fc >= fcs); idx_tmp = idx_tmp(end);
+%                 out_2 = out_2(:,idx_tmp);
+%                 
+%                 filteroutsig = extraouts.out_filterbank;
+%                 dirtmp = sprintf('%sAMTControl-Examples%sGammatone-out%s',Get_TUe_paths('outputs'),delim,delim);
+%                 for i = 1:length(fcs)
+%                     f1 = sprintf('%sfile2-audfilter-fc-%.0f-Hz.wav',dirtmp,fcs(i));
+%                     Wavwrite(filteroutsig(:,i),fs,f1);
+%                 end
+%                 
+%                 % if bPlotParams(2) == 1
+%                 %     filteroutsig = extraouts.out_filterbank;
+%                 % 
+%                 %     f1 = sprintf('%sAMTControl-Examples%sfile2-audfilter-fc-%.0f-Hz.wav',Get_TUe_paths('outputs'),delim,fc);
+%                 %     Wavwrite(filteroutsig,fs,f1);
+%                 % end
+%                 
+%             end
+%             
+%             out_2.out   = out_2;
+%             out_2.fs    = fs;
+%             out_2.fc    = fc;
+%             
+%         case 101
+%             
+%             bPlotParams = il_get_plotParams(handles);
+%             
+%             if sum( bPlotParams(2:4) ) == 0 % we need only the final outout of the peripheral processing
+%                 
+%                 [out_1 , fc ,fcm] = dau1997preproc(insig1,fs);
+%                 out_1 = Add_gaussian_noise(out_1{fc2plot_idx},mu,sigma); % Add internal noise
+%                 
+%             else
+%                 
+%                 [out_1 , fc ,fcm, extraouts] = dau1997preproc_1Ch(insig1,fs,fc);
+%                 if bPlotParams(2) == 1
+%                     filteroutsig = extraouts.out01_filterbank;
+%                     
+%                     f1 = sprintf('%sAMTControl-Examples%sfile1-audfilter-fc-%.0f-Hz.wav',Get_TUe_paths('outputs'),delim,fc);
+%                     Wavwrite(filteroutsig,fs,f1);
+%                 end
+%             end
+%             
+%             out_1.out   = out_1;
+%             
+%             out_1.fs    = fs;
+%             out_1.fc    = fc;
+%             out_1.fcm   = fcm;
+%             
+%             if sum( bPlotParams(2:4) ) == 0 % we need only the final outout of the peripheral processing
+%                 
+%                 [out_2 , fc, fcm] = dau1997preproc(insig2,fs);
+%                 out_2 = Add_gaussian_noise(out_2{fc2plot_idx},mu,sigma); % Add internal noise
+%                 
+%             else
+%                 
+%                 [out_2 , fc, fcm, extraouts] = dau1997preproc_1Ch(insig2,fs,fc);
+%                 if bPlotParams(2) == 1
+%                     filteroutsig = extraouts.out01_filterbank;
+%                     
+%                     f1 = sprintf('%sAMTControl-Examples%sfile2-audfilter-fc-%.0f-Hz.wav',Get_TUe_paths('outputs'),delim,fc);
+%                     Wavwrite(filteroutsig,fs,f1);
+%                 end
+%                 
+%             end
+%             out_2.out   = out_2;
+%             out_2.fs    = fs;
+%             out_2.fc    = fc;
+%             out_2.fcm   = fcm;
+%             
+%         case 104
+%             
+%             bPlotParams = il_get_plotParams(handles);
+%             
+%             if sum( bPlotParams(2:4) ) == 0 % we need only the final outout of the peripheral processing
+%                 
+%                 [out_1, fc, fcm] = jepsen2008preproc(insig1,fs,'lowpass');
+%                 [out_1 xx] = Add_gaussian_noise(out_1,mu,sigma); % Add internal noise
+%                 
+%             else
+%                 
+%                 [out_1, fc, fcm, extraouts] = jepsen2008preproc(insig1,fs,'lowpass');
+%                 if bPlotParams(2) == 1
+%                     filteroutsig = extraouts.out_filterbank;
+%                     
+%                     dirtmp = sprintf('%sAMTControl-Examples%sDRNL-out%s',Get_TUe_paths('outputs'),delim,delim);
+%                     Mkdir(dirtmp);
+%                     for i = 1:length(fc)
+%                         f1 = sprintf('%sfile1-audfilter-fc-%.0f-Hz.wav',dirtmp,fc(i));
+%                         Wavwrite(filteroutsig(:,i),fs,f1);
+%                     end
+%                 end
+%             end
+%             
+%             out_1.out   = out_1;
+%             out_1.fs    = fs;
+%             out_1.fc    = fc;
+%             out_1.fcm   = fcm;
+%             
+%             if sum( bPlotParams(2:4) ) == 0 % we need only the final outout of the peripheral processing
+%                 
+%                 [out_2, fc, fcm] = jepsen2008preproc(insig2,fs,'lowpass');
+%                 out_2 = Add_gaussian_noise(out_2,mu,sigma); % Add internal noise
+%                 
+%             else
+%                 
+%                 [out_2, fc, fcm, extraouts] = jepsen2008preproc(insig2,fs,'lowpass');
+%                 if bPlotParams(2) == 1
+%                     filteroutsig = extraouts.out_filterbank;
+%                     
+%                     dirtmp = sprintf('%sAMTControl-Examples%sDRNL-out%s',Get_TUe_paths('outputs'),delim,delim);
+%                     for i = 1:length(fc)
+%                         f1 = sprintf('%sfile2-audfilter-fc-%.0f-Hz.wav',dirtmp,fc(i));
+%                         Wavwrite(filteroutsig(:,i),fs,f1);
+%                     end
+%                 end
+%             end
+%             
+%             out_2.out   = out_2;
+%             out_2.fs    = fs;
+%             out_2.fc    = fc;
+%             out_2.fcm   = fcm;
+%             
+%     end
+%     
+% end
+% 
+% param   = [];
+% h       = []; % handles figures
+% ha      = [];
+% 
+% for i = 1:7
+%     exp1 = sprintf('bPlotParam%.0f = get(handles.chParam%.0f,''value''); labelParam%.0f = get(handles.chParam%.0f,''string'');',i,i,i,i);
+%     eval( exp1 );
+%     
+%     % To generate automatically the script:
+%     exp1 = sprintf('str.bPlotParam%.0f = get(handles.chParam%.0f,''value''); str.labelParam%.0f = get(handles.chParam%.0f,''string'');',i,i,i,i);
+%     eval( exp1 );
+% end
+% 
+% %% Plots
+%     
+% switch nAnalyser
+%     case 100
+%         
+%         if bPlotParams(1) == 1
+%             optsTmp = [];
+%             optsTmp.bSave  = 0;
+%             optsTmp.Title  = sprintf('%s',options.label1); 
+%             h(end+1) = il_Plot_dau1996(out_1,optsTmp);
+%             param{end+1}   = sprintf('%s-analyser-%s-file1','MU',Num2str(options.nAnalyser));
+%                     
+%             optsTmp = [];
+%             optsTmp.bSave  = 0;
+%             optsTmp.Title  = sprintf('%s',options.label2); 
+%             h(end+1) = il_Plot_dau1996(out_2,optsTmp);
+%             param{end+1}   = sprintf('%s-analyser-%s-file2','MU',Num2str(options.nAnalyser));
+%         end
+%         
+%     case 101
+%         
+%         if length(fc) > 1
+%             fc2plot = fc(fc2plot_idx);
+%         else
+%             fc2plot = fc;
+%         end
+%         
+%         if bPlotParams(1) == 1
+%             optsTmp = [];
+%             optsTmp.bSave  = 0; % is going to be saved by this GUI, later
+%             optsTmp.Title  = sprintf('%s, fc=%.0f [Hz]',options.label1,fc2plot); 
+%             % optsTmp.YLim   = [-105 400];
+%             h(end+1) = il_Plot_dau1997(out_1,optsTmp);
+%             param{end+1}   = sprintf('%s-analyser-%s-file1','MU',Num2str(options.nAnalyser));
+% 
+%             optsTmp = [];
+%             optsTmp.bSave  = 0;
+%             optsTmp.Title  = sprintf('%s, fc=%.0f [Hz]',options.label2,fc2plot); 
+%             % optsTmp.YLim   = [-105 400];
+%             h(end+1) = il_Plot_dau1997(out_2,optsTmp);
+%             param{end+1}   = sprintf('%s-analyser-%s-file2','MU',Num2str(options.nAnalyser));
+%         end
+%         
+%     % case 1
+%     % 
+%     %     if bUsePsySound == 0
+%     % 
+%     %         if bPlotParam2 == 1
+%     %             figure;
+%     %             plot(f,y1dB,'b',f,y2dB,'r'); grid on
+%     %             min2plot = max( min(min([y1dB y2dB])),0 ); % minimum of 0 dB
+%     %             max2plot = max(max([y1dB y2dB]))+5; % maximum exceeded in 5 dB
+%     %             ylim([min2plot max2plot])
+%     %             xlabel('Frequency [Hz]')
+%     %             ylabel('Log-spectrum [dB]')
+%     % 
+%     %             legend(options.label1,options.label2);
+%     % 
+%     %         end
+%     % 
+%     %     end
+%         
+%     otherwise
+%         
+%         bPercentiles = get(handles.chPercentiles,'value'); % only for loudness
+% 
+%         if bPercentiles & nAnalyser == 12
+%             param{end+1} = 'loudness-percentiles';
+%             [h(end+1) xx stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
+%             param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
+%         end
+% 
+%         if bPlotParam1
+%             % Loudness, Roughness
+%             param{end+1} = labelParam1; % to be used in PsySoundCL_Figures
+%             [h(end+1) ha(end+1) stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
+%             param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
+% 
+%             if isfield(options,'ylim') % ylim_loudness, ylim_roughness
+%                 ylim(options.ylim);
+%             end
+%             if isfield(options,'ylim_bExtend')
+% 
+%                 if options.ylim_bExtend == 1
+%                     y_old = get(gca,'YLim');
+%                     x_old = get(gca,'XLim');
+%                     ylim_extend(gca,1.25);
+% 
+%                     if options.ylim_bDrawLine == 1
+%                         plot([x_old],[y_old(2) y_old(2)],'k'); % horizontal line
+%                     end
+%                 end
+%             end
+% 
+%         end
+% 
+%         if bPlotParam2
+%             % Log-spectrum, Specific loudness, roughness
+%             param{end+1}        = labelParam2;
+%             [h(end+1) ha(end+1) stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
+%         end
+% 
+%         if bPlotParam3
+%             param{end+1}        = labelParam3;
+%             [h(end+1) ha(end+1) stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
+%         end
+% 
+%         if bPlotParam4
+%             param{end+1}        = labelParam4;
+%             [h(end+1) ha(end+1) stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
+%         end
+% 
+%         if bPlotParam5
+%             param{end+1}        = labelParam5;
+%             [h(end+1) ha(end+1) stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
+%         end
+% 
+%         if bPlotParam6
+%             param{end+1}        = labelParam6;
+%             [h(end+1) ha(end+1) stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
+%         end
+% 
+%         if bPlotParam7
+%             % 12 - Loudness fluctuation
+%             if strcmp(labelParam7,'loudness-fluctuation')
+%                 param{end+1} = [labelParam7 '-max'];
+%                 [h(end+1) xx  stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
+%                 param{end+1} = [labelParam7 '-min'];
+%                 [h(end+1) xx  stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
+%             else
+%                 param{end+1}        = labelParam7;
+%                 [h(end+1) xx  stats] = PsySoundCL_Figures(param{end},out_1,out_2,options);
+%             end
+%         end
+%         param{end} = sprintf('%s-analyser-%s',param{end},Num2str(options.nAnalyser));
+% 
+% end
+% 
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+% assignin('base', 'h', h);
+% assignin('base', 'ha', ha);
+% 
+% if options.bSave
+%     
+%     disp('Figures are going to be stored... Press ctr+C to cancel')
+%     
+%     try
+%         paths.outputs = options.dst_folder_fig;
+%     catch
+%         paths.outputs   = Get_TUe_paths('outputs');
+%     end
+%     
+%     for i = 1:length(h)
+%         % options.format = 'emf';
+%         % Saveas(h(i),[options.dest_folder_fig 'psycho-fig-' param{i} options.label],options);
+%         options.format = 'fig';
+%         Saveas(h(i),[options.dest_folder_fig 'fig-' param{i} options.label],options);
+%         options.format = 'epsc';
+%         Saveas(h(i),[options.dest_folder_fig 'fig-' param{i} options.label],options);
+%         
+%         % Generating txt/log-file, once per analyser:
+%         if i == 1
+%             
+%             options.tanalysis = [sample_inf-1 sample_sup-1]/fs;
+%             
+%             fndiary = [options.dest_folder_fig 'fig-log-analyser-' num2str(nAnalyser) '.txt'];
+%             diary(fndiary)
+% 
+%             p = Get_date;
+%             str.functionname = sprintf('PS_CL_%s_%s',Num2str(nAnalyser),p.date4files); 
+%             str.ifile = [Get_TUe_paths('MATLAB') 'template_PsySoundCL.m'];
+%             str.bSave = bSave;
+%             str.f1 = filename1;
+%             str.f2 = filename2;
+%             str.ofile = [Get_TUe_paths('MATLAB') str.functionname '.m'];
+%             str.nSkipStart = nSkipStart;
+%             str.nSkipEnd = nSkipEnd;
+%             str.bUsePsySound = bUsePsySound;
+%             str.fs = fs;
+%             str.sample_inf = sample_inf;
+%             str.sample_sup = sample_sup;
+%             str.HopSize = HopSize;
+%             str.toffset = toffset;
+%             str.bGenerateExcerpt = options.bGenerateExcerpt;
+%             str.tanalysis = options.tanalysis;
+%             str.nAnalyser = nAnalyser;
+%             str.label1 = options.label1;
+%             str.label2 = options.label2;
+%             str.SPLrange = options.SPLrange;
+%             str.frange = options.frange;
+%             str.zrange = options.zrange;
+%             str.trange = options.trange;
+%             str.bLoudnessContrained = options.bLoudnessContrained;
+%             str.G1 = handles.audio.G1;
+%             str.G2 = handles.audio.G2;
+%             str.callevel = callevel;
+%             try
+%                 str.bPercentiles = bPercentiles;
+%             end
+% 
+%             o2write = readfile_replace(str.ifile,str);
+% 
+%             ofile = str.ofile;
+% 
+%             fid=fopen(ofile, 'w'); 
+%             fwrite(fid, o2write); 
+%             fclose(fid);
+%         
+%             fprintf('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n');
+%             fprintf('Date/time of processing: %s\n', Get_date_ddmmyyyy(1));
+%             fprintf('Output directory: %s\n'    ,options.dest_folder_fig);
+%             fprintf('Level ref. tone: %.1f dB\n',callevel);
+%             fprintf('File name 1: %s (gain = %.2f dB)\n',filename1,handles.audio.G1);
+%             fprintf('File name 2: %s (gain = %.2f dB)\n',filename2,handles.audio.G2);
+%             fprintf('Initial/final sample: %.0f, %.0f\n',sample_inf,sample_sup);
+%             fprintf('trange = (%.3f, %.3f) [s]\n',options.trange(1),options.trange(2));
+%             fprintf('label 1: %s',options.label1);
+%             fprintf('label 2: %s',options.label2);
+%             
+%             if bUsePsySound 
+%                 fprintf('Processed using PsySound \n');
+%             else
+%                 fprintf('Processed using m-files (not PsySound) \n');
+%             end
+%             fprintf('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n');
+%                 
+%             diary off
+%         end
+%         
+%     end
+%     
+% else
+%     
+%     disp('Figures are NOT going to be stored... Set options.bSave to 1 and re-run the scripts in case you want to save the figures')
+%     pause(1)
+%     
+% end
+% 
+% if ~bUsePsySound
+%     
+%     try
+%         delete( fname1_excerpt );
+%         delete( fname2_excerpt );
+%         disp('...deleting temporal audio file...');
+%     end
+%     
+% end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Inline functions:

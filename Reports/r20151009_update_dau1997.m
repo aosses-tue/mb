@@ -78,7 +78,7 @@ switch opts.bDecisionMethod
                 error('not calibrated yet')
                 
             case 103
-                opts.sigma   = 0.85;  %   BW:  21 = band 2-33 (all); 1.95 = band 14; (target = 0.83 = -2 dB);
+                opts.sigma   = 0.615;  %   BW:  21 = band 2-33 (all); 1.95 = band 14; (target = 0.83 = -2 dB);
         end
     case 3
         opts.sigma   = 0.85; % dprime NOT GIVING RELIABLE RESULTS
@@ -122,7 +122,9 @@ if bPart1
         opts.bUseRampS  = 0;
         erbc2analyse    = freqtoaud([100 8000],'erb'); % 14 for 1000 Hz (approx.)
         opts.filename1 = [Get_TUe_paths('outputs') 'audio-20151006' delim 'jepsen2008-BW-at-60-dB-dur-500-ms.wav'];
-        opts.filename2 = [Get_TUe_paths('outputs') 'audio-20151006' delim 'jepsen2008-BW-at-42-dB-dur-500-ms.wav'];    
+        opts.filename2 = [Get_TUe_paths('outputs') 'audio-20151006' delim 'jepsen2008-BW-at-42-dB-dur-500-ms.wav']; 
+        % opts.filename1 = [Get_TUe_paths('outputs') 'audio-20151006' delim 'jepsen2008-BW-at-60-dB-dur-500-ms-2.wav'];
+        % opts.filename2 = [Get_TUe_paths('outputs') 'audio-20151006' delim 'jepsen2008-BW-at-42-dB-dur-500-ms-2.wav']; 
     end
     
     opts = il_get_freqs(erbc2analyse,opts);
@@ -133,7 +135,7 @@ if bPart1
     opts.StepdB = 2; 
     opts.StepdBmin = 0.2;
     
-    refSPL  = 60; % [20 30 40 50 60 70];
+    refSPL  = [20 30 40 50 60 70];
     
     for i=1:length(refSPL)
         testSPL = refSPL(i)-18; % 42 dB for 60 dB    
