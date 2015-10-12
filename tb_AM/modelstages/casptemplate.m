@@ -1,5 +1,5 @@
-function [template,ir_reference,ir_target]=casptemplate(target,reference,modelname,modelpars)
-% function [template,ir_reference,ir_target]=casptemplate(target,reference,modelname,modelpars)
+function [template_nonorm,ir_reference,ir_target, template]=casptemplate(target,reference,modelname,modelpars)
+% function [template_nonorm,ir_reference,ir_target, template]=casptemplate(target,reference,modelname,modelpars)
 %
 % 1. Description:
 %       CASPTEMPLATE  Generate a template for the optimal detector
@@ -52,12 +52,15 @@ ir_reference=ir_reference/nreferences;
 
 % Compute the template as the difference between the average representation 
 % of the targets and references.
-template = ir_target - ir_reference;
+template_nonorm = ir_target - ir_reference;
 
 %% ----- Normalise to compensate for the increase in level ----
 
 % Normalise across all dimenstions of the internal representation.
-template=template/rms(template(:));
+if nargout >= 4
+    template=template_nonorm/rms(template_nonorm(:));
+end
 
 %OLDFORMAT
 
+end

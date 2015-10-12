@@ -61,13 +61,13 @@ function [outsig, fc, mfc, outs] = jepsen2008preproc_multi(insig, fs, fmin, fmax
 %       [insig,fs] = greasy;
 %       insig = resample(insig,44100,fs);
 %       fs = 44100;
-%       [outsig, fc, mfc] = jepsen2008preproc(insig, fs);
+%       [outsig, fc, mfc] = jepsen2008preproc_multi(insig, fs);
 % 
 % Author        : Torsten Dau, Morten Loeve Jepsen, Peter L. Soendergaard
 % Downloaded on : 18/03/2014
 % Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Last update on: 16/08/2015 
-% Last use on   : 21/08/2015 
+% Last use on   : 12/10/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % ------ Checking of input parameters ------------

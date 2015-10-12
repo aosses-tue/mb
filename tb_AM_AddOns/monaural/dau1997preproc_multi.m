@@ -1,5 +1,5 @@
-function [outsig, fc, mfc] = dau1997preproc_multi(insig, fs, fmin, fmax, varargin)
-% function [outsig, fc, mfc] = dau1997preproc_multi(insig, fs, fmin, fmax, varargin)
+function [outsig, fc, mfc, fs_intrep] = dau1997preproc_multi(insig, fs, fmin, fmax, varargin)
+% function [outsig, fc, mfc, fs_intrep] = dau1997preproc_multi(insig, fs, fmin, fmax, varargin)
 %
 % 1. Description:
 %       Auditory model from Dau et. al. 1997
@@ -71,8 +71,8 @@ definput.keyvals.subfs=[];
 
 [flags,keyvals]  = ltfatarghelper({'flow','fhigh'},definput,varargin);
 
-keyvals.flow = fmin-1;
-keyvals.fhigh = fmax+2;
+keyvals.flow = fmin; %-1;
+keyvals.fhigh = fmax; %+2;
 
 % ------ do the computation -------------------------
 
@@ -87,8 +87,22 @@ outsig          = ihcenvelope(outsig,fs,'argimport',flags,keyvals);
 % non-linear adaptation loops (model units, MU)
 outsig          = adaptloop(outsig,fs,'argimport',flags,keyvals);
 
+%% Downsampling (of the internal representations)
+if flags.do_resample_intrep
+    % In case of downsampling:
+    resampleFac = 4;
+    resampleLen = floor(length(insig) / resampleFac);
+    fs_intrep = fs / resampleFac;
+    
+    outsig = resample(outsig,1,resampleFac);
+    outsig = outsig(1:resampleLen,:);
+else
+    % In case of no-resampling:
+    fs_intrep = fs;
+end
+
 % Modulation filterbank
-[outsig,mfc]    = modfilterbank1997(outsig,fs,fc,'argimport',flags,keyvals);
+[outsig,mfc]    = modfilterbank1997(outsig,fs_intrep,fc,'argimport',flags,keyvals);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end

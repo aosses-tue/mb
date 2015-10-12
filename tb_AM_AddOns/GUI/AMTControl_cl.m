@@ -67,8 +67,10 @@ filename1 = handles_man.filename1;
 filename2 = handles_man.filename2;
 
 handles.increment_method = handles_man.increment_method;
-if handles_man.nAnalyser
+if handles_man.nAnalyser == 101
     handles_man = Ensure_field(handles_man,'modfiltertype','dau1997'); % dau1997wLP, derleth2000, jepsen2008
+    handles_man = Ensure_field(handles_man,'resample_intrep','resample_intrep');
+    
 end
 if strcmp(handles.increment_method,'modulation-depth')
     handles.fmod    = handles_man.fmod;
@@ -88,6 +90,7 @@ handles.Gain4supra  = handles_man.Gain4supra;
 handles.nAnalyser   = handles_man.nAnalyser;
 if handles.nAnalyser == 101
     handles.modfiltertype = handles_man.modfiltertype;
+    handles.resample_intrep = handles_man.resample_intrep;
 end
 
 handles.fc2plot_idx = handles_man.fc2plot_idx;
@@ -378,6 +381,9 @@ switch nAnalyser
         
         [template_test2 out_2Mean out_1Mean] = casptemplate(insig2supra+insig1,insig1,'dau1996apreproc',{fs});
         template = template_test2(:,fc2plot_idx);
+        template=template/rms(template(:));
+        out_1Mean = out_1Mean(:,fc2plot_idx);
+        out_2Mean = out_2Mean(:,fc2plot_idx);
         
         fs_intrep = fs;
         handles.script_template = 'dau1996apreproc';
@@ -393,14 +399,18 @@ switch nAnalyser
         
         [template_test2 out_2Mean out_1Mean] = casptemplate(insig2supra+insig1,insig1,'dau1996preproc',{fs});
         template = template_test2(:,fc2plot_idx);
+        template=template/rms(template(:));
+        out_1Mean = out_1Mean(:,fc2plot_idx);
+        out_2Mean = out_2Mean(:,fc2plot_idx);
         
         fs_intrep = fs;
         handles.script_template = 'dau1996preproc';
         
     case 101 
         
-        tmp.modfiltertype = handles.modfiltertype;
-        tmp.chn_modfilt = 1:12;%:12;
+        tmp.modfiltertype   = handles.modfiltertype;
+        tmp.chn_modfilt     = 1:12;%:12;
+        tmp.resample_intrep = handles.resample_intrep;
         handles.chn_modfilt = tmp.chn_modfilt;
         [out_1Mean out_2Mean fs_intrep tmp] = Get_internalrep_stochastic(insig1,insig2supra,fs,'dau1997',sigma,Ntimes,fc2plot_idx,tmp);
                 
@@ -408,6 +418,17 @@ switch nAnalyser
         idxnan = find(isnan(out_1Mean)); out_1Mean(idxnan) = 0; out_2Mean(idxnan) = 0;
         
         handles.script_template = tmp.script_template;
+    
+    case 101.1
+        
+        [template_test2 out_2Mean out_1Mean] = casptemplate(insig2supra+insig1,insig1,'dau1997preproc',{fs});
+        template = template_test2(:,fc2plot_idx);
+        template=template/rms(template(:));
+        out_1Mean = out1_Mean(:,fc2plot_idx);
+        out_2Mean = out2_Mean(:,fc2plot_idx);
+        
+        fs_intrep = fs;
+        handles.script_template = 'dau1997preproc';    
         
     case 103
         
@@ -415,6 +436,8 @@ switch nAnalyser
                 
         template = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
         handles.script_template = tmp.script_template;
+        
+        handles.script_template = 'jepsen2008preproc_multi'; 
         
 	case 104
         
@@ -573,7 +596,7 @@ end
 if length(fc2plot_idx) == 1 & fc2plot_idx2 == fc2plot_idx;
     bSingleChannel = 1;
     bMultiChannel = 0;
-    fc2plot_idx = 1;
+    fc2plot_idx_1 = 1;
 else
     bSingleChannel = 0;
     bMultiChannel = 1;
@@ -685,99 +708,61 @@ for k = 1:Nsim
             
             if nAnalyser == 99;
                 
+                model = 'dau1996a';
+                [out_interval1   xx fs_intrep] = Get_internalrep_stochastic(interval1  ,[],fs,model,0,Ntimes,fc2plot_idx);
+                [out_interval1s2 xx fs_intrep] = Get_internalrep_stochastic(interval1s2,[],fs,model,0,Ntimes,fc2plot_idx);
+                [out_interval2   xx fs_intrep] = Get_internalrep_stochastic(interval2 ,[],fs,model,0,Ntimes,fc2plot_idx);
+                
                 if bMultiChannel
-                    
-                    [out_interval1  , fc] = dau1996apreproc(interval1,fs);
-                    [out_interval1s2, fc] = dau1996apreproc(interval1s2,fs);
-                    [out_interval2  , fc] = dau1996apreproc(interval2,fs);
-                     
-                    out_interval1   = out_interval1(:,fc2plot_idx);
-                    out_interval1s2 = out_interval1s2(:,fc2plot_idx);
-                    out_interval2   = out_interval2(:,fc2plot_idx);
-                     
                     handles.script_sim = 'dau1996apreproc';
                 end
+                
                 if bSingleChannel
-                    [out_interval1]   = dau1996apreproc_1Ch(interval1,fs,fc);
-                    [out_interval1s2] = dau1996apreproc_1Ch(interval1s2,fs,fc);
-                    [out_interval2]   = dau1996apreproc_1Ch(interval2,fs,fc);
-                    
                     handles.script_sim = 'dau1996apreproc_1Ch';
                 end
+                
             elseif nAnalyser == 100;
+                
+                model = 'dau1996';
+                
+                [out_interval1   xx fs_intrep] = Get_internalrep_stochastic(interval1  ,[],fs,model,0,Ntimes,fc2plot_idx);
+                [out_interval1s2 xx fs_intrep] = Get_internalrep_stochastic(interval1s2,[],fs,model,0,Ntimes,fc2plot_idx);
+                [out_interval2   xx fs_intrep] = Get_internalrep_stochastic(interval2 ,[],fs,model,0,Ntimes,fc2plot_idx);
+                
                 if bMultiChannel
-                    [out_interval1  , fc] = dau1996preproc(interval1,fs);
-                    [out_interval1s2, fc] = dau1996preproc(interval1s2,fs);
-                    [out_interval2  , fc] = dau1996preproc(interval2,fs);
-                    
-                    out_interval1   = out_interval1(:,fc2plot_idx);
-                    out_interval1s2 = out_interval1s2(:,fc2plot_idx);
-                    out_interval2   = out_interval2(:,fc2plot_idx);
-
                     handles.script_sim = 'dau1996preproc';
                 end
+                
                 if bSingleChannel
-                    [out_interval1]   = dau1996preproc_1Ch(interval1,fs,fc);
-                    [out_interval1s2] = dau1996preproc_1Ch(interval1s2,fs,fc);
-                    [out_interval2]   = dau1996preproc_1Ch(interval2,fs,fc);
-                    
                     handles.script_sim = 'dau1996preproc_1Ch';
                 end
 
             elseif nAnalyser == 101
 
-                modfiltertype = handles.modfiltertype;
+                model = 'dau1997';
+                
+                tmp.modfiltertype = handles.modfiltertype;
+                tmp.resample_intrep = handles.resample_intrep;
+                tmp.chn_modfilt = 1:12;%:12;
+                
+                [out_interval1   xx fs_intrep otmp] = Get_internalrep_stochastic(interval1  ,[],fs,model,0,Ntimes,fc2plot_idx,tmp);
+                [out_interval1s2 xx fs_intrep] = Get_internalrep_stochastic(interval1s2,[],fs,model,0,Ntimes,fc2plot_idx,tmp);
+                [out_interval2   xx fs_intrep] = Get_internalrep_stochastic(interval2 ,[],fs,model,0,Ntimes,fc2plot_idx,tmp);
+                
+                mfc = otmp.mfc;
+                nchn_dec = length(otmp.fc); % size(out_interval1,1) / (length(interval1) / (fs/fs_intrep));
+                
                 if bMultiChannel
-                    [out_interval1  ,fc,mfc] = dau1997preproc_multi(interval1,fs,fcmin,fcmax,modfiltertype);
-                    [out_interval1s2,fc] = dau1997preproc_multi(interval1s2,fs,fcmin,fcmax,modfiltertype);
-                    [out_interval2  ,fc] = dau1997preproc_multi(interval2  ,fs,fcmin,fcmax,modfiltertype);
-                    
-                    chn_modfilt = handles.chn_modfilt;
-                    if length(chn_modfilt) > length(mfc)
-                        chn_modfilt = 1:length(mfc);
-                    end
-                    
-                    out_interval1   = il_pool_in_one_column(out_interval1);
-                    out_interval1s2 = il_pool_in_one_column(out_interval1s2);
-                    out_interval2   = il_pool_in_one_column(out_interval2);
-                             
-                    nchn_dec = size(out_interval1,1) / length(interval1);% / length(fc); warning('adjusting');
                     handles.script_sim = 'dau1997preproc';
                 end
                 if bSingleChannel
-                    [out_interval1  ,fc, mfc, outsfilt11] = dau1997preproc_1Ch(interval1  ,fs,fc, modfiltertype);
-                    [out_interval1s2,fc, xxx, outsfilt12] = dau1997preproc_1Ch(interval1s2,fs,fc, modfiltertype);
-                    [out_interval2  ,fc, xxx, outsfilt2] = dau1997preproc_1Ch(interval2  ,fs,fc, modfiltertype);
-                    
-                    chn_modfilt = handles.chn_modfilt;
-                    if length(chn_modfilt) > length(mfc)
-                        chn_modfilt = 1:length(mfc);
-                    end
-                    out_interval1   = [out_interval1(:,chn_modfilt)];
-                    out_interval1s2 = [out_interval1s2(:,chn_modfilt)];
-                    out_interval2   = [out_interval2(:,chn_modfilt)];
-                    nchn_dec = size(out_interval1,2);
-                    
-                    handles.script_sim = 'dau1997preproc_1Ch';  warning('adjusting');
-
-                    bListenToFilter = 0;
-                    if bListenToFilter
-                        warning('Listen to filter...')
-                        fprintf('Level current = %.0f dB, actual level noise = %.1f dB\n',Level_current,rmsdb(outsfilt11.out01_filterbank)+100)
-                        sound(outsfilt11.out01_filterbank,fs)
-                        pause(0.5)
-                        sound(outsfilt12.out01_filterbank,fs)
-                        pause(0.5)
-                        fprintf('Level current = %.0f dB, actual level signal+noise = %.1f\n',Level_current,rmsdb(outsfilt2.out01_filterbank)+100)
-                        sound(outsfilt2.out01_filterbank,fs)
-                        disp('Press any key to continue...')
-                        pause();
-                    end
+                    handles.script_sim = 'dau1997preproc_1Ch';
                 end
 
             elseif nAnalyser == 103
+                
                 if bMultiChannel
-                    [out_interval1] = jepsen2008preproc_multi(interval1,fs,fcmin,fcmax,'resample_intrep');
+                    [out_interval1 fc] = jepsen2008preproc_multi(interval1,fs,fcmin,fcmax,'resample_intrep');
                     [out_interval1s2] = jepsen2008preproc_multi(interval1s2,fs,fcmin,fcmax,'resample_intrep');
                     [out_interval2] = jepsen2008preproc_multi(interval2,fs,fcmin,fcmax,'resample_intrep');
 
@@ -785,12 +770,15 @@ for k = 1:Nsim
                     out_interval1s2 = il_pool_in_one_column(out_interval1s2);
                     out_interval2   = il_pool_in_one_column(out_interval2);
 
+                    nchn_dec = length(fc);
+                    
                     handles.script_sim = 'jepsen2008preproc_multi';
+                    
                 end
                 if bSingleChannel
-                    [out_interval1 xx xx outsfilt11]   = jepsen2008preproc_1Ch(interval1,fs,fc);
+                    [out_interval1   xx xx outsfilt11] = jepsen2008preproc_1Ch(interval1,fs,fc);
                     [out_interval1s2 xx xx outsfilt12] = jepsen2008preproc_1Ch(interval1s2,fs,fc);
-                    [out_interval2 xx xx outsfilt2]    = jepsen2008preproc_1Ch(interval2,fs,fc);
+                    [out_interval2   xx xx outsfilt2]  = jepsen2008preproc_1Ch(interval2,fs,fc);
 
                     handles.script_sim = 'jepsen2008preproc_1Ch';
 
@@ -820,79 +808,64 @@ for k = 1:Nsim
                 end
                 if bSingleChannel
                     [out_interval1 xx xx outsfilt1] = jepsen2008preproc_1Ch(interval1,fs,fc,'lowpass');
-                    [out_interval1s2] = jepsen2008preproc_1Ch(interval1s2,fs,fc,'lowpass');
+                    [out_interval1s2]               = jepsen2008preproc_1Ch(interval1s2,fs,fc,'lowpass');
                     [out_interval2 xx xx outsfilt2] = jepsen2008preproc_1Ch(interval2,fs,fc,'lowpass');
 
                     handles.script_sim = 'jepsen2008preproc_1Ch';
                 end
             end
             
-            [out_interval1 tmp] = Add_gaussian_noise(out_interval1,mu,sigma); % Add internal noise
-            out_interval1s2 = Add_gaussian_noise(out_interval1s2,mu,sigma);
-            out_interval2   = Add_gaussian_noise(out_interval2,mu,sigma); % Add internal noise
-            
-            [a b] = size(template);
-            % one audio-frequency band but all the modulation filterbanks:
-
-            sigint1     = reshape(out_interval1,a,b);
-            sigint1s2   = reshape(out_interval1s2,a,b);
-            sigint2     = reshape(out_interval2,a,b);
-            %%%        
-
-            intM = handles.audio.avg_intrep_M; % mean([out_N0 out_N1 out_N2],2);
-            intrep_M0   = intM; % out_N0; % Add_gaussian_noise(out_interval1s2,mu,sigma);
-            intrep_M1   = intM; % out_N1; % Add_gaussian_noise(out_interval1,mu,sigma);
-            intrep_M2   = intM; % out_N2; % Add_gaussian_noise(out_interval1,mu,sigma);
-
-            diff11 =   sigint1-intrep_M0;
-            diff12 = sigint1s2-intrep_M1;
-            diff20 =   sigint2-intrep_M2; %tt = 1:length(diff11); figure; plot(tt,diff11+30,tt,diff12,tt,diff20-30); legend('11','12','20')
-            
-            switch handles.bDecisionMethod 
-                case{2,3,4}
-                    cc1 = optimaldetector(sigint2, sigint1);
-                    cc2 = optimaldetector(sigint2, sigint1s2);
-                    if cc2 > cc1
-                        diffGreatestCC = sigint2-sigint1s2;
-                    else
-                        diffGreatestCC = sigint2-sigint1;
-                    end
+        case 2
+            if nAnalyser == 99.1
+                modelc = 'dau1996apreproc';
+            elseif nAnalyser == 100.1
+                modelc = 'dau1996preproc';
+            elseif nAnalyser == 101.1
+                modelc = 'dau1997preproc';
+            else
+                error('')
             end
                 
-            disp('');
+            out_interval1   = casprepresentation(interval1  ,modelc,{fs});
+            out_interval1s2 = casprepresentation(interval1s2,modelc,{fs});
+            out_interval2   = casprepresentation(interval2  ,modelc,{fs});
             
-        case 2
-            
-            out_interval1   = casprepresentation(interval1  ,'dau1996preproc',{fs});
-            out_interval1s2 = casprepresentation(interval1s2,'dau1996preproc',{fs});
-            out_interval2   = casprepresentation(interval2  ,'dau1996preproc',{fs});
-        
-            NN = 1;
-            diff11 = [];
-            diff12 = [];
-            diff20 = [];
-
-            for kk = 1:NN
-                diff11(:,kk) = Add_gaussian_noise(out_interval1(:,fc2plot_idx2),mu,sigma); % Add internal noise
-                diff12(:,kk) = Add_gaussian_noise(out_interval1s2(:,fc2plot_idx2),mu,sigma);
-                diff20(:,kk) = Add_gaussian_noise(out_interval2(:,fc2plot_idx2),mu,sigma); % Add internal noise
-            end
-            diff11 = mean(diff11,2)-handles.xxir;
-            diff12 = mean(diff12,2)-handles.xxir;
-            diff20 = mean(diff20,2)-handles.xxir;
-            
+            out_interval1   = out_interval1(:,fc2plot_idx);
+            out_interval1s2 = out_interval1s2(:,fc2plot_idx);
+            out_interval2   = out_interval2(:,fc2plot_idx);
         end
         
-        bDebug = 0;
-        if bDebug == 1
-            figure; 
-            subplot(4,1,1); plot(interval2,'r'); hold on; plot(interval1); ha = gca;
-            subplot(4,1,2); plot(out_interval2,'r'); hold on; plot(out_interval1); ha(end+1) = gca; 
-            subplot(4,1,3); plot(diff20,'r'); hold on; plot(diff11); ha(end+1) = gca; 
-            subplot(4,1,4); plot(out_interval2-out_interval1); % hold on; plot(diff11); ha(end+1) = gca; 
-            title(sprintf('current level = %.1f',Level_current))
-            disp('')
-            close
+        %%% Add internal noise:
+        out_interval1   = Add_gaussian_noise(out_interval1,mu,sigma); % Add internal noise
+        out_interval1s2 = Add_gaussian_noise(out_interval1s2,mu,sigma);
+        out_interval2   = Add_gaussian_noise(out_interval2,mu,sigma); % Add internal noise
+
+        [a b] = size(template);
+        % one audio-frequency band but all the modulation filterbanks:
+
+        sigint1     = reshape(out_interval1,a,b);
+        sigint1s2   = reshape(out_interval1s2,a,b);
+        sigint2     = reshape(out_interval2,a,b);
+        %%%        
+
+        intM = handles.audio.avg_intrep_M; % mean([out_N0 out_N1 out_N2],2);
+        intrep_M0   = intM; 
+        intrep_M1   = intM; 
+        intrep_M2   = intM; 
+
+        diff11 =   sigint1-intrep_M0;
+        diff12 = sigint1s2-intrep_M1;
+        diff20 =   sigint2-intrep_M2; %tt = 1:length(diff11); figure; plot(tt,diff11+30,tt,diff12,tt,diff20-30); legend('11','12','20')
+
+        switch handles.bDecisionMethod 
+            case{2,3,4}
+                cc1 = optimaldetector(sigint2, sigint1);
+                cc2 = optimaldetector(sigint2, sigint1s2);
+                if cc2 > cc1
+                    diffGreatestCC = sigint2-sigint1s2;
+                else
+                    diffGreatestCC = sigint2-sigint1;
+                end
         end
         
         bDecisionMethod = handles.bDecisionMethod; 
@@ -919,24 +892,27 @@ for k = 1:Nsim
                     decision(2) = optimaldetector(diff12,template,fs_intrep);
                     decision(3) = optimaldetector(diffGreatestCC,template,fs_intrep); 
                     
-                    decision = decision / sqrt(nchn_dec);
+                    decision = decision / (nchn_dec); % number of audio channels
                     % end
                 case 2
-                    error('continue')
-                    [decision(1) corrmue(:,1)] = optimaldetector(diff11,template);
-                    [decision(2) corrmue(:,2)] = optimaldetector(diff12,template);
-                    [decision(3) corrmue(:,3)] = optimaldetector(diffGreatestCC,template);
+                    decision(1) = optimaldetector(diff11,template);
+                    decision(2) = optimaldetector(diff12,template);
+                    decision(3) = optimaldetector(diffGreatestCC,template);
             end
             
-            time4var = 10e-3;
-            samples4var = floor(time4var * fs_intrep);
-            
-            varn = mean(std(buffer(diff20(:),samples4var))); % buffered in 2.5-ms sections
-            % varn2 = mean(std(buffer(diff20(:),100)));
+            % time4var = 10e-3;
+            % samples4var = floor(time4var * fs_intrep);
+            % varn = mean(std(buffer(diff20(:),samples4var))); % buffered in 2.5-ms sections
             
             [xx idx_decision] = max(decision);
             
-            value_Tr = sigma; % varn; % sigma; % max(varn); 
+            switch handles.MethodIntRep
+                case 1
+                    value_Tr = sigma; % varn; % sigma; % max(varn); 
+                case 2
+                    value_Tr = 1000; % arbitrary value
+            end
+                        
             value_De = decision(3);% -max(decision(1:2));
             
             if idx_decision == 3 & value_De > value_Tr

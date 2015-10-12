@@ -1,5 +1,5 @@
-function [outsig, fc, mfc, extra] = dau1997preproc_1Ch(insig, fs, fc, varargin)
-% function [outsig, fc, mfc, extra] = dau1997preproc_1Ch(insig, fs, fc, varargin)
+function [outsig, fc, mfc, fs_intrep, extra] = dau1997preproc_1Ch(insig, fs, fc, varargin)
+% function [outsig, fc, mfc, fs_intrep, extra] = dau1997preproc_1Ch(insig, fs, fc, varargin)
 %
 % 1. Description:
 %       Auditory model from Dau et. al. 1997
@@ -94,8 +94,22 @@ extra.out02_ihc         = outsig;
 outsig                  = adaptloop(outsig,fs,'argimport',flags,keyvals);
 extra.out03_adaptloop   = outsig;
 
+%% Downsampling (of the internal representations)
+if flags.do_resample_intrep
+    % In case of downsampling:
+    resampleFac = 4;
+    resampleLen = floor(length(insig) / resampleFac);
+    fs_intrep = fs / resampleFac;
+    
+    outsig = resample(outsig,1,resampleFac);
+    outsig = outsig(1:resampleLen,:);
+else
+    % In case of no-resampling:
+    fs_intrep = fs;
+end
+
 % Modulation filterbank
-[outsig,mfc] = modfilterbank1997(outsig,fs,fc,'argimport',flags,keyvals);
+[outsig,mfc] = modfilterbank1997(outsig,fs_intrep,fc,'argimport',flags,keyvals);
 
 outsig = outsig{1};
 

@@ -18,6 +18,7 @@ definput.flags.modfiltertype    = {'modfilterbank','lowpass'};
 definput.flags.modfilterlimit   = {'modfilter_onequarter','modfilter_1kHz_limit'};
 definput.flags.modfilter_150Hz_LP = {'LP_150_Hz','no_LP_150_Hz'};
 definput.flags.att_factor       = {'att_factor','no_att_factor'}; % Attenuation factor applied to mod filters above 10 Hz
+definput.flags.resample_intrep  = {'noresample_intrep','resample_intrep'};
 
 definput.groups.dau1997 = { 'modfilterbank', ...
                             'modfilter_1kHz_limit',...

@@ -10,8 +10,8 @@ function r20151009_update_dau1997(bParts)
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 06/10/2015
-% Last update on: 06/10/2015 
-% Last use on   : 06/10/2015 
+% Last update on: 12/10/2015 
+% Last use on   : 12/10/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 fs = 44100;
@@ -55,23 +55,30 @@ bPart1 = bParts(1); % Calibration of the model: sigma = 1.85 for bDecisionMethod
 bPart2 = bParts(2); % Simultaneous masking, deterministic
 bPart3 = bParts(3); % Simultaneous masking, stochastic
 
-opts.nAnalyser      = 101; % 99 - dau1996a, 99.1, 100 - dau1996, my template estimation
+opts.nAnalyser      = 103; % 99 - dau1996a, 99.1, 100 - dau1996, my template estimation
 
 opts.bDecisionMethod = 2; % 2 - cc; 4 - dprime
 switch opts.bDecisionMethod
     case 2
         switch opts.nAnalyser
-            case 99
+            case {99,99.1}
                 opts.sigma   = 3.25; % tone: 3.25 = band 13-15; 2.7 = band 13-14; 1.9 = band 14; 
             case 100
                 opts.sigma   = 1.35; % tone: 3 = band 13-15; % 2.45 = band 13-14; % 1.72 = band 14;
                                      %   BW:                                        1.35 = band 14; (target = 0.83 = -2 dB);
+            case 100.1
+                opts.sigma   = 1.35; 
+                
             case 101
-                opts.sigma   = 1.08;    % 11/10/2015, BBN: bands 1-30 = 1.08; band 14 = 0.95 (target = 0.83 dB)
+                opts.sigma   = 0.68;    % 12/10/2015, BBN: bands 1-30 = 0.68; (target = 0.83 dB, crit divided by Nr of audio channels)
                                         % old -- tone: 1.23 = band 14 (all); 1.30 = band 14 (1,2); 1.35 = band 14 (1)
                 opts.modfiltertype = 'dau1997wLP';
+                
+            case 101.1
+                error('not calibrated yet')
+                
             case 103
-                opts.sigma   = 21;  %   BW:  21 = band 2-33 (all); 1.95 = band 14; (target = 0.83 = -2 dB);
+                opts.sigma   = 0.85;  %   BW:  21 = band 2-33 (all); 1.95 = band 14; (target = 0.83 = -2 dB);
         end
     case 3
         opts.sigma   = 0.85; % dprime NOT GIVING RELIABLE RESULTS
@@ -81,21 +88,17 @@ end
     
 opts.var            = opts.sigma.*opts.sigma;
 opts.audio.fs       = fs;
-opts.MethodIntRep   = 1; % 1 - my method; 2 - using casptemplate.m
+if mod(opts.nAnalyser,1)==0
+    opts.MethodIntRep   = 1; % 1 - my method; 2 - using casptemplate.m
+else
+    opts.MethodIntRep   = 2;
+end
 
 opts.Reversals4avg  =  6; % 10
 
 opts.do_template    =  1;
 opts.do_simulation  =  1;
 opts.Nreversals     =  8;
-
-erbc2analyse        = freqtoaud([500 2000],'erb'); % 14 for 1000 Hz (approx.)  
-opts.fc2plot_idx    = ceil(erbc2analyse(1))-2;
-if length(erbc2analyse) > 1
-    opts.fc2plot_idx2 = floor(erbc2analyse(end))-2;
-else
-    opts.fc2plot_idx2 = opts.fc2plot_idx;
-end
 
 bDebug = 0;
 opts.bDebug = bDebug;
@@ -109,6 +112,7 @@ if bPart1
         opts.DurRamps   = 125; % additional cosine ramps
         opts.bUseRamp   = 1; % additional cosine ramps
         opts.bUseRampS  = 1; % additional cosine ramps
+        erbc2analyse        = freqtoaud([500 2000],'erb'); % 14 for 1000 Hz (approx.) 
         opts.filename1 = [Get_TUe_paths('outputs') 'AMTControl-examples' delim 'tone-f-1000-Hz-at-60-dB-dur-800-ms.wav'];
         opts.filename2 = [Get_TUe_paths('outputs') 'AMTControl-examples' delim 'tone-f-1000-Hz-at-42-dB-dur-800-ms.wav'];
     end
@@ -116,9 +120,12 @@ if bPart1
         opts.DurRamps   = 0; % additional cosine ramps
         opts.bUseRamp   = 0; % additional cosine ramps
         opts.bUseRampS  = 0;
+        erbc2analyse    = freqtoaud([100 8000],'erb'); % 14 for 1000 Hz (approx.)
         opts.filename1 = [Get_TUe_paths('outputs') 'audio-20151006' delim 'jepsen2008-BW-at-60-dB-dur-500-ms.wav'];
         opts.filename2 = [Get_TUe_paths('outputs') 'audio-20151006' delim 'jepsen2008-BW-at-42-dB-dur-500-ms.wav'];    
     end
+    
+    opts = il_get_freqs(erbc2analyse,opts);
     
     opts.Gain4supra = 5; % dB
     opts.audio.fs   = fs;
@@ -126,7 +133,7 @@ if bPart1
     opts.StepdB = 2; 
     opts.StepdBmin = 0.2;
     
-    refSPL  = 60; % [20 30 40 50 60 70 80];
+    refSPL  = 60; % [20 30 40 50 60 70];
     
     for i=1:length(refSPL)
         testSPL = refSPL(i)-18; % 42 dB for 60 dB    
@@ -216,6 +223,14 @@ if bPart3
     end
 end
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% EOF
+
+function opts = il_get_freqs(erbc2analyse, opts)
+
+opts.fc2plot_idx    = ceil(erbc2analyse(1))-2;
+if length(erbc2analyse) > 1
+    opts.fc2plot_idx2 = floor(erbc2analyse(end))-2;
+else
+    opts.fc2plot_idx2 = opts.fc2plot_idx;
 end
