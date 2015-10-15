@@ -290,9 +290,9 @@ end
 if bDoTFDRNL2
     
     bFig2ab = 1;
-    bFig2c = 1;
+    bFig2c = 0;
     
-    SPL = [0 20:10:90 100];
+    SPL = 60; % [0 20:10:90 100]; warning('temporal level')
     SPL_fig2c = [30 60 90]; % dB
     bandidx = [5 9 14 25]; % 250, 500, 1000, 4000 Hz respectively
     
@@ -359,8 +359,8 @@ if bDoTFDRNL2
 
                 insigM = setdbspl( insig,SPL(k) );
 
-                [outsigdrnl fcdrnl paramsouts] = drnl_CASP_debug(insigM,fs);
-                [outsiggamma fcgamma] = auditoryfilterbank(insigM,fs);
+                [outsigdrnl fcdrnl paramsouts] = drnl_CASP_debug(insigM,fs);    % DRNL
+                [outsiggamma fcgamma]          = auditoryfilterbank(insigM,fs); % Gamma-tone
                 outgamma = outsiggamma(:,bandidx(j)); % band centred at 1 kHz
                 
                 out = outsigdrnl(:,bandidx(j));

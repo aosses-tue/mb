@@ -71,16 +71,17 @@ else
     bMultiChannel = 1;
 end 
 
-if strcmp(model,'dau1997')
-    opts = ef(opts,'chn_modfilt',1:12);
-    opts = Ensure_field(opts,'resample_intrep', 'resample_intrep');
+switch model
+    case {'dau1997','jepsen2008','jepsen2008-modfilterbank'}
+        opts = ef(opts,'chn_modfilt',1:12);
+        opts = Ensure_field(opts,'resample_intrep', 'resample_intrep');
 end
 
 N = size(in_signal_pre,1);
 if N ~= 0
-    N = size(in_masker_pre,1);
     bDo_only_one_intrep = 0;
 else
+    N = size(in_masker_pre,1);
     bDo_only_one_intrep = 1;
 end
 
@@ -129,6 +130,8 @@ if bDo_only_one_intrep == 0
 end
 %%%
 
+bAddSilence2noise = opts.bAddSilence2noise;
+
 for i = 1:Ntimes
     
     if bStochastic
@@ -146,14 +149,28 @@ for i = 1:Ntimes
     end
     
     if bDo_only_one_intrep == 0
-        in_masker_s0 = in_masker_s0(1:N);
-        in_masker_s1 = in_masker_s1(1:N);
+        if bAddSilence2noise == 1
+            Lno = round(opts.Silence2noise * fs);
+            Nno = N - Lno;
+        else
+            Lno = 0;
+            Nno = N;
+        end
+        in_masker_s0 = in_masker_s0(1:Nno);
+        in_masker_s1 = in_masker_s1(1:Nno);
+    else
+        Lno = 0;
     end
     
     if masker_ramp_ms ~= 0 % introducing ramps into masker signals
         if i == 1; display('Introducing ramp for the maskers'); end
         in_masker_s0 = Do_cos_ramp( in_masker_s0,fs,masker_ramp_ms );
         in_masker_s1 = Do_cos_ramp( in_masker_s1,fs,masker_ramp_ms );
+    end
+    
+    if bAddSilence2noise
+        in_masker_s0 = [in_masker_s0; Gen_silence(Lno/fs,fs)];
+        in_masker_s1 = [in_masker_s1; Gen_silence(Lno/fs,fs)];
     end
     
     intervalN0 = in_masker_s0;
@@ -362,18 +379,19 @@ for i = 1:Ntimes
                 case 'jepsen2008-lowpass'
                     fbstyle = 'lowpass';
             end
+            
             if bMultiChannel == 1
-                [out_1pre , fc, mfc, IntRep] = jepsen2008preproc_multi(intervalN0,fs,fcmin,fcmax,fbstyle,'resample_intrep');
+                [out_1pre , fc, mfc, IntRep] = jepsen2008preproc_multi(intervalN0,fs,fcmin,fcmax,fbstyle,opts.resample_intrep);
                 if bDo_only_one_intrep == 0
-                    [out_2pre , fc] = jepsen2008preproc_multi(intervalSN,fs,fcmin,fcmax,fbstyle,'resample_intrep');
+                    [out_2pre , fc] = jepsen2008preproc_multi(intervalSN,fs,fcmin,fcmax,fbstyle,opts.resample_intrep);
                 end
                 [Ni,Mi] = size(out_1pre{1});
                 outs.script_template = 'jepsen2008preproc_multi';
             end
             if bSingleChannel == 1
-                [out_1pre , fc, mfc, IntRep] = jepsen2008preproc_1Ch(intervalN0,fs,fc,fbstyle);
+                [out_1pre , fc, mfc, IntRep] = jepsen2008preproc_1Ch(intervalN0,fs,fc,fbstyle,opts.resample_intrep);
                 if bDo_only_one_intrep == 0
-                    [out_2pre , fc]          = jepsen2008preproc_1Ch(intervalSN,fs,fc,fbstyle);
+                    [out_2pre , fc]          = jepsen2008preproc_1Ch(intervalSN,fs,fc,fbstyle,opts.resample_intrep);
                 end
                 outs.script_template = 'jepsen2008preproc_1Ch';
             end
@@ -447,8 +465,6 @@ try
     if bDo_only_one_intrep == 0
         out_2avg = reshape(out_2avg,Ni,Mi);
     end
-catch
-    warning('Template not reshaped, probably you are using the modulation filterbank and then not every filter has the same amount of elements');
 end
 
 outs.fc = fc;
@@ -459,11 +475,6 @@ switch model
         outs.mfc = mfc;
 end
 
-% outs.inM = in_masker_s0;
-% if bDo_only_one_intrep == 0
-%     outs.inMT= intervalSN;
-% end
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % EOF
 
@@ -471,8 +482,12 @@ end
 function y = il_pool_in_one_column(incell)
 
 out = [];
-for k = 1:length(incell);
-    outtmp = incell{k};
-    out = [out; outtmp(:)];
+if iscell(incell)
+    for k = 1:length(incell);
+        outtmp = incell{k};
+        out = [out; outtmp(:)];
+    end
+else
+    out = incell(:);
 end
 y = out;

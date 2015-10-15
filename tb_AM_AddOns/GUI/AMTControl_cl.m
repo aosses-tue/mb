@@ -22,8 +22,8 @@ function outs = AMTControl_cl(handles_man)
 %       Create menu, with load parameters
 % 
 % Created on        : 14/09/2015 (Snapshot of AMTControl.m)
-% Last modified on  : 14/09/2015
-% Last used on      : 14/09/2015 % Remember to check compatibility with template_PsySoundCL.m
+% Last modified on  : 13/10/2015
+% Last used on      : 13/10/2015 % Remember to check compatibility with template_PsySoundCL.m
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin == 0
@@ -35,9 +35,13 @@ handles_man = Ensure_field(handles_man,'nAnalyser',100); % 100 = dau1996
                                                          % 103 = jepsen2008
 handles_man = Ensure_field(handles_man,'bDecisionMethod',2); % 2 = cross-correlation criterion
                                                              % 4 = m-AFC criterion
-handles_man = Ensure_field(handles_man,'DurRamps',150); % ms
 
-dir_out = Get_TUe_paths('outputs');
+% some additional settings for audio files:
+handles_man = Ensure_field(handles_man,'DurRamps',150); % ms
+handles_man = Ensure_field(handles_man,'bAddSilence2noise',0);
+if handles_man.bAddSilence2noise == 1
+    handles_man = Ensure_field(handles_man,'Silence2noise',0); % s
+end
 
 handles_man = Ensure_field(handles_man,'increment_method','level'); % 'modulation-depth'
 handles_man = Ensure_field(handles_man,'filename1',[Get_TUe_paths('outputs') 'AMTControl-examples' delim 'tone-f-1000-Hz-at-60-dB-dur-800-ms.wav']);
@@ -66,21 +70,15 @@ handles_man = Ensure_field(handles_man,'Nsim',1);
 filename1 = handles_man.filename1;
 filename2 = handles_man.filename2;
 
-handles.increment_method = handles_man.increment_method;
-if handles_man.nAnalyser == 101
-    handles_man = Ensure_field(handles_man,'modfiltertype','dau1997'); % dau1997wLP, derleth2000, jepsen2008
-    handles_man = Ensure_field(handles_man,'resample_intrep','resample_intrep');
-    
+switch handles_man.nAnalyser
+    case 101
+        handles_man = Ensure_field(handles_man,'modfiltertype','dau1997'); % dau1997wLP, derleth2000, jepsen2008
+        handles_man = Ensure_field(handles_man,'resample_intrep','resample_intrep');
+    case {103,104}
+        handles_man = Ensure_field(handles_man,'resample_intrep','resample_intrep');
 end
-if strcmp(handles.increment_method,'modulation-depth')
-    handles.fmod    = handles_man.fmod;
-    handles.dur_test= handles_man.dur_test;
-end
-handles.bDebug     = handles_man.bDebug;
-handles.dir_out    = dir_out;
-handles.audio      = handles_man.audio;
-handles.Gain2file1 = handles_man.Gain2file1;
-handles.Gain2file2 = handles_man.Gain2file2;
+
+handles = handles_man; % we pass all the parameters in handles_man to handles
 
 %%%
 handles = il_btnLoad(filename1,filename2,handles);
@@ -88,9 +86,12 @@ handles = il_btnLoad(filename1,filename2,handles);
 
 handles.Gain4supra  = handles_man.Gain4supra;
 handles.nAnalyser   = handles_man.nAnalyser;
-if handles.nAnalyser == 101
-    handles.modfiltertype = handles_man.modfiltertype;
-    handles.resample_intrep = handles_man.resample_intrep;
+switch handles.nAnalyser
+    case 101
+        handles.modfiltertype = handles_man.modfiltertype;
+        handles.resample_intrep = handles_man.resample_intrep;
+    case 103
+        handles.resample_intrep = handles_man.resample_intrep;
 end
 
 handles.fc2plot_idx = handles_man.fc2plot_idx;
@@ -181,9 +182,6 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 3. Executes on button press in btnLoad.
 function handles = il_btnLoad(filename1, filename2, handles)
-
-dir_out = handles.dir_out;
-Mkdir(dir_out); % creates folder in case it does not exist:
 
 G1 = handles.Gain2file1; % gain in dB for audio file 1
 G2 = handles.Gain2file2; % gain in dB for audio file 2
@@ -343,15 +341,16 @@ out_2 = [];
 mu    = 0;
 sigma   = 0;
 
+tmp.bAddSilence2noise   = handles.bAddSilence2noise;
+if tmp.bAddSilence2noise
+    tmp.Silence2noise   = handles.Silence2noise;
+end
+
 if bUseRamp;  tmp.masker_ramp_ms = handles.DurRamps; else; tmp.masker_ramp_ms = 0; end % ramp time in ms
 if bUseRampS; tmp.signal_ramp_ms = handles.DurRamps; else; tmp.signal_ramp_ms = 0; end % ramp time in ms
         
 if bDeterministic == 0 % then stochastic
     insig1 = handles.audio.insig1orig;
-    
-    L = length(insig2);
-    insig2 = il_randomise_insig(insig1);
-    insig2 = insig2(1:L); % we re-assign insig2
 else
     insig1 = handles.audio.insig1;
 end
@@ -432,74 +431,47 @@ switch nAnalyser
         
     case 103
         
+        tmp.resample_intrep = handles.resample_intrep;
         [out_1Mean out_2Mean fs_intrep tmp] = Get_internalrep_stochastic(insig1,insig2supra,fs,'jepsen2008-modfilterbank',sigma,Ntimes,fc2plot_idx,tmp);
                 
-        template = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
+        template = Get_template_append(out_1Mean,out_2Mean,fs_intrep); % figure; plot(out_2Mean-out_1Mean)
         handles.script_template = tmp.script_template;
         
         handles.script_template = 'jepsen2008preproc_multi'; 
         
 	case 104
         
-        error('Continue here')
-        fbstyle = 'lowpass'; 
-        
-        for i = 1:Ntimes
-            
-            if bDeterministic == 1
-                insig1s0 = handles.audio.insig1;
-                insig1s1 = handles.audio.insig1;
-            else
-                insig1s0 = il_randomise_insig( handles.audio.insig1orig );
-                insig1s0 = Do_cos_ramp( insig1s0(1:length(insig2)),fs,tmp.masker_ramp_ms );
-                insig1s1 = il_randomise_insig( handles.audio.insig1orig );
-                insig1s1 = Do_cos_ramp( insig1s1(1:length(insig2)),fs,tmp.masker_ramp_ms );
-            end
-            
-            if bMultiChannel
-                error('Not implemented yet (on 26/08/2015)')
-            end
-            if bSingleChannel
-                [out_1pre , fc, xx, IntRep] = jepsen2008preproc_1Ch(insig1s0  ,fs,fc,fbstyle);
-                [out_2pre , fc] = jepsen2008preproc_1Ch(insig1s1 + insig2supra,fs,fc,fbstyle);
-                fs_intrep = IntRep.fs_intrep;
-                handles.script_template = 'jepsen2008preproc_1Ch';
-            end
-            
-            if bDeterministic == 1 
-                % Deterministic noise
-                [out_1 noise] = Add_gaussian_noise_deterministic(out_1pre,mu,sigma); 
-                out_2 = out_2pre+noise; % deterministic noise
+        tmp.resample_intrep = handles.resample_intrep;
+        [out_1Mean out_2Mean fs_intrep tmp] = Get_internalrep_stochastic(insig1,insig2supra,fs,'jepsen2008-lowpass',sigma,Ntimes,fc2plot_idx,tmp);
                 
-            else
-                % 'Running' noise
-                tmp = Add_gaussian_noise(out_1pre(:),mu,sigma); % tmp = Add_gaussian_noise(out_1pre(:,fc2plot_idx),mu,sigma);
-                out_1 = [out_1 tmp(:)]; 
-                tmp = Add_gaussian_noise(out_2pre(:),mu,sigma); % tmp = Add_gaussian_noise(out_2pre(:,fc2plot_idx),mu,sigma);
-                out_2 = [out_2 tmp(:)]; % Add internal noise
-            end
-            
-        end
+        template = Get_template_append(out_1Mean,out_2Mean,fs_intrep); % figure; plot(out_2Mean-out_1Mean)
+        handles.script_template = tmp.script_template;
         
-        tmp.fs = IntRep.fs_intrep;
-        if bDeterministic
-            out_1Mean = out_1(:,fc2plot_idx_1);
-            out_2Mean = out_2(:,fc2plot_idx_1);
-        else
-            out_1Mean = mean(out_1,2);
-            out_2Mean = mean(out_2,2);
-            
-            Mtmp = length(fc2plot_idx_1);
-            Ntmp = length(out_1Mean)/Mtmp;
-            out_1Mean = reshape(out_1Mean,Ntmp,Mtmp);
-            out_2Mean = reshape(out_2Mean,Ntmp,Mtmp);
-        end
-        
-        template = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
+        handles.script_template = 'jepsen2008preproc_multi'; 
         
 end
 
 t = ( 1:size(template,1) )/fs_intrep;
+
+%%%
+if handles.bDebug
+    figure;
+    subplot(2,1,1)
+    plot(t,out_1Mean); grid on; hold on
+    plot(t,out_2Mean,'r');
+    legend('M','MTc')
+    ha = gca; 
+    
+    subplot(2,1,2)
+    plot(t,out_2Mean-out_1Mean); grid on;
+    ha(end+1) = gca;
+    linkaxes(ha,'x');
+    
+    p = Get_date;
+    Saveas(gcf,['fig-template-' p.date2print],'epsc');
+    close
+end
+%%%
 
 switch nAnalyser
     case {99,99.1,100,100.1}
@@ -618,6 +590,8 @@ switch handles.increment_method
         end
 end
 
+bAddSilence2noise = handles.bAddSilence2noise;
+
 for k = 1:Nsim
     
     Nmaskers = 0;
@@ -641,7 +615,7 @@ for k = 1:Nsim
     
     while (nReversal < Reversals_stop) & (bSucceeded ==  1) % up to line 765
 
-        L = length(insig2);
+        N = length(insig2);
         if bDeterministic == 1
             insig1s0 = insig1;
             insig1s1 = insig1;
@@ -652,7 +626,7 @@ for k = 1:Nsim
             switch handles.increment_method
                 case 'modulation-depth'
                     insig2 = il_randomise_insig(handles.audio.insig1orig);
-                    insig2 = insig2(1:L); % we re-assign insig2
+                    insig2 = insig2(1:N); % we re-assign insig2
                     
                     if bUseRampSignal
                         if k == 1; fprintf('Introducing %.0f-ms ramps into test signals\n',rampsl); end;
@@ -666,9 +640,17 @@ for k = 1:Nsim
             insig1s2 = il_randomise_insig(handles.audio.insig1orig);
         end
         
-        insig1s0 = insig1s0( 1:L );
-        insig1s1 = insig1s1( 1:L );
-        insig1s2 = insig1s2( 1:L );
+        if bAddSilence2noise == 1
+            Lno = round(handles.Silence2noise * fs);
+            Nno = N - Lno;
+        else
+            Lno = 0;
+            Nno = N;
+        end
+        
+        insig1s0 = insig1s0( 1:Nno );
+        insig1s1 = insig1s1( 1:Nno );
+        insig1s2 = insig1s2( 1:Nno );
         
         if bUseRamp
             if k==1; fprintf('Introducing %.0f-ms ramps into maskers\n',rampdn); end
@@ -676,6 +658,10 @@ for k = 1:Nsim
             insig1s1 = Do_cos_ramp(insig1s1, fs, rampdn);
             insig1s2 = Do_cos_ramp(insig1s2, fs, rampdn);
         end
+        
+        insig1s0 = [insig1s0; Gen_silence(Lno/fs,fs)];
+        insig1s1 = [insig1s1; Gen_silence(Lno/fs,fs)];
+        insig1s2 = [insig1s2; Gen_silence(Lno/fs,fs)];
         
         Gain2apply  = From_dB(Level_current);
         
@@ -697,16 +683,20 @@ for k = 1:Nsim
             pause(2); sound(interval1, fs); pause(1); sound(interval1s2, fs);
             pause(1); sound(interval2, fs); pause(1);
         end
-             
+        
+        tmp = [];
+        tmp.masker_ramp_ms = 0; % ramps already applied
+        tmp.bAddSilence2noise = 0; % already applied
+        
         switch handles.MethodIntRep
             case 1
             
             if nAnalyser == 99;
                 
                 model = 'dau1996a';
-                [out_interval1   xx fs_intrep] = Get_internalrep_stochastic(interval1  ,[],fs,model,0,Ntimes,fc2plot_idx);
-                [out_interval1s2 xx fs_intrep] = Get_internalrep_stochastic(interval1s2,[],fs,model,0,Ntimes,fc2plot_idx);
-                [out_interval2   xx fs_intrep] = Get_internalrep_stochastic(interval2 ,[],fs,model,0,Ntimes,fc2plot_idx);
+                [out_interval1   xx fs_intrep] = Get_internalrep_stochastic(interval1  ,[],fs,model,0,Ntimes,fc2plot_idx,tmp);
+                [out_interval1s2 xx fs_intrep] = Get_internalrep_stochastic(interval1s2,[],fs,model,0,Ntimes,fc2plot_idx,tmp);
+                [out_interval2   xx fs_intrep] = Get_internalrep_stochastic(interval2 ,[],fs,model,0,Ntimes,fc2plot_idx,tmp);
                 
                 if bMultiChannel
                     handles.script_sim = 'dau1996apreproc';
@@ -720,9 +710,9 @@ for k = 1:Nsim
                 
                 model = 'dau1996';
                 
-                [out_interval1   xx fs_intrep] = Get_internalrep_stochastic(interval1  ,[],fs,model,0,Ntimes,fc2plot_idx);
-                [out_interval1s2 xx fs_intrep] = Get_internalrep_stochastic(interval1s2,[],fs,model,0,Ntimes,fc2plot_idx);
-                [out_interval2   xx fs_intrep] = Get_internalrep_stochastic(interval2 ,[],fs,model,0,Ntimes,fc2plot_idx);
+                [out_interval1   xx fs_intrep] = Get_internalrep_stochastic(interval1  ,[],fs,model,0,Ntimes,fc2plot_idx,tmp);
+                [out_interval1s2 xx fs_intrep] = Get_internalrep_stochastic(interval1s2,[],fs,model,0,Ntimes,fc2plot_idx,tmp);
+                [out_interval2   xx fs_intrep] = Get_internalrep_stochastic(interval2 ,[],fs,model,0,Ntimes,fc2plot_idx,tmp);
                 
                 if bMultiChannel
                     handles.script_sim = 'dau1996preproc';
@@ -740,7 +730,7 @@ for k = 1:Nsim
                 tmp.resample_intrep = handles.resample_intrep;
                 tmp.chn_modfilt = 1:12;%:12;
                 
-                [out_interval1   xx fs_intrep otmp] = Get_internalrep_stochastic(interval1  ,[],fs,model,0,Ntimes,fc2plot_idx,tmp);
+                [out_interval1   xx fs_intrep otmp] = Get_internalrep_stochastic(interval1,[],fs,model,0,Ntimes,fc2plot_idx,tmp);
                 [out_interval1s2 xx fs_intrep] = Get_internalrep_stochastic(interval1s2,[],fs,model,0,Ntimes,fc2plot_idx,tmp);
                 [out_interval2   xx fs_intrep] = Get_internalrep_stochastic(interval2 ,[],fs,model,0,Ntimes,fc2plot_idx,tmp);
                 
@@ -756,58 +746,36 @@ for k = 1:Nsim
 
             elseif nAnalyser == 103
                 
+                model = 'jepsen2008'; % same as 'jepsen2008-modfilterbank'
+                
+                tmp.resample_intrep = handles.resample_intrep;
+                [out_interval1   xx fs_intrep otmp] = Get_internalrep_stochastic(interval1,[],fs,model,0,Ntimes,fc2plot_idx,tmp);
+                [out_interval1s2 xx fs_intrep] = Get_internalrep_stochastic(interval1s2,[],fs,model,0,Ntimes,fc2plot_idx,tmp);
+                [out_interval2   xx fs_intrep] = Get_internalrep_stochastic(interval2 ,[],fs,model,0,Ntimes,fc2plot_idx,tmp);
+                
+                nchn_dec = length(otmp.fc);
+                
                 if bMultiChannel
-                    [out_interval1 fc] = jepsen2008preproc_multi(interval1,fs,fcmin,fcmax,'resample_intrep');
-                    [out_interval1s2] = jepsen2008preproc_multi(interval1s2,fs,fcmin,fcmax,'resample_intrep');
-                    [out_interval2] = jepsen2008preproc_multi(interval2,fs,fcmin,fcmax,'resample_intrep');
-
-                    out_interval1   = il_pool_in_one_column(out_interval1);
-                    out_interval1s2 = il_pool_in_one_column(out_interval1s2);
-                    out_interval2   = il_pool_in_one_column(out_interval2);
-
-                    nchn_dec = length(fc);
-                    
                     handles.script_sim = 'jepsen2008preproc_multi';
-                    
                 end
+                
                 if bSingleChannel
-                    [out_interval1   xx xx outsfilt11] = jepsen2008preproc_1Ch(interval1,fs,fc);
-                    [out_interval1s2 xx xx outsfilt12] = jepsen2008preproc_1Ch(interval1s2,fs,fc);
-                    [out_interval2   xx xx outsfilt2]  = jepsen2008preproc_1Ch(interval2,fs,fc);
-
                     handles.script_sim = 'jepsen2008preproc_1Ch';
-
-                    bListenToFilter = 0;
-                    if bListenToFilter
-                        warning('Listen to filter')
-                        fprintf('Level current = %.0f dB, actual level noise = %.1f dB\n',Level_current,rmsdb(outsfilt11.out_filterbank)+100)
-                        sound(outsfilt11.out_filterbank,fs)
-                        pause(0.5)
-                        sound(outsfilt12.out_filterbank,fs)
-                        pause(0.5)
-                        fprintf('Level current = %.0f dB, actual level signal+noise = %.1f\n',Level_current,rmsdb(outsfilt2.out_filterbank)+100)
-                        sound(outsfilt2.out_filterbank,fs)
-                        disp('Press any key to continue...')
-                        pause();
-
-                    end
-
-                    out_interval1   = il_pool_in_one_column(out_interval1);
-                    out_interval1s2 = il_pool_in_one_column(out_interval1s2);
-                    out_interval2   = il_pool_in_one_column(out_interval2);
                 end
 
             elseif nAnalyser == 104
-                if bMultiChannel
-                    error('Not implemented yet (on 26/08/2015)');
-                end
-                if bSingleChannel
-                    [out_interval1 xx xx outsfilt1] = jepsen2008preproc_1Ch(interval1,fs,fc,'lowpass');
-                    [out_interval1s2]               = jepsen2008preproc_1Ch(interval1s2,fs,fc,'lowpass');
-                    [out_interval2 xx xx outsfilt2] = jepsen2008preproc_1Ch(interval2,fs,fc,'lowpass');
-
-                    handles.script_sim = 'jepsen2008preproc_1Ch';
-                end
+                
+                model = 'jepsen2008-lowpass';
+                
+                tmp.resample_intrep = handles.resample_intrep;
+                [out_interval1   xx fs_intrep otmp] = Get_internalrep_stochastic(interval1,[],fs,model,0,Ntimes,fc2plot_idx,tmp);
+                [out_interval1s2 xx fs_intrep] = Get_internalrep_stochastic(interval1s2,[],fs,model,0,Ntimes,fc2plot_idx,tmp);
+                [out_interval2   xx fs_intrep] = Get_internalrep_stochastic(interval2 ,[],fs,model,0,Ntimes,fc2plot_idx,tmp);
+                
+                nchn_dec = length(otmp.fc);
+                
+                handles.script_sim = otmp.script_template; % either 'jepsen2008preproc_1Ch' or 'jepsen2008preproc_multi'
+                
             end
             
         case 2

@@ -122,10 +122,14 @@ for ii = 1:nchannels
         nlin_a      = polfun(kv.nlin_a,fc(ii));
         nlin_b      = polfun(kv.nlin_b,fc(ii));
         nlin_c      = polfun(kv.nlin_c,fc(ii));
+        
+        gain_after_compression = 1;
     else
-        nlin_a      = polfun(kv.nlin_a,1500);
-        nlin_b      = polfun(kv.nlin_b,1500);
+        nlin_a      = polfun(kv.nlin_a_above,1500);
+        nlin_b      = polfun(kv.nlin_b_above,1500);
         nlin_c      = polfun(kv.nlin_c,1500);
+        
+        gain_after_compression = polfun(kv.gain_after_compression,fc(ii));
     end
     
     [GTlin_b,GTlin_a] = coefGtDRNL(lin_fc,lin_bw,fs); % get GT filter coeffs
@@ -181,25 +185,30 @@ for ii = 1:nchannels
             y_nlin = filter(LPnlin_b,LPnlin_a,y_nlin);
         end
             
-        params.fc_abc(ii,:)    = [CF nlin_a nlin_b nlin_c];
+        params.fc_abc(ii,:)    = [CF nlin_a nlin_b nlin_c lin_gain gain_after_compression];
     else
         y_nlin = zeros(size(insig));
     end
     
-    outsig(:,ii)        = y_lin + y_nlin;
-    outsiglin(:,ii)     = y_lin;
-    outsignlin(:,ii)    = y_nlin;
+    GaindB = -interp1(kv.maxfreqs,kv.maxouts,fc(ii),'linear','extrap');
+    % GaindB=0;
+    % outsig(:,ii)        = gain_after_compression * (y_lin + y_nlin);
+    % outsiglin(:,ii)     = gain_after_compression * y_lin;
+    % outsignlin(:,ii)    = gain_after_compression * y_nlin;
+    outsig(:,ii)        = From_dB( GaindB )* (y_lin + y_nlin);
+    outsiglin(:,ii)     = From_dB( GaindB ) * y_lin;
+    outsignlin(:,ii)    = From_dB( GaindB ) * y_nlin;
 end
 
 params.outsiglin    = outsiglin;
 params.outsignlin   = outsignlin;
 
-disp('')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %eof
 
 % Inline functions:
 function outpar=polfun(par,fc)
-
-%outpar=10^(par(1)+par(2)*log10(fc));
+% p0 = par(1)
+% m  = par(2)
+% outpar=10^(par(1)+par(2)*log10(fc));
 outpar=10^(par(1))*fc^par(2);

@@ -111,9 +111,9 @@ end
 
 %% 3. 'haircell' envelope extraction
 outsig = ihcenvelope(outsig,fs,'argimport',flags,keyvals);
-outsig = gaindb(outsig,50); % linear gain to fit adaptation loops operating point
 
-%% 4. Expansion stage
+%% 4. Gain + Expansion stage
+outsig = gaindb(outsig,keyvals.gain_after_drnl); % default AMT is 50 dB
 outsig = outsig.^2;
 
 %% 5. non-linear adaptation loops

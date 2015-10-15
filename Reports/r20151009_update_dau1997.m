@@ -46,7 +46,7 @@ if bCreate
 end
 
 if nargin == 0
-    bParts = [1 0 1 0 0 0 1];
+    bParts = [1 0 1 ];
 end
 
 fs = 44100;

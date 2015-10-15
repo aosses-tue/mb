@@ -106,16 +106,21 @@ end
 %% 2. DRNL and compensation for middle-ear (middle ear)
 keyvals.flow    = fc;
 keyvals.fhigh   = fc;
-[outsig, fc] = drnl_CASP_debug(insig, fs, 'argimport',flags,keyvals);
+bDebug = 0;
+if bDebug == 1
+    [outsig, fc, tmp] = drnl_CASP_debug(insig, fs, 'argimport',flags,keyvals);
+else
+    [outsig, fc] = drnl_CASP_debug(insig, fs, 'argimport',flags,keyvals);
+end
 if nargout >= 4
     outs.out_filterbank = outsig;
 end
 
 %% 3. 'haircell' envelope extraction
 outsig = ihcenvelope(outsig,fs,'argimport',flags,keyvals);
-outsig = gaindb(outsig,50); % linear gain to fit adaptation loops operating point
 
-%% 4. Expansion stage
+%% 4. Gain + Expansion stage
+outsig = gaindb(outsig,keyvals.gain_after_drnl); % default AMT is 50 dB
 outsig = outsig.^2;
 
 if flags.do_absolutethreshold
