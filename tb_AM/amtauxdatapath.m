@@ -3,7 +3,7 @@ function auxPath=amtauxdatapath(newPath)
 %   Usage: auxpath=amtauxdatapath
 %          amtauxdatapath(newpath)
 %
-%   `auxPath=amtauxdatapath` returns the path of the directory containing
+%   'auxPath=amtauxdatapath' returns the path of the directory containing
 %   auxiliary data.
 %
 %   Default path to the auxiliary data is the `amtbasepath/auxdata`.
