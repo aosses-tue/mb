@@ -194,10 +194,10 @@ end
 
 % Search for the package
 if ~exist('SFS_start','file')
-  sfspath=fullfile(bp,'thirdparty','sfs');
-  if exist(sfspath,'dir')
-    addpath(sfspath);
-  end
+    sfspath=fullfile(bp,'thirdparty','SFS');
+    if exist(sfspath,'dir')
+        addpath(sfspath);
+    end
 end
 
 % Delete rms.m from the SFS package because of naming conflict
@@ -209,26 +209,26 @@ end
 % Start 
 % if ~silent, disp('*** Starting SFS ***'); end
 if exist('SFS_start','file')
-  SFS_start;
-  s=SFS_version; s_r='1.0.0'; % set the required version
-  if ~silent, disp(['Sound Field Synthesis Toolbox, version ' s]); end
-  v=sscanf(s,'%d.%d.%d'); v(4)=0;
-  v_r=sscanf(s_r,'%d.%d.%d');
-  if ~(v(1)>v_r(1) || (v(1)>=v_r(1) && v(2)>v_r(2)) || (v(1)>=v_r(1) && v(2)>=v_r(2) && v(3)>=v_r(3)) ),
+    SFS_start;
+    s=SFS_version; s_r='1.0.0'; % set the required version
+    if ~silent, disp(['Sound Field Synthesis Toolbox, version ' s]); end
+    v=sscanf(s,'%d.%d.%d'); v(4)=0;
+    v_r=sscanf(s_r,'%d.%d.%d');
+    if ~(v(1)>v_r(1) || (v(1)>=v_r(1) && v(2)>v_r(2)) || (v(1)>=v_r(1) && v(2)>=v_r(2) && v(3)>=v_r(3)) ),
       error(['You need SFS >= ' s_r ' to work with AMT. ' ...
         'Please update your package from https://github.com/sfstoolbox/sfs ']);
-  end  
+    end  
 	
 elseif ~silent, 
-  disp('SFS package could not be found. Continue without SFS support.');
-  disp(['For SFS support please download the package ' ...
+    disp('SFS package could not be found. Continue without SFS support.');
+    disp(['For SFS support please download the package ' ...
         'from https://github.com/sfstoolbox/sfs ' ...
         'and copy to amtoolbox/thirdparty/sfs.']); 
 end
 
 %% Install AMT modules
-% A directory called DIRNAME containing a file 'DIRNAMEinit.m' is
-% considered as a module. 
+% A directory called DIRNAME containing a file 'DIRNAMEinit.m' is considered 
+% as a module. 
 % DIRNAMEinit.m must set the variable 'status' with the following value:
 %  0: disabled module, don't add to the search path
 %  >0: add to the search path.
