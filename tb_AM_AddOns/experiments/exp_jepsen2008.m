@@ -25,12 +25,10 @@ if nargin == 0
     fs = 44100;
 end
 
-f = 1000;
-durramp = 5; % ms
-
 if nargin < 2
     % nFig = 3.2; % signal integration
-    nFig = 7; % forward-masking
+    nFig = 4; % signal integration
+    % nFig = 7; % forward-masking
 end
 
 switch nFig
@@ -57,6 +55,29 @@ switch nFig
                 Wavwrite(gaindb(maskerbuf,-18),fs,f4); % sound(gaindb(masker,-18),fs);
             end
         end
+        
+    case 4
+        
+        lvlmasker = 65;
+        durmasker = 500; % ms
+        masker = AM_random_noise(20,5000,lvlmasker+3,5,fs); % 5-seconds buffer
+        
+        f = 2000;
+        lvl = 65;
+        dur = [10 20 40 70 150]; % ms
+        durramp = 2.5; % ms, ramp for tones
+
+        insig = [];
+        for i = 1:length(dur)
+            insigtmp = Create_sin(f,dur(i)*1e-3,fs);
+            insigtmp = Do_cos_ramp(insigtmp,fs,durramp);
+            insigtmp = setdbspl(insigtmp,lvl); 
+            if mod(length(insigtmp),2) == 1
+                insigtmp(end) = [];
+            end
+            insigtmp = [Gen_silence((durmasker-dur(i))*0.5e-3,fs); insigtmp; Gen_silence((durmasker-dur(i))*0.5e-3,fs)]; % 600 ms 
+            insig = [insig insigtmp];
+        end 
         
     case 7
         dur = 10; % for buffer

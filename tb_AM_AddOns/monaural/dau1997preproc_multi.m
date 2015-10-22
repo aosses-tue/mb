@@ -71,8 +71,8 @@ definput.keyvals.subfs=[];
 
 [flags,keyvals]  = ltfatarghelper({'flow','fhigh'},definput,varargin);
 
-keyvals.flow = fmin; %-1;
-keyvals.fhigh = fmax; %+2;
+keyvals.flow  = fmin-2; % rough approximation
+keyvals.fhigh = fmax+2; % rough approximation
 
 % ------ do the computation -------------------------
 

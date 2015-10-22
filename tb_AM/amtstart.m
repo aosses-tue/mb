@@ -153,10 +153,9 @@ end
 
 % Check for the correct version. 
 s=ltfathelp('version'); 
-s_r='1.0.9'; % set the required version
-warning('Update LTFAT version')
-% % For AMT version 0.9.7
-% s_r='2.0.0'; % set the required version
+
+% For AMT version 0.9.7
+s_r='2.0.0'; % set the required version
 v=sscanf(s,'%d.%d.%d'); v(4)=0;
 v_r=sscanf(s_r,'%d.%d.%d');
 if ~(v(1)>v_r(1) || (v(1)>=v_r(1) && v(2)>v_r(2)) || (v(1)>=v_r(1) && v(2)>=v_r(2) && v(3)>=v_r(3)) ),

@@ -481,12 +481,12 @@ switch nAnalyser
 
     case 101
         figure;
-        plot(t,template); grid on
+        plot(t,template(:)); grid on
         xlabel(sprintf('Time [s]\nFollow the instructions in the command window to continue with the AFC simulation'))
 
     case {103,104}
         figure;
-        plot(t,template); grid on
+        plot(t,template(:)); grid on
         xlabel(sprintf('Time [s]\nFollow the instructions in the command window to continue with the AFC simulation'))
 end
 
@@ -857,7 +857,7 @@ for k = 1:Nsim
                     decision(2) = optimaldetector(diff12,template,fs_intrep);
                     decision(3) = optimaldetector(diffGreatestCC,template,fs_intrep); 
                     
-                    decision = decision / (nchn_dec); % number of audio channels
+                    % decision = decision / (nchn_dec); % number of audio channels
                     % end
                 case 2
                     decision(1) = optimaldetector(diff11,template);

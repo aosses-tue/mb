@@ -48,7 +48,7 @@ if bCreate
 end
 
 if nargin == 0
-    bParts = [1 0 0 1 0];
+    bParts = [1 0 0 0 0 1];
 end
 
 fs = 44100;
@@ -58,6 +58,7 @@ bPart2 = bParts(2); % Simultaneous masking, deterministic
 bPart3 = bParts(3);
 bPart4 = bParts(4); % plotting results of bPart3
 bPart5 = bParts(5); % calibration using 800-Hz tone
+bPart6 = bParts(6);
 
 opts.nAnalyser      = 101; % 101 = modfilterbank, 103 - jepsen2008
 
@@ -104,7 +105,7 @@ if bPart1
         opts.DurRamps   = 125; % additional cosine ramps
         opts.bUseRamp   = 1; % additional cosine ramps
         opts.bUseRampS  = 1; % additional cosine ramps
-        erbc2analyse    = freqtoaud([500 2000],'erb'); % 14 for 1000 Hz (approx.)
+        erbc2analyse    = freqtoaud([900 1100],'erb'); % 14 for 1000 Hz (approx.)
         opts.filename1 = [Get_TUe_paths('outputs') 'AMTControl-examples' delim 'tone-f-1000-Hz-at-60-dB-dur-800-ms.wav'];
         opts.filename2 = [Get_TUe_paths('outputs') 'AMTControl-examples' delim 'tone-f-1000-Hz-at-42-dB-dur-800-ms.wav'];
     end
@@ -124,10 +125,10 @@ if bPart1
     opts.Gain4supra = 16; % dB
     opts.audio.fs   = fs;
     
-    opts.StepdB = 10; 
-    opts.StepdBmin = 0.5;
+    opts.StepdB     = 10; 
+    opts.StepdBmin  = 0.5;
     
-    refSPL  = [20 30 40 50 60 70];
+    refSPL  = 60; % [20 30 40 50 60 70];
     
     tic
     for i=1:length(refSPL)
@@ -423,6 +424,77 @@ if bPart5
     end
     
     disp('')
+end
+
+if bPart6
+    
+    testdurs = [10 20 40 70 150]*1e-3*fs;
+    fmaskerbuf  = [dir_where 'masker-buf-j2008.wav'];
+    fsignals{1} = [dir_where 'sig1-2kHz.wav'];
+    fsignals{2} = [dir_where 'sig2-2kHz.wav'];
+    fsignals{3} = [dir_where 'sig3-2kHz.wav'];
+    fsignals{4} = [dir_where 'sig4-2kHz.wav'];
+    fsignals{5} = [dir_where 'sig5-2kHz.wav'];
+    
+    try
+        Wavread(fmaskerbuf{1});
+        bCreate = 0;
+    catch
+        bCreate = 1;
+    end
+    
+    if bCreate
+        
+        nFig = 4;
+        [masker,insig] = exp_jepsen2008(fs,nFig); 
+        Wavwrite(masker,fs,fmaskerbuf);
+        
+        for i = 1:length(testdurs)
+            Wavwrite(insig(:,i),fs,fsignals{i});
+        end
+        
+    end
+    
+    if opts.nAnalyser == 101 | opts.nAnalyser == 103
+        opts.resample_intrep = 'resample_intrep';
+    end
+    opts.Gain4supra =  10; % 65 dB + 10 = 75 dB
+    opts.audio.fs   =  fs;
+    
+    opts.StepdB    = 10; 
+    opts.StepdBmin = 1;
+    
+    opts.DurRamps  = 5; % [ms] additional cosine ramps
+    opts.bUseRamp  = 1; % additional cosine ramps
+    opts.bUseRampS = 0; % additional cosine ramps
+    opts.bAddSilence2noise = 0;
+    opts.increment_method = 'level';
+    
+    erbc2analyse    = freqtoaud([1000 4000],'erb');
+    opts            = il_get_freqs(erbc2analyse,opts);
+     
+    opts.Ntimes = 8;
+    opts.Nsim   = 3;
+    opts.bDebug = 1;
+    
+    opts.filename1 = fmaskerbuf;
+        
+    for i = 1:length(testdurs) 
+        
+        opts.filename2 = fsignals{i};
+        % opts.Gain2file1 = testlevels(j,i)-60;
+        % opts.Gain2file2 = opts.Gain2file1;
+        tmp = AMTControl_cl(opts);
+
+        TTh(i) = median(tmp.Threshold)+65;
+
+        disp('')
+        
+    end
+    
+    disp('')
+    
+    
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

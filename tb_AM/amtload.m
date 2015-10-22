@@ -14,12 +14,19 @@ function varargout=amtload(model,data,variable)
 %     `.mat`: output as that as from `load`
 %     others: output is the absolute filename
 %
-%
+%       amtload('baumgartner2014','highfreqatten_filters.mat')
+%       amtload('baumgartner2014','spatstrat_lpfilter.mat')
+%       amtload('signals','simulatedimpulseresponses_0.4s.wav');
+%       amtload('signals','simulatedimpulseresponses_0.7s.wav');
+%       amtload('signals','simulatedimpulseresponses_1.3s.wav');
+%       amtload('signals','simulatedimpulseresponses_2.3s.wav');
+%       amtload('ziegelwanger2013','info.mat');
+% 
 %   See also: amtauxdatapath amtauxdataurl
-%
-
-  
+% 
 %   Author: Piotr Majdak, 2015
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 localfn=fullfile(amtauxdatapath,model,data);
   % file not found? create directories, and download!

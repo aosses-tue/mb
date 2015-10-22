@@ -44,6 +44,7 @@ switch nFig
         dur = 10;
         SPL = 65;
         masker = AM_random_noise(fc-BW/2,fc+BW/2,SPL+3,dur,fs);         
+        
                 
 end
 

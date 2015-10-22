@@ -6,7 +6,11 @@ function test_failed=test_adaptloop
 
 % The reference implementations are not dbspl-safe, so switch to the
 % dboffset=100 setting.
-  
+%
+% Not running because of missing file: ref_adaptloop_1.m
+% Additional comments by: Alejandro Osses V.
+% Last viewed on: 22/10/2015
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 save_dboffset = dbspl(1);
 
 ltfatsetdefaults('dbspl','dboffset',100);
@@ -56,12 +60,8 @@ for w=1:2
       if limit>1
         slimit='LIMIT';
       end;
-      
-      
-
             
-      s1=adaptloop(f(:,1:w),fs,limit,minlvl,tau);
-            
+      s1=adaptloop(f(:,1:w),fs,limit,minlvl,tau);  
       s2=ref_adaptloop_1(f(:,1:w),fs,limit,setdbspl(minlvl),tau);
 
 
@@ -109,4 +109,4 @@ end;
 
 ltfatsetdefaults('dbspl','dboffset',save_dboffset);
 
-
+end
