@@ -190,8 +190,8 @@ for ii = 1:nchannels
         y_nlin = zeros(size(insig));
     end
     
-    GaindB = -interp1(kv.maxfreqs,kv.maxouts,fc(ii),'linear','extrap');
-    % GaindB=0;
+    % GaindB = -interp1(kv.maxfreqs,kv.maxouts,fc(ii),'linear','extrap');
+    GaindB=0;
     % outsig(:,ii)        = gain_after_compression * (y_lin + y_nlin);
     % outsiglin(:,ii)     = gain_after_compression * y_lin;
     % outsignlin(:,ii)    = gain_after_compression * y_nlin;

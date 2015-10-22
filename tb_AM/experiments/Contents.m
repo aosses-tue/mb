@@ -1,18 +1,22 @@
 % AMT - Recreate experiments
 %
-%   The AMT team, 2012.
+%   The AMT team, 2012-2014.
+%
+%   Peripheral models
+%       EXP_GAMMATONE        - Figures from Gammatone-related publications
+%       EXP_HOHMANN2002      - Figures from Hohmann (2002)
+%       EXP_LOPEZPOVEDA2001  - Iso-itensity curves of the DRNL
+%       EXP_ROENNE2012       - Auditory nerve latency
+%       EXP_VERHULST2012     - Figures from Verhulst et al. (2012)
 %
 %   Experiments
-%       EXP_LINDEMANN1986    - Recreate plots from Lindemann (1986)
-%		EXP_ENZNER2008		 - Plots showing results from enzner2008
-%       EXP_LOPEZPOVEDA2001  - Iso-itensity curves of the DRNL
+%	EXP_LINDEMANN1986    - Recreate plots from Lindemann (1986)
+%	EXP_ENZNER2008		 - Plots showing results from enzner2008
 %       EXP_LANGENDIJK2002   - Recreate plots from Langedijk (2002)
 %       EXP_DIETZ2011        - Figures from Dietz et al. (2011)
 %       EXP_JELFS2011        - Binaural speech intelligibility advantage
-%       EXP_ROENNE2012       - Auditory nerve latency
 %       EXP_SPILLE2013       - Figures from Spille et al. (2013)
 %       EXP_TAKANEN2013      - Figures from Takanen et al. (2013)
-%       EXP_VERHULST2012     - Figures from Verhulst et al. (2012)
 %       EXP_BAUMGARTNER2013  - Figures from Baumgartner et al. (2013)
 %       EXP_BAUMGARTNER2014  - Figures from Baumgartner et al. (2014)
 %       EXP_ZIEGELWANGER2013 - Figures from Ziegelwanger et al. (2013)

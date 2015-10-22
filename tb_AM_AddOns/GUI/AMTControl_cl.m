@@ -710,9 +710,11 @@ for k = 1:Nsim
                 
                 model = 'dau1996';
                 
-                [out_interval1   xx fs_intrep] = Get_internalrep_stochastic(interval1  ,[],fs,model,0,Ntimes,fc2plot_idx,tmp);
+                [out_interval1   xx fs_intrep otmp] = Get_internalrep_stochastic(interval1  ,[],fs,model,0,Ntimes,fc2plot_idx,tmp);
                 [out_interval1s2 xx fs_intrep] = Get_internalrep_stochastic(interval1s2,[],fs,model,0,Ntimes,fc2plot_idx,tmp);
                 [out_interval2   xx fs_intrep] = Get_internalrep_stochastic(interval2 ,[],fs,model,0,Ntimes,fc2plot_idx,tmp);
+                
+                nchn_dec = length(fc2plot_idx);
                 
                 if bMultiChannel
                     handles.script_sim = 'dau1996preproc';

@@ -8,6 +8,8 @@ function output=exp_verhulst2012(varargin)
 %   Journal of the Acoustical Society of America 132.6 (2012): 3842-3848.
 %
 %   Requirements and installation: 
+%   ------------------------------
+%
 %   1) Python >2.6 is required with numpy and scipi packages. On Linux, use sudo apt-get install python-scipy python-numpy
 % 
 %   2) Compiled files with a C-compiler, e.g. gcc. In amtbase/src/verhulst start make (Linux) or make.bat (Windows)
@@ -17,37 +19,15 @@ function output=exp_verhulst2012(varargin)
 %   Examples:
 %   ---------
 %
-%   To display Figure 2a from the Verhulst et al. (2012) use:
+%   To display Figure 2a from the Verhulst et al. (2012) use:::
 %
 %     exp_verhulst2012('fig2a');
 %
-%   To display Figure 2c from the Verhulst et al. (2012) use:
+%   To display Figure 2c from the Verhulst et al. (2012) use:::
 %
 %     exp_verhulst2012('fig2c');
 %
-%   References:
-%     S. Verhulst, T. Dau, and C. A. Shera. Nonlinear time-domain cochlear
-%     model for transient stimulation and human otoacoustic emission. J.
-%     Acoust. Soc. Am., 132(6):3842 - 3848, 2012.
-%     
-%
-%   Url: http://amtoolbox.sourceforge.net/doc/experiments/exp_verhulst2012.php
-
-% Copyright (C) 2009-2014 Peter L. Søndergaard and Piotr Majdak.
-% This file is part of AMToolbox version 0.9.5
-%
-% This program is free software: you can redistribute it and/or modify
-% it under the terms of the GNU General Public License as published by
-% the Free Software Foundation, either version 3 of the License, or
-% (at your option) any later version.
-%
-% This program is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU General Public License for more details.
-%
-% You should have received a copy of the GNU General Public License
-% along with this program.  If not, see <http://www.gnu.org/licenses/>.
+%   References: verhulst2012
 
 %   AUTHOR: Alessandro Altoe, Piotr Majdak
 

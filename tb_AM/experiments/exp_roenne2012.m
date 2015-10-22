@@ -17,12 +17,9 @@ function [waveVamp, waveVlat] = exp_roenne2012(varargin)
 %                Note that this creates lots of extra figures (3 for each
 %                simulated data point)
 %
-%     'auto '    Redo the experiment if a cached dataset does not exist. This is the default.
+%     'redo'     Recalculate the experiment results.
 %
-%     'refresh'  Always recalculate the experiment.
-%
-%     'cached'   Always use the cached version. This throws an error if the
-%                file does not exist.
+%     'cached'   Use cached results. Default.
 %
 %     'fig5'     Plot Fig. 5 (Rønne et al., 2012). Latency of simulated ABR
 %                wave V's compared to Neely et al. (1988) and Harte et al.
@@ -37,94 +34,54 @@ function [waveVamp, waveVlat] = exp_roenne2012(varargin)
 %   Examples:
 %   ---------
 %
-%   To display Figure 5 use :
+%   To display Figure 5 use :::
 %
 %     exp_roenne2012('fig5');
 %
-%   To display Figure 6 use :
+%   To display Figure 6 use :::
 %
 %     exp_roenne2012('fig6');
 %
-%   To display Figure 7 use :
+%   To display Figure 7 use :::
 %
 %     exp_roenne2012('fig7');
 %
-%   References:
-%     C. Elberling, J. Calloe, and M. Don. Evaluating auditory brainstem
-%     responses to different chirp stimuli at three levels of stimulation. J.
-%     Acoust. Soc. Am., 128(1):215-223, 2010.
-%     
-%     J. Harte, G. Pigasse, and T. Dau. Comparison of cochlear delay
-%     estimates using otoacoustic emissions and auditory brainstem responses.
-%     J. Acoust. Soc. Am., 126(3):1291-1301, 2009.
-%     
-%     S. Neely, S. Norton, M. Gorga, and J. W. Latency of auditory brain-stem
-%     responses and otoacoustic emissions using tone-burst stimuli. J.
-%     Acoust. Soc. Am., 83(2):652-656, feb 1988.
-%     
-%     F. Roenne, J. Harte, C. Elberling, and T. Dau. Modeling auditory evoked
-%     brainstem responses to transient stimuli. J. Acoust. Soc. Am., accepted
-%     for publication, 2012.
-%     
+%   References: roenne2012modeling elberling2010evaluating neely1988latency harte2009comparison
 %
 %   ---------
 %
-%   Please cite Rønne et al. (2012) and Zilany and Bruce (2007) if you use
+%   Please cite Roenne et al. (2012) and Zilany and Bruce (2007) if you use
 %   this model.
 %
-%
-%   Url: http://amtoolbox.sourceforge.net/doc/experiments/exp_roenne2012.php
-
-% Copyright (C) 2009-2014 Peter L. Søndergaard and Piotr Majdak.
-% This file is part of AMToolbox version 0.9.5
-%
-% This program is free software: you can redistribute it and/or modify
-% it under the terms of the GNU General Public License as published by
-% the Free Software Foundation, either version 3 of the License, or
-% (at your option) any later version.
-%
-% This program is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU General Public License for more details.
-%
-% You should have received a copy of the GNU General Public License
-% along with this program.  If not, see <http://www.gnu.org/licenses/>.
-definput.import={'amtredofile'};
-definput.flags.type={'fig5','fig6','fig7'};
+definput.import={'amtcache'};
+definput.flags.type={'missingflag','fig5','fig6','fig7'};
 definput.flags.plot={'plot','noplot'};
 
 [flags,keyvals]  = ltfatarghelper({},definput,varargin);
 
-save_format='-v6';
+if flags.do_missingflag
+		flagnames=[sprintf('%s, ',definput.flags.type{2:end-2}), ...
+				sprintf('%s or %s',definput.flags.type{end-1},definput.flags.type{end})];
+		error('%s: You must specify one of the following flags: %s.',upper(mfilename),flagnames);
+end;
+
 
 %% ------ FIG 5 -----------------------------------------------------------
 if flags.do_fig5
   
-  s = [mfilename('fullpath'),'_fig5.mat'];
-
   waveVamp = 0;
 
   stim_level = 40:10:100; % Default stimulus levels
-  
-  if amtredofile(s,flags.redomode);
 
+  [waveVlat, click_latency] = amtcache('get','fig5',flags.cachemode);  
+  if isempty(waveVlat);
     [click_amplitude, click_latency]    = roenne2012click(stim_level);     
-
-    waveVlat = roenne2012tonebursts(stim_level);
-    
-    save(s,'waveVlat','click_latency',save_format);
-  
-  else
-    
-    s = load(s);
-    waveVlat      = s.waveVlat;
-    click_latency = s.click_latency;
-
+    waveVlat = roenne2012tonebursts(stim_level);    
+    amtcache('set','fig5',waveVlat,click_latency);
   end;
   
   if flags.do_plot;
-    plotroenne2012tonebursts(waveVlat,click_latency);
+    plot_roenne2012tonebursts(waveVlat,click_latency);
   end  ;  
 
 end;
@@ -137,22 +94,14 @@ if flags.do_fig6;
   % Default chirp numbers. 1 = click, 2 to 6 = chirp 1 to 5.
   chirp_number  = 1:6;              
 
-  s = [mfilename('fullpath'),'_fig6.mat'];
-
-  if amtredofile(s,flags.redomode)
-
+  [waveVamp, waveVlat] = amtcache('get','fig6',flags.cachemode);
+  if isempty(waveVamp)
     [waveVamp, waveVlat] = roenne2012chirp(stim_level, chirp_number);
-
-    save(s,'waveVamp','waveVlat',save_format);
-  else
-
-    s = load(s);
-    waveVamp = s.waveVamp;
-    waveVlat = s.waveVlat;
+    amtcache('set','fig6',waveVamp,waveVlat);
   end;
         
   if flags.do_plot
-    plotroenne2012chirp(waveVamp, waveVlat,'amponly');
+    plot_roenne2012chirp(waveVamp, waveVlat,'amponly');
   end
 end;
 
@@ -164,23 +113,14 @@ if flags.do_fig7;
   % Default chirp numbers. 1 = click, 2 to 6 = chirp 1 to 5.
   chirp_number  = 1:6;              
 
-  s = [mfilename('fullpath'),'_fig7.mat'];
-
-  if amtredofile(s,flags.redomode)
-
+  [waveVamp, waveVlat] = amtcache('get','fig7',flags.cachemode);
+  if isempty(waveVamp)
     [waveVamp, waveVlat] = roenne2012chirp(stim_level, chirp_number);
-
-    save(s,'waveVamp','waveVlat',save_format);
-  else
-
-    s = load(s);
-    waveVamp = s.waveVamp;
-    waveVlat = s.waveVlat;
+    amtcache('set','fig7',waveVamp,waveVlat);
   end;
         
   if flags.do_plot
-    plotroenne2012chirp(waveVamp, waveVlat,'latonly');
+    plot_roenne2012chirp(waveVamp, waveVlat,'latonly');
   end
 end;
-
 
