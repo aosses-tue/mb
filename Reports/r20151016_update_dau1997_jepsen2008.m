@@ -58,7 +58,7 @@ bPart3 = bParts(3);
 bPart4 = bParts(4); % plotting results of bPart3
 bPart5 = bParts(5); % calibration using 800-Hz tone
 
-opts.nAnalyser      = 103; % 101 = modfilterbank, 103 - jepsen2008
+opts.nAnalyser      = 101; % 101 = modfilterbank, 103 - jepsen2008
 
 opts.bDecisionMethod = 2; % 2 - cc; 4 - dprime
 
@@ -177,7 +177,7 @@ end
 %%%
 if bPart3
     
-    erbc2analyse    = freqtoaud([4000],'erb'); % 14 for 1000 Hz (approx.) 
+    erbc2analyse    = freqtoaud([3500 5000],'erb'); % 14 for 1000 Hz (approx.) 
     opts            = il_get_freqs(erbc2analyse,opts);
         
     fnamesM = {[dir_where7 'jepsen2008-fig7-4000-Hz-tone-masker-60-dB-dur-10-s.wav'], ... % on-frequency masker
@@ -209,11 +209,11 @@ if bPart3
     opts.bDebug = 1;
     %%% k = 1: offset-onset of  0 ms
     %%% k = 2: offset-onset of 30 ms
-    k = 1;
+    k = 2;
     opts.filename2 = fnames{k};
     
     for i = 1:length(testlevels) 
-        for j = 1
+        for j = 2
             opts.filename1 = fnamesM{j}; % 1 is on-freq, 2 is off-freq
             opts.Gain2file1 = testlevels(j,i)-60;
             opts.Gain2file2 = opts.Gain2file1;

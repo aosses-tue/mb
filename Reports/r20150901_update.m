@@ -54,7 +54,7 @@ Mkdir(diroutaudio);
 
 dBFS = 100;
 
-bDoIOfunctions      = 0;
+bDoIOfunctions      = 1;
 do_outermiddleear   = 0;
 bDoExcitation       = 0;
 bAnalysisTemplates  = 1;

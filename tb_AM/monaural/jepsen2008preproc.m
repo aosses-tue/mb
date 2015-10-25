@@ -104,7 +104,8 @@ elseif fs > 44100
 end
 
 %% 2. DRNL and compensation for middle-ear (middle ear)
-[outsig, fc] = drnl_CASP_debug(insig, fs, 'argimport',flags,keyvals);
+[outsig, fc, params] = drnl_CASP_debug(insig, fs, 'argimport',flags,keyvals);
+
 if nargout >= 4
     outs.out_filterbank = outsig;
 end

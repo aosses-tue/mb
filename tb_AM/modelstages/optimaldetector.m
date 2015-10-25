@@ -10,10 +10,7 @@ function [mue corrmue] = optimaldetector(ir_stim,template,fs)
 %       Url: http://amtoolbox.sourceforge.net/doc/modelstages/optimaldetector.php
 %
 % Copyright (C) 2009-2014 Peter L. Soendergaard and Piotr Majdak.
-% This file is part of AMToolbox version 0.9.5
-%
-% You should have received a copy of the GNU General Public License
-% along with this program.  If not, see <http://www.gnu.org/licenses/>.
+% This file is part of AMToolbox version 0.9.5-0.9.7
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 3

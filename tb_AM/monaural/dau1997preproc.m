@@ -66,7 +66,8 @@ if ~isnumeric(fs) || ~isscalar(fs) || fs<=0
 end;
 
 definput.import={'auditoryfilterbank','ihcenvelope','adaptloop','modfilterbank'};
-definput.importdefaults={'ihc_dau','adt_dau','dau1997'};
+% definput.importdefaults={'ihc_dau','adt_dau','dau1997'}; % AMT 0.9.5
+definput.importdefaults={'gtf_dau','ihc_dau','adt_dau','dau1997'};
 definput.keyvals.subfs=[];
 
 [flags,keyvals]  = ltfatarghelper({'flow','fhigh'},definput,varargin);

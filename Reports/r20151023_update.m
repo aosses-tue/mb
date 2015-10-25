@@ -1,5 +1,5 @@
-function y = r20150814_update(bDoParts)
-% function y = r20150814_update(bDoParts)
+function y = r20151023_update(x)
+% function y = r20151023_update(x)
 %
 % 1. Description:
 %
@@ -9,148 +9,119 @@ function y = r20150814_update(bDoParts)
 %       Tested cross-platform: No
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
-% Created on    : 12/08/2015
-% Last update on: 15/08/2015 
-% Last use on   : 15/08/2015 
+% Created on    : 23/10/2015
+% Last update on: 23/10/2015 
+% Last use on   : 23/10/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-close all
 bDiary = 0;
 Diary(mfilename,bDiary);
 
-if nargin == 0
-    bDoParts = [0 0 0 0 1];
+close all
+
+dirout = [Get_TUe_paths('lx_Text') 'lx2015-10-23-decision-CASP' delim 'MATLAB' delim];
+Mkdir(dirout);
+diroutfigs = [dirout 'Figures' delim];
+Mkdir(diroutfigs);
+diroutaudio = [dirout 'Audio' delim];
+Mkdir(diroutaudio);
+
+dBFS = 100;
+bSave = 0;
+
+% bDoIOfunctions      = 0;
+do_outermiddleear   = 0;
+% bDoExcitation       = 0;
+% bAnalysisTemplates  = 1;
+
+fs = 44100;
+ft2plotERB = 3:33; % ERB
+ft2plot = audtofreq(ft2plotERB,'erb');
+
+if do_outermiddleear
+    
+    N = 8192;
+    K = N/2;
+    h = [zeros(N/2,1); 1; zeros(N/2-1,1)];
+    hp_fir = headphonefilter(fs); % Getting the filter coefficients at fs
+    x1 = filter(hp_fir,1,h);
+    ydBoe = 20*log10(abs(freqz(x1,1,K)));
+    
+    windowtype = 'hanning';
+    me_fir   = middleearfilter(fs); % do_middleear - Lopez-Poveda
+    me_fir_j = middleearfilter(fs,'jepsenmiddleear'); % do_middleear - Jepsen2008 (but not documented)
+    
+    xtmp = filter(me_fir,1,h);
+    ydBme = 20*log10(abs(freqz(xtmp,1,K)));
+    
+    xtmp = filter(me_fir_j,1,h);
+    ydBme_j = 20*log10(abs(freqz(xtmp,1,K)));
+    
+    xt   = filter(me_fir  ,1,x1);
+    xt_j = filter(me_fir_j,1,x1);
+    
+    [xx xx f] = freqfft2(xt,K,fs,windowtype,dBFS,1); 
+    ydBt = 20*log10(abs(freqz(xt,1,K)));
+    ydBt_j = 20*log10(abs(freqz(xt_j,1,K)));
+    
+    calfactor = max(ydBt);
+    calfactor2 = max(ydBt_j);
+    
+    figure;
+    subplot(3,1,1)
+    semilogx(f,ydBoe          ,'r','LineWidth',2); grid on, hold on
+    semilogx(f,ydBme-calfactor,'b'); 
+    semilogx(f,ydBt-+calfactor,'k--','LineWidth',2);
+    legend('oe', ...
+            sprintf('me - Lopez-Poveda + %.1f dB', abs(calfactor)), ...
+            sprintf('oe + me + %.1f dB', abs(calfactor)));
+    
+    set(gca,'XTick',ft2plot(1:3:end));
+    set(gca,'XTickLabel',round(ft2plot(1:3:end)));
+    xlim([min(ft2plot) max(ft2plot)])
+    
+    ylabel('Gain [dB]')
+    ylim([-35 28])
+    xlabel('Frequency [Hz]')
+    
+    subplot(3,1,2)
+    semilogx(f,ydBoe             ,'r','LineWidth',2); grid on, hold on
+    semilogx(f,ydBme_j-calfactor2,'b'); 
+    semilogx(f,ydBt_j-+calfactor2,'k--','LineWidth',2);
+    legend('oe', ...
+            sprintf('me - jepsen + %.1f dB', abs(calfactor2)), ...
+            sprintf('oe + me + %.1f dB', abs(calfactor2)));
+    
+    set(gca,'XTick',ft2plot(1:3:end));
+    set(gca,'XTickLabel',round(ft2plot(1:3:end)));
+    xlim([min(ft2plot) max(ft2plot)])
+    
+    subplot(3,1,3)
+    diffresps = (ydBt_j-+calfactor2) - (ydBt-+calfactor);
+    semilogx(f,diffresps,'k--','LineWidth',2); grid on
+    set(gca,'XTick',ft2plot(1:3:end));
+    set(gca,'XTickLabel',round(ft2plot(1:3:end)));
+    xlim([min(ft2plot) max(ft2plot)])
+        
+    ylabel('Difference [dB]')
+    xlabel('Frequency [Hz]')
+    legend('Jepsen - Lopez-Poveda')
+    hFig1(end+1) = gcf;
+    
+    if bSave
+        Saveas(hFig1(end),[diroutfigs 'om-ear']);
+    end
 end
 
-bDoEnveAMT  = bDoParts(1);
-bDoHartmann = bDoParts(2);
-bDoTFMF     = bDoParts(3);
-bDoTFDRNL   = bDoParts(4);
-bDoTFDRNL2  = bDoParts(5);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+bDoTFMF     = 0;
+bDoTFDRNL   = 0;
+bDoTFDRNL2  = 1; 
+type = 'middleear'; % type = 'jepsenmiddleear';
 
 h = [];
 dire = [Get_TUe_paths('outputs') 'AMTControl-examples' delim]; % 'D:\Output\AMTControl-examples\'
 dBFS = 100;
-
-if bDoEnveAMT
-    
-    f1 = [dire 'randomnoise-BBN_SPL-70.wav'];
-    [insig1 fs] = Wavread(f1);
-
-    fc_fig2b = 1100;
-    BW = 200;
-    fcut = 1000;
-
-    SpectrumLvl = 40;
-    lvl1 = SpectrumLvl + 10*log10(fs/2);
-    lvl2 = SpectrumLvl + 10*log10(BW);
-
-    windowtype = 'hanning';
-    K  = length(insig1)/2;
-    [xx y1dB f] = freqfft2(insig1,K,fs,windowtype,dBFS);
-
-    insig1 = setdbspl(insig1,lvl1,dBFS);
-
-    insig2 = Set_Fourier_coeff_to_zero(insig1,fs,fc_fig2b-BW/2,fc_fig2b+BW/2);
-    insig2 = setdbspl(insig2,lvl2,dBFS);
-    [xx y2dB f] = freqfft2(insig2,K,fs,windowtype,dBFS);
-
-    figure; 
-    plot(f,y1dB,'b',f,y2dB,'r'); grid on
-    ylim([0 70])
-
-    [b_highest,a_highest] = butter(2,fcut/(fs/2));
-
-    [xx yenvdB1] = envfreqfft(insig1,K,fs,'hanning',dBFS,fcut);
-
-    % Ntimes = 100;
-    % 
-    % ytmp = [];
-    % for i = 1:Ntimes
-    %     % [xx y4dB f] = freqfft2(insig4,K,fs,windowtype,dBFS);
-    %     outsigtmp = Randomise_insig(insig1);
-    %     yenv    = abs(hilbert(outsigtmp));
-    %     insig4 = filter(b_highest, a_highest,yenv);
-    %     [xx yy f] = freqfft2(insig4,K,fs,windowtype,dBFS);
-    %     ytmp = [ytmp yy];
-    % end
-    % yenvdB1 = transpose( dbmean(transpose(ytmp)) );
-
-    % ytmp = [];
-    % for i = 1:Ntimes
-    %     % [xx y4dB f] = freqfft2(insig4,K,fs,windowtype,dBFS);
-    %     outsigtmp = Randomise_insig(insig2);
-    %     yenv    = abs(hilbert(outsigtmp));
-    %     insig5 = filter(b_highest, a_highest,yenv);
-    %     [xx yy f] = freqfft2(insig5,K,fs,windowtype,dBFS);
-    %     ytmp = [ytmp yy];
-    % end
-    % yenvdB2 = transpose( dbmean(transpose(ytmp)) );
-    [xx yenvdB2] = envfreqfft(insig2,K,fs,'hanning',dBFS,fcut);
-
-    figure; 
-    plot(f,yenvdB1,'b',f,yenvdB2,'r'); grid on
-    ylim([0 70])
-    xlabel('Envelope frequency [Hz]')
-    ylabel('Amplitude')
-
-end
-
-if bDoHartmann
-    
-    % Envelope, Ex 1 (Hartmann2005, pp 418):
-    f = 980:10:1020;
-    A = [1/4 1/2 1 1/2 1/4];
-    phi = -pi/2;
-    dur = 120e-3;
-    fs = 44100;
-    
-    y = zeros(dur*fs,1);
-    for i = 1:5
-        ytmp = A(i) * Create_sin_phase(f(i),phi,dur,fs);
-        y = y+ytmp;
-    end
-    
-    t = (1:length(y)) /fs;
-    env = abs( 1 + 0.5*cos(40*pi*t) + cos(20*pi*t) );
-    
-    figure;
-    plot(t*1000, env,'r',t*1000,y,'b'); hold on
-    plot(t*1000,-env,'r')
-    xlabel('Time [ms]')
-    ylabel('Amplitude')
-    grid on
-    legend('Envelope')
-    
-    % Useless envelope, Ex 3:
-    f = [100 1000];
-    A = [1 1/4];
-    phi = 0;
-    dur = 20e-3; % 2 100-Hz periods
-    fs = 44100;
-    y = zeros(dur*fs,1);
-    for i = 1:2
-        ytmp = A(i) * Create_sin_phase(f(i),phi,dur,fs);
-        y = y+ytmp;
-    end
-    
-    t = (1:length(y)) /fs;
-    env = sqrt( 17/16 + 0.5*cos(2*pi*900*t) );
-    
-    figure;
-    plot(t*1000, env,'r',t*1000,y,'b'); hold on
-    plot(t*1000,-env,'r')
-    xlabel('Time [ms]')
-    ylabel('Amplitude')
-    grid on
-    legend('Envelope')
-    
-    SPL = 70;
-    insig = setdbspl(y,SPL,dBFS);
-    filename = sprintf('%ssine-%.0f-plus-%.0f-Hz-%.0f-dB.wav',dire,f(1),f(2),SPL);
-    Wavwrite(insig,fs,filename);
-    
-end
 
 fmax2plot = 1000;
 N = 8192*8;
@@ -290,76 +261,26 @@ end
 if bDoTFDRNL2
     
     bFig2ab = 1;
-    bFig2c = 1;
+    bFig2c = 0;
     
     SPL = [0 20:10:90 100]; % warning('temporal level')
     SPL_fig2c = [30 60 90]; % dB
-    bandidx = [5 9 14 25]; % 250, 500, 1000, 4000 Hz respectively
     
-    fc_fig2a = [ 250  500 1000 4000];
+    fc_fig2a = [ 250  500 800 1000 4000];
+    bandidx = round( freqtoaud(fc_fig2a) )-2; % [5 9 12 14 25]; % 250, 500, 800, 1000, 4000 Hz respectively
+    
     fc_fig2b = [1000 2400 4000 8000];
-    fc_fig2c = Get_OB_freqs(3,250,2000);
     dur = N/fs;
-    
-    %% Generation of Figure 2.c-e
-    if bFig2c
-        nfc = length(fc_fig2c);
-        for j = 1:nfc
-            insig = Create_sin(fc_fig2c(j),dur,fs);
-            for k = 1:length(SPL_fig2c) 
-
-                insigM = setdbspl( insig,SPL_fig2c(k) );
-
-                [outsigdrnl fcdrnl paramsouts] = drnl_CASP_debug(insigM,fs);
-                out = outsigdrnl(:,bandidx(3)); % band centred at 1 kHz
-                lvl(j,k) = rmsdb(out);
-
-                [outsiggamma fcgamma] = auditoryfilterbank(insigM,fs);
-                outgamma = outsiggamma(:,bandidx(3)); % band centred at 1 kHz
-                lvlgamma(j,k) = rmsdb(outgamma);
-            end       
-
-        end
-        % Figure 2.c-e
-        figure; 
-        subplot(1,3,1)
-        plot(lvl(:,1)-max(lvl(:,1)),'bo-','LineWidth',2); hold on; 
-        plot(lvlgamma(:,1)-max(lvlgamma(:,1)),'rx--'); grid on
-        set(gca,'XTick',[1:2:nfc]);
-        set(gca,'XTickLabel',round(fc_fig2c(1:2:end)));
-        xlabel('Frequency [Hz]')
-        ylabel('DRNL output [dB re max]')
-
-        title('Iso-intensity response functions')
-        subplot(1,3,2)
-        plot(lvl(:,2)-max(lvl(:,2)),'bo-','LineWidth',2); hold on; 
-        plot(lvlgamma(:,2)-max(lvlgamma(:,2)),'rx--'); grid on
-        set(gca,'XTick',[1:2:nfc]);
-        set(gca,'XTickLabel',round(fc_fig2c(1:2:end)));
-        xlabel('Frequency [Hz]')
-        ylabel('DRNL output [dB re max]')
-
-        subplot(1,3,3)
-        plot(lvl(:,3)-max(lvl(:,3)),'bo-','LineWidth',2); hold on; 
-        plot(lvlgamma(:,3)-max(lvlgamma(:,3)),'rx--'); grid on
-        set(gca,'XTick',[1:2:nfc]);
-        set(gca,'XTickLabel',round(fc_fig2c(1:2:end)));
-        xlabel('Frequency [Hz]')
-        ylabel('DRNL output [dB re max]')
-
-        legend('DRNL','4th-order Gammatone')
-        h(end+1) = gcf;
-    end
     
     %% Generation of Figure 2.a
     if bFig2ab
-        for j = 1:4
+        for j = 1:length(fc_fig2a)
             insig = Create_sin(fc_fig2a(j),dur,fs);
             for k = 1:length(SPL) 
 
                 insigM = setdbspl( insig,SPL(k) );
 
-                [outsigdrnl fcdrnl paramsouts] = drnl_CASP_debug(insigM,fs);    % DRNL
+                [outsigdrnl fcdrnl paramsouts] = drnl_CASP_debug(insigM,fs,type);    % DRNL
                 [outsiggamma fcgamma]          = auditoryfilterbank(insigM,fs); % Gamma-tone
                 outgamma = outsiggamma(:,bandidx(j)); % band centred at 1 kHz
                 
@@ -370,22 +291,24 @@ if bDoTFDRNL2
 
         end
 
+        dB_corr = dBFS;
         % Figure 2.a
         figure;
         subplot(1,2,1)
-        plot(   SPL,lvl2a(1,:),'k.--','LineWidth',1 ); hold on
-        plot(   SPL,lvl2a(2,:),'go-.','LineWidth',2 )
-        plot(   SPL,lvl2a(3,:),'r--') % 1k
-        plot(   SPL,lvl2a(4,:),'b-', 'LineWidth',2 ); % 4k
-        legend('250 Hz','500 Hz','1 kHz','4 kHz')
-        title('I/O functions, different CFs')
+        plot(   SPL,lvl2a(1,:)+dB_corr,'k.--','LineWidth',1 ); hold on
+        plot(   SPL,lvl2a(2,:)+dB_corr,'go-.','LineWidth',2 )
+        plot(   SPL,lvl2a(3,:)+dB_corr,'r--') % 1k
+        plot(   SPL,lvl2a(4,:)+dB_corr,'r>-.','LineWidth',2) % 1k
+        plot(   SPL,lvl2a(5,:)+dB_corr,'b-', 'LineWidth',2 ); % 4k
+        legend('250 Hz','500 Hz','800 Hz','1 kHz','4 kHz')
+        title(['I/O functions, different CFs. DRNL (' type ')'])
         xlabel('Input level [dB SPL]')
         ylabel('DRNL output [dB re 1 m/s]')
         xlim([0 100])
-        ylim([-100 0])
+        ylim([0 100])
         grid on
-        set(gca,'YTick',[-100:10:0])
-        set(gca,'YTickLabel',[-100:10:0])
+        set(gca,'YTick',[0:10:100])
+        set(gca,'YTickLabel',[0:10:100])
         set(gca,'XTick',[0:10:100])
         set(gca,'XTickLabel',[0:10:100])
         
@@ -396,7 +319,7 @@ if bDoTFDRNL2
 
                 insigM = setdbspl( insig,SPL(k) );
 
-                [outsigdrnl fcdrnl paramsouts] = drnl_CASP_debug(insigM,fs);
+                [outsigdrnl fcdrnl paramsouts] = drnl_CASP_debug(insigM,fs,type);
 
                 out = outsigdrnl(:,bandidx(4)); % band centred at 4 kHz
                 lvl2b(j,k) = rmsdb(out);
@@ -411,7 +334,7 @@ if bDoTFDRNL2
         plot(SPL,lvl2b(3,:),'b-', 'LineWidth',2) % 4 kHz
         plot(SPL,lvl2b(4,:),'go-.','LineWidth',2) % 8 kHz
         legend('1 kHz','2.4 kHz','4 kHz','8 kHz')
-        title('CF = 4 kHz, different stim channels')
+        title(['CF = 4 kHz, different stim channels, DRNL (' type ')'])
         xlabel('Input level [dB SPL]')
         ylabel('DRNL output [dB re 1 m/s]')
         xlim([0 100])
@@ -431,7 +354,7 @@ if bDoTFDRNL2
         plot(   SPL,lvl2a(3,:),'r--') % 1k
         plot(   SPL,lvl2a(4,:),'b-', 'LineWidth',2 ); % 4k
         legend('250 Hz','500 Hz','1 kHz','4 kHz')
-        title('I/O functions, different CFs')
+        title(['I/O functions, different CFs. DRNL: (' type ')'])
         xlabel('Input level [dB SPL]')
         ylabel('DRNL output [dB re 1 m/s]')
         xlim([0 100])
@@ -444,7 +367,7 @@ if bDoTFDRNL2
         plot(   SPL,lvl2agamma(3,:),'r--') % 1k
         plot(   SPL,lvl2agamma(4,:),'b-', 'LineWidth',2 ); % 4k
         legend('250 Hz','500 Hz','1 kHz','4 kHz')
-        title('I/O functions, different CFs')
+        title(['I/O functions, different CFs. DRNL (' type ')'])
         xlabel('Input level [dB SPL]')
         ylabel('Gammatone output [dB]')
         xlim([0 100])

@@ -72,11 +72,13 @@ function [outsig, fc, outs] = dau1996preproc(insig, fs, varargin)
 % Downloaded on : 18/03/2014
 % Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Last update on: 15/10/2014 
-% Last use on   : 23/09/2015 
+% Last use on   : 23/10/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% ------ Warning, Strube model not used ----------
-
+% % ------ Warning, Strube model not used ----------
+% error(['This code of this function is incorrect. Please see the description ' ...
+%        'in the help text.']
+   
 % ------ Checking of input parameters ------------
 
 if nargin<2
@@ -106,6 +108,7 @@ if nargout == 3
     outs.out_filterbank  = outsig; 
 end
 
+%%% Added by AO, up to L124
 do_internal_noise = 0;
 if do_internal_noise
     for i = 1:size(outsig,2)
@@ -118,11 +121,12 @@ if do_internal_noise
         outsig(:,i) = outsig(:,i)+n;
     end
 end
+%%%
 
 %% 'haircell' envelope extraction
 outsig = ihcenvelope(outsig,fs,'argimport',flags,keyvals);
 if nargout == 3
-    extra.out_ihc         = outsig;
+    extra.out_ihc = outsig;
 end
 
 %% non-linear adaptation loops
