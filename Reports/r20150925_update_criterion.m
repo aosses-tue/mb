@@ -20,7 +20,7 @@ close all
 outputdir = Get_TUe_paths('outputs');
 
 if nargin == 0
-    bParts = [1 0 0 0 0 0 1];
+    bParts = [0 0 0 1 1 0 0];
 end
 
 fs = 44100;
@@ -33,7 +33,7 @@ bPart5 = bParts(5); % Signal integration, stochastic
 bPart6 = bParts(6); % Backward masking, deterministic
 bPart7 = bParts(7); % Intensity discrimination with BBN
 
-opts.nAnalyser      = 103; % 99 - dau1996a, 99.1, 100 - dau1996, my template estimation
+opts.nAnalyser      = 101; % 99 - dau1996a, 99.1, 100 - dau1996, my template estimation
 
 opts.bDecisionMethod = 2; % 2 - cc; 4 - dprime
 switch opts.bDecisionMethod
@@ -42,12 +42,14 @@ switch opts.bDecisionMethod
             case 99
                 opts.sigma   = 3.25; % tone: 3.25 = band 13-15; 2.7 = band 13-14; 1.9 = band 14; 
             case 100
-                opts.sigma   = 1.35; % tone: 3 = band 13-15; % 2.45 = band 13-14; % 1.72 = band 14;
+                opts.sigma   = 0.4; % 1.35; % tone: 3 = band 13-15; % 2.45 = band 13-14; % 1.72 = band 14;
                                      %   BW:                                        1.35 = band 14; (target = 0.83 = -2 dB);
             case 101
-                opts.sigma   = 5.8;  % tone: 3.45 = band 14 (all); 1.88 = band 14 (1,2); 1.38 = band 14 (1)
+                opts.sigma   = 0.68; % 5.8;  % tone: 3.45 = band 14 (all); 1.88 = band 14 (1,2); 1.38 = band 14 (1)
+                opts.modfiltertype = 'dau1997wLP';
+                
             case 103
-                opts.sigma   = 21;  %   BW:  21 = band 2-33 (all); 1.95 = band 14; (target = 0.83 = -2 dB);
+                opts.sigma   = 0.615;  %   BW:  21 = band 2-33 (all); 1.95 = band 14; (target = 0.83 = -2 dB);
         end
     case 3
         opts.sigma   = 0.85; % dprime NOT GIVING RELIABLE RESULTS
@@ -65,7 +67,7 @@ opts.do_template    =  1;
 opts.do_simulation  =  1;
 opts.Nreversals     =  8;
 
-erbc2analyse        = freqtoaud([500 2000],'erb'); % 14 for 1000 Hz (approx.)  
+erbc2analyse        = freqtoaud([1000 1100],'erb'); %freqtoaud([500 2000],'erb'); % 14 for 1000 Hz (approx.)  
 opts.fc2plot_idx    = ceil(erbc2analyse(1))-2;
 opts.fc2plot_idx2   = floor(erbc2analyse(end))-2;
 
@@ -323,12 +325,12 @@ if bPart4
         il_check_testones(fmaskerdet,fsignals);
     end
     
-    opts.DurRamps = 0; % additional cosine ramps
-    opts.Ntimes = 1;
+    opts.DurRamps   = 0; % additional cosine ramps
+    opts.Ntimes     = 1;
     opts.bUseRamp   = 1; % additional cosine ramps
     opts.bUseRampS  = 1; % additional cosine ramps
-    opts.Gain4supra =   5; % dB
-    opts.audio.fs   =  fs;
+    opts.Gain4supra = 10; % 75 dB + 10 = 85 dB
+    opts.audio.fs   = fs;
     
     % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Deterministic thresholds:
@@ -359,11 +361,11 @@ if bPart4
     else
         h_template = figHandles;
     end
-    plotopts.I_Ylim = [-7 12];
-    plotopts.I_Xlim = [0 0.3];
+    plotopts.I_Ylim = [-3 3.9];
+    plotopts.I_Xlim = [0 0.3*12];
     plotopts.I_Width = 25;
     plotopts.I_Height = 25;
-    h2save = Figure2paperfigureT2(h_template,5,1,plotopts);
+    h2save = Figure2paperfigureT(h_template,5,1,plotopts);
     xlabel('Time[s]')
     
     Save_all_figures(h2save,outputdir,count_saved_figures);

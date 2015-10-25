@@ -191,10 +191,14 @@ for ii = 1:nchannels
     end
     
     % GaindB = -interp1(kv.maxfreqs,kv.maxouts,fc(ii),'linear','extrap');
+<<<<<<< HEAD
     GaindB=-6 + 23.86; 
     if ii==1
         warning('temporal')
     end
+=======
+    GaindB=0;
+>>>>>>> 374d1a70ef4d0fc079fce42790cef14d3575841d
     % outsig(:,ii)        = gain_after_compression * (y_lin + y_nlin);
     % outsiglin(:,ii)     = gain_after_compression * y_lin;
     % outsignlin(:,ii)    = gain_after_compression * y_nlin;

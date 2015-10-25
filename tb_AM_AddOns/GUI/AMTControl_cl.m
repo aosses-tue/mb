@@ -481,12 +481,12 @@ switch nAnalyser
 
     case 101
         figure;
-        plot(t,template); grid on
+        plot(t,template(:)); grid on
         xlabel(sprintf('Time [s]\nFollow the instructions in the command window to continue with the AFC simulation'))
 
     case {103,104}
         figure;
-        plot(t,template); grid on
+        plot(t,template(:)); grid on
         xlabel(sprintf('Time [s]\nFollow the instructions in the command window to continue with the AFC simulation'))
 end
 
@@ -710,9 +710,11 @@ for k = 1:Nsim
                 
                 model = 'dau1996';
                 
-                [out_interval1   xx fs_intrep] = Get_internalrep_stochastic(interval1  ,[],fs,model,0,Ntimes,fc2plot_idx,tmp);
+                [out_interval1   xx fs_intrep otmp] = Get_internalrep_stochastic(interval1  ,[],fs,model,0,Ntimes,fc2plot_idx,tmp);
                 [out_interval1s2 xx fs_intrep] = Get_internalrep_stochastic(interval1s2,[],fs,model,0,Ntimes,fc2plot_idx,tmp);
                 [out_interval2   xx fs_intrep] = Get_internalrep_stochastic(interval2 ,[],fs,model,0,Ntimes,fc2plot_idx,tmp);
+                
+                nchn_dec = length(fc2plot_idx);
                 
                 if bMultiChannel
                     handles.script_sim = 'dau1996preproc';
@@ -855,7 +857,7 @@ for k = 1:Nsim
                     decision(2) = optimaldetector(diff12,template,fs_intrep);
                     decision(3) = optimaldetector(diffGreatestCC,template,fs_intrep); 
                     
-                    decision = decision / (nchn_dec); % number of audio channels
+                    % decision = decision / (nchn_dec); % number of audio channels
                     % end
                 case 2
                     decision(1) = optimaldetector(diff11,template);

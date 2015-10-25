@@ -4,21 +4,14 @@ function [succes,basepath] = download_hrtf(database)
 %
 %   Url: http://amtoolbox.sourceforge.net/doc/hrtf/download_hrtf.php
 
-% Copyright (C) 2009-2014 Peter L. Søndergaard and Piotr Majdak.
+% Copyright (C) 2009-2014 Peter L. Soendergaard and Piotr Majdak.
 % This file is part of AMToolbox version 0.9.5
 %
-% This program is free software: you can redistribute it and/or modify
-% it under the terms of the GNU General Public License as published by
-% the Free Software Foundation, either version 3 of the License, or
-% (at your option) any later version.
-%
-% This program is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU General Public License for more details.
-%
-% You should have received a copy of the GNU General Public License
-% along with this program.  If not, see <http://www.gnu.org/licenses/>.
+% download_hrtf('wierstorf2011_3m');
+% download_hrtf('wierstorf2011_2m');
+% download_hrtf('wierstorf2011_1m');
+% download_hrtf('wierstorf2011_0_5m');
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% ===== Database urls ===================================================
 database_url = { ...
@@ -55,3 +48,4 @@ for ii=1:size(database_url,1)
     end
 end
 
+end

@@ -83,5 +83,9 @@ definput.groups.lopezpoveda2001 = {... % taken from Lopez-Poveda, Table III
 definput.groups.jepsen2008={...
                             'lin_bw',          [ .03728   .78563 ],... % 'lin_lp_cutoff',   [-0.06762 1.01 ],...   % 'nlin_bw_before' , [-0.03193  .77 ],... %                                 'compresslimit', 1500, ... %                                 'jepsenmiddleear', ...
                             'nlin_ngt_before', 2, ...
+<<<<<<< HEAD
                             'gain_after_drnl', 23.86}; % Added by AO
+=======
+                            'gain_after_drnl', 50};
+>>>>>>> 374d1a70ef4d0fc079fce42790cef14d3575841d
     
