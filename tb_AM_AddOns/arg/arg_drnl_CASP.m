@@ -1,11 +1,25 @@
 function definput = arg_drnl_CASP(definput)
 % function definput = arg_drnl_CASP(definput)
 %
+% 1. Description:
+%       DRNL parameters
+% 
+% 2. Stand-alone example:
+%       % To obtain Jepsen's parameters:
+%       definput.importdefaults={'lopezpoveda2001'};
+%       definput.keyvals.subfs=[];
+%       flags = arg_drnl_CASP(definput); 
+% 
+%       % To obtain Jepsen's parameters:
+%       definput.importdefaults={'jepsen2008'};
+%       definput.keyvals.subfs=[];
+%       flags = arg_drnl_CASP(definput); 
+% 
 % Created/edited by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Original filename: arg_drnl.m
 % Created on    : 15/08/2015
-% Last update on: 27/08/2015 
-% Last use on   : 27/08/2015
+% Last update on: 26/10/2015 
+% Last use on   : 26/10/2015
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   
 % 0. Parameters as in the Gammatone filterbank:
@@ -16,23 +30,17 @@ definput.keyvals.bwmul    = 1;
 
 % parameters according to Lopez-Poveda and Meddis 2001 but updated to Jepsen 2008
 %% Linear part:
-definput.keyvals.lin_ngt  = 2; % Number of Gammatone filters
+definput.keyvals.lin_ngt  = 1; % Number of Gammatone filters
 definput.keyvals.lin_nlp  = 4; % Number of LP filters
 definput.keyvals.lin_fc   = [-0.06762 1.01679];
 definput.keyvals.lin_bw   = [  .03728  .75   ]; % updated
 definput.keyvals.lin_gain = [ 4.20405 -.47909];
 definput.keyvals.lin_lp_cutoff = [-0.06762 1.01 ]; % updated
 
-% How obtained:
-%       'p0' = -3*MM
-%       'm' = MM = ( From_dB(2.5)-From_dB(1) )/(log10(4000)-log10(1000))
-% definput.keyvals.gain_after_compression = [-1.0539 0.3513]; % this is the closest, but 1k seems still biased
-definput.keyvals.gain_after_compression = [0 0]; % this is the closest, but 1k seems still biased
-
 %% Non-linear part:
-definput.keyvals.nlin_ngt_before  = 2; % first-order. In paper these were 3-cascade filters
-definput.keyvals.nlin_ngt_after   = 2; % first-order. In paper these were 3-cascade filters
-definput.keyvals.nlin_nlp         = 1; % second-order. In paper these were 3-cascade filters
+definput.keyvals.nlin_ngt_before  = 3; % 2 or 3 first-order cascade filters = 1 or '2' second-order
+definput.keyvals.nlin_ngt_after   = 2; % idem
+definput.keyvals.nlin_nlp         = 3; % idem
 definput.keyvals.nlin_fc_before = [-0.05252 1.01650];
 definput.keyvals.nlin_fc_after  = [-0.05252 1.01650];
 definput.keyvals.nlin_bw_before = [-0.03193  .77   ]; % updated
@@ -68,6 +76,7 @@ definput.flags.absolutethreshold = {'noabsolutethreshold','absolutethreshold'};
 definput.flags.ihctype          = {'ihc_jepsen'};
 definput.flags.modfiltertype    = {'modfilterbank','lowpass'};
 definput.flags.resample_intrep  = {'noresample_intrep','resample_intrep'};
+definput.flags.output_gain      = {'output_gain','no_output_gain'};
 
 definput.groups.lopezpoveda2001 = {... % taken from Lopez-Poveda, Table III
                             'lin_lp_cutoff'  , [-0.06762 1.01679], ...
@@ -75,17 +84,11 @@ definput.groups.lopezpoveda2001 = {... % taken from Lopez-Poveda, Table III
                             'nlin_bw_before' , [-0.03193  .77426], ...
                             'nlin_bw_after'  , [-0.03193  .77426], ...
                             'nlin_a_above'   , [1.40298  .81916], ... % same as 'nlin_a'
-                            'nlin_b_above'   , [1.61912 -.81867], ... % same as 'nlin_b'
-                            'nlin_ngt_before', 3, ...   % Fig. 3.a
-                            'nlin_ngt_after' , 3, ...   % Fig. 3.a
-                            'nlin_nlp'       , 3};      % Fig. 3.a
+                            'nlin_b_above'   , [1.61912 -.81867], ...
+                            'nlin_ngt_before',3, ...
+                            'nlin_ngt_after' ,2, ...
+                            'nlin_nlp'       ,3}; 
                            
-definput.groups.jepsen2008={...
-                            'lin_bw',          [ .03728   .78563 ],... % 'lin_lp_cutoff',   [-0.06762 1.01 ],...   % 'nlin_bw_before' , [-0.03193  .77 ],... %                                 'compresslimit', 1500, ... %                                 'jepsenmiddleear', ...
-                            'nlin_ngt_before', 2, ...
-<<<<<<< HEAD
+definput.groups.jepsen2008={... % 'lin_lp_cutoff',   [-0.06762 1.01 ],...   % 'nlin_bw_before' , [-0.03193  .77 ],... %                                 'compresslimit', 1500, ... %                                 'jepsenmiddleear', ...
                             'gain_after_drnl', 23.86}; % Added by AO
-=======
-                            'gain_after_drnl', 50};
->>>>>>> 374d1a70ef4d0fc079fce42790cef14d3575841d
     
