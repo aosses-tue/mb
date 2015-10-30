@@ -2,7 +2,7 @@ function [outsig, fc, params] = drnl_CASP_debug(insig,fs,varargin)
 % function [outsig, fc, params] = drnl_CASP_debug(insig,fs,varargin)
 % 
 % 1. Description:
-%       Script for pemo preprocessing using an implementation of the dual
+%       Script for PEMO preprocessing using an implementation of the dual
 %       resonance nonlinear (DRNL) filter (Lopez-Poveda, meddis 2001)
 %       The filter models the BM non-linearity. The output outsig is assumed
 %       to be in [m/s], representing the basilar membrane velocity.
@@ -13,7 +13,7 @@ function [outsig, fc, params] = drnl_CASP_debug(insig,fs,varargin)
 % Original file: '..\Psychoacoustics\CASP_Jepsen\CreateIntRepV02\casp2008\bm\drnl.m'
 % Created on    : 24/04/2015
 % Last update on: 15/08/2015
-% Last use on   : 17/08/2015
+% Last use on   : 27/10/2015
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Variables in script getDRNLparam.m were all replaced and validated:
@@ -187,23 +187,19 @@ for ii = 1:nchannels
         y_nlin = zeros(size(insig));
     end
     
-    % GaindB = -interp1(kv.maxfreqs,kv.maxouts,fc(ii),'linear','extrap');
-
     if flags.do_output_gain
-        GaindB=-6 + 23.86; 
+        GaindB=kv.gain_after_drnl; 
     end
     if flags.do_no_output_gain
         GaindB=0;
     end
 
-    % outsig(:,ii)        = gain_after_compression * (y_lin + y_nlin);
-    % outsiglin(:,ii)     = gain_after_compression * y_lin;
-    % outsignlin(:,ii)    = gain_after_compression * y_nlin;
     outsig(:,ii)        = From_dB( GaindB )* (y_lin + y_nlin);
     outsiglin(:,ii)     = From_dB( GaindB ) * y_lin;
     outsignlin(:,ii)    = From_dB( GaindB ) * y_nlin;
 end
 
+params.kv = kv;
 params.outsiglin    = outsiglin;
 params.outsignlin   = outsignlin;
 

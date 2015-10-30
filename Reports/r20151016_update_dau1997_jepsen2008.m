@@ -48,19 +48,19 @@ if bCreate
 end
 
 if nargin == 0
-    bParts = [1 0 0 0 0 1];
+    bParts = [0 0 1 0 0 1];
 end
 
 fs = 44100;
 
 bPart1 = bParts(1); % Calibration of the model: sigma = 1.85 for bDecisionMethod = 2
 bPart2 = bParts(2); % Simultaneous masking, deterministic
-bPart3 = bParts(3);
+bPart3 = bParts(3); % Forward masking
 bPart4 = bParts(4); % plotting results of bPart3
 bPart5 = bParts(5); % calibration using 800-Hz tone
 bPart6 = bParts(6);
 
-opts.nAnalyser      = 101; % 101 = modfilterbank, 103 - jepsen2008
+opts.nAnalyser      = 103; % 101 = modfilterbank, 103 - jepsen2008
 
 opts.bDecisionMethod = 2; % 2 - cc; 4 - dprime
 
@@ -74,7 +74,7 @@ switch opts.nAnalyser
         opts.modfiltertype = 'dau1997wLP';
 
     case {103, 104}
-        opts.sigma   = 0.615; % 0.615;
+        opts.sigma   = 0.45; % 0.615; % 0.615;
     
 end
     
@@ -105,7 +105,7 @@ if bPart1
         opts.DurRamps   = 125; % additional cosine ramps
         opts.bUseRamp   = 1; % additional cosine ramps
         opts.bUseRampS  = 1; % additional cosine ramps
-        erbc2analyse    = freqtoaud([900 1100],'erb'); % 14 for 1000 Hz (approx.)
+        erbc2analyse    = freqtoaud([500 2000],'erb'); % 14 for 1000 Hz (approx.)
         opts.filename1 = [Get_TUe_paths('outputs') 'AMTControl-examples' delim 'tone-f-1000-Hz-at-60-dB-dur-800-ms.wav'];
         opts.filename2 = [Get_TUe_paths('outputs') 'AMTControl-examples' delim 'tone-f-1000-Hz-at-42-dB-dur-800-ms.wav'];
     end
@@ -189,13 +189,13 @@ if bPart3
     fnames  = {[dir_where7 'jepsen2008-fig7-4000-Hz-tone-60-dB-dur-250-ms-onset-200-ms.wav'], ...
                [dir_where7 'jepsen2008-fig7-4000-Hz-tone-60-dB-dur-250-ms-onset-230-ms.wav']}; 
    
-	testlevels      = [40 60 70 80; ... % levels for on-freq
-                       60 70 80 85];    % levels for off-freq
+	testlevels      =[80;85]; %[40 60 70 80; ... % levels for on-freq
+                      %60 70 80 85];    % levels for off-freq
                    
 	if opts.nAnalyser == 101 | opts.nAnalyser == 103
         opts.resample_intrep = 'resample_intrep';
     end
-    opts.Gain4supra =  10; % 10 dB above the masker level 
+    opts.Gain4supra =  -10; % 10 dB above the masker level 
     opts.audio.fs   =  fs;
     
     opts.StepdB = 10; 
@@ -213,11 +213,11 @@ if bPart3
     opts.bDebug = 1;
     %%% k = 1: offset-onset of  0 ms
     %%% k = 2: offset-onset of 30 ms
-    k = 2;
+    k = 1;
     opts.filename2 = fnames{k};
     
     for i = 1:length(testlevels) 
-        for j = 2
+        for j = 1
             opts.filename1 = fnamesM{j}; % 1 is on-freq, 2 is off-freq
             opts.Gain2file1 = testlevels(j,i)-60;
             opts.Gain2file2 = opts.Gain2file1;

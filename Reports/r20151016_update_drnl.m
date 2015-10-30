@@ -11,17 +11,20 @@ function y = r20151016_update_drnl
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Original file : r20150814_update.m
-% Created on    : 12/08/2015
-% Last update on: 15/08/2015 
-% Last use on   : 15/08/2015 
+% Created on    : 16/10/2015
+% Last update on: 27/10/2015 
+% Last use on   : 27/10/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 close all
 bDiary = 0;
 Diary(mfilename,bDiary);
 
-h = [];
-dire = [Get_TUe_paths('outputs') 'AMTControl-examples' delim]; % 'D:\Output\AMTControl-examples\'
+dirout = [Get_TUe_paths('lx_Text') 'lx2015-10-30-decision-CASP' delim 'MATLAB' delim];
+Mkdir(dirout);
+diroutfigs = [dirout 'Figures' delim];
+Mkdir(diroutfigs);
+
 dBFS = 100;
 
 fmax2plot = 1000;
@@ -29,13 +32,107 @@ N = 8192*8;
 K = 22050;
 fs = 44100;
 
-bFig2ab = 1;
-bFig2c = 0;
+bSave = 1;
+hFigs = [];
 
-do_lopezpoveda_fig3 = 1;
+do_lopezpoveda_tabII = 0;
+do_lopezpoveda_fig3 = 0;
 do_lopezpoveda_fig5 = 0;
 do_jepsen_fig2ab    = 0;
-do_jepsen_fig2c     = 1;
+do_jepsen_fig2c     = 0;
+do_dau1996_fig3     = 1;
+
+% type = 'lopezpoveda2001';
+type = 'jepsen2008';
+
+if do_lopezpoveda_tabII
+    
+    var2print = [];
+    freqs = [250 500 1000 2000 4000 8000];
+    idx = round(freqtoaud(freqs))-2;
+    
+    M = 8192;
+    insig = [zeros(M/2-1,1); 1; zeros(M/2,1)];
+    [xx, fc, params] = drnl_CASP_debug(insig, fs,'lopezpoveda2001');
+    
+    fcidx = fc(idx);
+    Nidx = length(fcidx);
+    Oidx = ones(1,Nidx);
+    var2print = [var2print; fc(idx)];
+    var2print = [var2print; params.kv.lin_ngt*Oidx];
+    var2print = [var2print; il_polfun(params.kv.lin_fc,fcidx)];
+    var2print = [var2print; il_polfun(params.kv.lin_bw,fcidx)];
+    var2print = [var2print; il_polfun(params.kv.lin_gain,fcidx)];
+    var2print = [var2print; params.kv.lin_nlp*Oidx];
+    var2print = [var2print; params.kv.nlin_ngt_before*Oidx];
+    var2print = [var2print; il_polfun(params.kv.nlin_fc_before,fcidx(1:3)) il_polfun(params.kv.nlin_fc_after,fcidx(4:6))];
+    var2print = [var2print; il_polfun(params.kv.nlin_bw_before,fcidx(1:3)) il_polfun(params.kv.nlin_bw_after,fcidx(4:6))];
+    var2print = [var2print; il_polfun(params.kv.nlin_a,fcidx(1:3)) il_polfun(params.kv.nlin_a_above,fcidx(4:6))];
+    var2print = [var2print; il_polfun(params.kv.nlin_b,fcidx(1:3)) il_polfun(params.kv.nlin_b_above,fcidx(4:6))];
+    var2print = [var2print; il_polfun(params.kv.nlin_c,fcidx)];
+    var2print = [var2print; il_polfun(params.kv.nlin_lp_cutoff,fcidx)];
+    var2print = [var2print; params.kv.nlin_nlp*Oidx];
+    
+    var2latex(var2print);
+    
+    varp0m = [];
+    varp0m = [varp0m; params.kv.lin_fc];
+    varp0m = [varp0m; params.kv.lin_bw];
+    varp0m = [varp0m; params.kv.lin_lp_cutoff];
+    varp0m = [varp0m; params.kv.lin_gain];
+    varp0m = [varp0m; params.kv.nlin_fc_before];
+    varp0m = [varp0m; params.kv.nlin_fc_after];
+    varp0m = [varp0m; params.kv.nlin_bw_before];
+    varp0m = [varp0m; params.kv.nlin_bw_after];
+    varp0m = [varp0m; params.kv.nlin_a]; 
+    varp0m = [varp0m; params.kv.nlin_a_above];
+    varp0m = [varp0m; params.kv.nlin_b]; 
+    varp0m = [varp0m; params.kv.nlin_b_above];
+    varp0m = [varp0m; params.kv.nlin_c];
+    varp0m = [varp0m; params.kv.nlin_lp_cutoff];
+    var2latex(varp0m);
+    
+    var2print = [];
+    [xx, fc, params] = drnl_CASP_debug(insig, fs,'jepsen2008');
+    
+    fcidx = fc(idx);
+    Nidx = length(fcidx);
+    Oidx = ones(1,Nidx);
+    var2print = [var2print; fc(idx)];
+    var2print = [var2print; params.kv.lin_ngt*Oidx];
+    var2print = [var2print; il_polfun(params.kv.lin_fc,fcidx)];
+    var2print = [var2print; il_polfun(params.kv.lin_bw,fcidx)];
+    var2print = [var2print; il_polfun(params.kv.lin_gain,fcidx)];
+    var2print = [var2print; params.kv.lin_nlp*Oidx];
+    var2print = [var2print; params.kv.nlin_ngt_before*Oidx];
+    var2print = [var2print; il_polfun(params.kv.nlin_fc_before,fcidx(1:3)) il_polfun(params.kv.nlin_fc_after,fcidx(4:6))];
+    var2print = [var2print; il_polfun(params.kv.nlin_bw_before,fcidx(1:3)) il_polfun(params.kv.nlin_bw_after,fcidx(4:6))];
+    var2print = [var2print; il_polfun(params.kv.nlin_a,fcidx(1:3)) il_polfun(params.kv.nlin_a_above,fcidx(4:6))];
+    var2print = [var2print; il_polfun(params.kv.nlin_b,fcidx(1:3)) il_polfun(params.kv.nlin_b_above,fcidx(4:6))];
+    var2print = [var2print; il_polfun(params.kv.nlin_c,fcidx)];
+    var2print = [var2print; il_polfun(params.kv.nlin_lp_cutoff,fcidx)];
+    var2print = [var2print; params.kv.nlin_nlp*Oidx];
+    
+    var2latex(var2print);
+    
+    varp0m = [];
+    varp0m = [varp0m; params.kv.lin_fc];
+    varp0m = [varp0m; params.kv.lin_bw];
+    varp0m = [varp0m; params.kv.lin_lp_cutoff];
+    varp0m = [varp0m; params.kv.lin_gain];
+    varp0m = [varp0m; params.kv.nlin_fc_before];
+    varp0m = [varp0m; params.kv.nlin_fc_after];
+    varp0m = [varp0m; params.kv.nlin_bw_before];
+    varp0m = [varp0m; params.kv.nlin_bw_after];
+    varp0m = [varp0m; params.kv.nlin_a]; 
+    varp0m = [varp0m; params.kv.nlin_a_above];
+    varp0m = [varp0m; params.kv.nlin_b]; 
+    varp0m = [varp0m; params.kv.nlin_b_above];
+    varp0m = [varp0m; params.kv.nlin_c];
+    varp0m = [varp0m; params.kv.nlin_lp_cutoff];
+    var2latex(varp0m);
+    
+end
 
 if do_lopezpoveda_fig3
     
@@ -73,15 +170,19 @@ if do_lopezpoveda_fig3
         
         if bUse_drnl_own
             insig = gaindb(insig,-6); % own calibration
-            [ y_lin, ~]     = drnl_CASP_debug(insig, fs, kv.predrnl{:},f1000_debug{:},'linonly', kv.postdrnl{:},'no_output_gain');    
-            [y_nlin, ~]     = drnl_CASP_debug(insig, fs, kv.predrnl{:},f1000_debug{:},'nlinonly', kv.postdrnl{:},'no_output_gain');
+            [ y_lin, ~]     = drnl_CASP_debug(insig, fs, kv.predrnl{:},f1000_debug{:},'linonly', kv.postdrnl{:},type);    
+            [y_nlin, ~]     = drnl_CASP_debug(insig, fs, kv.predrnl{:},f1000_debug{:},'nlinonly', kv.postdrnl{:},type);
         end
         outsig          = y_lin + y_nlin;
 
         result3b(1,ii)  = rms(outsig(floor(length(insig)/2):end));
-        lin3b(1,ii)     = rms(y_lin(floor(length(insig)/2):end));
-        nlin3b(1,ii)    = rms(y_nlin(floor(length(insig)/2):end));
+        result3b_dB(1,ii)= rmsdb(outsig(floor(length(insig)/2):end))+dBFS;
         
+        lin3b(1,ii)     = rms(y_lin(floor(length(insig)/2):end));
+        lin3b_dB(1,ii)  = rmsdb(y_lin(floor(length(insig)/2):end))+dBFS;
+        
+        nlin3b(1,ii)    = rms(y_nlin(floor(length(insig)/2):end));
+        nlin3b_dB(1,ii) = rmsdb(y_nlin(floor(length(insig)/2):end))+dBFS;
     end
     %%% 3c
     result3c  = zeros(1,length(fsig));
@@ -102,49 +203,114 @@ if do_lopezpoveda_fig3
         end
         if bUse_drnl_own
             insig = gaindb(insig,-6); % own calibration
-            [ y_lin, ~]     = drnl_CASP_debug(insig, fs, kv.predrnl{:},f1000_debug{:},'linonly', kv.postdrnl{:},'no_output_gain');    
-            [y_nlin, ~]     = drnl_CASP_debug(insig, fs, kv.predrnl{:},f1000_debug{:},'nlinonly', kv.postdrnl{:},'no_output_gain');
+            [ y_lin, ~]     = drnl_CASP_debug(insig, fs, kv.predrnl{:},f1000_debug{:},'linonly', kv.postdrnl{:},type);    
+            [y_nlin, ~]     = drnl_CASP_debug(insig, fs, kv.predrnl{:},f1000_debug{:},'nlinonly', kv.postdrnl{:},type);
         end
         outsig          = y_lin + y_nlin;
 
         result3c(1,ii)  = rms(outsig(floor(length(insig)/2):end));
         lin3c(1,ii)     = rms(y_lin(floor(length(insig)/2):end));
         nlin3c(1,ii)    = rms(y_nlin(floor(length(insig)/2):end));
+        result3c_dB(1,ii)  = rmsdb(outsig(floor(length(insig)/2):end))+dBFS;
+        lin3c_dB(1,ii)     = rmsdb(y_lin(floor(length(insig)/2):end))+dBFS;
+        nlin3c_dB(1,ii)    = rmsdb(y_nlin(floor(length(insig)/2):end))+dBFS;
         
     end
         
     figure
-    set(gcf,'Position',[50,50,400,760])
+    set(gcf,'Position',[50,50,550,760])
     subplot(2,1,1)
-    plot(fsig,result3b)
+    plot(fsig,result3b,'LineWidth',2)
     hold on
     plot(fsig,lin3b,'-.g')
     plot(fsig,nlin3b,':r')
     set(gca,'YScale','log')
     % grid on
     set(gca,'XLim',[250 1750],'Layer','top')
-    set(gca,'YLim',[1e-07 1e-03],'Layer','top')
+    if strcmp(type,'lopezpoveda2001')
+        set(gca,'YLim',[1e-07 1e-03],'Layer','top')
+    else
+        set(gca,'YLim',[1e-07 1e-03]*100,'Layer','top')
+    end
     set(gca,'Position',[0.285,0.5838,0.62,0.3412]);
-    title('30 dB SPL')
-    xlabel('Frequency (Hz)')
-    ylabel('DRNL filter output (m/s)')
+    title(['30 dB SPL (' type ')'])
+    xlabel('Frequency [Hz]')
+    if strcmp(type,'lopezpoveda2001')
+        ylabel('DRNL filter output [m/s]')
+    else
+        ylabel('DRNL filter output [Pa]')
+    end
 
     subplot(2,1,2)
-    plot(fsig,result3c)
+    plot(fsig,result3c,'LineWidth',2)
     hold on
     plot(fsig,lin3c,'-.g')
     plot(fsig,nlin3c,':r')
     set(gca,'YScale','log')
     % grid on
     set(gca,'XLim',[250 1750],'Layer','top')
-    set(gca,'YLim',[1e-05 1e-01],'Layer','top')
+    if strcmp(type,'lopezpoveda2001')
+        set(gca,'YLim',[1e-05 1e-01],'Layer','top')
+    else
+        set(gca,'YLim',[1e-05 1e-01]*100,'Layer','top')
+    end
     set(gca,'Position',[0.285,0.11,0.62,0.3412]);
     title('85 dB SPL')
-    xlabel('Frequency (Hz)')
-    ylabel('DRNL filter output (m/s)')
-    leg=legend('DRNL output', 'Linear path output', 'Nonlinear path output');
-    set(leg,'Position',[0.0133, 0.4759, 0.4525, 0.0798]);
+    xlabel('Frequency [Hz]')
+    if strcmp(type,'lopezpoveda2001')
+        ylabel('DRNL filter output [m/s]')
+    else
+        ylabel('DRNL filter output [Pa]')
+    end
+    leg=legend('DRNL', 'Linear path', 'Nonlinear path');
+    set(leg,'Location','NorthEast');
   
+    hFigs(end+1) = gcf;
+    
+    if bSave
+        Saveas(hFigs(end),[diroutfigs 'Isointensity-resp-' type],'epsc');
+    end
+    
+    %%%
+    if strcmp(type,'jepsen2008')
+        figure
+        set(gcf,'Position',[50,50,550,760])
+        subplot(2,1,1)
+        plot(fsig,result3b_dB,'LineWidth',2)
+        hold on
+        plot(fsig,lin3b_dB,'-.g')
+        plot(fsig,nlin3b_dB,':r')
+        % grid on
+        set(gca,'XLim',[250 1750],'Layer','top')
+        set(gca,'YLim',[0 80],'Layer','top')
+        
+        set(gca,'Position',[0.285,0.5838,0.62,0.3412]);
+        title(['30 dB SPL (' type ')'])
+        xlabel('Frequency [Hz]')
+        ylabel('DRNL output [dB SPL]')
+        leg=legend('DRNL', 'Linear path', 'Nonlinear path');
+        set(leg,'Location','NorthEast');
+        
+        subplot(2,1,2)
+        plot(fsig,result3c_dB,'LineWidth',2)
+        hold on
+        plot(fsig,lin3c_dB,'-.g')
+        plot(fsig,nlin3c_dB,':r')
+        % grid on
+        set(gca,'XLim',[250 1750],'Layer','top')
+        set(gca,'YLim',[20 100],'Layer','top')
+        
+        set(gca,'Position',[0.285,0.11,0.62,0.3412]);
+        title('85 dB SPL')
+        xlabel('Frequency [Hz]')
+        ylabel('DRNL output [dB SPL]')
+        
+        hFigs(end+1) = gcf;
+
+        if bSave
+            Saveas(hFigs(end),[diroutfigs 'Isointensity-resp-' type '_dB'],'epsc');
+        end   
+    end
 end
 
 if do_lopezpoveda_fig5
@@ -168,11 +334,11 @@ if do_lopezpoveda_fig5
     og  = il_polfun(keyvalsLP2001.lin_gain,ftest);
         
     colors = {'b-','r-','g-','k-','bo-','ro-','go-','ko-'};
-    legends = {'CFlin','BWlin','CFnl','BWnl','a','b','c','d'};
+    legends = {'CFlin','BWlin','CFnl','BWnl','a','b','c','g'};
     
     figure;
     subplot(1,2,1)
-    loglog(ftest,oCFlin, colors{1}); hold on; grid on
+    loglog(ftest,oCFlin, colors{1}); hold on; 
     plot(ftest,oBWlin,colors{2});
     plot(ftest,oCFnl,colors{3});
     plot(ftest,oBWnl,colors{4});
@@ -180,9 +346,10 @@ if do_lopezpoveda_fig5
     plot(ftest,ob,colors{6});
     plot(ftest,oc,colors{7});
     plot(ftest,og,colors{8});
-    
+    ylabel('DRNL filter parameter')
+    xlabel('Centre frequency [Hz]')
     legend(legends,'Location','NorthWest');
-    
+    xlim([50 8000])
     definput.importdefaults={'jepsen2008'};
     [flags,keyvalsJ2008]  = ltfatarghelper({'flow','fhigh'},definput,{});
     
@@ -208,7 +375,7 @@ if do_lopezpoveda_fig5
     ha = gca;
     
     subplot(1,2,2)
-    loglog(ftest,oCFlin, colors{1}); hold on; grid on
+    loglog(ftest,oCFlin, colors{1}); hold on; 
     plot(ftest,oBWlin,colors{2});
     plot(ftest,oCFnl,colors{3});
     plot(ftest,oBWnl,colors{4});
@@ -216,9 +383,16 @@ if do_lopezpoveda_fig5
     plot(ftest,ob,colors{6});
     plot(ftest,oc,colors{7});
     plot(ftest,og,colors{8});
-    
+    ylabel('DRNL filter parameter')
+    xlabel('Centre frequency [Hz]')
     ha(end+1) = gca;
     linkaxes(ha,'xy')
+    
+    hFigs(end+1) = gcf;
+    
+    if bSave
+        Saveas(hFigs(end),[diroutfigs 'DRNL-params-jepsen2008-lopezpoveda2001'],'epsc');
+    end
     
 end
 
@@ -452,6 +626,70 @@ if do_jepsen_fig2c
     
 end
 
+if do_dau1996_fig3
+    outputLevel = [];
+    pref    = 2e-5;
+    dur     = 1000e-3;
+    Li      = 0;
+    Lf      = 100;
+    fs      = 44100;
+    t       = 1/fs:1/fs:dur;
+    tmin    = 800e-3;
+    tmax    = 1000e-3;
+    Lp      = Li:10:Lf;
+    
+    cl = {'b','r'};
+    count = 1;
+    figure;
+    for Lpidx = Lp 
+        % A = 0.5*pref*10^( Lpidx/20 ); % A signal producing 100 dB
+        % insig = A*ones(fs*dur,1);
+        insig = Create_sin(800,dur,fs);
+        insig = setdbspl(insig,Lpidx);
+        insig = Do_cos_ramp(insig,fs,20,0);
+        
+        N2average = round(length(insig)/5); % last 20 percent
+    
+        [os xx xx xx outt] = dau1997preproc_1Ch(insig,fs,800);
+        os2 = jepsen2008preproc_1Ch(insig,fs,800);
+        
+        os_mean(1,count) = mean(os(end-N2average+1:end,1));
+        os_max(1,count) = max(os(:,1));
+        os_mean(2,count) = mean(os2{1}(end-N2average+1:end,1));
+        os_max(2,count) = max(os2{1}(:,1));
+        
+        count = count + 1;
+    end
+    
+    figure;
+    plot(Lp,os_max(1,:),'bo-','LineWidth',2), hold on, grid on
+    plot(Lp,os_max(2,:),'k>-','LineWidth',2)
+    xlabel('Input level [dB]')
+    ylabel('Output level [MU]')
+    ylim([-2 300])
+    legend('dau1997','jepsen2008','Location','NorthWest')
+    title('Maximum response, onset limitation of 10')
+    hFigs(end+1) = gcf;
+    
+    % Similar to: Dau1996a, Fig. 3
+    figure;
+    plot(Lp,os_mean(1,:),'bo-','LineWidth',2), grid on, hold on
+    plot(Lp,os_mean(2,:),'k>-','LineWidth',2)
+    plot(Lp,Lp,'r--');
+    xlabel('Input level [dB]')
+    ylabel('Output level [MU]')
+    ylim([-2 125])
+    legend('dau1997','jepsen2008','Location','NorthWest')
+    title('Average steady response')
+    hFigs(end+1) = gcf;
+    
+    if bSave
+        Saveas(hFigs(end-1),[diroutfigs 'LP-output-max-response'],'epsc');
+        Saveas(hFigs(end)  ,[diroutfigs 'LP-output-steady-response'],'epsc');
+    end
+    
+end
+
 if bDiary
 	diary off
 end
@@ -466,4 +704,16 @@ function outpar=il_polfun(par,fc)
 % outpar=10^(par(1)+par(2)*log10(fc));
 outpar=10^(par(1))*fc.^par(2);
 
-disp('')
+% function [outsig outLevel maxLevel] = Il_get_adaptloop(insig,fs,limit)
+% 
+% if nargin < 3
+%     limit   = 10;
+% end
+% minlvl  = 1e-5;
+% outsig  = adaptloop(insig,fs,limit,minlvl);
+% 
+% N       = size(insig,1);
+% len     = round(2*N/10);
+% tmp     = outsig([end-len+1:end],:);
+% outLevel = mean(tmp); % last element, should be most stable value
+% maxLevel = max(outsig);

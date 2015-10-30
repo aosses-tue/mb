@@ -30,7 +30,7 @@ definput.keyvals.bwmul    = 1;
 
 % parameters according to Lopez-Poveda and Meddis 2001 but updated to Jepsen 2008
 %% Linear part:
-definput.keyvals.lin_ngt  = 1; % Number of Gammatone filters
+definput.keyvals.lin_ngt  = 2; % Number of Gammatone filters
 definput.keyvals.lin_nlp  = 4; % Number of LP filters
 definput.keyvals.lin_fc   = [-0.06762 1.01679];
 definput.keyvals.lin_bw   = [  .03728  .75   ]; % updated
@@ -38,9 +38,9 @@ definput.keyvals.lin_gain = [ 4.20405 -.47909];
 definput.keyvals.lin_lp_cutoff = [-0.06762 1.01 ]; % updated
 
 %% Non-linear part:
-definput.keyvals.nlin_ngt_before  = 3; % 2 or 3 first-order cascade filters = 1 or '2' second-order
+definput.keyvals.nlin_ngt_before  = 2; % 2 or 3 first-order cascade filters = 1 or '2' second-order
 definput.keyvals.nlin_ngt_after   = 2; % idem
-definput.keyvals.nlin_nlp         = 3; % idem
+definput.keyvals.nlin_nlp         = 1; % idem
 definput.keyvals.nlin_fc_before = [-0.05252 1.01650];
 definput.keyvals.nlin_fc_after  = [-0.05252 1.01650];
 definput.keyvals.nlin_bw_before = [-0.03193  .77   ]; % updated
@@ -65,7 +65,7 @@ definput.keyvals.maxouts = [-21.5255 -21.8778 -19.2899 -22.0003 -35.3780 -45.173
 % figure; plot(maxfreqs,maxouts);
     
 % Gain after DRNL:
-definput.keyvals.gain_after_drnl = 50;
+definput.keyvals.gain_after_drnl = 17.86;
 
 %% Other parameters of the CASP model
 % The first in the cell is the default setting:
@@ -85,10 +85,13 @@ definput.groups.lopezpoveda2001 = {... % taken from Lopez-Poveda, Table III
                             'nlin_bw_after'  , [-0.03193  .77426], ...
                             'nlin_a_above'   , [1.40298  .81916], ... % same as 'nlin_a'
                             'nlin_b_above'   , [1.61912 -.81867], ...
+                            'lin_ngt', 3, ...
                             'nlin_ngt_before',3, ...
                             'nlin_ngt_after' ,2, ...
-                            'nlin_nlp'       ,3}; 
+                            'nlin_nlp'       ,3, ...
+                            'gain_after_drnl',17.47, ... % if output_gain, this gain makes the maximum response at the 800-Hz filter to be 100 dB
+                            'no_output_gain'}; % staples velocity [m/s] at the output
                            
-definput.groups.jepsen2008={... % 'lin_lp_cutoff',   [-0.06762 1.01 ],...   % 'nlin_bw_before' , [-0.03193  .77 ],... %                                 'compresslimit', 1500, ... %                                 'jepsenmiddleear', ...
-                            'gain_after_drnl', 23.86}; % Added by AO
+definput.groups.jepsen2008={...
+                            'gain_after_drnl',13}; % Added by AO: 17.86 = -6 + 23.86 dB
     
