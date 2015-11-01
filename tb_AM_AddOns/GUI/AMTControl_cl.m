@@ -22,8 +22,8 @@ function outs = AMTControl_cl(handles_man)
 %       Create menu, with load parameters
 % 
 % Created on        : 14/09/2015 (Snapshot of AMTControl.m)
-% Last modified on  : 13/10/2015
-% Last used on      : 13/10/2015 % Remember to check compatibility with template_PsySoundCL.m
+% Last modified on  : 30/10/2015
+% Last used on      : 30/10/2015 % Remember to check compatibility with template_PsySoundCL.m
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin == 0
@@ -968,7 +968,12 @@ for k = 1:Nsim
                 
             end
             nWrong = nWrong+1;
+            
             Level_current = Level_current + Level_step; % we make it easier after two mistakes
+            if strcmp(handles.increment_method,'modulation-depth') & Level_current > 0
+                warning('Modulation depth (dB) has to be less or equal than 0 dB...')
+                Level_current = Level_current - Level_step;
+            end
             
         end
 

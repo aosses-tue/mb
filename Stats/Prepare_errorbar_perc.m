@@ -10,8 +10,8 @@ function [Median,errorL,errorU] = Prepare_errorbar_perc(y,percL,percU)
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 02/08/2015
-% Last update on: 02/08/2015 % Update this date manually
-% Last use on   : 02/08/2015 % Update this date manually
+% Last update on: 02/08/2015 
+% Last use on   : 02/08/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 perc = [percentile(y,50); percentile(y,percL); percentile(y,percU)];
