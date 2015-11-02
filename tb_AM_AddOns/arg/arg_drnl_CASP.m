@@ -93,6 +93,6 @@ definput.groups.lopezpoveda2001 = {... % taken from Lopez-Poveda, Table III
                             'no_output_gain'}; % staples velocity [m/s] at the output
                            
 definput.groups.jepsen2008={...
-                            'gain_after_drnl',13}; % 13; Added by AO: 17.86 = -6 + 23.86 dB
+                            'gain_after_drnl',17.86}; % 13; Added by AO: 17.86 = -6 + 23.86 dB
 definput.groups.jepsen2008test={...
                             'gain_after_drnl',17.86}; % 13; Added by AO: 17.86 = -6 + 23.86 dB

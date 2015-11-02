@@ -853,13 +853,13 @@ for k = 1:Nsim
         if bDecisionMethod == 2
             switch handles.MethodIntRep
                 case 1
-                    % if fs == fs_intrep
+                    
                     decision(1) = optimaldetector(diff11,template,fs_intrep);
                     decision(2) = optimaldetector(diff12,template,fs_intrep);
                     decision(3) = optimaldetector(diffGreatestCC,template,fs_intrep); 
                     
                     decision = decision / (nchn_dec); % number of audio channels
-                    % end
+                    
                 case 2
                     decision(1) = optimaldetector(diff11,template);
                     decision(2) = optimaldetector(diff12,template);

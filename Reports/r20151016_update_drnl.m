@@ -641,12 +641,14 @@ if do_dau1996_fig3
     cl = {'b','r'};
     count = 1;
     figure;
-    for Lpidx = Lp 
+    for Lpidx = 60; % Lp 
         % A = 0.5*pref*10^( Lpidx/20 ); % A signal producing 100 dB
         % insig = A*ones(fs*dur,1);
         insig = Create_sin(800,dur,fs);
         insig = setdbspl(insig,Lpidx);
         insig = Do_cos_ramp(insig,fs,20,0);
+        
+        insig = [insig; zeros(44100,1)];
         
         N2average = round(length(insig)/5); % last 20 percent
     

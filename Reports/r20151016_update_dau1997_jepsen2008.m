@@ -79,7 +79,7 @@ switch opts.nAnalyser
         opts.modfiltertype = 'dau1997wLP';
 
     case {103, 104}
-        opts.sigma   = 0.45; % 0.59; % 0.615 = 17.86 dB; % 0.45 if gain_after_drnl = 13 dB
+        opts.sigma   = 0.38; % 0.59; % 0.615 = 17.86 dB; % 0.45 if gain_after_drnl = 13 dB
     
 end
     
@@ -733,7 +733,7 @@ if bPart7
     opts.bUseRamp  = 1; % additional cosine ramps
     opts.bUseRampS = 0; % additional cosine ramps
     opts.bAddSilence2noise = 1;
-    silences = ([490 495 500 510])*1e-3; %([480 490 495 500:10:530])*1e-3;
+    silences = ([500])*1e-3; %([480 490 495 500:10:530])*1e-3;
     opts.increment_method = 'level';
     
     opts.Ntimes = 25; %8;
@@ -875,6 +875,15 @@ if bPart7
 % Std75 = [74.2500   52.2500   38.7500   40.0000];
 % Std25 = [71.7500   51.2500   37.6250   40.0000];
 end
+
+% ([490 495 500 510 520 530])*1e-3;
+% Jepsen2008 (25 Avgs, 10-ms cos ramps)
+% TTh   = 29.0000   28.4375   27.5000   27.5000
+%         57.0000   36.0000   30.0000   30.0000
+
+%         78.1250   54.9375   37.5000   36.2500 % Jepsen2008
+
+%         71.5625   71.8750   63.7500   58.7500 % Dau1997
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if bPart8
