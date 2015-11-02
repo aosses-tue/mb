@@ -79,7 +79,7 @@ switch opts.nAnalyser
         opts.modfiltertype = 'dau1997wLP';
 
     case {103, 104}
-        opts.sigma   = 0.59; % 0.59; % 0.615 = 17.86 dB; % 0.45 if gain_after_drnl = 13 dB
+        opts.sigma   = 0.45; % 0.59; % 0.615 = 17.86 dB; % 0.45 if gain_after_drnl = 13 dB
     
 end
     
@@ -105,7 +105,7 @@ count_saved_figures = 1;
 if bPart1
     
     tic
-    for j = 0:1
+    for j = 1 % 0:1
         % To do: save template
         bTones = j;
         bBBN = ~bTones;
@@ -116,6 +116,8 @@ if bPart1
             erbc2analyse    = freqtoaud([500 2000],'erb'); % 14 for 1000 Hz (approx.)
             opts.filename1 = [Get_TUe_paths('outputs') 'AMTControl-examples' delim 'tone-f-1000-Hz-at-60-dB-dur-800-ms.wav'];
             opts.filename2 = [Get_TUe_paths('outputs') 'AMTControl-examples' delim 'tone-f-1000-Hz-at-42-dB-dur-800-ms.wav'];
+            opts.Ntimes     = 1;
+            opts.Nsim       = 1;
         end
         if bBBN
             opts.DurRamps   = 0; % additional cosine ramps
@@ -126,6 +128,8 @@ if bPart1
             % opts.filename2 = [Get_TUe_paths('outputs') 'audio-20151006' delim 'jepsen2008-BW-at-42-dB-dur-500-ms.wav']; 
             opts.filename1 = [Get_TUe_paths('outputs') 'audio-20151006' delim 'jepsen2008-BW-at-60-dB-dur-500-ms-2.wav'];
             opts.filename2 = [Get_TUe_paths('outputs') 'audio-20151006' delim 'jepsen2008-BW-at-42-dB-dur-500-ms-2.wav']; 
+            opts.Ntimes     = 1;
+            opts.Nsim       = 1;
         end
 
         opts = il_get_freqs(erbc2analyse,opts);
@@ -136,7 +140,7 @@ if bPart1
         opts.StepdB     = 8; 
         opts.StepdBmin  = 0.5;
 
-        refSPL  = [20 30 40 50 60 70];
+        refSPL  = 60; % [20 30 40 50 60 70];
 
         for i=1:length(refSPL)
             testSPL = refSPL(i)-18; % 42 dB for 60 dB    
@@ -183,6 +187,8 @@ if bPart1
     end
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Modulation detection:
 close all
 opts.StepdB    = 4; 
 opts.StepdBmin = 1;
@@ -267,10 +273,11 @@ if bPart2
 
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%
 if bPart3
     
-    erbc2analyse    = freqtoaud([4000],'erb'); % 14 for 1000 Hz (approx.)  % [3500 5000]
+    erbc2analyse    = freqtoaud([3500 5000],'erb'); % 14 for 1000 Hz (approx.)  % 
     opts            = il_get_freqs(erbc2analyse,opts);
         
     fnamesM = {[dir_where7 'jepsen2008-fig7-4000-Hz-tone-masker-60-dB-dur-10-s.wav'], ... % on-frequency masker
@@ -405,6 +412,7 @@ end
 % Prct25_30ms = 23    28    30    33
 %               16    19    23    27
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if bPart4
     
     hFig4 = []; % handles for the figures generated in this part
@@ -551,6 +559,7 @@ if bPart4
     count_saved_figures = count_saved_figures + length(hFig4);
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if bPart5
     
     erbc2analyse    = freqtoaud([800],'erb'); % 14 for 1000 Hz (approx.) 
@@ -696,6 +705,7 @@ if bPart6
 % Std25 = 61.0000   58.0000   58.0000   56.5000   57.7500
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if bPart7
     
     erbc2analyse    = freqtoaud([3500 5000],'erb'); % 14 for 1000 Hz (approx.) 
@@ -708,7 +718,7 @@ if bPart7
     fnames  = {[dir_where7 'jepsen2008-fig7-4000-Hz-tone-60-dB-dur-250-ms-onset-200-ms.wav'], ...
                [dir_where7 'jepsen2008-fig7-4000-Hz-tone-60-dB-dur-250-ms-onset-230-ms.wav']}; 
    
-	testlevels = [40 60 80]; 
+	testlevels = 80; % [40 60 80]; 
                    
 	if opts.nAnalyser == 101 | opts.nAnalyser == 103
         opts.resample_intrep = 'resample_intrep';
@@ -716,18 +726,18 @@ if bPart7
     opts.Gain4supra =  10; % 10 dB above the masker level 
     opts.audio.fs   =  fs;
     
-    opts.StepdB = 10; 
+    opts.StepdB    = 10; 
     opts.StepdBmin = 1;
     
     opts.DurRamps  = 2; % [ms] additional cosine ramps
     opts.bUseRamp  = 1; % additional cosine ramps
     opts.bUseRampS = 0; % additional cosine ramps
     opts.bAddSilence2noise = 1;
-    silences = ([480 490 495 500:10:530])*1e-3;
+    silences = ([490 495 500 510])*1e-3; %([480 490 495 500:10:530])*1e-3;
     opts.increment_method = 'level';
     
     opts.Ntimes = 25; %8;
-    opts.Nsim   = 4;
+    opts.Nsim   = 2;
     opts.bDebug = 0;
 
     k = 1;
@@ -741,7 +751,11 @@ if bPart7
                 opts.Nsim = 1;
             end
             opts.Silence2noise = silences(i);
-            opts.filename1 = fnamesM{2}; % always on-freq masker (choose 2 for off-freq masker)
+            idxM = 1;
+            if idxM == 2
+                warning('off-frequency masker being used')
+            end
+            opts.filename1 = fnamesM{idxM}; % always on-freq masker (choose 2 for off-freq masker)
             opts.Gain2file1 = testlevels(j)-60;
             opts.Gain2file2 = opts.Gain2file1;
             tmp = AMTControl_cl(opts);
@@ -854,8 +868,15 @@ if bPart7
 %         24.3750   24.6250   22.5000   21.2500   18.7500   17.5000   17.5000
 %         53.7500   52.5625   42.5000   34.2500   28.7500   27.5000   25.0000
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Jepsen 2008, on-frequency but 13 dB: (on 02/11/2015)
+% ([490 495 500 510])*1e-3;
+% TTh = [73.0000   51.7500   38.1875   40.0000]; 
+% Std75 = [74.2500   52.2500   38.7500   40.0000];
+% Std25 = [71.7500   51.2500   37.6250   40.0000];
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if bPart8
     
     % jepsen2008:
@@ -919,7 +940,6 @@ if bPart8
     
     disp('')
     
-   
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

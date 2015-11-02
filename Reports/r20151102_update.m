@@ -231,7 +231,7 @@ r2_j25     = [21        27        34        43     ; ... % off-freq,  0-ms
 figure;
 subplot(1,2,1)
 plot(testlevels(1,:), raw1_d1997(1,:),'r>-','LineWidth',2); hold on
-plot(testlevels(1,:), raw1_d1997(2,:),'ro--');
+plot(testlevels(1,:), raw1_d1997(2,:),'rs--');
 plot(testlevels(1,:), raw1_j2008(1,:),'k>-' );
 plot(testlevels(1,:), raw1_j2008(2,:),'ko--'); grid on
 xlabel('Masker level [dB SPL]'); xlim([minL maxL])
@@ -240,7 +240,7 @@ title('A. On-freq.');
 
 subplot(1,2,2)
 plot( testlevels(2,:), raw2_d1997(1,:),'r>-','LineWidth',2); hold on
-plot( testlevels(2,:), raw2_d1997(2,:),'ro--')
+plot( testlevels(2,:), raw2_d1997(2,:),'rs--')
 plot( testlevels(2,:), raw2_j2008(1,:),'k>-' )
 plot( testlevels(2,:), raw2_j2008(2,:),'ko--'); grid on
 xlabel('Masker level [dB SPL]'); xlim([minL maxL])
