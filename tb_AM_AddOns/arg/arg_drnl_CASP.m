@@ -35,6 +35,7 @@ definput.keyvals.lin_nlp  = 4; % Number of LP filters
 definput.keyvals.lin_fc   = [-0.06762 1.01679];
 definput.keyvals.lin_bw   = [  .03728  .75   ]; % updated
 definput.keyvals.lin_gain = [ 4.20405 -.47909];
+% definput.keyvals.lin_gain_after = [ 2.682416 0.00]; % to limit above 1500 Hz (in case we want)
 definput.keyvals.lin_lp_cutoff = [-0.06762 1.01 ]; % updated
 
 %% Non-linear part:

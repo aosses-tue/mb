@@ -15,10 +15,10 @@ function y = AM_random_noise(Finf,Fsup,SPL,dur,Fs,Fmod,Mdept,dBFS)
 %       Mdept = 1;
 %       SPL = 70;
 %       Fs = 44100;
-%       y = AM_random_noise(Finf,Fsup,SPL,dur,Fs,Fmod,Mdept);
+%       y = AM_random_noise(Finf,Fsup,SPL+3,dur,Fs,Fmod,Mdept);
 % 
 %       % If you want to store the output (Wav file):
-%       AM_random_noise(Finf,Fsup,SPL,dur,Fs,Fmod,Mdept);
+%       AM_random_noise(Finf,Fsup,SPL+3,dur,Fs,Fmod,Mdept);
 % 
 % 2.2 Example:
 %       Fmod = 4;

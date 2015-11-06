@@ -49,7 +49,7 @@ end
 
 if nargin == 0
     %         1 2 3 4 5 6 7 8
-    bParts = [0 0 0 0 0 0 1 0];
+    bParts = [1 0 0 0 0 0 1 0];
     % CC:     0 1 0 - - 1 0 -
     %                   0       % if 2000-Hz  
 end
@@ -65,21 +65,27 @@ bPart6 = bParts(6); % signal integration, 2-kHz tone
 bPart7 = bParts(7); % Transition simultaneous-forward masking. Similar to bPart3
 bPart8 = bParts(8); % plotting results of bPart7 and all the other new results
 
-opts.nAnalyser      = 103; % 101 = modfilterbank, 103 - jepsen2008
+opts.nAnalyser      = 100; % 101 = modfilterbank, 103 - jepsen2008
 
 opts.bDecisionMethod = 2; % 2 - cc; 4 - dprime
 
 switch opts.nAnalyser
     case 100
-        opts.sigma   = 0.4; % 0.4 for multi-channel, 1.5 for single channel
-                             
+        opts.sigma   = 300; % 0.4 for multi-channel, 1.5 for single channel
+        %       single  multi
+        % 350 - 1.29
+        % 300 - 1.14
+        % 280 - 1.0299  
+        % 250 - 0.8745  
+        % 200 - 0.72    
+        %               0.2347
     case 101
         opts.sigma   = 0.68;    
                                 
         opts.modfiltertype = 'dau1997wLP';
 
     case {103, 104}
-        opts.sigma   = 0.38; % 0.59; % 0.615 = 17.86 dB; % 0.45 if gain_after_drnl = 13 dB
+        opts.sigma   = 0.59; % 0.59; % 0.615 = 17.86 dB; % 0.45 if gain_after_drnl = 13 dB
     
 end
     
@@ -105,7 +111,7 @@ count_saved_figures = 1;
 if bPart1
     
     tic
-    for j = 1 % 0:1
+    for j = 0 % 0:1
         % To do: save template
         bTones = j;
         bBBN = ~bTones;
@@ -113,11 +119,11 @@ if bPart1
             opts.DurRamps   = 125; % additional cosine ramps
             opts.bUseRamp   = 1; % additional cosine ramps
             opts.bUseRampS  = 1; % additional cosine ramps
-            erbc2analyse    = freqtoaud([500 2000],'erb'); % 14 for 1000 Hz (approx.)
+            erbc2analyse    = freqtoaud([500 2000],'erb'); % 14 for 1000 Hz (approx.) % [500 2000]
             opts.filename1 = [Get_TUe_paths('outputs') 'AMTControl-examples' delim 'tone-f-1000-Hz-at-60-dB-dur-800-ms.wav'];
             opts.filename2 = [Get_TUe_paths('outputs') 'AMTControl-examples' delim 'tone-f-1000-Hz-at-42-dB-dur-800-ms.wav'];
             opts.Ntimes     = 1;
-            opts.Nsim       = 1;
+            opts.Nsim       = 10;
         end
         if bBBN
             opts.DurRamps   = 0; % additional cosine ramps
@@ -129,7 +135,7 @@ if bPart1
             opts.filename1 = [Get_TUe_paths('outputs') 'audio-20151006' delim 'jepsen2008-BW-at-60-dB-dur-500-ms-2.wav'];
             opts.filename2 = [Get_TUe_paths('outputs') 'audio-20151006' delim 'jepsen2008-BW-at-42-dB-dur-500-ms-2.wav']; 
             opts.Ntimes     = 1;
-            opts.Nsim       = 1;
+            opts.Nsim       = 4;
         end
 
         opts = il_get_freqs(erbc2analyse,opts);
@@ -138,7 +144,7 @@ if bPart1
         opts.audio.fs   = fs;
 
         opts.StepdB     = 8; 
-        opts.StepdBmin  = 0.5;
+        opts.StepdBmin  = 1;
 
         refSPL  = 60; % [20 30 40 50 60 70];
 
@@ -148,7 +154,9 @@ if bPart1
             opts.Gain2file2 = refSPL(i) - 60;
             tr_tmp = AMTControl_cl(opts);
 
-            th_JND(j+1,i) = sum_dB_arit([refSPL(i) testSPL+tr_tmp.Threshold]) - refSPL(i);
+            th_JND(j+1,i) = sum_dB_arit([refSPL(i) testSPL+median(tr_tmp.Threshold)]) - refSPL(i);
+            th_JND25(j+1,i) = sum_dB_arit([refSPL(i) testSPL+prctile(tr_tmp.Threshold,25)]) - refSPL(i);
+            th_JND75(j+1,i) = sum_dB_arit([refSPL(i) testSPL+prctile(tr_tmp.Threshold,75)]) - refSPL(i);
 
             disp('')
         end
@@ -723,10 +731,10 @@ if bPart7
 	if opts.nAnalyser == 101 | opts.nAnalyser == 103
         opts.resample_intrep = 'resample_intrep';
     end
-    opts.Gain4supra =  10; % 10 dB above the masker level 
+    opts.Gain4supra =  -5; % 10 dB above the masker level 
     opts.audio.fs   =  fs;
     
-    opts.StepdB    = 10; 
+    opts.StepdB    = 8; 
     opts.StepdBmin = 1;
     
     opts.DurRamps  = 2; % [ms] additional cosine ramps
@@ -737,7 +745,7 @@ if bPart7
     opts.increment_method = 'level';
     
     opts.Ntimes = 25; %8;
-    opts.Nsim   = 2;
+    opts.Nsim   = 1;
     opts.bDebug = 0;
 
     k = 1;

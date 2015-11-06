@@ -802,9 +802,9 @@ for k = 1:Nsim
         end
         
         %%% Add internal noise:
-        out_interval1   = Add_gaussian_noise(out_interval1,mu,sigma); % Add internal noise
-        out_interval1s2 = Add_gaussian_noise(out_interval1s2,mu,sigma);
-        out_interval2   = Add_gaussian_noise(out_interval2,mu,sigma); % Add internal noise
+        [out_interval1   xx] = Add_gaussian_noise(out_interval1,mu,sigma); % Add internal noise
+        [out_interval1s2 yy] = Add_gaussian_noise(out_interval1s2,mu,sigma);
+        [out_interval2   zz] = Add_gaussian_noise(out_interval2,mu,sigma); % Add internal noise
 
         [a b] = size(template);
         % one audio-frequency band but all the modulation filterbanks:
@@ -813,26 +813,32 @@ for k = 1:Nsim
         sigint1s2   = reshape(out_interval1s2,a,b);
         sigint2     = reshape(out_interval2,a,b);
         %%%        
-
+        
+        sizeT = size(template);
+        noise1 = normrnd(mu,sigma,sizeT(1),sizeT(2));
+        noise2 = normrnd(mu,sigma,sizeT(1),sizeT(2));
+        noise3 = normrnd(mu,sigma,sizeT(1),sizeT(2));
+        
         intM = handles.audio.avg_intrep_M; % mean([out_N0 out_N1 out_N2],2);
-        intrep_M0   = intM; 
-        intrep_M1   = intM; 
-        intrep_M2   = intM; 
+        intrep_M0   = intM + noise1; 
+        intrep_M1   = intM + noise2; 
+        intrep_M2   = intM + noise3; 
 
         diff11 =   sigint1-intrep_M0;
         diff12 = sigint1s2-intrep_M1;
         diff20 =   sigint2-intrep_M2; %tt = 1:length(diff11); figure; plot(tt,diff11+30,tt,diff12,tt,diff20-30); legend('11','12','20')
-
-        switch handles.bDecisionMethod 
-            case{2,3,4}
-                cc1 = optimaldetector(sigint2, sigint1);
-                cc2 = optimaldetector(sigint2, sigint1s2);
-                if cc2 > cc1
-                    diffGreatestCC = sigint2-sigint1s2;
-                else
-                    diffGreatestCC = sigint2-sigint1;
-                end
-        end
+        diffGreatestCC = diff20;
+        
+        % switch handles.bDecisionMethod 
+        %     case{2,3,4}
+        %         cc1 = optimaldetector(sigint2, sigint1);
+        %         cc2 = optimaldetector(sigint2, sigint1s2);
+        %         if cc2 > cc1
+        %             diffGreatestCC = sigint2-sigint1s2;
+        %         else
+        %             diffGreatestCC = sigint2-sigint1;
+        %         end
+        % end
         
         bDecisionMethod = handles.bDecisionMethod; 
         
@@ -858,7 +864,7 @@ for k = 1:Nsim
                     decision(2) = optimaldetector(diff12,template,fs_intrep);
                     decision(3) = optimaldetector(diffGreatestCC,template,fs_intrep); 
                     
-                    decision = decision / (nchn_dec); % number of audio channels
+                    % decision = decision / (nchn_dec); % number of audio channels
                     
                 case 2
                     decision(1) = optimaldetector(diff11,template);
@@ -879,12 +885,13 @@ for k = 1:Nsim
                     value_Tr = 1000; % arbitrary value
             end
                         
-            value_De = decision(3);% -max(decision(1:2));
-            
-            if idx_decision == 3 & value_De > value_Tr
-                idx_decision = 3;
+            % value_De = max(decision(1:2)); % decision(3)
+            % 
+            if idx_decision ~= 3 % & value_De > value_Tr
+                disp('')
+            %     idx_decision = 3;
             else
-                idx_decision = 1; % randi(3);
+            %     idx_decision = randi(3); % 1
             end
             
         end
