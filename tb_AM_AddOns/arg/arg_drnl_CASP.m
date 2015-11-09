@@ -66,7 +66,7 @@ definput.keyvals.maxouts = [-21.5255 -21.8778 -19.2899 -22.0003 -35.3780 -45.173
 % figure; plot(maxfreqs,maxouts);
     
 % Gain after DRNL:
-definput.keyvals.gain_after_drnl = 17.86;
+definput.keyvals.gain_after_drnl = 50; % 35.72;
 
 %% Other parameters of the CASP model
 % The first in the cell is the default setting:
@@ -94,6 +94,6 @@ definput.groups.lopezpoveda2001 = {... % taken from Lopez-Poveda, Table III
                             'no_output_gain'}; % staples velocity [m/s] at the output
                            
 definput.groups.jepsen2008={...
-                            'gain_after_drnl',17.86}; % 13; Added by AO: 17.86 = -6 + 23.86 dB
+                            'gain_after_drnl',17.86}; % 26.36 dB for matching 60 dB SPL point, 33.5 for 10 dB SPL; Added by AO: 17.86 = -6 + 23.86 dB
 definput.groups.jepsen2008test={...
                             'gain_after_drnl',17.86}; % 13; Added by AO: 17.86 = -6 + 23.86 dB

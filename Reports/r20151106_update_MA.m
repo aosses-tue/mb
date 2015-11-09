@@ -22,8 +22,9 @@ f1 = 'meas-ac-4-dist-ane-HP.wav';
 
 bSave = 0;
 bPart1 = 0;
-bPart2 = 1;
+bPart2 = 0;
 bPart3 = 0;
+bPart4 = 1; % Jeroen's outer-, middle- ear response
 
 if bPart1
 try
@@ -141,6 +142,37 @@ if bPart3
         
     disp('')
 end
+
+if bPart4
+    
+    dirs1 = 'D:\Documenten-TUe\01-Text\05-Doc-TUe\lx2015-10-30-update-to-music-instruments\Audio-drnl\';
+    dirs2 = 'D:\Documenten-TUe\01-Text\05-Doc-TUe\lx2015-10-30-update-to-music-instruments\Audio-gamma\';
+    
+    files = {   'sum-audfilter-fc-3983-Hz.wav'; ...
+                'file1-audfilter-fc-3983-Hz.wav'; ...
+                'file2-audfilter-fc-3983-Hz.wav'}
+    for i = 1:3
+        [y(:,i) fs] = Wavread([dirs1 files{i}]); 
+    end
+    y = gaindb(y,0); % approx. 2*17 dB
+    
+    files = {   'sum-audfilter-fc-3990-Hz.wav'; ...
+                'file1-audfilter-fc-3990-Hz.wav'; ...
+                'file2-audfilter-fc-3990-Hz.wav'}
+    for i = 1:3
+        x(:,i) = Wavread([dirs2 files{i}]);
+    end
+    
+    t = (1:size(x,1))/fs;
+    
+    close all
+    figure;
+    plot(t,x(:,1),t,y(:,1).*y(:,1)+0.08), grid on
+    legend('gamma','drnl');
+    
+end
+
+
 if bDiary
 	diary off
 end

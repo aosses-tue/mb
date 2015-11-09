@@ -299,9 +299,9 @@ for k = 1:Nsim
         end
         
         %%% Add internal noise:
-        [out_interval1   xx] = Add_gaussian_noise(out_interval1,mu,sigma); % Add internal noise
+        [out_interval1   xx] = Add_gaussian_noise(out_interval1  ,mu,sigma); % Add internal noise
         [out_interval1s2 yy] = Add_gaussian_noise(out_interval1s2,mu,sigma); % Add internal noise
-        [out_interval2   zz] = Add_gaussian_noise(out_interval2,mu,sigma); % Add internal noise
+        [out_interval2   zz] = Add_gaussian_noise(out_interval2  ,mu,sigma); % Add internal noise
 
         [a b] = size(template);
         % one audio-frequency band but all the modulation filterbanks:
@@ -317,20 +317,21 @@ for k = 1:Nsim
         noise3 = normrnd(mu,sigma,sizeT(1),sizeT(2));
         
         intM = handles.audio.avg_intrep_M; % mean([out_N0 out_N1 out_N2],2);
-        intrep_M0   = intM + noise1; 
-        intrep_M1   = intM + noise2; 
-        intrep_M2   = intM + noise3; 
+        intrep_M0   = intM + 0*noise1; 
+        intrep_M1   = intM + 0*noise2; 
+        intrep_M2   = intM + 0*noise3; 
 
-        diff11 =   sigint1-intrep_M0;
-        diff12 = sigint1s2-intrep_M1;
         diff20 =   sigint2-intrep_M2; %tt = 1:length(diff11); figure; plot(tt,diff11+30,tt,diff12,tt,diff20-30); legend('11','12','20')
+        diff11 =   sigint1-intrep_M0; % Only internal noise (for deterministic maskers)
+        diff12 = sigint1s2-intrep_M1; % Only internal noise (for deterministic maskers)
                 
         bDecisionMethod = handles.bDecisionMethod; 
         
         switch bDecisionMethod 
             case{2,3,4}
-                cc1 = optimaldetector(sigint2, sigint1);
-                cc2 = optimaldetector(sigint2, sigint1s2);
+                % Selects noise interval with the largest CCV (see Dau1996b, pp. 3629)
+                cc1 = optimaldetector(template, sigint1  );
+                cc2 = optimaldetector(template, sigint1s2);
                 if cc2 > cc1
                     diffGreatestCC = sigint2-sigint1s2;
                 else
@@ -449,7 +450,7 @@ for k = 1:Nsim
             
             [xx idx_decision] = max(decision);
             
-            decision = max(decision,normrnd(mu,sigma,1,3));
+            decision = max( decision,normrnd(mu,sigma,1,3) );
             
             switch nDown
                 case 1

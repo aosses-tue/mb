@@ -19,8 +19,8 @@ function filename = AMTControl_Examples(nExample)
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 10/08/2015
-% Last update on: 10/08/2015 
-% Last use on   : 19/08/2015 
+% Last update on: 09/11/2015 
+% Last use on   : 09/11/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 bDiary = 0;
@@ -270,7 +270,24 @@ switch nExample
         if nargout == 0
             Wavwrite(outsig1,fs,filename1);
             Wavwrite(outsig2,fs,filename2);
-        end    
+        end   
+        
+    case {10, 11} % forward masking
+        fname = [dirout 'jepsen2008-fig7-4000-Hz-tone-60-dB-dur-700-ms-offset-200-ms.wav'];
+        filename1 = fname;
+        
+        fname = [dirout 'jepsen2008-fig7-2400-Hz-tone-60-dB-dur-700-ms-offset-200-ms.wav'];
+        filename3 = fname;
+            
+        fname = [dirout 'jepsen2008-fig7-4000-Hz-tone-60-dB-dur-250-ms-onset-200-ms.wav'];
+        filename2 = fname;
+        filename{2} = filename2;
+        
+        if nExample == 10;
+            filename{1} = filename1;
+        elseif nExample == 11
+            filename{1} = filename3;
+        end
         
 end
 

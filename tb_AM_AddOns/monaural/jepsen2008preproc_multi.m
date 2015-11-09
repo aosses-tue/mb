@@ -117,7 +117,7 @@ end
 outsig = ihcenvelope(outsig,fs,'argimport',flags,keyvals);
 
 %% 4. Gain + Expansion stage
-outsig = gaindb(outsig,keyvals.gain_after_drnl); % default AMT is 50 dB
+% outsig = gaindb(outsig,keyvals.gain_after_drnl); % default AMT is 50 dB
 outsig = outsig.^2;
 
 %% 5. non-linear adaptation loops

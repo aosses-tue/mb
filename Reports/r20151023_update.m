@@ -31,7 +31,7 @@ hFigs = [];
 
 do_outermiddleear     = 0;
 do_jepsen2008_fig_2a  = 1; 
-do_jepsen2008_fig_2b  = 1;
+do_jepsen2008_fig_2b  = 0;
 
 bDoTFMF     = 0;
 bDoTFDRNL   = 0;

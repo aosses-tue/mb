@@ -1256,18 +1256,18 @@ else % if NOT PsySound
             
             bPlotParams = il_get_plotParams(handles);
             
-            if sum( bPlotParams(2:4) ) == 0 % we need only the final outout of the peripheral processing
+            if sum( bPlotParams(2:4) ) == 0 % we need only the final output of the peripheral processing
                 
                 [out_1 , fc ,fcm] = dau1997preproc(insig1,fs);
                 out_1 = Add_gaussian_noise(out_1{fc2plot_idx},mu,sigma); % Add internal noise
                 
             else
                 
-                [out_1 , fc ,fcm, extraouts] = dau1997preproc_1Ch(insig1,fs,fc);
+                [out_1 , fc ,fcm, fs_intrep, extraouts] = dau1997preproc_1Ch(insig1,fs,fc);
                 if bPlotParams(2) == 1
                     filteroutsig = extraouts.out01_filterbank;
                     
-                    f1 = sprintf('%sAMTControl-Examples%sfile1-audfilter-fc-%.0f-Hz.wav',Get_TUe_paths('outputs'),delim,fc);
+                    f1 = sprintf('%sAMTControl-Examples%sGammatone-out%sfile1-audfilter-fc-%.0f-Hz.wav',Get_TUe_paths('outputs'),delim,delim,fc);
                     Wavwrite(filteroutsig,fs,f1);
                 end
             end
@@ -1285,15 +1285,32 @@ else % if NOT PsySound
                 
             else
                 
-                [out_2 , fc, fcm, extraouts] = dau1997preproc_1Ch(insig2,fs,fc);
+                [out_2 , fc, fcm, fs_intrep, extraouts] = dau1997preproc_1Ch(insig2,fs,fc);
                 if bPlotParams(2) == 1
                     filteroutsig = extraouts.out01_filterbank;
                     
-                    f1 = sprintf('%sAMTControl-Examples%sfile2-audfilter-fc-%.0f-Hz.wav',Get_TUe_paths('outputs'),delim,fc);
+                    f1 = sprintf('%sAMTControl-Examples%sGammatone-out%sfile2-audfilter-fc-%.0f-Hz.wav',Get_TUe_paths('outputs'),delim,delim,fc);
                     Wavwrite(filteroutsig,fs,f1);
                 end
                 
             end
+            
+            if sum( bPlotParams(2:4) ) == 0 % we need only the final output of the peripheral processing
+                
+                [out_3 , fc ,fcm] = dau1997preproc(insig1+insig2,fs);
+                out_3 = Add_gaussian_noise(out_3{fc2plot_idx},mu,sigma); % Add internal noise
+                
+            else
+                
+                [out_3 , fc ,fcm, fs_intrep, extraouts] = dau1997preproc_1Ch(insig1+insig2,fs,fc);
+                if bPlotParams(2) == 1
+                    filteroutsig = extraouts.out01_filterbank;
+                    
+                    f3 = sprintf('%sAMTControl-Examples%sGammatone-out%ssum-audfilter-fc-%.0f-Hz.wav',Get_TUe_paths('outputs'),delim,delim,fc);
+                    Wavwrite(filteroutsig,fs,f3);
+                end
+            end
+                        
             out_2.out   = out_2;
             out_2.fs    = fs;
             out_2.fc    = fc;
@@ -1343,6 +1360,24 @@ else % if NOT PsySound
                     for i = 1:length(fc)
                         f1 = sprintf('%sfile2-audfilter-fc-%.0f-Hz.wav',dirtmp,fc(i));
                         Wavwrite(filteroutsig(:,i),fs,f1);
+                    end
+                end
+            end
+            
+            if sum( bPlotParams(2:4) ) == 0 % we need only the final output of the peripheral processing
+                
+                [out_3 , fc ,fcm] = jepsen2008preproc(insig1+insig2,fs,'lowpass');
+                out_3 = Add_gaussian_noise(out_3,mu,sigma); % Add internal noise
+                
+            else
+                
+                [out_3 , fc ,fcm, extraouts] = jepsen2008preproc(insig1+insig2,fs,'lowpass');
+                if bPlotParams(2) == 1
+                    filteroutsig = extraouts.out_filterbank;
+                    
+                    for i = 1:length(fc)
+                        f3 = sprintf('%sAMTControl-Examples%sDRNL-out%ssum-audfilter-fc-%.0f-Hz.wav',Get_TUe_paths('outputs'),delim,delim,fc(i));
+                        Wavwrite(filteroutsig(:,i),fs,f3);
                     end
                 end
             end

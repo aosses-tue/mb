@@ -144,50 +144,6 @@ if handles_man.do_simulation == 1
     outs.audio = handles.audio; % it includes template
 end
 
-%%% In September 2015, old results: 
-%  jepsen2008preproc_1Ch
-%         criterion
-%         4    /   2
-% -------------------
-%   0.4   -1.5 /
-%** 0.5   0.5  /
-%   0.7   3.5  /
-%   0.8   4.5  /
-%   0.9   5.5  /
-
-%  dau1996preproc_1Ch
-%           criterion
-%           4    /   2
-% -------------------
-%   0.5   -10.5  /
-%   0.8    -6.5  /
-%   1.1    -3.5  /
-%   1.5    -0.5  /
-%** 1.7     0.5  /
-
-
-%%% On 24/09/2015: 
-%  jepsen2008preproc_1Ch
-%         criterion
-%         4    /   2
-% -------------------
-%   0.4    /
-%** 0.5     /
-%   0.7     /
-%   0.8     /
-%   0.9     /
-
-%  dau1996preproc_1Ch
-%           criterion
-%           4    /   2
-% -------------------
-%   0.5   0   /
-%   0.8   2.5 /
-%   1.1     /
-%   1.5     /
-%** 1.7     /
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 3. Executes on button press in btnLoad.
 function handles = il_btnLoad(filename1, filename2, handles)
@@ -348,7 +304,7 @@ out_1 = [];
 out_2 = [];
 
 mu    = 0;
-sigma   = 0;
+sigmaT = 0; % sigma template
 
 tmp.bAddSilence2noise   = handles.bAddSilence2noise;
 if tmp.bAddSilence2noise
@@ -380,7 +336,7 @@ switch nAnalyser
     
     case 99
         
-        [out_1Mean out_2Mean fs_intrep tmp] = Get_internalrep_stochastic(insig1,insig2supra,fs,'dau1996a',sigma,Ntimes,fc2plot_idx,tmp);
+        [out_1Mean out_2Mean fs_intrep tmp] = Get_internalrep_stochastic(insig1,insig2supra,fs,'dau1996a',sigmaT,Ntimes,fc2plot_idx,tmp);
         template = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
         
         handles.script_template = tmp.script_template;
@@ -398,7 +354,7 @@ switch nAnalyser
         
     case 100
         
-        [out_1Mean out_2Mean fs_intrep tmp] = Get_internalrep_stochastic(insig1,insig2supra,fs,'dau1996',sigma,Ntimes,fc2plot_idx,tmp);
+        [out_1Mean out_2Mean fs_intrep tmp] = Get_internalrep_stochastic(insig1,insig2supra,fs,'dau1996',sigmaT,Ntimes,fc2plot_idx,tmp);
         template = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
         
         handles.script_template = tmp.script_template;
@@ -420,7 +376,7 @@ switch nAnalyser
         tmp.chn_modfilt     = 1:12;%:12;
         tmp.resample_intrep = handles.resample_intrep;
         handles.chn_modfilt = tmp.chn_modfilt;
-        [out_1Mean out_2Mean fs_intrep tmp] = Get_internalrep_stochastic(insig1,insig2supra,fs,'dau1997',sigma,Ntimes,fc2plot_idx,tmp);
+        [out_1Mean out_2Mean fs_intrep tmp] = Get_internalrep_stochastic(insig1,insig2supra,fs,'dau1997',sigmaT,Ntimes,fc2plot_idx,tmp);
                 
         template = Get_template_append(out_1Mean,out_2Mean,fs_intrep);
         idxnan = find(isnan(out_1Mean)); out_1Mean(idxnan) = 0; out_2Mean(idxnan) = 0;
@@ -441,7 +397,7 @@ switch nAnalyser
     case 103
         
         tmp.resample_intrep = handles.resample_intrep;
-        [out_1Mean out_2Mean fs_intrep tmp] = Get_internalrep_stochastic(insig1,insig2supra,fs,'jepsen2008-modfilterbank',sigma,Ntimes,fc2plot_idx,tmp);
+        [out_1Mean out_2Mean fs_intrep tmp] = Get_internalrep_stochastic(insig1,insig2supra,fs,'jepsen2008-modfilterbank',sigmaT,Ntimes,fc2plot_idx,tmp);
                 
         template = Get_template_append(out_1Mean,out_2Mean,fs_intrep); % figure; plot(out_2Mean-out_1Mean)
         handles.script_template = tmp.script_template;
@@ -451,7 +407,7 @@ switch nAnalyser
 	case 104
         
         tmp.resample_intrep = handles.resample_intrep;
-        [out_1Mean out_2Mean fs_intrep tmp] = Get_internalrep_stochastic(insig1,insig2supra,fs,'jepsen2008-lowpass',sigma,Ntimes,fc2plot_idx,tmp);
+        [out_1Mean out_2Mean fs_intrep tmp] = Get_internalrep_stochastic(insig1,insig2supra,fs,'jepsen2008-lowpass',sigmaT,Ntimes,fc2plot_idx,tmp);
                 
         template = Get_template_append(out_1Mean,out_2Mean,fs_intrep); % figure; plot(out_2Mean-out_1Mean)
         handles.script_template = tmp.script_template;
