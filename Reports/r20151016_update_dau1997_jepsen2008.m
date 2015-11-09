@@ -49,7 +49,7 @@ end
 
 if nargin == 0
     %         1 2 3 4 5 6 7 8
-    bParts = [1 0 0 0 0 0 1 0];
+    bParts = [1 0 1 0 0 0 1 0];
     % CC:     0 1 0 - - 1 0 -
     %                   0       % if 2000-Hz  
 end
@@ -65,13 +65,14 @@ bPart6 = bParts(6); % signal integration, 2-kHz tone
 bPart7 = bParts(7); % Transition simultaneous-forward masking. Similar to bPart3
 bPart8 = bParts(8); % plotting results of bPart7 and all the other new results
 
-opts.nAnalyser      = 100; % 101 = modfilterbank, 103 - jepsen2008
+opts.nAnalyser      = 103; % 101 = modfilterbank, 103 - jepsen2008
 
-opts.bDecisionMethod = 2; % 2 - cc; 4 - dprime
+opts.bDecisionMethod = 5; % 2 - cc; 4 - dprime; 5 - cc updated
 
 switch opts.nAnalyser
     case 100
         opts.sigma   = 300; % 0.4 for multi-channel, 1.5 for single channel
+        error('');
         %       single  multi
         % 350 - 1.29
         % 300 - 1.14
@@ -80,12 +81,12 @@ switch opts.nAnalyser
         % 200 - 0.72    
         %               0.2347
     case 101
-        opts.sigma   = 0.68;    
+        opts.sigma   = 0.8; % 0.68;    
                                 
         opts.modfiltertype = 'dau1997wLP';
 
     case {103, 104}
-        opts.sigma   = 0.59; % 0.59; % 0.615 = 17.86 dB; % 0.45 if gain_after_drnl = 13 dB
+        opts.sigma   = 0.88; % 0.59; % 0.615 = 17.86 dB; % 0.45 if gain_after_drnl = 13 dB
     
 end
     
@@ -101,7 +102,10 @@ opts.Reversals4avg  =  6; % 10
 
 opts.do_template    =  1;
 opts.do_simulation  =  1;
-opts.Nreversals     =  8;
+opts.Nreversals     =  10;
+opts.nDown          =  2;
+% opts.experiment_type = 'AFC';
+opts.experiment_type = 'constant';
 
 bDebug = 0;
 opts.bDebug = bDebug;
@@ -111,7 +115,7 @@ count_saved_figures = 1;
 if bPart1
     
     tic
-    for j = 0 % 0:1
+    for j = 1 % 0:1
         % To do: save template
         bTones = j;
         bBBN = ~bTones;
@@ -123,7 +127,7 @@ if bPart1
             opts.filename1 = [Get_TUe_paths('outputs') 'AMTControl-examples' delim 'tone-f-1000-Hz-at-60-dB-dur-800-ms.wav'];
             opts.filename2 = [Get_TUe_paths('outputs') 'AMTControl-examples' delim 'tone-f-1000-Hz-at-42-dB-dur-800-ms.wav'];
             opts.Ntimes     = 1;
-            opts.Nsim       = 10;
+            opts.Nsim       = 30;
         end
         if bBBN
             opts.DurRamps   = 0; % additional cosine ramps
@@ -135,15 +139,16 @@ if bPart1
             opts.filename1 = [Get_TUe_paths('outputs') 'audio-20151006' delim 'jepsen2008-BW-at-60-dB-dur-500-ms-2.wav'];
             opts.filename2 = [Get_TUe_paths('outputs') 'audio-20151006' delim 'jepsen2008-BW-at-42-dB-dur-500-ms-2.wav']; 
             opts.Ntimes     = 1;
-            opts.Nsim       = 4;
+            opts.Nsim       = 2;
         end
 
         opts = il_get_freqs(erbc2analyse,opts);
 
         opts.Gain4supra = 16; % previous results with Gain4supra = 5 dB
+        opts.Level_start = -15;
         opts.audio.fs   = fs;
 
-        opts.StepdB     = 8; 
+        opts.StepdB     = 4; 
         opts.StepdBmin  = 1;
 
         refSPL  = 60; % [20 30 40 50 60 70];
@@ -154,7 +159,7 @@ if bPart1
             opts.Gain2file2 = refSPL(i) - 60;
             tr_tmp = AMTControl_cl(opts);
 
-            th_JND(j+1,i) = sum_dB_arit([refSPL(i) testSPL+median(tr_tmp.Threshold)]) - refSPL(i);
+            th_JND(j+1,i)   = sum_dB_arit([refSPL(i) testSPL+median(tr_tmp.Threshold)]) - refSPL(i);
             th_JND25(j+1,i) = sum_dB_arit([refSPL(i) testSPL+prctile(tr_tmp.Threshold,25)]) - refSPL(i);
             th_JND75(j+1,i) = sum_dB_arit([refSPL(i) testSPL+prctile(tr_tmp.Threshold,75)]) - refSPL(i);
 
@@ -302,7 +307,7 @@ if bPart3
     opts.Gain4supra =  10; % 10 dB above the masker level 
     opts.audio.fs   =  fs;
     
-    opts.StepdB = 8; 
+    opts.StepdB = 4; 
     opts.StepdBmin = 1;
     
     opts.DurRamps  = 2; % [ms] additional cosine ramps
@@ -317,7 +322,7 @@ if bPart3
     opts.bDebug = 0;
     %%% k = 1: offset-onset of  0 ms
     %%% k = 2: offset-onset of 30 ms
-    for k = 1:2
+    for k = 1 % :2
         opts.filename2 = fnames{k};
 
         for i = 1:length(testlevels) 
@@ -361,47 +366,62 @@ if bPart3
 %    14.0000   25.5000   37.0000   42.0000
 % 
 % 
-% TTh_30ms =
-% 
-%     20    34    43    52
-%      8    12    17    21
-% 
-% 
-% Prct75_30ms =
-% 
-%     20    34    43    52
-%      8    12    17    21
-% 
-% 
-% Prct25_30ms =
-% 
-%     20    34    43    52
-%      8    12    17    21  
+% TTh_30ms    = 20    34    43    52
+%                8    12    17    21
+% Prct75_30ms = 20    34    43    52
+%                8    12    17    21
+% Prct25_30ms = 20    34    43    52
+%                8    12    17    21  
 
 %%% Jepsen2008:
-% TTh_00ms =
-%    27.0000   30.0000   33.0000   38.0000
-%    21.0000   27.0000   34.2500   43.0000
+% TTh_00ms =    27.0000   30.0000   33.0000   38.0000
+%               21.0000   27.0000   34.2500   43.0000
 % 
-% Prct75_00ms =
-%    27.0000   30.0000   33.0000   38.0000
-%    21.0000   27.0000   34.7500   43.0000
+% Prct75_00ms = 27.0000   30.0000   33.0000   38.0000
+%               21.0000   27.0000   34.7500   43.0000
 % 
-% Prct25_00ms =
-%     27    30    33    38
-%     21    27    34    43
+% Prct25_00ms = 27    30    33    38
+%               21    27    34    43
 % 
-% TTh_30ms =
-%     25    30    32    35
-%     18    20    25    29
+% TTh_30ms    = 25    30    32    35
+%               18    20    25    29
+% Prct75_30ms = 25    30    32    35
+%               18    20    25    29
+% Prct25_30ms = 25    30    32    35
+%               18    20    25    29
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Nieuwe resultaten op 6/11
+%% Dau1997 (first row=on-freq; second row=off-freq):
+% TTh_00ms =    27.5000   35.0000   48.0000   62.5000
+%               14.2500   25.5000   36.2500   41.7500
+% Prct75_00ms = 28.0000   38.0000   50.7500   63.0000
+%               14.7500   26.0000   36.5000   42.0000
+% Prct25_00ms = 25.7500   33.7500   44.7500   61.0000
+%               13.5000   25.0000   35.7500   41.2500
 % 
-% Prct75_30ms =
-%     25    30    32    35
-%     18    20    25    29
+% TTh_30ms =    20.0000   34.0000   42.2500   51.5000
+%                7.5000   12.0000   17.2500   20.5000
+% Prct75_30ms = 20.2500   34.2500   42.5000   51.7500
+%                8.0000   12.0000   18.2500   21.5000
+% Prct25_30ms = 19.5000   34.0000   41.7500   51.2500
+%                7.0000   11.5000   17.0000   19.7500
+%% Jepsen2008
+% TTh_00ms =    29.0000   31.0000   32.0000   37.7500
+%               21.0000   26.7500   34.2500   43.0000
+% Prct75_00ms = 29.2500   31.5000   33.0000   38.5000
+%               21.5000   27.2500   35.2500   43.2500
+% Prct25_00ms = 28.7500   29.7500   31.7500   37.5000
+%               21.0000   26.5000   33.2500   42.0000
 % 
-% Prct25_30ms =
-%     25    30    32    35
-%     18    20    25    29
+% TTh_30ms    = 26.0000   29.7500   32.2500   35.5000
+%               17.2500   20.0000   25.0000   29.0000
+% Prct75_30ms = 26.0000   30.0000   32.5000   36.5000
+%               17.7500   20.5000   25.7500   29.2500 
+% Prct25_30ms = 26.0000   29.0000   32.0000   34.7500
+%               16.5000   19.7500   24.7500   29.0000
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 end
 
 
