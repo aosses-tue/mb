@@ -385,7 +385,12 @@ for i = 1:Ntimes
                 if bDo_only_one_intrep == 0
                     [out_2pre , fc] = jepsen2008preproc_multi(intervalSN,fs,fcmin,fcmax,fbstyle,opts.resample_intrep);
                 end
-                [Ni,Mi] = size(out_1pre{1});
+                switch fbstyle
+                    case 'modfilterbank'
+                        [Ni,Mi] = size(out_1pre{1});
+                    case 'lowpass'
+                        [Ni,Mi] = size(out_1pre);
+                end
                 outs.script_template = 'jepsen2008preproc_multi';
             end
             if bSingleChannel == 1

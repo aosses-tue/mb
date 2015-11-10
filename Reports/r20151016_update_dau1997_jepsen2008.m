@@ -49,7 +49,7 @@ end
 
 if nargin == 0
     %         1 2 3 4 5 6 7 8
-    bParts = [1 0 1 0 0 0 1 0];
+    bParts = [0 0 1 0 0 0 1 0];
     % CC:     0 1 0 - - 1 0 -
     %                   0       % if 2000-Hz  
 end
@@ -65,7 +65,7 @@ bPart6 = bParts(6); % signal integration, 2-kHz tone
 bPart7 = bParts(7); % Transition simultaneous-forward masking. Similar to bPart3
 bPart8 = bParts(8); % plotting results of bPart7 and all the other new results
 
-opts.nAnalyser      = 103; % 101 = modfilterbank, 103 - jepsen2008
+opts.nAnalyser      = 104; % 101 = modfilterbank, 103 - jepsen2008
 
 opts.bDecisionMethod = 5; % 2 - cc; 4 - dprime; 5 - cc updated
 
@@ -104,8 +104,8 @@ opts.do_template    =  1;
 opts.do_simulation  =  1;
 opts.Nreversals     =  10;
 opts.nDown          =  2;
-% opts.experiment_type = 'AFC';
-opts.experiment_type = 'constant';
+opts.experiment_type = 'AFC';
+% opts.experiment_type = 'constant';
 
 bDebug = 0;
 opts.bDebug = bDebug;
@@ -326,7 +326,7 @@ if bPart3
         opts.filename2 = fnames{k};
 
         for i = 1:length(testlevels) 
-            for j = 1:2
+            for j = 1% :2
                 
                 opts.filename1 = fnamesM{j}; % 1 is on-freq, 2 is off-freq
                 opts.Gain2file1 = testlevels(j,i)-60;

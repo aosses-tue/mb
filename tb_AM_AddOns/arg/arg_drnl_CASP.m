@@ -94,6 +94,6 @@ definput.groups.lopezpoveda2001 = {... % taken from Lopez-Poveda, Table III
                             'no_output_gain'}; % staples velocity [m/s] at the output
                            
 definput.groups.jepsen2008={...
-                            'gain_after_drnl',17.86}; % 26.36 dB for matching 60 dB SPL point, 33.5 for 10 dB SPL; Added by AO: 17.86 = -6 + 23.86 dB
+                            'gain_after_drnl',26.36}; % 26.36 dB for matching 60 dB SPL point, 33.5 for 10 dB SPL; Added by AO: 17.86 = -6 + 23.86 dB
 definput.groups.jepsen2008test={...
                             'gain_after_drnl',17.86}; % 13; Added by AO: 17.86 = -6 + 23.86 dB

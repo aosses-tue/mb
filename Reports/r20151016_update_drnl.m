@@ -32,7 +32,7 @@ N = 8192*8;
 K = 22050;
 fs = 44100;
 
-bSave = 1;
+bSave = 0;
 hFigs = [];
 
 do_lopezpoveda_tabII = 0;
@@ -640,11 +640,12 @@ if do_dau1996_fig3
     
     cl = {'b','r'};
     count = 1;
+    
     figure;
     for Lpidx = Lp 
-        % A = 0.5*pref*10^( Lpidx/20 ); % A signal producing 100 dB
-        % insig = A*ones(fs*dur,1);
-        insig = Create_sin(800,dur,fs);
+        
+        f2model = 4000;
+        insig = Create_sin(f2model,dur,fs);
         insig = setdbspl(insig,Lpidx);
         insig = Do_cos_ramp(insig,fs,20,0);
         
@@ -652,8 +653,8 @@ if do_dau1996_fig3
         
         N2average = round(length(insig)/5); % last 20 percent
     
-        [os xx xx xx outt] = dau1997preproc_1Ch(insig,fs,800);
-        os2 = jepsen2008preproc_1Ch(insig,fs,800);
+        [os xx xx xx outt] = dau1997preproc_1Ch(insig,fs,f2model);
+        os2 = jepsen2008preproc_1Ch(insig,fs,f2model);
         
         os_mean(1,count) = mean(os(end-N2average+1:end,1));
         os_max(1,count) = max(os(:,1));
