@@ -22,7 +22,7 @@ definput.groups.adt_dau       = {'tau',[0.005 0.050 0.129 0.253 0.500]};        
 definput.groups.adt_dau1996   = {'tau',[0.005 0.050 0.129 0.253 0.500],'limit',0}; % 0.005  0.050  0.129   0.253  0.500
 definput.groups.adt_breebaart = {'tau',linspace(0.005,0.5,5)};                     % 0.005  0.1288 0.2525  0.3762 0.5000
 definput.groups.adt_puschel   = {'tau',linspace(0.005,0.5,5),'limit',0};           % 0.005  0.1288 0.2525  0.3762 0.5000
-definput.groups.adt_jepsen    = {'tau',[0.005 0.050 0.129 0.253 0.500],'intnoise_dB',9}; % 0.005  0.050  0.129   0.253  0.500
+definput.groups.adt_jepsen    = {'tau',[0.005 0.050 0.129 0.253 0.500],'limit',10,'intnoise_dB',9}; % 0.005  0.050  0.129   0.253  0.500
 
 %   Url: http://amtoolbox.sourceforge.net/doc/comp/arg_adaptloop.php
 

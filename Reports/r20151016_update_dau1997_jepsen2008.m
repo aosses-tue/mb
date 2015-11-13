@@ -49,7 +49,7 @@ end
 
 if nargin == 0
     %         1 2 3 4 5 6 7 8
-    bParts = [0 0 1 0 0 0 1 0];
+    bParts = [1 0 1 0 0 0 1 0];
     % CC:     0 1 0 - - 1 0 -
     %                   0       % if 2000-Hz  
 end
@@ -86,7 +86,7 @@ switch opts.nAnalyser
         opts.modfiltertype = 'dau1997wLP';
 
     case {103, 104}
-        opts.sigma   = 0.88; % 0.59; % 0.615 = 17.86 dB; % 0.45 if gain_after_drnl = 13 dB
+        opts.sigma   = 0.44; %0.88; % 0.59; % 0.615 = 17.86 dB; % 0.45 if gain_after_drnl = 13 dB
     
 end
     
@@ -127,7 +127,7 @@ if bPart1
             opts.filename1 = [Get_TUe_paths('outputs') 'AMTControl-examples' delim 'tone-f-1000-Hz-at-60-dB-dur-800-ms.wav'];
             opts.filename2 = [Get_TUe_paths('outputs') 'AMTControl-examples' delim 'tone-f-1000-Hz-at-42-dB-dur-800-ms.wav'];
             opts.Ntimes     = 1;
-            opts.Nsim       = 30;
+            opts.Nsim       = 4;
         end
         if bBBN
             opts.DurRamps   = 0; % additional cosine ramps
@@ -145,7 +145,7 @@ if bPart1
         opts = il_get_freqs(erbc2analyse,opts);
 
         opts.Gain4supra = 16; % previous results with Gain4supra = 5 dB
-        opts.Level_start = -15;
+        opts.Level_start = 8;
         opts.audio.fs   = fs;
 
         opts.StepdB     = 4; 
@@ -298,8 +298,8 @@ if bPart3
     fnames  = {[dir_where7 'jepsen2008-fig7-4000-Hz-tone-60-dB-dur-250-ms-onset-200-ms.wav'], ...
                [dir_where7 'jepsen2008-fig7-4000-Hz-tone-60-dB-dur-250-ms-onset-230-ms.wav']}; 
    
-	testlevels      = [40 60 70 80; ... % levels for on-freq
-                       60 70 80 85];    % levels for off-freq
+	testlevels      = 60; % [40 60 70 80; ... % levels for on-freq
+                      %  60 70 80 85];    % levels for off-freq
                    
 	if opts.nAnalyser == 101 | opts.nAnalyser == 103
         opts.resample_intrep = 'resample_intrep';
@@ -317,7 +317,7 @@ if bPart3
     opts.Silence2noise = 500e-3; % 200 + silence = 700. If sil = 400e-3, then signal dur = 300e-3 -> simultaneous masking
     opts.increment_method = 'level';
     
-    opts.Ntimes = 25;
+    opts.Ntimes = 1;
     opts.Nsim = 4;
     opts.bDebug = 0;
     %%% k = 1: offset-onset of  0 ms

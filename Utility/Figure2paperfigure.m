@@ -6,14 +6,14 @@ function hOutput = Figure2paperfigure(nHandle,numRows,numCols)
 %       GUI. hOutput is the output figure handle of the resulting figure
 % 
 % 2. Additional info:
-%       Tested cross-platform: No
+%       Tested cross-platform: Yes
 %
 % 3. Stand-alone example:
 %       
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 26/09/2014
-% Last update on: 26/09/2014 % Update this date manually
-% Last use on   : 07/01/2015 % Update this date manually
+% Last update on: 26/09/2014 
+% Last use on   : 07/01/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 2

@@ -55,8 +55,11 @@ insig=gaindb(insig,dboffset-94); % Scales insig to Pa (gain of 6 dB if conventio
 %       Typical human headphone-to-eardrum gain. Input insig is assumed to 
 %       be in [Pa]
 if flags.do_outerear
-    hp_fir = headphonefilter(fs);      % Getting the filter coefficients at fs
-    insig = filter(hp_fir,1,insig);    
+    hp_fir = headphonefilter(fs);   % Getting the filter coefficients at fs
+    Ntmp = ceil(length(hp_fir)/2);  % Added by AO
+    insig = [insig; zeros(Ntmp,1)]; % Added by AO
+    insig = filter(hp_fir,1,insig);
+    insig = insig(Ntmp+1:end);      % Added by AO
 end
 
 %% 2. Middle-ear filter
@@ -68,7 +71,7 @@ end
 if flags.do_middleear
     
     me_fir = middleearfilter(fs);
-    insig = filter(me_fir,1,insig);  
+    insig = filter(me_fir,1,insig); % This is already a minimum phase filter 
     me_gain_TF = max( 20*log10(abs(freqz(me_fir,1,8192))) ); % equivalent to FFT of 8192*2 points
     params.me_gain_TF = me_gain_TF;
     

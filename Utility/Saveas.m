@@ -9,9 +9,9 @@ function Saveas(h, filename, option)
 %           - option.format = 'emf'; for emf format
 %
 % Programmed by Alejandro Osses, ExpORL, KU Leuven, Belgium 2014
-% Created in    : January-March 2014
-% Last update on: 20/08/2014 % Update this date manually
-% Last use on   : 28/10/2014 % Update this date manually
+% Created in    : January-March 2014-2015
+% Last update on: 20/08/2014 
+% Last use on   : 11/11/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 3

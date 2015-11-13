@@ -113,6 +113,15 @@ if nargout >= 4
     outs.out_filterbank = outsig;
 end
 
+if flags.do_absolutethreshold
+    N = size(outsig,1);
+    M = size(outsig,2);
+    noise = rand(N,M)-0.5; 
+    noise = setdbspl(noise,keyvals.intnoise_dB); % rmsdb(noise) + 100;
+    
+    outsig = outsig + noise;
+end
+
 %% 3. 'haircell' envelope extraction
 outsig = ihcenvelope(outsig,fs,'argimport',flags,keyvals);
 
@@ -122,10 +131,6 @@ outsig = outsig.^2;
 
 %% 5. non-linear adaptation loops
 outsig = adaptloop(outsig,fs,'argimport',flags,keyvals);
-
-if flags.do_absolutethreshold
-    warning('absolute threshold only implemented in 1Ch version')
-end
 
 %% 6. Downsampling (of the internal representations)
 if flags.do_resample_intrep
@@ -149,9 +154,13 @@ end
 
 if flags.do_lowpass
     % Low-pass modulation filter.
-    timeconstant = 20e-3;
-    f0 = 1/(2*pi*timeconstant);
-    [mlp_b mlp_a] = IRIfolp(f0,fs_intrep);
+    
+    % timeconstant = 20e-3; % 20e-3 - 8 Hz (64e-3 is approx 2.5)
+    % f0 = 1/(2*pi*timeconstant);
+    % [mlp_b mlp_a] = IRIfolp(f0,fs_intrep);
+    f0 = 2.5;
+    [mlp_b mlp_a] = butter(2,f0/(fs_intrep/2));
+    
     mfc = f0;
     outsig = filter(mlp_b,mlp_a,outsig);
 end

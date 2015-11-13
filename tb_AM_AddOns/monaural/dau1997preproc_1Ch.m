@@ -86,7 +86,6 @@ extra.insig             = insig;
 extra.out01_filterbank  = outsig; 
 
 % 'haircell' envelope extraction
-% outsig                  = ihcenvelope([zeros(654,1); outsig(655:end,:)],fs,'argimport',flags,keyvals);
 outsig                  = ihcenvelope(outsig,fs,'argimport',flags,keyvals);
 extra.out02_ihc         = outsig;
 

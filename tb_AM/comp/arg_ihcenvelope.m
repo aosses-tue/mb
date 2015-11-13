@@ -5,7 +5,7 @@ function definput=arg_ihcenvelope(definput)
 %   'ihc_jepsen added by AO'
 %
 % Last update on: 28/06/2015 
-% Last use on   : 24/09/2015 
+% Last use on   : 11/11/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
   definput.flags.ihctype={'nodefault','ihc_bernstein','ihc_breebaart','ihc_dau', ...

@@ -1,5 +1,5 @@
-function outs = AMTControl_cl(handles_man)
-% function outs = AMTControl_cl(handles_man)
+function [outs outsIR] = AMTControl_cl(handles_man)
+% function [outs outsIR] = AMTControl_cl(handles_man)
 %
 % 1. Description: 
 %       AMTCONTROL MATLAB code for AMTControl.fig
@@ -142,6 +142,11 @@ if handles_man.do_simulation == 1
         outs.Percentage = handles.Percentage;
     end
     outs.audio = handles.audio; % it includes template
+    
+    if nargout > 1
+        outsIR.out_SN_interval = handles.out_SN_interval;
+        outsIR.out_N_interval = handles.out_N_interval;
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

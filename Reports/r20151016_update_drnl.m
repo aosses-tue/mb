@@ -20,10 +20,9 @@ close all
 bDiary = 0;
 Diary(mfilename,bDiary);
 
-dirout = [Get_TUe_paths('lx_Text') 'lx2015-10-30-decision-CASP' delim 'MATLAB' delim];
+% dirout = [Get_TUe_paths('lx_Text') 'lx2015-10-30-decision-CASP' delim 'MATLAB' delim];
+dirout = [Get_TUe_paths('outputs') 'lx20151111' delim];
 Mkdir(dirout);
-diroutfigs = [dirout 'Figures' delim];
-Mkdir(diroutfigs);
 
 dBFS = 100;
 
@@ -32,7 +31,7 @@ N = 8192*8;
 K = 22050;
 fs = 44100;
 
-bSave = 0;
+bSave = 1;
 hFigs = [];
 
 do_lopezpoveda_tabII = 0;
@@ -268,7 +267,7 @@ if do_lopezpoveda_fig3
     hFigs(end+1) = gcf;
     
     if bSave
-        Saveas(hFigs(end),[diroutfigs 'Isointensity-resp-' type],'epsc');
+        Saveas(hFigs(end),[dirout 'Isointensity-resp-' type],'epsc');
     end
     
     %%%
@@ -308,7 +307,7 @@ if do_lopezpoveda_fig3
         hFigs(end+1) = gcf;
 
         if bSave
-            Saveas(hFigs(end),[diroutfigs 'Isointensity-resp-' type '_dB'],'epsc');
+            Saveas(hFigs(end),[dirout 'Isointensity-resp-' type '_dB'],'epsc');
         end   
     end
 end
@@ -391,7 +390,7 @@ if do_lopezpoveda_fig5
     hFigs(end+1) = gcf;
     
     if bSave
-        Saveas(hFigs(end),[diroutfigs 'DRNL-params-jepsen2008-lopezpoveda2001'],'epsc');
+        Saveas(hFigs(end),[dirout 'DRNL-params-jepsen2008-lopezpoveda2001'],'epsc');
     end
     
 end
@@ -644,10 +643,11 @@ if do_dau1996_fig3
     figure;
     for Lpidx = Lp 
         
-        f2model = 4000;
+        f2model = 800;
+        rampdur = 2; % 2-ms
         insig = Create_sin(f2model,dur,fs);
         insig = setdbspl(insig,Lpidx);
-        insig = Do_cos_ramp(insig,fs,20,0);
+        insig = Do_cos_ramp(insig,fs,rampdur,0);
         
         % insig = [insig; zeros(44100,1)];
         
@@ -687,8 +687,8 @@ if do_dau1996_fig3
     hFigs(end+1) = gcf;
     
     if bSave
-        Saveas(hFigs(end-1),[diroutfigs 'LP-output-max-response'],'epsc');
-        Saveas(hFigs(end)  ,[diroutfigs 'LP-output-steady-response'],'epsc');
+        Saveas(hFigs(end-1),sprintf('%sLP-output-max-response-%.0f-Hz-ramp-%.0f-ms',dirout,f2model,rampdur),'epsc');
+        Saveas(hFigs(end)  ,sprintf('%sLP-output-steady-response-%.0f-Hz-ramp-%.0f-ms',dirout,f2model,rampdur),'epsc');
     end
     
 end

@@ -80,5 +80,3 @@ else
   b = fir2(order,freq,ampl);
 
 end;
-
-

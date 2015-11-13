@@ -403,6 +403,9 @@ for k = 1:Nsim
     masker_interval_avg = []; % make sure it is deleted
     
 end
+
+handles.out_SN_interval = out_interval2;
+handles.out_N_interval = out_interval1s2;
 handles.bDetected = bDetected;
 handles.Percentage = 100*sum(bDetected)/length(bDetected);
 

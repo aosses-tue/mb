@@ -15,7 +15,7 @@ function handles = SimulateAFC(handles)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 nAnalyser       = handles.nAnalyser;
-Level_start     = handles.Gain4supra;
+Level_start     = handles.Level_start; % handles.Gain4supra;
 
 Level_step_i    = handles.StepdB;
 Reversals_stop  = handles.Nreversals;
@@ -110,7 +110,8 @@ for k = 1:Nsim
     Staircase   = [];
     StaircaseCC = [];
     Reversals   = [];
-
+    PresReversals = [];
+    
     nWrong      = 0;
     nCorrect    = 0;
     nReversal   = 0;
@@ -495,6 +496,7 @@ for k = 1:Nsim
                 if nCorrect >= 1
                     nReversal = nReversal + 1;
                     Reversals = [Reversals; Level_current];
+                    PresReversals = [PresReversals; length(Staircase)];
                     if mod(nReversal,2) == 0 & bHalveStepSize 
                         Level_step = max( Level_step/2, StepdBmin );
                     end

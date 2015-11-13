@@ -37,9 +37,9 @@ M = 40;
     h.arrayAddedHandles = 1;
     add2ArraySubplotVer(h);
 
-    stName = Get_date;
-    stName = stName.date2print;
-    Saveas(gcf,[Get_TUe_paths('outputs') mfilename '-' info.title '-' stName]);
+    % stName = Get_date;
+    % stName = stName.date2print;
+    % Saveas(gcf,[Get_TUe_paths('outputs') mfilename '-' info.title '-' stName]);
     close;
     close;
 

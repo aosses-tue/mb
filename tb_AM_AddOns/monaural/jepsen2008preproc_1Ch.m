@@ -116,13 +116,6 @@ if nargout >= 4
     outs.out_filterbank = outsig;
 end
 
-%% 3. 'haircell' envelope extraction
-outsig = ihcenvelope(outsig,fs,'argimport',flags,keyvals);
-
-%% 4. Gain + Expansion stage
-% outsig = gaindb(outsig,keyvals.gain_after_drnl); % default AMT is 50 dB
-outsig = outsig.^2;
-
 if flags.do_absolutethreshold
     N = size(outsig,1);
     M = size(outsig,2);
@@ -131,6 +124,13 @@ if flags.do_absolutethreshold
     
     outsig = outsig + noise;
 end
+
+%% 3. 'haircell' envelope extraction
+outsig = ihcenvelope(outsig,fs,'argimport',flags,keyvals);
+
+%% 4. Gain + Expansion stage:
+%       - Gain was included inside drnl_CASP_debug
+outsig = outsig.^2;
 
 %% 5. non-linear adaptation loops
 outsig = adaptloop(outsig,fs,'argimport',flags,keyvals);
