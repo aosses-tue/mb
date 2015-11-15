@@ -44,7 +44,7 @@ function y = rms(f,varargin)
 % You should have received a copy of the GNU General Public License
 % along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-%   AUTHOR : Peter L. Søndergaard
+%   AUTHOR : Peter L. Soendergaard
   
 %% ------ Checking of input parameters ---------
 

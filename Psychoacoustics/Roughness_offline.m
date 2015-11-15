@@ -221,8 +221,8 @@ for idx_j = 1:m_blocks
         Fei(k,:)	= fft( etmp_td(k,:)-h0(k) ); % changes the phase but not the amplitude
 
         hBPi(k,:)	= 2*real(  ifft( Fei(k,:).*Hweight(k,:) )  );
-        hBPrms(k)	= dw_rms(hBPi(k,:));
-
+        hBPrms(k)	= rms(hBPi(k,:),'dim',2);
+        
         if h0(k)>0
             
             mdept(k) = hBPrms(k)/h0(k);

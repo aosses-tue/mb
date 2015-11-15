@@ -23,10 +23,8 @@ dir_where7 = [Get_TUe_paths('outputs') 'AMTControl-examples' delim];
 dir_out    = [Get_TUe_paths('lx_Text') 'lx2015-10-16-decision-CASP' delim 'Figures-new' delim];
 
 if nargin == 0
-    %         1 2 3 4 5 6 7 8
-    bParts = [1 0 1 0 0 0 1 0];
-    % CC:     0 1 0 - - 1 0 -
-    %                   0       % if 2000-Hz  
+    %         1   2   3 4 5 6 7 8
+    bParts = [NaN NaN 1 0 0 0 1 0];
 end
 
 fs = 44100;
@@ -34,7 +32,7 @@ fs = 44100;
 bPart3 = bParts(3); % Forward masking: on and off-frequency
 bPart4 = bParts(4); % plotting results of bPart3
 
-opts.nAnalyser      = 103; % 101 = modfilterbank, 103 - jepsen2008
+opts.nAnalyser      = 101; % 101 = modfilterbank, 103 - jepsen2008
 
 opts.bDecisionMethod = 5; % 2 - cc; 4 - dprime; 5 - cc updated
 
@@ -71,7 +69,7 @@ count_saved_figures = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if bPart3
     
-    erbc2analyse    = freqtoaud([3500 5000],'erb'); % 14 for 1000 Hz (approx.)  % 
+    erbc2analyse    = freqtoaud([2000 8000],'erb'); % 14 for 1000 Hz (approx.)  % 
     opts            = il_get_freqs(erbc2analyse,opts);
         
     fnamesM = {[dir_where7 'sine-1300-Hz-60-dB.wav'], ...
@@ -81,7 +79,7 @@ if bPart3
                [dir_where7 'randomnoise-fc-1300_BW-100_fmod-0_Mdept-0_SPL-60.wav']};
     fnames  = {[dir_where7 'sine-2000-Hz-ramps-of-20-ms-60-dB.wav']}; 
    
-	testlevels = 80;
+	testlevels = [60 65 70 75 80 85];
                    
 	if opts.nAnalyser == 101 | opts.nAnalyser == 103
         opts.resample_intrep = 'resample_intrep';
@@ -94,38 +92,93 @@ if bPart3
     opts.StepdB     = 8; 
     opts.StepdBmin  = 2;
     
-    opts.DurRamps  = 2; % [ms] additional cosine ramps
+    opts.DurRamps  = 20; % [ms] additional cosine ramps
     opts.bUseRamp  = 1; % additional cosine ramps
     opts.bUseRampS = 0; % additional cosine ramps
     opts.bAddSilence2noise = 0;
     % opts.Silence2noise = 500e-3; % 200 + silence = 700. If sil = 400e-3, then signal dur = 300e-3 -> simultaneous masking
     opts.increment_method = 'level';
     
-    opts.Ntimes = 8;
+    opts.Ntimes = 25;
     opts.Nsim   = 4;
     opts.bDebug = 0;
     
-    for k = 2:5
+    for k = 1% 2:5
         opts.filename2 = fnames{1};
 
         for i = 1:length(testlevels) 
-            for j = 1% :2
-                
-                opts.filename1 = fnamesM{k}; 
-                opts.Gain2file1 = testlevels(i)-60;
-                opts.Gain2file2 = opts.Gain2file1;
-                tmp = AMTControl_cl(opts);
+            
+            opts.filename1 = fnamesM{k}; 
+            opts.Gain2file1 = testlevels(i)-60;
+            opts.Gain2file2 = opts.Gain2file1;
+            tmp = AMTControl_cl(opts);
 
-                TTh(k) = median(tmp.Threshold)+testlevels(i);
-                
-                disp('')
-                
-            end
+            TTh(k,i) = median(tmp.Threshold)+testlevels(i);
+            TTh25(k,i) = prctile(tmp.Threshold,25)+testlevels(i);
+            TTh75(k,i) = prctile(tmp.Threshold,75)+testlevels(i);
+
         end
     end
     
     disp('')
-    
+%% Results on 14/11/2015, Jepsen2008:
+%       1000-4000 Hz (12 bands)
+%         rows are: 1.3-kHz tone; 20-Hz and 100-Hz wide MN noise; 20-Hz and 100-Hz GN noise
+%         60 | 65 | 70 | 75 | 80 | 85
+% TTh =   32.0000   37.5000   44.5000   49.5000   60.0000   67.0000 % Sine tone: fairly good (higher shift at 60 dB)
+%         27.0000   35.5000   44.0000   52.5000   61.5000   70.0000 %  20-Hz MN % Much more difficult than in reality (at 85 dB should be 40 dB)
+%         23.5000   33.5000   35.5000   42.0000   49.5000   55.5000 % 100-Hz MN % More difficult than in reality (at 85 dB should be 45 dB) 
+%         30.0000   37.0000   44.5000   51.5000   66.0000   71.0000 %  20-Hz GN % Much more difficult than in reality (at 85 dB should be 48 dB)
+%         28.0000   34.5000   41.0000   45.5000   55.0000   62.0000 % 100-Hz GN % More difficult than in reality (at 85 dB should be 52 dB) 
+% 
+% TTh25 = 31.0000   36.5000   43.0000   48.0000   59.5000   63.5000
+%         26.0000   34.0000   42.0000   50.0000   59.0000   69.5000
+%         22.5000   32.0000   32.5000   41.0000   48.5000   53.5000
+%         29.5000   33.5000   43.5000   47.0000   63.0000   71.0000
+%         26.5000   33.0000   38.0000   44.0000   53.0000   60.5000
+% 
+% TTh75 = 32.0000   38.5000   45.0000   51.5000   61.0000   67.5000
+%         29.0000   37.5000   47.0000   54.0000   63.5000   70.5000
+%         26.0000   34.0000   37.0000   44.5000   50.5000   58.5000
+%         31.0000   38.0000   46.5000   54.0000   68.0000   71.5000
+%         28.0000   36.5000   42.0000   47.5000   58.0000   63.0000
+%     
+%% Results on 14/11/2015, Dau1997:
+%       1000-4000 Hz (12 bands)
+% TTh =     23.5000   27.0000   33.5000   38.5000   40.5000   47.0000
+%           28.0000   34.0000   42.0000   46.5000   51.0000   56.5000
+%           22.5000   28.5000   34.5000   39.0000   46.5000   50.5000
+%           29.0000   31.5000   39.5000   43.5000   52.0000   58.0000
+%           25.5000   31.0000   35.5000   42.0000   48.0000   52.5000
+% 
+% 
+% TTh25 =   22.5000   26.5000   31.5000   37.5000   36.5000   47.0000
+%           27.0000   31.0000   41.0000   44.5000   48.0000   55.5000
+%           19.0000   26.0000   32.0000   38.0000   45.0000   49.0000
+%           25.5000   30.0000   38.5000   42.5000   50.5000   55.5000
+%           24.0000   30.0000   34.0000   39.0000   47.5000   49.5000
+% 
+% 
+% TTh75 =   24.0000   27.0000   34.5000   39.0000   43.5000   48.0000
+%           28.5000   35.5000   42.5000   47.5000   53.0000   57.0000
+%           24.5000   29.0000   36.0000   40.0000   47.5000   51.0000
+%           29.5000   33.5000   40.0000   44.5000   53.5000   58.0000
+%           27.0000   31.5000   38.0000   43.0000   48.0000   55.0000
+
+% (1300-4000) bands 16-25
+% TTh =     21.5000   27.0000   33.0000   32.5000   42.5000   46.5000
+% TTh25 =   20.5000   26.5000   32.0000   30.0000   41.0000   46.0000
+% TTh75 =   22.0000   28.0000   34.0000   35.0000   43.5000   48.0000
+
+% (1500 4000) bands 17-25
+% TTh   = 20.5000   25.5000   30.5000   36.0000   40.0000   45.5000
+% TTh25 = 19.0000   19.5000   30.0000   33.5000   39.5000   45.0000
+% TTh75 = 21.5000   28.0000   31.5000   37.5000   41.0000   46.5000
+
+% (2000-8000) bands
+% TTh   = 26.5000   33.0000   36.0000   41.0000   46.0000   52.0000
+% TTh25 = 25.5000   32.5000   35.0000   37.0000   46.0000   49.0000
+% TTh75 = 28.5000   34.0000   36.0000   42.0000   47.0000   53.0000
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

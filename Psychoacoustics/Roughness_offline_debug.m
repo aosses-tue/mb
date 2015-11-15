@@ -17,14 +17,18 @@ function [R dataOut out] = Roughness_offline_debug(dataIn, Fs, N, optsDebug)
 %       http://home.tm.tue.nl/dhermes/
 %
 % 2. Stand-alone example:
-%
+%           [insig fs] = Wavread([Get_TUe_paths('outputs') 'tmp-cal' delim 'ref_rough.wav']); 
+%           [R outPsy out] = Roughness_offline_debug(insig(1:8192),fs,8192);
+%           figure; plot(out.t,R); grid on;
+%           xlabel('Time [s]'); ylabel('Roughness [asper]');
+% 
 % 3. Additional info:
 %       Tested cross-platform: Yes
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 10/11/2014
-% Last update on: 21/11/2014 % Update this date manually
-% Last use on   : 14/07/2015 % Update this date manually
+% Last update on: 21/11/2014 
+% Last use on   : 14/07/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 4
@@ -133,22 +137,22 @@ AmpCal = From_dB(dBcorr)*2/(N*mean(blackman(N, 'periodic')));
 % Calibration between wav-level and loudness-level (assuming
 % blackman window and FFT will follow)
     
-Chno	=	47;
-Cal	 	=	0.25;
-N2		=	N/2;
-q		=	1:1:N;
-qb		=	N0:1:Ntop; % N0:1:Ntop;
-freqs	=	qb*Fs/N; % freqs	=	(qb+1)*Fs/N;
-hBPi	=	zeros(Chno,N);
-hBPrms	=	zeros(1,Chno);
-mdept	=	zeros(1,Chno);
-ki		=	zeros(1,Chno-2);
-ri		=	zeros(1,Chno);
+Chno	= 47;
+Cal	 	= 0.25;
+N2		= N/2;
+q		= 1:1:N;
+qb		= N0:1:Ntop; % N0:1:Ntop;
+freqs	= qb*Fs/N; % freqs = (qb+1)*Fs/N;
+hBPi	= zeros(Chno,N);
+hBPrms	= zeros(1,Chno);
+mdept	= zeros(1,Chno);
+ki		= zeros(1,Chno-2);
+ri		= zeros(1,Chno);
 
 % Calculate Excitation Patterns
-TempIn  =   dataIn*AmpCal;
-[rt,ct] =   size(TempIn);
-[r,c]   =   size(a0);
+TempIn  = dataIn*AmpCal;
+[rt,ct] = size(TempIn);
+[r,c]   = size(a0);
 if rt~=r; TempIn=TempIn'; end   % converts input TempIn to a column vector 1 x 8192
     
 % From the time domain to the frequency domain:
@@ -199,12 +203,12 @@ for w = 1:1:sizL;
 end
 % END: Assessment of slopes
 
-whichZ      = zeros(2,sizL);
-qd          = 1:1:sizL;
+whichZ = zeros(2,sizL);
+qd     = 1:1:sizL;
 
 % In which critical band number are the levels above threshold located:
 whichZ(1,:)	= floor(2*Barkno(whichL(qd)+N01));  % idxs up to which S1 is going to be used
-whichZ(2,:)	= ceil(2*Barkno(whichL(qd)+N01));   % idxs from which S2 is going to be used
+whichZ(2,:)	=  ceil(2*Barkno(whichL(qd)+N01));  % idxs from which S2 is going to be used
 
 ExcAmp = zeros(sizL,47);
 Slopes = zeros(sizL,47);
@@ -263,24 +267,24 @@ end
 
 for k=1:1:Chno % each critical band number
     
-    etmp    = zeros(1,N);
+    etmp = zeros(1,N);
     
     for l=1:1:sizL % each level above threshold
         
         N1tmp = whichL(l);
         N2tmp = N1tmp + N01; % N1tmp 'corrected' to match Lg idxs with TempIn idxs
         
-        if (whichZ(1,l) == k)  % If lower limit is equal to k (Second enters here)
-            ExcAmp(l, k) = 1;
+        if (whichZ(2,l) > k) % First enters here
+            ExcAmp(l,k) = Slopes(l,k+1)/Lg(N1tmp);  % Increasing slopes, increasing Lg as k increases:
+                                                    % So: ExpAmp increases with values from 0 to 1
             if bDebug; idxExcAmp(l,k)=1; end
             
-        elseif (whichZ(2,l) == k) % If upper limit is equal to k (Third enters here)
+        elseif (whichZ(1,l) == k)  % If lower limit is equal to k (Second enters here)
             ExcAmp(l, k) = 1;
             if bDebug; idxExcAmp(l,k)=2; end
             
-        elseif (whichZ(2,l) > k) % First enters here
-            ExcAmp(l,k) = Slopes(l,k+1)/Lg(N1tmp);  % Increasing slopes, increasing Lg as k increases:
-                                                    % So: ExpAmp increases with values from 0 to 1
+        elseif (whichZ(2,l) == k) % If upper limit is equal to k (Third enters here)
+            ExcAmp(l, k) = 1;
             if bDebug; idxExcAmp(l,k)=3; end
             
         else % Fourth enters here
@@ -330,8 +334,8 @@ for k=1:1:Chno % each critical band number
     Fei(k,:)	= fft( etmp_td(k,:)-h0(k) ); % changes the phase but not the amplitude
     
     hBPi(k,:)	= 2*real(  ifft( Fei(k,:).*Hweight(k,:) )  );
-    hBPrms(k)	= dw_rms(hBPi(k,:));
-    
+    % hBPrms(k)	= dw_rms(hBPi(k,:)); % this is the old function
+    hBPrms(k)	= rms(hBPi(k,:),'dim',2);
     if h0(k)>0
         mdept(k) = hBPrms(k)/h0(k);
         if mdept(k)>1
