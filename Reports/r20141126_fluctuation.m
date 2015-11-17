@@ -15,8 +15,8 @@ function [FS, afiles] = r20141126_fluctuation(options)
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 25/11/2014
-% Last update on: 14/07/2015 % Update this date manually
-% Last use on   : 14/07/2015 % Update this date manually
+% Last update on: 16/11/2015 
+% Last use on   : 16/11/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin == 0
@@ -24,8 +24,8 @@ if nargin == 0
 end
 options = ef(options,'bDiary', 0);
 
-options = ef(options,'bDoExp0',1);
-options = ef(options,'bDoExp1',0);
+options = ef(options,'bDoExp0',0);
+options = ef(options,'bDoExp1',1);
 options = ef(options,'bDoExp2',0);
 options = ef(options,'bDoExp3',0);
 options = ef(options,'bDoExp4',0);
@@ -38,13 +38,13 @@ options = Ensure_field(options,'bCreate',0);
 bDiary = options.bDiary;
 Diary(mfilename,bDiary);
 
-optsDebug.all = 1;
+optsDebug.all = 0;
 optsDebug.ki = 1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 pathaudio_src = [Get_TUe_data_paths('db_Fastl2007')];
-pathaudio   = [Get_TUe_paths('outputs') 'Fastl2007_FS_test_20141126' delim];
+pathaudio   = [Get_TUe_paths('outputs') 'Fastl2007_test_20141126' delim];
 % pathaudio_D = [Get_TUe_paths('outputs') 'Daniel1997_test_20141126' delim];
 pathfigures = [Get_TUe_paths('outputs') 'Figures-20141126'      delim];
 Mkdir(pathfigures);
@@ -100,7 +100,7 @@ if bDoExp0
         out = FluctuationStrength_offline_debug(insig,Fs,N, bDebug); %No padding needed for off-line version
         FS0(1) = out{1};
     elseif bUseScript2
-        N = 264600;
+        N = round(44100*3); %264600;
         insig = x(starti:starti + N-1);
         warning('I am using a new N value')
         insig = From_dB(-10)*insig;

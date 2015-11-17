@@ -4,9 +4,12 @@ function [dataOut out] = FluctuationStrength_Garcia_offline(insig, fs, N, optsDe
 % 1. Description:
 %       Frame-based, off-line implementation of the Fluctuation Strength 
 %       algorithm based. The algorithm was adapted from the Roughness model.
+% 
 %       Comments on this implementation: cross-correlation seems not to be 
-%       working properly
+%       working properly.
 %
+%       Adapted from Model/Helper/FluctuationStrength.m
+% 
 %       Comments:
 %           fs  - should be an input parameter
 %           N   - should be an input parameter
@@ -21,8 +24,8 @@ function [dataOut out] = FluctuationStrength_Garcia_offline(insig, fs, N, optsDe
 %
 % Programmed by Rodrigo Garcia L./Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 29/06/2015
-% Last update on: 29/06/2015 
-% Last use on   : 29/06/2015 
+% Last update on: 16/11/2015 
+% Last use on   : 16/11/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 4
@@ -63,20 +66,21 @@ FS      = zeros(1,nFrames);
 
 for iFrame = 1:nFrames
     
-    ei      = zeros(Chno,   N);
-    Fei     = zeros(Chno,   N);
     h0      = zeros(   1,Chno);
     hBPi    = zeros(Chno,   N);
     mdept	= zeros(   1,Chno);
-        
+    
     x = b(:,iFrame);
 
-    % Excitation patterns
+    SPL(iFrame) = rmsdb(x)+100;
     tempIn  = window .* x';
     
-    SPL(iFrame) = rmsdb(insig)+100;
+    %% Peripheral stage:
     
+    % Transmission factor a0:
     tempIn  = params.a0 .* fft(tempIn);
+    
+    % Excitation patterns:
     Lg      = abs(tempIn(params.qb));
     LdB     = To_dB(Lg);
     whichL  = find(LdB > params.MinExcdB);
@@ -100,6 +104,7 @@ for iFrame = 1:nFrames
     ExcAmp = zeros(nL,47);
     Slopes = zeros(nL,47);
 
+    %%%
     for k = 1:1:nL    
         Ltmp = LdB(whichL(k));
         Btmp = params.Barkno(whichL(k) + params.N01);
@@ -118,9 +123,8 @@ for iFrame = 1:nFrames
             end
         end 
     end
-
-    Hweight = Test_Hweight(N);
-
+    %%% 
+    
     for k = 1:Chno
         etmp = zeros(1,N);
 
@@ -141,22 +145,41 @@ for iFrame = 1:nFrames
             etmp(N2tmp) = ExcAmp(N1tmp,k) * tempIn(N2tmp);
         end
 
-        ei(k,:)		= N * real(ifft(etmp));
-        etmp_fd(k,:)= etmp;
-        etmp_td(k,:)= abs(ei(k,:));
-        h0(k)		= mean(etmp_td(k,:));
-        Fei(k,:)	= fft(etmp_td(k,:) - h0(k));
-        hBPi(k,:)   = 2 * real(ifft(Fei(k,:) .* Hweight));
-        hBPino(k,:) = 2 * real(ifft(Fei(k,:)           ));
-        
+        if bDebug
+            etmp_fd(k,:)= etmp;
+        end
+        etmp_td(k,:)= N * real(ifft(etmp)); %etmp_td - output of the critical-band filter bank
     end
     
+    if bDebug == 0
+        clear ExcAmp Slopes; % it liberates some memory
+    end
+    %%% 
+    
+    Hweight = il_create_Hweight(N,fs);
+
+    for k = 1:Chno
+        
+        h0(k)		= mean(abs(etmp_td(k,:)));
+        Fei         = fft(abs(etmp_td(k,:)) - h0(k));
+        hBPi(k,:)   = 2 * real(ifft(Fei.* Hweight'));
+        if bDebug
+            hBPino(k,:) = 2 * real(ifft(Fei       ));
+        end
+        
+    end
+    clear Hweight etmp;
+    
     hBPrms  = rms(transpose(hBPi));
-    hBPrmsno= rms(transpose(hBPino));
+    if bDebug
+        hBPrmsno= rms(transpose(hBPino));
+    end
     
     idx = find(h0 > 0);
     mdept(idx) = hBPrms(idx) ./ h0(idx);
-    mdeptno(idx) = hBPrmsno(idx) ./ h0(idx);
+    if bDebug
+        mdeptno(idx) = hBPrmsno(idx) ./ h0(idx);
+    end
     
     idx = find(mdept > 1);
     mdept(idx) = 1;
@@ -298,8 +321,9 @@ for iFrame = 1:nFrames
     end
     
     % Uses test gzi parameter
-    gzi = Test_gzi(N);
-
+    % gzi = Test_gzi(N);
+    gzi = il_create_gzi(Chno);
+    
     % Calculate specific roughness ri and total roughness R
     fi(iFrame,1) = (gzi(1) * mdept(1) * ki(1)) ^ 2;
     fi(iFrame,2) = (gzi(2) * mdept(2) * ki(2)) ^ 2;
@@ -324,4 +348,74 @@ output.name{nParam} = 'Fluctuation strength';
 output.param{nParam} = strrep( lower( output.name{nParam} ),' ','-');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-end
+% end
+
+function Hweight = il_create_Hweight(N,fs)
+
+params = struct;
+% params.sf1 = 0.5;
+% params.pf1 = 2; % 2
+% params.pf2 = 8; % 16
+% params.sf2 = 32; % 32
+params.sf1 = 0.5;
+params.pf1 = 2; % 2
+params.pf2 = 8; % 16
+params.sf2 = 64; % 32
+
+d = fdesign.bandpass('Fst1,Fp1,Fp2,Fst2,Ast1,Ap,Ast2',params.sf1,params.pf1,params.pf2,params.sf2,80,3,80,fs);
+Hd = design(d,'butter');
+% fvtool(Hd);
+% measure(Hd)
+
+x = [1; zeros(N-1,1)];
+y = filter(Hd,x);
+freq = (0:(2*pi)/length(x):pi)/pi*fs/2;
+xdft = fft(x);
+ydft = fft(y);
+
+Hweight = abs(ydft);
+HweightdB = To_dB(Hweight); 
+
+warning('not exactly as implemented by Rodrigo (MATLAB 2015 needed');
+
+% figure;
+% plot(freq,20*log10(abs(ydft(1:length(x)/2+1))),'r','linewidth',2);
+% xlim([0 50])
+% disp('')
+
+% legend('Original Signal','Bandpass Signal');
+
+% Hweight = designfilt(...
+%         'bandpassiir', ...
+%         'StopbandFrequency1', params.sf1, ...
+%         'PassbandFrequency1', params.pf1, ...
+%         'PassbandFrequency2', params.pf2, ...
+%         'StopbandFrequency2', params.sf2, ...
+%         'StopbandAttenuation1', 100, ...
+%         'PassbandRipple', 3, ...
+%         'StopbandAttenuation2', 100, ...
+%         'SampleRate', fs);
+
+function gzi = il_create_gzi(Chno);
+
+    Chstep = 0.5;
+    
+    g0 = [
+        0       0
+        125     1
+        250     1
+        500     1
+        1000    1
+        1500    1
+        2000    1
+        3000    1
+        4000    1
+        6000    1
+        8000    1
+        16000   0
+    ];
+    
+    gzi = interp1(freqtoaud(g0(:,1),'bark'),g0(:,2),(1:Chno)*Chstep);
+    gzi(isnan(gzi)) = 0;
+    
+    gzi = ones(1,Chno);

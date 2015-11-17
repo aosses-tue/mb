@@ -23,16 +23,17 @@ dir_where7 = [Get_TUe_paths('outputs') 'AMTControl-examples' delim];
 dir_out    = [Get_TUe_paths('lx_Text') 'lx2015-10-16-decision-CASP' delim 'Figures-new' delim];
 
 if nargin == 0
-    %         1   2   3 4 5 6 7 8
-    bParts = [NaN NaN 1 0 0 0 1 0];
+    %         1 2   3 4 5 6 7 8
+    bParts = [0 NaN 1 0 0 0 1 0];
 end
 
 fs = 44100;
 
+bPart1 = bParts(1);
 bPart3 = bParts(3); % Forward masking: on and off-frequency
 bPart4 = bParts(4); % plotting results of bPart3
 
-opts.nAnalyser      = 101; % 101 = modfilterbank, 103 - jepsen2008
+opts.nAnalyser      = 103; % 101 = modfilterbank, 103 - jepsen2008
 
 opts.bDecisionMethod = 5; % 2 - cc; 4 - dprime; 5 - cc updated
 
@@ -66,27 +67,31 @@ opts.bDebug = bDebug;
 close all
 count_saved_figures = 1;
 
+if bPart1
+    [hFig data] = exp_heijden1995;
+end
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if bPart3
     
-    erbc2analyse    = freqtoaud([2000 8000],'erb'); % 14 for 1000 Hz (approx.)  % 
+    erbc2analyse    = freqtoaud([1500 4000],'erb'); % 14 for 1000 Hz (approx.)  % 
     opts            = il_get_freqs(erbc2analyse,opts);
         
     fnamesM = {[dir_where7 'sine-1300-Hz-60-dB.wav'], ...
-               [dir_where7 'mult-noise-1300-Hz-BW-20-Hz-60-dB.wav'], ... 
-               [dir_where7 'mult-noise-1300-Hz-BW-100-Hz-60-dB.wav'], ...
+               [dir_where7 'randomnoise-fc-1300_BW-100_fmod-0_Mdept-0_SPL-60.wav'], ...
                [dir_where7 'randomnoise-fc-1300_BW-20_fmod-0_Mdept-0_SPL-60.wav'], ...
-               [dir_where7 'randomnoise-fc-1300_BW-100_fmod-0_Mdept-0_SPL-60.wav']};
+               [dir_where7 'mult-noise-1300-Hz-BW-100-Hz-60-dB.wav'], ...
+               [dir_where7 'mult-noise-1300-Hz-BW-20-Hz-60-dB.wav']};
     fnames  = {[dir_where7 'sine-2000-Hz-ramps-of-20-ms-60-dB.wav']}; 
    
-	testlevels = [60 65 70 75 80 85];
+	testlevels = 60:12:84;
                    
 	if opts.nAnalyser == 101 | opts.nAnalyser == 103
         opts.resample_intrep = 'resample_intrep';
     end
     
-    opts.Gain4supra =  10; % 10 dB above the masker level 
-    opts.Level_start = 10;
+    opts.Gain4supra =  -10; % -10 dB above the masker level 
+    opts.Level_start = -10;
     opts.audio.fs   =  fs;
     
     opts.StepdB     = 8; 
@@ -103,7 +108,7 @@ if bPart3
     opts.Nsim   = 4;
     opts.bDebug = 0;
     
-    for k = 1% 2:5
+    for k = 2:5
         opts.filename2 = fnames{1};
 
         for i = 1:length(testlevels) 
@@ -145,12 +150,11 @@ if bPart3
 %     
 %% Results on 14/11/2015, Dau1997:
 %       1000-4000 Hz (12 bands)
-% TTh =     23.5000   27.0000   33.5000   38.5000   40.5000   47.0000
-%           28.0000   34.0000   42.0000   46.5000   51.0000   56.5000
-%           22.5000   28.5000   34.5000   39.0000   46.5000   50.5000
-%           29.0000   31.5000   39.5000   43.5000   52.0000   58.0000
-%           25.5000   31.0000   35.5000   42.0000   48.0000   52.5000
-% 
+% TTh =     23.5000   27.0000   33.5000   38.5000   40.5000   47.0000 % Sine tone
+%           28.0000   34.0000   42.0000   46.5000   51.0000   56.5000 %  20-Hz MN
+%           22.5000   28.5000   34.5000   39.0000   46.5000   50.5000 % 100-Hz MN
+%           29.0000   31.5000   39.5000   43.5000   52.0000   58.0000 %  20-Hz GN
+%           25.5000   31.0000   35.5000   42.0000   48.0000   52.5000 % 100-Hz GN
 % 
 % TTh25 =   22.5000   26.5000   31.5000   37.5000   36.5000   47.0000
 %           27.0000   31.0000   41.0000   44.5000   48.0000   55.5000

@@ -22,7 +22,7 @@ function FluctuationStrength_Garcia_createparams(N)
     qb      = N0:1:Ntop;
     freqs   = (qb + 1) * Fs / N;
     Chno    = 47;
-    Cal     = 0.25;
+    Cal     = 0.1017; % 0.25;
     zi      = 0.5:0.5:23.5; % Added by AO
     
     Bark        = get_Bark;
