@@ -74,7 +74,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if bPart3
     
-    erbc2analyse    = freqtoaud([1500 4000],'erb'); % 14 for 1000 Hz (approx.)  % 
+    erbc2analyse    = freqtoaud([2000],'erb'); % 14 for 1000 Hz (approx.)  % 
     opts            = il_get_freqs(erbc2analyse,opts);
         
     fnamesM = {[dir_where7 'sine-1300-Hz-60-dB.wav'], ...
@@ -84,7 +84,7 @@ if bPart3
                [dir_where7 'mult-noise-1300-Hz-BW-20-Hz-60-dB.wav']};
     fnames  = {[dir_where7 'sine-2000-Hz-ramps-of-20-ms-60-dB.wav']}; 
    
-	testlevels = 60:12:84;
+	testlevels = 66:12:84;
                    
 	if opts.nAnalyser == 101 | opts.nAnalyser == 103
         opts.resample_intrep = 'resample_intrep';
@@ -108,7 +108,7 @@ if bPart3
     opts.Nsim   = 4;
     opts.bDebug = 0;
     
-    for k = 2:5
+    for k = 1:5
         opts.filename2 = fnames{1};
 
         for i = 1:length(testlevels) 
