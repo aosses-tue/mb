@@ -19,8 +19,8 @@ function [hFig data] = exp_heijden1995(fs,bParts)
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 20/08/2015
-% Last update on: 01/09/2015 
-% Last use on   : 01/09/2015 
+% Last update on: 18/11/2015 
+% Last use on   : 18/11/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 1
@@ -29,10 +29,6 @@ end
 
 if nargin < 2
     bParts = [0 1 0];
-end
-
-if nargout == 2
-    bParts(2) = 1; 
 end
 
 bGenSignals         = bParts(1);
@@ -174,6 +170,7 @@ if bGenOriginalPlots
     xlabel('Masker level [dB SPL]','FontSize',FontSize)
     ylabel('Threshold [dB SPL]','FontSize',FontSize)
     xlim([59 86])
+    set(gca,'XTick',testLevels)
     hFig(end+1) = gcf;
     set(gca,'FontSize',FontSize);
     
@@ -188,6 +185,7 @@ if bGenOriginalPlots
     ylabel('Masking release [dB]','FontSize',FontSize)
     xlim([59 86])
     ylim([-6 30])
+    set(gca,'XTick',testLevels)
     hFig(end+1) = gcf;
     set(gca,'FontSize',FontSize);
     
@@ -243,43 +241,47 @@ if bPlotSimulation
         %          31.0000   38.0000   46.5000   54.0000   68.0000   71.5000; ...
         %          26.0000   34.0000   37.0000   44.5000   50.5000   58.5000; ...
         %          29.0000   37.5000   47.0000   54.0000   63.5000   70.5000];
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
         % Data simulated on: 17/11/2015 (supra at -10dB, between 1500-4000)
         % testLevels = 60:12:84;
-%         Tr    = [  28        44        61; ...
-%                    26.0000   38.0000   55.5000; ...
-%                    28.0000   47.0000   64.5000; ...
-%                    21.0000   32.5000   47.5000; ...
-%                    27.5000   38.5000   65.0000];
-%         TTh25 = [  25        44        59; ...
-%                    26.0000   37.0000   54.5000; ...
-%                    27.0000   44.0000   63.0000; ...
-%                    20.5000   31.5000   47.0000; ...
-%                    26.5000   38.0000   64.0000];
-%         TTh75 = [  28        44.5      62; ...
-%                    27.0000   38.5000   56.5000; ...
-%                    28.0000   48.5000   65.5000; ...
-%                    21.5000   33.5000   49.0000; ...
-%                    28.0000   39.5000   66.5000];
+        % Tr    = [  28        44        61; ...
+        %            26.0000   38.0000   55.5000; ...
+        %            28.0000   47.0000   64.5000; ...
+        %            21.0000   32.5000   47.5000; ...
+        %            27.5000   38.5000   65.0000];
+        % TTh25 = [  25        44        59; ...
+        %            26.0000   37.0000   54.5000; ...
+        %            27.0000   44.0000   63.0000; ...
+        %            20.5000   31.5000   47.0000; ...
+        %            26.5000   38.0000   64.0000];
+        % TTh75 = [  28        44.5      62; ...
+        %            27.0000   38.5000   56.5000; ...
+        %            28.0000   48.5000   65.5000; ...
+        %            21.5000   33.5000   49.0000; ...
+        %            28.0000   39.5000   66.5000];
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        
         testLevels = 60:6:84;
         Tr = [  23.0000   32.5000   41.5000   52.0000   60.0000; ...
                 20.5000   27.0000   34.5000   41.0000   50.0000; ...
                 28.5000   38.0000   43.5000   50.0000   56.0000; ...
                 18.5000   23.0000   29.5000   36.5000   42.5000; ...
                 27.0000   32.5000   40.0000   44.0000   49.0000];
-
-        TTh25 = [  22.0000   31.0000   40.5000   52.0000   59.5000; ...
+        
+        P25 = [  22.0000   31.0000   40.5000   52.0000   59.5000; ...
                    19.0000   25.0000   34.0000   39.0000   48.5000; ...
                    25.5000   38.0000   42.0000   46.5000   54.0000; ...
                    18.0000   21.5000   26.5000   36.0000   41.5000; ...
                    25.5000   31.5000   37.0000   43.0000   45.5000];
 
-        TTh75 = [  24.0000   33.5000   42.0000   52.5000   60.5000; ...
+        P75 = [  24.0000   33.5000   42.0000   52.5000   60.5000; ...
                    21.5000   29.0000   35.5000   42.5000   51.0000; ...
                    30.0000   38.0000   44.5000   52.5000   57.0000; ...
                    20.5000   25.0000   30.5000   38.0000   44.5000; ...
                    29.0000   36.0000   42.5000   46.0000   50.5000];
-
+         P25 = Tr - P25;
+         P75 = P75 - Tr;
 
     else
         warning('using dau1997')
@@ -307,18 +309,20 @@ if bPlotSimulation
     
 	labels = {'T','100-Hz GN','20-Hz GN','100-Hz MN','20-Hz MN'};
     
+    xoffset = 0.4;
 	figure;
-    plot(testLevels,Tr(1,:),'bo-','LineWidth',1), hold on
-    plot(testLevels,Tr(2,:),'rs--','LineWidth',2)
-    plot(testLevels,Tr(3,:),'ks-.','LineWidth',1)
-    plot(testLevels,Tr(4,:),'r>-.','LineWidth',2)
-    plot(testLevels,Tr(5,:),'k>-','LineWidth',1)
+    errorbar(testLevels        ,Tr(1,:),P25(1,:),P75(1,:),'bo-','LineWidth',1), hold on
+    errorbar(testLevels+xoffset,Tr(2,:),P25(2,:),P75(2,:),'rs--','LineWidth',2)
+    errorbar(testLevels+xoffset,Tr(3,:),P25(3,:),P75(3,:),'ks-.','LineWidth',1)
+    errorbar(testLevels-xoffset,Tr(4,:),P25(4,:),P75(4,:),'r>-.','LineWidth',2)
+    errorbar(testLevels-xoffset,Tr(5,:),P25(5,:),P75(5,:),'k>-','LineWidth',1)
     legend(labels,'Location','NorthWest')
     grid on
     xlabel('Masker level [dB SPL]','FontSize',FontSize)
     ylabel('Threshold [dB SPL]','FontSize',FontSize)
     xlim([59 86])
     ylim([10 70])
+    set(gca,'XTick',testLevels)
     hFig(end+1) = gcf;
     set(gca,'FontSize',FontSize);
     
@@ -333,12 +337,13 @@ if bPlotSimulation
     ylabel('Masking release [dB]','FontSize',FontSize)
     xlim([59 86])
     ylim([-6 30])
+    set(gca,'XTick',testLevels)
     hFig(end+1) = gcf;
     set(gca,'FontSize',FontSize);
     
-    data.Thresholds = Tr;
+    data.Thresholds_sim = Tr;
     data.signaltypes = labels;
-    data.testLevels = testLevels;
+    data.testLevels_sim = testLevels;
     
 end
 
