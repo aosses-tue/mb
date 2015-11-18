@@ -80,44 +80,48 @@ if bPart1
 end
 
 if bPart2
-    file = 'D:\Databases\dir01-Instruments\Piano\00-Original-files\pressionsimuCd5.wav';
-    [insig fs] = Wavread(file);
-    Nsemitones = 2;
     
-    % F1 = fft(insig);
-    % N = numel(F1);
-    % F1a = F1(1:N/2);         % the lower half of the fft
-    % F1b = F1(end:-1:N/2+1);  % the upper half of the fft - flipped "the right way around"
-    % t1 = 1:N/2;              % indices of the lower half
-    % t2 = 1+ (t1-1) / (1 + 2.^(Nsemitones/12)); % finer sampling... will make peaks appear higher
-    % F2a = interp1(t1, F1a, t2); % perform sampling of lower half
-    % F2b = interp1(t1, F1b, t2); % resample upper half
-    % F2 = [F2a F2b(end:-1:1)];   % put the two together again
-    % shiftedSignal = real(ifft(F2));   % and do the inverse FFT
-    % 
-    % sound(insig,fs);
-    % pause(0.5)
-    % sound(shiftedSignal,fs);
+    % TODO: Equalise piano sounds of the PAPA project
+    
+    file = [Get_TUe_paths('Databases') 'dir01-Instruments' delim 'Piano' delim '00-Original-files' delim 'pressionsimuCd5.wav'];
+    [insig fs] = Wavread(file);
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Time-stretching:
     Nst = 5;
-    num = round(100*(1/ (2^(Nst/12))));
-    den = 100;
-    timesfaster = num/den; % 0.75
-    y   = pvoc(insig,timesfaster,1024);
+    outsig = Do_pitch_stretch(insig,fs,Nst,'semitone');
+    
     t1  = (1:length(insig))/fs;
-    t2  = (1:length(y))/fs;
+    t2  = (1:length(outsig))/fs;
     
-    % Compare original and resynthesis
-    sound(insig,fs)
-    % sound(y,fs) 
-    
+    % % Compare original and resynthesis
+    % sound(insig,fs); pause(3);
+    % sound(outsig,fs) 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % e = pvoc(insig, 0.8)
-    f = resample(y,num,den); % NB: 0.8 = 4/5
-    % soundsc(insig(1:length(f))+f,fs) 
-    sound(f,fs)
+    
+    info.fs = fs;
+    info.bNewFigure = 0;
+    K = 8192; % N-point FFT with N = K*2
+    
+    figure;
+    subplot(2,1,1)
+	freqfft(insig,K,info); % insig at 561 Hz
+    hold on;
+    
+    Perc = 7; % +7 %
+    outsig2 = Do_pitch_stretch(insig,fs,Perc,'percentage');
+    
+    subplot(2,1,2)
+    freqfft(outsig2,K,info); % insig at 561 Hz
+    
+    [y ydB1 f] = freqfft(  insig,K,info); % insig at 561 Hz
+    [y ydB2 f] = freqfft(outsig2,K,info); % insig at 561 Hz
+    
+    [xx idx] = max(ydB1);
+    freq(1) = f(idx);
+    
+    [xx idx] = max(ydB2);
+    freq(2) = f(idx);
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
