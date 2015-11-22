@@ -58,7 +58,8 @@ if isunix
 
     misc.db_speechmaterials_local = '/media/Elements/orl-wrk-0089/Documenten/Speech_material_from_x-drive/';
     misc.db_speechmaterials = ['~/Documenten/Databases/dir03-Speech' delim]; % Old path: ['~/x/speechmaterials/'];
-    misc.ex_APEX_results    = ['~/Documenten/Meas/Meas/Experiments/Results_XML/'];
+    misc.ex_APEX_results    = ['~/Documenten/Meas/Meas/Experiments/Results_XML/']; % KU Leuven
+    misc.ex_Experiments     = ['~/Documenten/Documenten-TUe/02-Experiments' delim];
     misc.lx_Templates       = ['~/Documenten/Documenten-TUe/01-Text/00-Templates' delim];
     misc.lx_Text            = ['~/Documenten/Documenten-TUe/01-Text/05-Doc-TUe'   delim];
     misc.outputs            = ['~/Documenten/MATLAB/outputs' delim];
@@ -94,6 +95,7 @@ else
     misc.db_speechmaterials = ['D:\Databases\dir03-Speech' delim];
     % misc.db_fastl2007       = ['D:\Documenten-TUe\10-Referenties\02-Mijn-boeken\Fastl2007-psychoacoustics' delim 'Sound' delim];
     misc.ex_APEX_results    = [misc.SVN_KUL 'Meas' delim 'Experiments' delim 'Results_XML' delim]; % work at KUL
+    misc.ex_Experiments     = ['D:\Documenten-TUe\02-Experiments' delim];
     misc.lx_Presentations   = ['D:\Documenten-TUe\01-Text\70-Presentaties-TUe' delim];
     misc.lx_Templates       = ['D:\Documenten-TUe\01-Text\00-Templates' delim];
     misc.lx_Text            = ['D:\Documenten-TUe\01-Text\05-Doc-TUe'   delim];

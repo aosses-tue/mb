@@ -2,36 +2,50 @@ function r20151119_piano_sounds
 % function r20151119_piano_sounds
 %
 % 1. Description:
-%
+%       bDoSTFT_f0 - checks out f0 for every piano sound of the refister set
+%                    by notetmp
+%       bDo_f0_shift - does the shift of the piano sounds. It is required 
+%                    that the txt files with the f0 notes (as recorded has
+%                    been already generated (by 20/11/2015 done for A4 and F3
+%                    registers).
+% 
 % 2. Stand-alone example:
 %
 % 3. Additional info:
-%       Tested cross-platform: No
+%       Tested cross-platform: Yes
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
-% Created on    : 24/07/2015
-% Last update on: 19/11/2015 
-% Last use on   : 19/11/2015 
+% Created on    : 19/11/2015
+% Last update on: 22/11/2015 
+% Last use on   : 22/11/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 close all
 bDiary = 0;
 Diary(mfilename,bDiary);
 
-bDoSTFT_f0  = 0;
+bDoSTFT_f0  = 1;
+bDo_f0_shift = 1;
+bDoEnv = 0;
 
-bDoWaveforms = 0;
-bDoSTFT     = 0;
-bPrepareFigures = 0;
-
-notetmp.note = 'F'; notetmp.octave = 3;
+% notetmp.note = 'Dsh'; notetmp.octave = 1; % Not yet % very difficult to label
+% notetmp.note = 'F'; notetmp.octave = 1; 
+% notetmp.note = 'C'; notetmp.octave = 2;
+% notetmp.note = 'Ash'; notetmp.octave = 2;
+% notetmp.note = 'F'; notetmp.octave = 3;
+notetmp.note = 'C'; notetmp.octave = 4; 
 % notetmp.note = 'A'; notetmp.octave = 4;
+% notetmp.note = 'Csh'; notetmp.octave = 5; 
+% notetmp.note = 'C'; notetmp.octave = 6; 
+% notetmp.note = 'G'; notetmp.octave = 6; 
+
 f0target = note2freq(notetmp);
 note2test = [notetmp.note num2str(notetmp.octave)];
 dir = [Get_TUe_paths('Databases') 'dir01-Instruments' delim 'Piano' delim '04-PAPA' delim note2test delim];
 
 opts.bExtension = 0;
 files = Get_filenames(dir,'wav',opts);
+% files = Get_filenames([dir 'norm-117-Hz' delim],'wav',opts);
 
 tmax = 3; % s
 fmax = 2000; % Hz
@@ -43,12 +57,17 @@ Cal  = 1/(G*sens);  % 1 =  94 dB
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if bDoSTFT_f0
     
+    % This process was not automated. Run it for every piano sound and write
+    % down in a txt file with the same name of the wav file the fundamental
+    % frequency read from the plots (e.g. GH05-A4.txt if GH05-A4.wav was plotted
+    
     for i = 1:length(files)
         title1 = files{i};
         fullfile{i} = [dir files{i}];
+        % fullfile{i} = [dir 'norm-117-Hz' delim files{i}];
 
         [insig fs] = Wavread([fullfile{i} '.wav']);
-    
+        
         nfft = 4096*4;
         wlen = nfft/2;
         overlap = 75;
@@ -56,10 +75,11 @@ if bDoSTFT_f0
         [y1 f t1] = stft(insig, fs, nfft, wlen, overlap, nwtype);
 
         idxt1 = 1:length(t1); % find(t1>0.3 & t1<1.4);
-        idxf  = find(f>0 & f<1.3*f0target); %find(f>0.7*f0target & f<1.3*f0target);
+        idxf  = find(f>0.8*f0target & f<1.3*f0target); %find(f>0.7*f0target & f<1.3*f0target);
 
         y1dB = To_dB(abs(y1));
         [xx idx] = max(y1dB(idxf,:));
+        idx = idx + min(idxf)-1;
         fmax1 = f(idx(idxt1));
 
         figure; 
@@ -73,70 +93,94 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-for i = 1:length(files)
-    title1 = files{i};
-    fullfile{i} = [dir files{i}];
-    [insig fs] = Wavread([fullfile{i} '.wav']);
-    
-    f0(i) = il_get_f0([fullfile{i} '.txt']);
+if bDo_f0_shift
+    for i = 1:length(files)
+        title1 = files{i};
+        fullfile{i} = [dir files{i}];
+        [insig fs] = Wavread([fullfile{i} '.wav']);
 
+        f0(i) = il_get_f0([fullfile{i} '.txt']);
+
+    end
+
+    dir_new = sprintf('%snorm-%.0f-Hz%s',dir,f0target,delim);
+    Mkdir(dir_new);
+
+    for i = 1:length(files)
+
+        [insig fs] = Wavread([fullfile{i} '.wav']);
+
+        Perc = round(100*(f0target-f0(i))/f0target); 
+        outsig = Do_pitch_stretch(insig,fs,Perc,'percentage');
+
+        fullfile_new{i} = [dir_new files{i} '.wav'];
+        Wavwrite(outsig,fs,fullfile_new{i});
+
+    end
 end
 
-dir_new = sprintf('%snorm-%.0f-Hz%s',dir,f0target,delim);
-Mkdir(dir_new);
-
-for i = 1:length(files)
-    
-    [insig fs] = Wavread([fullfile{i} '.wav']);
-    
-    Perc = round(100*(f0target-f0(i))/f0target); 
-    outsig = Do_pitch_stretch(insig,fs,Perc,'percentage');
-    
-    fullfile_new{i} = [dir_new files{i} '.wav'];
-    Wavwrite(outsig,fs,fullfile_new{i});
-    
-end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if bDoSTFT
-    
-    nfft = 4096*2;
-    wlen = nfft/2;
-    overlap = 75;
-    nwtype = 4; % Hamming window
-    
-    figure
-    stft(x1, fs, nfft, wlen, overlap, nwtype);
-    xlabel('Time [s]') 
-    title( sprintf('%s',title1) )
-    ylim([0 fmax])
-    xlim([0 tmax])
-    h(3) = gcf;
-    
-    figure;
-    stft(x2, fs, nfft, wlen, overlap, nwtype);
-    xlabel('Time [s]') 
-    title( sprintf('%s',title2) )
-    ylim([0 fmax])
-    xlim([0 tmax])
-    h(4) = gcf;
-    
+if bDoEnv
+    for i = 1:length(files)
+        title1 = files{i}; 
+        % fullfile{i} = [dir files{1}]; % using first file (before adjustment)
+        fullfile{i} = sprintf('%snorm-%.0f-Hz%s%s',dir,f0target,delim,files{1}); % using first file (after adjustment)
+        [insig fs] = Wavread([fullfile{i} '.wav']);
+        
+        method = 3;
+        switch method
+            case 1 % Hilbert
+                y = abs(hilbert( insig ));
+                
+            case 2
+                
+                y = abs(hilbert( insig ));
+                % timeconstant = 1/(2*pi*f0);
+                % f0 = 1/(2*pi*timeconstant);
+                f0 = f0target*0.1;
+                [b a] = IRIfolp(f0,fs);
+                y = filter(b,a,y);
+                
+            case 3
+                
+                yin = abs(hilbert( insig ));
+                [b, a] = butter(4,20/(fs/2),'low');
+                ylp = filter(b,a,yin);
+                
+                % Aslow = 8; Apeak = 6; % Parameters used by RK
+                Aslow = 2; Apeak = 1; 
+                
+                ydiff = yin - Aslow*ylp;  % Makes Aslow*ylp well below 0 (except for the onset)
+                                        % figure; plot(ydiff)
+                ydiff = max(ydiff,0);
+                
+                yout = ydiff*Apeak;
+                
+                y = yin + yout;
+                                
+                % figure; freqz(b,a,4096);
+                figure;
+                subplot(2,1,1)
+                plot(yin); hold on
+                plot(yout,'r');
+                ha = gca;
+                % sound(ytot,fs)
+                       
+        end
+        
+        idxstart = 900;
+        y2plot = ylp(idxstart:end)+yout(1:end-idxstart+1);
+        subplot(2,1,2);
+        plot(insig(1:end)); hold on
+        plot(y2plot(1:end),'r');
+        ha(end+1)=gca;
+        linkaxes(ha,'x')
+        xlim([2.2e5 2.8e5])
+        disp('')
+    end
+     
 end
-
-% if bPrepareFigures
-%     hM.I_TitleInAxis = 0;
-%     hM.I_KeepColor = 0;
-%     hM.I_FontSize = 18;
-%     hM.I_Width = 8;
-%     hM.I_Height = 4;
-%     
-%     if bDoSTFT
-%         Figure2paperfigureT(h(1:2),1,2,hM) % manually stored
-%     end
-%     if bDoSTFT
-%         Figure2paperfigureT(h(3:4),1,2,hM) % manually stored
-%     end
-% end
 
 if bDiary
 	diary off
