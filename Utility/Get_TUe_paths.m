@@ -30,8 +30,8 @@ function misc = Get_TUe_paths(type)
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 15/03/2014
-% Last update on: 14/08/2015
-% Last use on   : 29/09/2015
+% Last update on: 20/11/2015
+% Last use on   : 20/11/2015
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Alejandro's paths
@@ -114,6 +114,7 @@ misc.F0_extraction      = [misc.MATLAB   'F0_extraction' delim];
 misc.Filterbank         = [misc.MATLAB   'Filterbank'      delim];
 misc.language           = 'NL'; % other possibilities: 'EN'
 misc.Localisation       = [misc.MATLAB   'Localisation'    delim];
+misc.ltass              = [misc.MATLAB   'ltass'           delim];
 misc.praat_scripts      = [misc.MATLAB   'Praat'           delim];
 misc.PA_stim_generation = [misc.MATLAB   'PA_stim_generation' delim];
 misc.Psychoacoustics    = [misc.MATLAB   'Psychoacoustics' delim];

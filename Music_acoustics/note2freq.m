@@ -33,8 +33,12 @@ reference.note      = 'A';
 reference.octave    = 4;
 freq_ref            = 440; % Hz
 
+if ischar(test.octave)
+    error('test.octave has to be a double')
+end
+
 ref_midi    = note2num(reference.note) + reference.octave*12;
-test_midi   = note2num(test.note) + test.octave*12;
+test_midi   = note2num(test.note)      + test.octave*12;
 
 halfsteps   = test_midi - ref_midi;
 freq        = float('double');

@@ -6,7 +6,7 @@ function outsig = Do_pitch_stretch(insig,fs,factor,mode)
 % 2. Stand-alone example:
 %
 % 3. Additional info:
-%       Tested cross-platform: No
+%       Tested cross-platform: Yes
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 18/11/2015

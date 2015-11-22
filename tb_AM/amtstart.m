@@ -254,13 +254,13 @@ for ii=1:length(d)
 
         eval([name,'init']);
         if status>0
-          if status==1
-            nplug=nplug+1;
-            modules{nplug}.name=name;
-            modules{nplug}.version=module_version;
-          end;
+            if status==1
+                nplug=nplug+1;
+                modules{nplug}.name=name;
+                modules{nplug}.version=module_version;
+            end;
         else
-          rmpath([bp,name]);
+            rmpath([bp,name]);
         end;
       end;	
 

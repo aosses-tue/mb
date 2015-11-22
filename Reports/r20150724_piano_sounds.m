@@ -10,24 +10,30 @@ function r20150724_piano_sounds
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 24/07/2015
-% Last update on: 24/07/2015 % Update this date manually
-% Last use on   : 24/07/2015 % Update this date manually
+% Last update on: 19/11/2015 
+% Last use on   : 19/11/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 close all
 bDiary = 0;
 Diary(mfilename,bDiary);
 
-bDoWaveforms = 1;
-bDoSTFT = 1;
+bDoWaveforms = 0;
+bDoSTFT_f0  = 1;
+bDoSTFT     = 0;
 bDoMFB = 1;
 
-dir = 'D:\Databases\dir01-Instruments\Piano\04-PAPA\F1\';
-f1 = [dir 'NS19-F1.wav']; % Only first 5 seconds
-f2 = [dir 'JBS36-F1.wav']; % Only first 5 seconds
+bPrepareFigures = 0;
+
+dir = [Get_TUe_paths('Databases') 'dir01-Instruments' delim 'Piano' delim '04-PAPA' delim];
+f1 = [dir 'F1' delim 'NS19-F1.wav']; % Used for Expose
+f2 = [dir 'F1' delim 'JBS36-F1.wav']; % Used for Expose
 % dir = 'D:\Databases\dir01-Instruments\Piano\04-PAPA\F1-44100-Hz\';
 % f1 = [dir 'NS19-F1-noisered.wav']; % Only first 5 seconds
 % f2 = [dir 'JBS36-F1-noisered.wav']; % Only first 5 seconds
+
+f1 = [dir 'A4' delim 'JBS73-A4.wav']; 
+f2 = [dir 'A4' delim 'NS19-A4.wav']; 
 
 tmax = 3; % s
 fmax = 2000; % Hz
@@ -75,6 +81,7 @@ if bDoSTFT
     wlen = nfft/2;
     overlap = 75;
     nwtype = 4; % Hamming window
+    
     figure
     stft(x1, fs, nfft, wlen, overlap, nwtype);
     xlabel('Time [s]') 
@@ -91,15 +98,21 @@ if bDoSTFT
     xlim([0 tmax])
     h(4) = gcf;
     
+end
+
+if bPrepareFigures
     hM.I_TitleInAxis = 0;
     hM.I_KeepColor = 0;
     hM.I_FontSize = 18;
     hM.I_Width = 8;
     hM.I_Height = 4;
-    Figure2paperfigureT(h(1:2),1,2,hM)
-    Figure2paperfigureT(h(3:4),1,2,hM)
     
-    % Manually stored
+    if bDoSTFT
+        Figure2paperfigureT(h(1:2),1,2,hM) % manually stored
+    end
+    if bDoSTFT
+        Figure2paperfigureT(h(3:4),1,2,hM) % manually stored
+    end
 end
 
 if bDoMFB

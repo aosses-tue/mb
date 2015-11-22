@@ -29,7 +29,7 @@ end
 
 fs = 44100;
 
-bPart1 = bParts(1);
+bPart1 = bParts(1); % Figures of GOM functions (measurements and new simulations)
 bPart2 = bParts(2); % Trying pitch shifting
 bPart3 = bParts(3); % Forward masking: on and off-frequency
 bPart4 = bParts(4); % plotting results of bPart3

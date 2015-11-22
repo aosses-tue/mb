@@ -34,7 +34,7 @@ if nargin < 2
     exp2filter = '';
 end
 
-ytmp = dir([directory delim exp2filter]);
+ytmp = dir([directory delim '*' exp2filter]);
 
 if length(ytmp) == 0
     disp('No files found');
@@ -44,11 +44,10 @@ end
 for i = 1:length(ytmp)
     if extra.bExtension 
         y{i}   = ytmp(i).name;
-        ypd{i} = [directory delim ytmp(i).name];
     else
-        y{i} = Delete_extension( y{i}, 'wav');
-        ypd{i} = Delete_extension( ypd{i}, 'wav');
+        y{i} = Delete_extension( ytmp(i).name, exp2filter);
     end
+    ypd{i} = [directory delim y{i}];
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
