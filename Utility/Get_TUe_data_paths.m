@@ -9,10 +9,10 @@ function misc = Get_TUe_data_paths(type)
 % 3. Additional info:
 %       Tested cross-platform: No
 % 
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 25/08/2014
-% Last update on: 28/10/2014 % Update this date manually
-% Last use on   : 04/01/2015 % Update this date manually
+% Last update on: 28/10/2014 
+% Last use on   : 04/01/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Alejandro's paths

@@ -25,8 +25,8 @@ function info = Check_Fastl2007(chapter,fig_number)
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 13/08/2014
-% Last update on: 25/11/2014 % Update this date manually
-% Last use on   : 25/11/2014 % Update this date manually
+% Last update on: 25/11/2014 
+% Last use on   : 25/11/2014 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % track_35  -   Figure 10.1

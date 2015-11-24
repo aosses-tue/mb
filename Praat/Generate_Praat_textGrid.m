@@ -16,12 +16,13 @@ function Generate_Praat_textGrid(filename,tlims)
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 13/08/2014
-% Last update on: 13/08/2014 % Update this date manually
-% Last use on   : 25/11/2014 % Update this date manually
+% Last update on: 13/08/2014 
+% Last use on   : 25/11/2014 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin == 0
-    filename = 'D:\Documenten-TUe\10-Referenties\02-Mijn-boeken\Fastl2007-psychoacoustics\Sound\track_38.wav';
+    filename = [Get_TUe_data_paths('db_fastl2007') 'track_38.wav'];
+               % 'D:\Documenten-TUe\10-Referenties\02-Mijn-boeken\Fastl2007-psychoacoustics\Sound\
 end
 
 path_praat  = Get_TUe_paths('praat_scripts');

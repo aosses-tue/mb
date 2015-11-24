@@ -41,7 +41,7 @@ fmax = 2000; % Hz
 sens = 50e-3;
 G    = 5;
 Cal  = 1/(G*sens);  % 1 =  94 dB
-Cal  = Cal/2;       % 1 = 100 dB 
+Cal  = Cal/2;       % 1 = 100 dB (AMT convention)
 
 title1 = 'Type NS19';
 title2 = 'Type JBS36';

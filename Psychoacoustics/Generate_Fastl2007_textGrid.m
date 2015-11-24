@@ -13,10 +13,10 @@ function Generate_Fastl2007_textGrid(track_no)
 % 3.2 Stand-alone example, generate only TextGrid for track 39:
 %       Generate_Fastl2007_textGrid(39);
 %       
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 14/08/2014
-% Last update on: 14/08/2014 % Update this date manually
-% Last use on   : 25/11/2014 % Update this date manually
+% Last update on: 14/08/2014
+% Last use on   : 25/11/2014
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 figures2generate = {    9, 3,'track_34'; ...

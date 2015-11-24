@@ -10,10 +10,12 @@ function r20151119_piano_sounds
 %                    registers).
 % 
 % 2. Stand-alone example:
-%
+%       r20151119_piano_sounds;
+% 
 % 3. Additional info:
 %       Tested cross-platform: Yes
-%
+%       See also r20150724_piano_sounds.m
+% 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 19/11/2015
 % Last update on: 22/11/2015 
@@ -24,9 +26,9 @@ close all
 bDiary = 0;
 Diary(mfilename,bDiary);
 
-bDoSTFT_f0  = 1;
-bDo_f0_shift = 1;
-bDoEnv = 0;
+bDoSTFT_f0  = 0;
+bDo_f0_shift = 0;
+bDoEnv = 1;
 
 % notetmp.note = 'Dsh'; notetmp.octave = 1; % Not yet % very difficult to label
 % notetmp.note = 'F'; notetmp.octave = 1; 
@@ -47,12 +49,12 @@ opts.bExtension = 0;
 files = Get_filenames(dir,'wav',opts);
 % files = Get_filenames([dir 'norm-117-Hz' delim],'wav',opts);
 
-tmax = 3; % s
-fmax = 2000; % Hz
+%%%
+sens = 50e-3;   % Given by Antoine
+G    = 5;       % Given by Antoine
 
-sens = 50e-3;
-G    = 5;
 Cal  = 1/(G*sens);  % 1 =  94 dB
+Cal  = Cal/2;       % 1 = 100 dB (AMT convention)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if bDoSTFT_f0
@@ -64,9 +66,8 @@ if bDoSTFT_f0
     for i = 1:length(files)
         title1 = files{i};
         fullfile{i} = [dir files{i}];
-        % fullfile{i} = [dir 'norm-117-Hz' delim files{i}];
-
-        [insig fs] = Wavread([fullfile{i} '.wav']);
+        
+        [insig fs] = Wavread([fullfile{i} '.wav']);  % non-calibrated audio files
         
         nfft = 4096*4;
         wlen = nfft/2;
@@ -146,10 +147,14 @@ if bDoEnv
                 
                 yin = abs(hilbert( insig ));
                 [b, a] = butter(4,20/(fs/2),'low');
-                ylp = filter(b,a,yin);
+                
+                % % A look at the group delay introduced by the filter shows that the delay is frequency-dependent.
+                % grpdelay(b,a,4096,fs); % Large group delay around cut-off frequency of the butter filter
+
+                ylp = filtfilt(b,a,yin);
                 
                 % Aslow = 8; Apeak = 6; % Parameters used by RK
-                Aslow = 2; Apeak = 1; 
+                Aslow = 2; Apeak = 0; 
                 
                 ydiff = yin - Aslow*ylp;  % Makes Aslow*ylp well below 0 (except for the onset)
                                         % figure; plot(ydiff)
@@ -169,8 +174,9 @@ if bDoEnv
                        
         end
         
-        idxstart = 900;
-        y2plot = ylp(idxstart:end)+yout(1:end-idxstart+1);
+        % idxstart = 900;
+        % y2plot = ylp(idxstart:end)+yout(1:end-idxstart+1);
+        y2plot = ylp+yout;
         subplot(2,1,2);
         plot(insig(1:end)); hold on
         plot(y2plot(1:end),'r');
