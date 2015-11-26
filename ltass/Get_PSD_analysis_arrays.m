@@ -55,7 +55,11 @@ for i=1:N
         audio = removegap(audio,fs,threshold);    
     end
     
-    [Pxx(:,i),F] = psd(audio,NFFT,fs,wind,0,'none');%Calculate the average Power Spectrum Density of the wav file
+    % [Pxx(:,i),Ft] = psd(audio,NFFT,fs,wind,0,'none');%Calculate the average Power Spectrum Density of the wav file
+    
+    % 0 = samples for overlap, 'none' is the confidence interval
+    [Pxxtmp,F] = pwelch(audio,wind,0,NFFT,fs);%Calculate the average Power Spectrum Density of the wav file
+    Pxx(:,i) = Pxxtmp * (fs/2);
     Nsections(i) = ceil(length(audio)/NFFT);        %The number of blocks (of NFFT samples) that are in the wavfile
     Pxx(:,i) = Nsections(i)*Pxx(:,i);               %Weigth the importance of this wav files Pxx by Nsections
     

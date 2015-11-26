@@ -10,8 +10,8 @@ function timesep = Check_piano_sounds(filename)
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 24/11/2015
-% Last update on: 24/11/2015 
-% Last use on   : 24/11/2015 
+% Last update on: 25/11/2015 
+% Last use on   : 25/11/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % filename = 'track_04';
@@ -78,7 +78,7 @@ switch filename
         timesep = [0.015 5 5.4 9.8];
     case 'JBS50-Ad2.wav'
         timesep = [0.01 3.3 3.4 7.3 7.6 11 12 15.5];
-    case 'JBS50-Ad2-V2.wav'
+    case 'JBS50-Ad2-V2-p.wav'
         timesep = [0.15 1.7];
     case 'JBS51-4486-Ad2.wav'
         timesep = [0.03 6.5];
@@ -125,6 +125,49 @@ switch filename
     case 'NS19-C4.wav'
         timesep = [0.1 3.1 3.15 6.3 6.35 9.41 9.5 12.25 12.3 15 15.1 15.15 17.5];
         
+	%%% A4:    
+    case 'GH05-A4.wav'
+        timesep = [0.3 3.5 3.9 7.3];
+    case 'GRAF28-A4.wav'
+        timesep = [0.05 1.7 1.75 3.8 3.85 5.9];
+    case 'JBS36-A4.wav'
+        timesep = [0.03 3.7 3.8 7.9];
+    case 'JBS50-A4.wav'
+        timesep = [0.01 3.3 3.35 7.5 7.6 12 12.1 16.4];
+    case 'JBS51-4486-A4.wav'
+        timesep = [0.03 3.7 3.8 6.8];
+    case 'JBS51-4544-A4.wav'
+        timesep = [0.01 3.4 3.45 7.5 7.6 11.5 12 15];
+    case 'JBS73-A4.wav'
+        timesep = [0.01 4.2];
+    case 'NS19-A4.wav'
+        timesep = [0.01 1.6 1.65 3.25];
+
+	%%% Csh5:    
+    case 'GH05-Cd5.wav'
+        timesep = [0.5 3.5 3.6 7.3 7.5 11.5];
+    case 'GRAF28-Cd5.wav'
+        timesep = [0.01 2.1 2.15 4.3 4.35 6.6];
+    case 'JBS36-Cd5.wav'
+        timesep = [0.15 3.6 3.7 3.8 7.1 9.4];
+    case 'JBS51-4486-Cd5.wav'
+        timesep = [0.1 2.9 3 5.9 6 8.2];
+    case 'JBS51-4544-Cd5.wav'
+        timesep = [0.01 2.7 3.1 6.5 6.9 9.5];
+    case 'JBS51-4544-Cd5-V2.wav'
+        timesep = [0.01 3.4 3.5 7.5 7.6 11.5 11.9 14.7];
+    case 'JBS73-Cd5.wav'
+        timesep = [0.01 2.65];
+    case 'NS19-Cd5.wav'
+        timesep = [0.05 1.7 1.75 3.25];   
+	case 'NS19-Cd5-V2.wav'
+        timesep = [0.01 1.7 1.75 3.2]; 
+        
+	%%% C6
+    %%% G6
+    
+    otherwise
+        disp('')
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
