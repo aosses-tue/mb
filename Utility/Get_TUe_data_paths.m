@@ -11,14 +11,12 @@ function misc = Get_TUe_data_paths(type)
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 25/08/2014
-% Last update on: 28/10/2014 
-% Last use on   : 04/01/2015 
+% Last update on: 02/12/2014 
+% Last use on   : 02/12/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Alejandro's paths
 
-info.bOnline = 0;
-    
 if nargout == 0 & nargin == 0
     disp([mfilename '.m= Change bOnline to 0 in case you don''t have success if a directory is not found'])
     pause(2)
@@ -54,7 +52,6 @@ else
     misc.Databases          = ['D:\Databases' delim];
     misc.SVN_KUL            = ['D:\SVN-KU-Leuven\alejandro' delim];
     misc.db_speechmaterials_local = ['E:\orl-wrk-0089\Documenten\Speech_material_from_x-drive']; % needs my external hard drive connected (E-drive)
-    misc.db_speechmaterials = ['D:\Databases\dir03-Speech'];
     misc.db_fastl2007       = ['D:\Documenten-TUe\10-Referenties\02-Mijn-boeken\Fastl2007-psychoacoustics' delim 'Sound' delim];
     misc.ex_APEX_results    = [misc.SVN_KUL 'Meas' delim 'Experiments' delim 'Results_XML' delim]; % work at KUL
     misc.lx_Presentations   = ['D:\Documenten-TUe\01-Text\70-Presentaties-TUe' delim];
@@ -68,11 +65,16 @@ end
 misc.db_audacity        = ['C:\Users\aosses\Documents\db_audacity' delim];
 
 misc.db_voice_of_dragon = [misc.Databases 'dir01-Instruments' delim 'Voice-of-dragon' delim];
+misc.piano              = [misc.Databases 'dir01-Instruments' delim 'Piano' delim]; 
 misc.db_HRIR_Oldenburg  = [misc.Databases 'dir02-HRTFs'       delim 'Oldenburg'       delim];
 misc.db_Fastl2007       = [misc.Databases 'dir04-Psychoacoustics' delim 'Fastl-and-Zwicker-2007' delim '03-Extracted-files' delim];
 misc.db_calfiles        = [misc.Databases 'dir04-Psychoacoustics' delim 'Fastl-and-Zwicker-2007' delim '03-Extracted-files' delim]; % TMP dir
+misc.db_speechmaterials = [misc.Databases 'dir03-Speech' delim];
 misc.language           = 'NL'; % other possibilities: 'EN'
-     
+misc.tvl                = [misc.Databases 'dir04-Psychoacoustics' delim 'Cambridge-Auditory-Demonstrations-TV-models' delim 'TVL' delim]; 
+misc.tvlexe             = [misc.Databases 'dir04-Psychoacoustics' delim 'Cambridge-Auditory-Demonstrations-TV-models' delim 'TVL' delim 'TVL.exe']; 
+
+
 if (nargin==1)
     if (~isfield(misc,type))
         error('Invalid type');

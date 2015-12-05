@@ -1,25 +1,23 @@
-function Generate_piano_textGrid(track_no)
-% function Generate_piano_textGrid(track_no)
+function Generate_piano_textGrid
+% function Generate_piano_textGrid
 %
 % 1. Description:
 %       track_no - track number
 % 
-% 2. Additional info:
+% 2. Stand-alone example, generate all TextGrids:
+%       Generate_piano_textGrid;
+%  
+% 3. Additional info:
 %       Tested cross-platform: No
-%
-% 3.1 Stand-alone example, generate all TextGrids:
-%       Generate_Fastl2007_textGrid;
-%
-% 3.2 Stand-alone example, generate only TextGrid for track 39:
-%       Generate_Fastl2007_textGrid(39);
-%       
+%       See also Check_piano_sounds, Generate_Praat_textGrid, Generate_Fastl2007_textGrid (similar processing)
+% 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 14/08/2014
 % Last update on: 14/08/2014
 % Last use on   : 25/11/2014
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-dir2lookat = 'D:\Databases\dir01-Instruments\Piano\04-PAPA\01-Tuned-at-44100-Hz\';
+dir2lookat = [Get_TUe_data_paths('piano') '04-PAPA' delim '01-Tuned-at-44100-Hz' delim];
 
 registers = {   ['Dsh1' delim]; ...
                 ['F1' delim]; ...

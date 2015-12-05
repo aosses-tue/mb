@@ -21,6 +21,7 @@ function [win,wtype] = Get_window(nwtype,N,opts)
 %       7           'gaussian(alpha=2.5)'   No
 %       8           'gaussian(alpha=3.5)'   No
 %       9           'gaussian(alpha=4.5)'   No
+%       10          'flattop'               No
 % 
 % 2. Stand-alone example:
 %       N = 4096;
@@ -34,8 +35,8 @@ function [win,wtype] = Get_window(nwtype,N,opts)
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on   : 16/06/2014
-% Last updateon: 20/11/2014 % Update this date manually
-% Last used on : 20/11/2014 % Update this date manually
+% Last updateon: 04/12/2015 
+% Last used on : 04/12/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 3
@@ -80,6 +81,9 @@ switch nwtype
     case {9, 'gaussian(alpha=4.5)'}
         win   = gausswin(N,4.5);
         wtype = 'gaussian(alpha=4.5)';
+    case {10, 'flattop'}
+        win = flattopwin(N);
+        wtype = 'flattop';
     otherwise
         error('Not recognised window')
 end

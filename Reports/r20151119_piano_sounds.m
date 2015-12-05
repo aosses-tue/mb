@@ -26,8 +26,10 @@ close all
 bDiary = 0;
 Diary(mfilename,bDiary);
 
+bSave = 1;
+
 bDoSTFT_f0  = 0;
-bDo_f0_shift = 0;
+bDo_f0_shift = 1;
 bDoEnv = 1;
 
 % notetmp.note = 'Dsh'; notetmp.octave = 1; % Not yet % very difficult to label
@@ -35,15 +37,15 @@ bDoEnv = 1;
 % notetmp.note = 'C'; notetmp.octave = 2;
 % notetmp.note = 'Ash'; notetmp.octave = 2;
 % notetmp.note = 'F'; notetmp.octave = 3;
-notetmp.note = 'C'; notetmp.octave = 4; 
+% notetmp.note = 'C'; notetmp.octave = 4; 
 % notetmp.note = 'A'; notetmp.octave = 4;
-% notetmp.note = 'Csh'; notetmp.octave = 5; 
+notetmp.note = 'Csh'; notetmp.octave = 5; 
 % notetmp.note = 'C'; notetmp.octave = 6; 
 % notetmp.note = 'G'; notetmp.octave = 6; 
 
 f0target = note2freq(notetmp);
 note2test = [notetmp.note num2str(notetmp.octave)];
-dir = [Get_TUe_paths('Databases') 'dir01-Instruments' delim 'Piano' delim '04-PAPA' delim note2test delim];
+dir = [Get_TUe_data_paths('piano') delim '04-PAPA' delim '01-Sounds' delim note2test delim];
 
 opts.bExtension = 0;
 files = Get_filenames(dir,'wav',opts);
@@ -112,10 +114,12 @@ if bDo_f0_shift
         [insig fs] = Wavread([fullfile{i} '.wav']);
 
         Perc = round(100*(f0target-f0(i))/f0target); 
-        outsig = Do_pitch_stretch(insig,fs,Perc,'percentage');
+        outsig  = Do_pitch_stretch(insig,Perc,'percentage');
 
         fullfile_new{i} = [dir_new files{i} '.wav'];
-        Wavwrite(outsig,fs,fullfile_new{i});
+        if bSave
+            Wavwrite(outsig,fs,fullfile_new{i});
+        end
 
     end
 end

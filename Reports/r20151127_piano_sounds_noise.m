@@ -18,15 +18,15 @@ bDiary = 0;
 Diary(mfilename,bDiary);
 close all
 
-bSave = 1;
+bSave = 0;
 
 bDoResampling   = 0; % preparing piano samples
 bDoPianoNoise_example  = 0;
-bDoPianoNoise   = 1;
+bDoPianoNoise   = 0;
+bDoAtt4experiments = 0;
+bResults = 1;
 
-bPrepareFigures = 0;
-
-dir = [Get_TUe_paths('Databases') 'dir01-Instruments' delim 'Piano' delim '04-PAPA' delim];
+dir = [Get_TUe_data_paths('piano') '04-PAPA' delim];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if bDoResampling
     
@@ -50,10 +50,14 @@ if bDoResampling
         noteS    = [ntmp.note num2str(ntmp.octave)];
         f0target = note2freq(ntmp);
                 
-        dirtarget{i} = sprintf('%s%s%snorm-%.0f-Hz%s',dir,noteS,delim,f0target,delim); % resampled-at-44100-Hz
+        dirtarget{i} = sprintf('%s01-Sounds%s%s%snorm-%.0f-Hz%s',dir,delim,noteS,delim,f0target,delim); % resampled-at-44100-Hz
         Resample2fs(dirtarget{i},fstarget);
         
-        dstfolder = [dir '01-Tuned-at-44100-Hz-new' delim noteS delim];
+        if i == 1
+            Mkdir([dir '02-Tuned-at-44100-Hz-new'])
+        end
+        dstfolder = [dir '02-Tuned-at-44100-Hz-new' delim noteS delim];
+        
         movefile([dirtarget{i} 'resampled-at-44100-Hz' delim],dstfolder);
         
         disp('')
@@ -84,8 +88,8 @@ end
 
 if bDoPianoNoise
     
-   dirgral  = [dir '02-Exported-as-segments' delim];
-   dirgraln = [dir '03-Background-noise' delim]; Mkdir(dirgraln);
+   dirgral  = [dir '03-Exported-as-segments' delim];
+   dirgraln = [dir '04-Background-noise' delim]; Mkdir(dirgraln);
    dirs = {['C2' delim]; ['A4' delim]; ['Csh5' delim]};
    targetdur = 1; % s
    
@@ -118,20 +122,139 @@ if bDoPianoNoise
     
 end
 
-if bPrepareFigures
-    hM.I_TitleInAxis = 0;
-    hM.I_KeepColor = 0;
-    hM.I_FontSize = 18;
-    hM.I_Width = 8;
-    hM.I_Height = 4;
+% dir = 'D:\Databases\dir01-Instruments\Piano\04-PAPA\02-Exported-as-segments\Csh5-mod\';
+% exp4filter = 'JBS51*.wav';
+% exp4filter = 'NS19*.wav';
+% Get_TVL_cmd(dir,exp4filter);
+
+if bDoAtt4experiments
     
-    if bDoPianoNoise
-        Figure2paperfigureT(h(1:2),1,2,hM) % manually stored
+    dirmain = ['D:\Documenten-TUe\02-Experiments\2015-APEX-my-experiments\Piano\Pilot\Stimuli-A4' delim];
+    dir = [dirmain 'Original' delim];
+    
+    fnames = Get_filenames(dir,'*ms*.wav');
+    
+    % % Expected list of files:
+    % 1000-ms-GRAF28-A4_3.wav
+    % 1000-ms-JBS51-4544-A4_4.wav
+    % 1000-ms-NS19-A4_2.wav
+    % noise-1000-ms-GRAF28-A4_3.wav
+    % noise-1000-ms-JBS51-4544-A4_4.wav
+    % noise-1000-ms-NS19-A4_2.wav
+    
+    Att = [0 -2 -4 0+8.64 -2 -4];
+    
+    for i = 1:length(Att)
+        
+        [x fs] = Wavread([dir fnames{i}]);
+        y = From_dB(Att(i))*x;
+        if bSave
+            Wavwrite(y,fs,[dirmain fnames{i}]);
+        end
+        
     end
-    if bDoPianoNoise
-        Figure2paperfigureT(h(3:4),1,2,hM) % manually stored
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    dirmain = ['D:\Documenten-TUe\02-Experiments\2015-APEX-my-experiments\Piano\Pilot\Stimuli-Csh5' delim];
+    dir = [dirmain 'Original' delim];
+    
+    fnames = Get_filenames(dir,'*ms*.wav');
+    
+    % % Expected list of files:
+    % 1000-ms-GRAF28-Cd5_3.wav
+    % 1000-ms-JBS51-4544-Cd5_5.wav
+    % 1000-ms-NS19-Cd5_4.wav
+    % noise-1000-ms-GRAF28-Cd5_3.wav
+    % noise-1000-ms-JBS51-4544-Cd5_5.wav
+    % noise-1000-ms-NS19-Cd5_4.wav
+    
+    Att = [0 -6 -10 0 -6-9.3 -10];
+    
+    for i = 1:length(Att)
+        
+        [x fs] = Wavread([dir fnames{i}]);
+        y = From_dB(Att(i))*x;
+        if bSave
+            Wavwrite(y,fs,[dirmain fnames{i}]);
+        end
+        
     end
+    
+    dirtmp_1 = 'D:\Documenten-TUe\02-Experiments\2015-APEX-my-experiments\Piano\Pilot\Stimuli-Csh5\';
+    dirtmp = [dirtmp_1 'back\'];
+    fnametmp = '1000-ms-JBS51-4544-Cd5_5.wav';
+    [insig fs] = Wavread([dirtmp fnametmp]);
+
+    Perc = -1.5; 
+    outsig = Do_pitch_stretch(insig,fs,Perc,'percentage');
+
+    fullfile_new = [dirtmp_1 fnametmp];
+    if bSave
+        Wavwrite(outsig,fs,fullfile_new);
+    end
+    
+    disp('')
+    
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if bResults
+    
+    dirresults = 'D:\Documenten-TUe\02-Experiments\2015-APEX-my-experiments\Piano\Pilot\Results\';
+    nRev = 6;
+    
+    filters = {'*C2*','*A4*','*Csh5*'};
+    
+    for k = 1:length(filters)
+        fnames = Get_filenames(dirresults,filters{k});
+        for i = 1:3 % experiment 1
+            stair = a3adaptiveresults([dirresults fnames{i}]);
+            [r idx] = Get_mAFC_reversals(stair.procedure1);
+
+            try
+                Th1(i,k) = median(r(end-nRev+1:end));
+            catch
+                Th1(i,k) = median(r);
+            end
+        end
+        for i = 4:6 % experiment 2
+            stair = a3adaptiveresults([dirresults fnames{i}]);
+            [r idx] = Get_mAFC_reversals(stair.procedure1);
+
+            try
+                Th2(i-3,k) = median(r(end-nRev+1:end));
+            catch
+                Th2(i-3,k) = median(r);
+            end
+        end
+    end
+    
+end
+
+MinVal1 = prctile(Th1,25);
+MaxVal1 = prctile(Th1,75);
+MinVal2 = prctile(Th2,25);
+MaxVal2 = prctile(Th2,75);
+Medi1 = median(Th1);
+Medi2 = median(Th2);
+
+MiV1 = Medi1-MinVal1;
+MiV2 = Medi2-MinVal2;
+MaV1 = MaxVal1-Medi1;
+MaV2 = MaxVal2-Medi2;
+
+figure;
+errorbar([1:3]-0.02,Medi1,MiV1,MaV1,'bo-.','LineWidth',2); hold on
+errorbar([1:3]+0.02,Medi2,MiV2,MaV2,'rs-','LineWidth',2); grid on
+xlim([1-0.25 3+0.25])
+ylim([-15 4+4])
+set(gca,'XTick',1:3)
+set(gca,'XTickLAbel',{'C2','A4','Csh5'})
+xlabel('Register')
+ylabel('SNR, 50\%-correct scores [dB]')
+legend({'JBS51-4544','GRAF28'},'Location','NorthWest')
+
+Saveas(gcf,'results-piano-pilot')
 
 if bDiary
 	diary off

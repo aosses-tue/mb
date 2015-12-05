@@ -2,16 +2,20 @@ function timesep = Check_piano_sounds(filename)
 % function timesep = Check_piano_sounds(filename)
 %
 % 1. Description:
-%
+%       This script os used to generate piano textGrid (to be used in the 
+%       Praat analyser.
+% 
 % 2. Stand-alone example:
-%
+%       filename = 'GRAF28-Dd1.wav';
+%       Check_piano_sounds(filename);
+% 
 % 3. Additional info:
 %       Tested cross-platform: No
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 24/11/2015
 % Last update on: 25/11/2015 
-% Last use on   : 25/11/2015 
+% Last use on   : 02/12/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % filename = 'track_04';
@@ -164,6 +168,19 @@ switch filename
         timesep = [0.01 1.7 1.75 3.2]; 
         
 	%%% C6
+    case 'GH05-C6.wav'
+        timesep = [0.2 3.5 4.1 6.6];
+    case 'GRAF28-C6.wav'
+        timesep = [0.01  2.1 2.15 3.6 4.15 5.9];
+    case 'JBS36-C6.wav'
+        timesep = [0.05 1.28 1.30 2.62 2.65 3.87];
+    case 'JBS51-4486-C6.wav'
+        timesep = [0.1 2.3 2.55 4.6 5.15 7.65];
+    case 'JBS73-C6.wav'
+        timesep = [0.06 1.92];
+    case 'NS19-C6.wav'
+        timesep = [0.01 1.25 1.35 2.55];   
+        
     %%% G6
     
     otherwise
