@@ -20,7 +20,7 @@ dir = Get_TUe_data_paths('piano');
 bDoPart1 = 0;
 bDoPart2 = 1;
 
-file = [dir '01-Chabassier\SONS\Cd5\pressionexpe.wav'];
+file = [dir '01-Chabassier' delim 'SONS' delim 'Cd5' delim 'pressionexpe.wav'];
 titlelabel = 'Cd5';
 
 if bDoPart1
@@ -170,7 +170,7 @@ if bDoPart2
     % plot(insig);
 
     % L = 50;
-    N = 300; % N has to be greater than 5*L
+    N = 2400; % N has to be greater than 5*L
     
     Ni = 3191; % max of the waveform (manually computed)
     Nf = Ni+N-1; % 18080; % end of analysis period
@@ -192,17 +192,21 @@ if bDoPart2
     %%% Frequency and damping factors:
     fi = ( atan2(imag(lambda(idxposim)),real(lambda(idxposim))) )/(2*pi);
     Fi = fi*fs;
-    alphai = -log10(abs(lambda(idxposim)));
+    alphai = abs(-log10(abs(lambda(idxposim))));
     Alphai = alphai*fs;
     
-    M = N;
+    M = N; % this should not be necessarily
+    
     %%% Form matrix T
     T = nan(M,2*L);
-    n = 1;
     
     for n = 1:M
-        nu_i(n,:)   = transpose(exp(-n*alphai) .* cos(2*j*pi*n*fi));
-        beta_i(n,:) = transpose(exp(-n*alphai) .* sin(2*j*pi*n*fi));
+        tmp1 = cos(2*j*pi*n*fi);
+        tmp2 = exp(-n*alphai); % [sum(isnan(tmp1)) sum(isnan(tmp2))]
+        
+        nu_i(n,:)   = transpose(exp(-n*alphai) .* cos(2*pi*n*fi));
+        beta_i(n,:) = transpose(exp(-n*alphai) .* sin(2*pi*n*fi));
+        
     end
     
     idxs = 1:2:2*L;
@@ -212,13 +216,58 @@ if bDoPart2
     T(1,idxs) = 0;
     
     for n = 1:L
-        if mod(n,2) == 1
-            T(2:end,2*n-1) = nu_i(2:end,n);
-        else
-            T(2:end,2*n  ) = beta_i(2:end,n);
-        end
+        T(2:end,2*n-1) = nu_i(2:end,n);
+        T(2:end,2*n  ) = beta_i(2:end,n);
     end
-    disp('')
+    
+    Ttra = T';
+    
+    MultM = pinv(Ttra*T) * Ttra*insig(1:M);
+    ai = MultM(1:2:end);
+    bi = MultM(2:2:end);
+    
+    Ai = sqrt(ai.^2+bi.^2);
+    Phi_i = tan(bi./ai);
+    
+    %%% Obtained parameters: Ai, alpha_i, fi, Phi_i
+    
+    figure;
+    stem(Fi,Ai); grid on
+    
+    
+    n = transpose(1:fs/2);
+    xn = zeros(size(n));
+    
+    [xx maxidx] = max(Ai)
+    for i = 1:L %maxidx %L
+        
+        fac1 = Ai(i);
+        fac2 = exp(-alphai(i)*n);
+        fac3 = cos(2*pi*n*fi(i)+Phi_i(i));
+        xn = xn+fac1*fac2.*fac3;
+    end
+    
+    figure;
+    subplot(2,1,1)
+    plot(xn,'r');
+    
+    subplot(2,1,2)
+    x2plot = x(Ni:Ni+fs/2);
+    plot(x2plot);
+    
+    sound(xn,fs)
+    pause(1.2*length(xn)/fs)
+    sound(x2plot,fs)
+    
+    N = 65536; % N-point FFT
+    K = N/2;
+    windowtype = 'hanning';
+
+    figure;
+    freqfft2(xn,K,fs,windowtype);     
+    xlim([200 5000])
+    % title(sprintf('%s - N=%.0f, fs=%.0f [Hz]',titlelabel,N,fs))
+    
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
