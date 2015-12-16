@@ -108,21 +108,36 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if bComparingICRA
     
-    fname = [Get_TUe_paths('ICRA_Tobias') 'EF1_ENG_0001_0.wav'];
+    % fname = [Get_TUe_paths('ICRA_Tobias') 'EF1_ENG_0001_0.wav'];
+    % Nstart=  4000;
+    % Nend  = 73000;
+    fname = [Get_TUe_data_paths('db_speechmaterials') 'english' delim 'paul-bagshaw-F0mod' delim 'wav' delim 'PB-m-all.wav'];
+    Nstart=  1;
+    Nend  = 20*20000; % 2932000;    
+
+    % fname = [Get_TUe_data_paths('db_speechmaterials') 'english' delim 'paul-bagshaw-F0mod' delim 'wav' delim 'rl001.wav'];
+    % Nstart=  1;
+    % Nend  = 30000;    
     
     [insig fs] = Wavread(fname); 
-    insig = insig(4000:73000);
-    lvl = rmsdb(insig)+100;
     
-    noise1 = Demo_Create_Speech_Modulated_Noise(insig,fs);
+    insig = insig(Nstart:Nend);
+    lvl = rmsdb(insig)+100;
     
     dir = [Get_TUe_paths('ICRA_Tobias')];
     addpath([dir delim 'Tools'])
-
-    noise1 = setdbspl(noise1,lvl);
     
-    noise2 = icra5_noise(insig,fs);
+    if ~isunix % you have to re-compile it for Linux
+        noise1 = Demo_Create_Speech_Modulated_Noise(insig,fs);
+        noise1 = setdbspl(noise1,lvl);
+    end
+    
+    method = 1; % 1 - script as received
+    noise2 = icra5_noise(insig,fs,method);
+    noise2mod = icra5_noise(insig,fs,2);
+    
     noise2 = setdbspl(noise2,lvl);
+    noise2mod = setdbspl(noise2mod,lvl);
     
     speech  = insig;
     noise   = noise2;
