@@ -56,12 +56,6 @@ if isunix
     end
     misc.Databases          = ['~/Documenten/Databases' delim];
 
-    misc.db_speechmaterials_local = '/media/Elements/orl-wrk-0089/Documenten/Speech_material_from_x-drive/';
-    misc.db_speechmaterials = ['~/Documenten/Databases/dir03-Speech' delim]; % Old path: ['~/x/speechmaterials/'];
-    misc.ex_APEX_results    = ['~/Documenten/Meas/Meas/Experiments/Results_XML/']; % KU Leuven
-    misc.ex_Experiments     = ['~/Documenten/Documenten-TUe/02-Experiments' delim];
-    misc.lx_Templates       = ['~/Documenten/Documenten-TUe/01-Text/00-Templates' delim];
-    misc.lx_Text            = ['~/Documenten/Documenten-TUe/01-Text/05-Doc-TUe'   delim];
     misc.outputs            = ['~/Documenten/MATLAB/outputs' delim];
     misc.praat              =  '/usr/bin/praat'; % whereis praat
     misc.praat_scripts      = ['~/Documenten/Praat_svn/'];
@@ -91,44 +85,32 @@ else
     
     misc.CIs                =  [misc.MATLAB 'CIs' delim];
     
-    misc.db_speechmaterials_local = ['E:\orl-wrk-0089\Documenten\Speech_material_from_x-drive' delim]; % needs my external hard drive connected (E-drive)
-    misc.db_speechmaterials = ['D:\Databases\dir03-Speech' delim];
-    % misc.db_fastl2007       = ['D:\Documenten-TUe\10-Referenties\02-Mijn-boeken\Fastl2007-psychoacoustics' delim 'Sound' delim];
     misc.ex_APEX_results    = [misc.SVN_KUL 'Meas' delim 'Experiments' delim 'Results_XML' delim]; % work at KUL
-    misc.ex_Experiments     = ['D:\Documenten-TUe\02-Experiments' delim];
-    misc.lx_Presentations   = ['D:\Documenten-TUe\01-Text\70-Presentaties-TUe' delim];
-    misc.lx_Templates       = ['D:\Documenten-TUe\01-Text\00-Templates' delim];
-    misc.lx_Text            = ['D:\Documenten-TUe\01-Text\05-Doc-TUe'   delim];
     misc.outputs            = ['D:\Output' delim];
     misc.praat              = ['C:\praat5376_win32\praatcon.exe'];
     
 end
 
-misc.db_instruments     = [misc.Databases 'dir01-Instruments' delim];
-misc.db_voice_of_dragon = [misc.db_instruments 'Voice-of-dragon' delim];
-misc.db_HRIR_Oldenburg  = [misc.Databases 'dir02-HRTFs'       delim 'Oldenburg'       delim];
-misc.db_fastl2007       = [misc.Databases 'dir04-Psychoacoustics' delim 'Fastl-and-Zwicker-2007' delim '03-Extracted-files' delim];
-misc.db_fastl2007_src   = [misc.Databases 'dir04-Psychoacoustics' delim 'Fastl-and-Zwicker-2007' delim '01-audio-files' delim 'Sound' delim];
-misc.db_calfiles        = [misc.Databases 'dir04-Psychoacoustics' delim 'Fastl-and-Zwicker-2007' delim '03-Extracted-files' delim]; % TMP dir
-misc.db_ir              = [misc.Databases 'dir05-IR'       delim];
 misc.DSP                = [misc.MATLAB   'DSP'             delim]; 
 misc.F0_extraction      = [misc.MATLAB   'F0_extraction' delim];
 misc.Filterbank         = [misc.MATLAB   'Filterbank'      delim];
 misc.language           = 'NL'; % other possibilities: 'EN'
 misc.Localisation       = [misc.MATLAB   'Localisation'    delim];
-misc.ltass              = [misc.MATLAB   'ltass'           delim];
 misc.praat_scripts      = [misc.MATLAB   'Praat'           delim];
 misc.PA_stim_generation = [misc.MATLAB   'PA_stim_generation' delim];
 misc.Psychoacoustics    = [misc.MATLAB   'Psychoacoustics' delim];
 misc.Reports            = [misc.MATLAB   'Reports'         delim];
 misc.Reports_KUL        = [misc.MATLAB   'Reports_KUL'     delim];
 misc.Speech             = [misc.MATLAB   'Speech'          delim];
+misc.ltass              = [misc.Speech   'LTASS'           delim];
+misc.ICRA               = [misc.Speech   'ICRA'            delim];
+misc.ICRA_Tobias        = [misc.Speech   'ICRA_Tobias'     delim];
+misc.Misc               = [misc.MATLAB   'tb_Misc'         delim];
 misc.Music_acoustics    = [misc.MATLAB   'Music_acoustics' delim];
 misc.pl_Classes         = [misc.MATLAB_KUL 'Classes'       delim]; % Matthias' classes to plot
+misc.sii                = [misc.Misc     'sii'             delim];
 misc.Simulink           = [misc.MATLAB_KUL 'Simulink_XPC'  delim];
 misc.Stats              = [misc.MATLAB   'Stats'           delim];
-misc.SubjectMaps        = [misc.Simulink 'Maps'            delim]; % work at KUL
-misc.SubjectMapsClinical= [misc.Simulink 'Maps_clinical'   delim]; % work at KUL
 misc.Text               = [misc.MATLAB  'Text'             delim];
 misc.tb_AM              = [misc.MATLAB   'tb_AM'           delim];
 misc.tb_AM_AddOns       = [misc.MATLAB   'tb_AM_AddOns'    delim];
@@ -140,7 +122,7 @@ misc.tb_Plot4papers_JU  = [misc.MATLAB   'tb_Plot4papers_JU' delim]; % Developed
 misc.tb_Psysound32      = [misc.MATLAB   'tb_Psysound32'   delim];
 misc.tb_SP15            = [misc.MATLAB   'tb_SP15'         delim];
 misc.tb_SP15AddOns      = [misc.MATLAB   'tb_SP15_AddOns'  delim];
-misc.FluctuationStrength_TestTones = [misc.outputs 'FS_test_tones' delim]; % temporal folder
+% misc.FluctuationStrength_TestTones = [misc.outputs 'FS_test_tones' delim]; % temporal folder
 
 misc.tb_APEX            = [misc.MATLAB   'tb_APEX'         delim];
 misc.tb_APEX_AddOns     = [misc.MATLAB   'tb_APEX_AddOns'  delim];

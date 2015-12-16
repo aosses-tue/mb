@@ -30,7 +30,7 @@ if nargin < 5
     dBFS = 100;
 end
 
-N = length(x);
+N = size(x,1);
 f = (1:K)/K*fs/2;
 
 if nargin < 4
@@ -40,12 +40,15 @@ end
 f = f(:);
 
 h = Get_window(windowtype,N);
+if size(x,2) ~= 1
+    h = repmat(h,1,size(x,2));
+end
 
 switch windowtype
     case 'rectangular'
         corrWindow_dB = 0;
     otherwise
-        corr = length(h)*mean(h);
+        corr = length(h(:,1))*mean(h(:,1));
         corrWindow_dB = log10(corr) + 0.272;
 end
 
@@ -56,6 +59,7 @@ df  = f(2) - f(1);
 
 constant = sqrt(1/(df*K*N));
 % y = abs(y*constant);
+
 y = From_dB(dBFS) * y * constant * From_dB(corrWindow_dB);
 
 ydB = 20*log10(abs(y));

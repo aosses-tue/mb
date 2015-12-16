@@ -28,9 +28,11 @@ if isunix
     misc.Databases          = ['~/Documenten/Databases' delim];
     misc.db_speechmaterials_local = '/media/Elements/orl-wrk-0089/Documenten/Speech_material_from_x-drive/';
     misc.db_speechmaterials = ['/home/' misc.username '/x/speechmaterials/'];
-    misc.ex_APEX_results    = ['~/Documenten/Meas/Meas/Experiments/Results_XML/'];
+    misc.ex_APEX_results    = ['~/Documenten/Meas/Meas/Experiments/Results_XML/']; % KU Leuven
+    misc.ex_Experiments     = ['~/Documenten/Documenten-TUe/02-Experiments' delim];
     misc.lx_Templates       = ['~/Documenten/Documenten-TUe/01-Text/00-Templates' delim];
     misc.lx_Text            = ['~/Documenten/Documenten-TUe/01-Text/05-Doc-TUe'   delim];
+    
     misc.outputs            = ['~/Documenten/MATLAB/outputs' delim];
     misc.praat              =  '/usr/bin/praat'; % whereis praat
     misc.praat_scripts      = ['~/Documenten/Praat_svn/'];
@@ -51,9 +53,11 @@ else
     misc.username           =  'aosses';
     misc.Databases          = ['D:\Databases' delim];
     misc.SVN_KUL            = ['D:\SVN-KU-Leuven\alejandro' delim];
-    misc.db_speechmaterials_local = ['E:\orl-wrk-0089\Documenten\Speech_material_from_x-drive']; % needs my external hard drive connected (E-drive)
+    misc.db_speechmaterials_local = ['E:\orl-wrk-0089\Documenten\Speech_material_from_x-drive' delim]; % needs my external hard drive connected (E-drive)
+    misc.db_speechmaterials = ['D:\Databases\dir03-Speech' delim];
     misc.db_fastl2007       = ['D:\Documenten-TUe\10-Referenties\02-Mijn-boeken\Fastl2007-psychoacoustics' delim 'Sound' delim];
     misc.ex_APEX_results    = [misc.SVN_KUL 'Meas' delim 'Experiments' delim 'Results_XML' delim]; % work at KUL
+    misc.ex_Experiments     = ['D:\Documenten-TUe\02-Experiments' delim];
     misc.lx_Presentations   = ['D:\Documenten-TUe\01-Text\70-Presentaties-TUe' delim];
     misc.lx_Templates       = ['D:\Documenten-TUe\01-Text\00-Templates' delim];
     misc.lx_Text            = ['D:\Documenten-TUe\01-Text\05-Doc-TUe'   delim];
@@ -64,13 +68,20 @@ end
 
 misc.db_audacity        = ['C:\Users\aosses\Documents\db_audacity' delim];
 
-misc.db_voice_of_dragon = [misc.Databases 'dir01-Instruments' delim 'Voice-of-dragon' delim];
-misc.piano              = [misc.Databases 'dir01-Instruments' delim 'Piano' delim]; 
+misc.db_instruments     = [misc.Databases 'dir01-Instruments' delim];
+misc.db_voice_of_dragon = [misc.db_instruments 'Voice-of-dragon' delim];
+misc.piano              = [misc.db_instruments 'Piano' delim]; 
+misc.db_calfiles        = [misc.Databases 'dir04-Psychoacoustics' delim 'Fastl-and-Zwicker-2007' delim '03-Extracted-files' delim]; % TMP dir
 misc.db_HRIR_Oldenburg  = [misc.Databases 'dir02-HRTFs'       delim 'Oldenburg'       delim];
 misc.db_Fastl2007       = [misc.Databases 'dir04-Psychoacoustics' delim 'Fastl-and-Zwicker-2007' delim '03-Extracted-files' delim];
-misc.db_calfiles        = [misc.Databases 'dir04-Psychoacoustics' delim 'Fastl-and-Zwicker-2007' delim '03-Extracted-files' delim]; % TMP dir
+misc.db_fastl2007_src   = [misc.Databases 'dir04-Psychoacoustics' delim 'Fastl-and-Zwicker-2007' delim '01-audio-files' delim 'Sound' delim];
+misc.db_ir              = [misc.Databases 'dir05-IR'       delim];
 misc.db_speechmaterials = [misc.Databases 'dir03-Speech' delim];
+
 misc.language           = 'NL'; % other possibilities: 'EN'
+misc.Simulink           = [Get_TUe_paths('MATLAB_KUL') 'Simulink_XPC'  delim];
+misc.SubjectMaps        = [misc.Simulink 'Maps'            delim]; % work at KUL
+misc.SubjectMapsClinical= [misc.Simulink 'Maps_clinical'   delim]; % work at KUL
 misc.tvl                = [misc.Databases 'dir04-Psychoacoustics' delim 'Cambridge-Auditory-Demonstrations-TV-models' delim 'TVL' delim]; 
 misc.tvlexe             = [misc.Databases 'dir04-Psychoacoustics' delim 'Cambridge-Auditory-Demonstrations-TV-models' delim 'TVL' delim 'TVL.exe']; 
 
