@@ -1,5 +1,5 @@
-function y = r20151211_update_ICRA(x)
-% function y = r20151211_update_ICRA(x)
+function r20151211_update_ICRA
+% function r20151211_update_ICRA
 %
 % 1. Description:
 %

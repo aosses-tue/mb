@@ -1,13 +1,21 @@
-function y = l0HM140_20151210_RK
-% function y = l0HM140_20151210_RK
+function l0HM140_20151210_RK
+% function l0HM140_20151210_RK
 %
 % 1. Description:
 %       Advanced perception, assignment 4.
 %       bPart1: 
 %           - plots the optimal weights as a function of the variance of the visual weight
+%       bPart2:
+%           - Use the concepts of likelihood and posterior ratio. In case
+%           the posterior ratios are equal then likelihood and posterior ratios
+%           are equivalent. Be careful! when using the Gaussian distribution, 
+%           assign the mean to be the expected functions (the lines) while 
+%           the observations (or measurements, the parabola in this case) are
+%           used as independent variable.
 % 
 % 2. Stand-alone example:
-%
+%       l0HM140_20151210_RK;
+% 
 % 3. Additional info:
 %       Tested cross-platform: No
 %
@@ -18,7 +26,7 @@ function y = l0HM140_20151210_RK
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 close all
-bPart1 = 0;
+bPart1 = 1;
 bPart2 = 1;
 
 if bPart1
@@ -92,36 +100,61 @@ if bPart2
     %-- Answer: find the list indices for which the likelihood of goal i=+1 
     % is larger than the neighbouring likelihoods (i=0; i=+2). This might be
     % clearer if you look at the previous figure.    
-    l1=find(il_lik2(yhat,1*t,1)>=il_lik2(yhat,2*t,1)); 
-    l2=find(il_lik2(yhat,1*t,1)>=il_lik2(yhat,0*t,1)); 
-    ymax=yhat(max(l1)); % intersection point (''upper'' bound)
-    ymin=yhat(min(l2)); % intersection point (''lower'' bound)
-
+    
+    % % Old MATLAB nomenclature:
+    % l1=find(il_lik2(yhat,1*t,1)>=il_lik2(yhat,2*t,1)); 
+    % l2=find(il_lik2(yhat,1*t,1)>=il_lik2(yhat,0*t,1)); 
+    % ymax=yhat(max(l1)); % intersection point (''upper'' bound)
+    % ymin=yhat(min(l2)); % intersection point (''lower'' bound)
+    
+    % New MATLAB nomenclature:
+    N_el = 1;
+    l1=find(il_lik2(yhat,1*t,1)>=il_lik2(yhat,2*t,1),N_el,'last');  
+    l2=find(il_lik2(yhat,1*t,1)>=il_lik2(yhat,0*t,1),N_el,'first'); 
+    ymax=yhat(l1); % intersection point (''upper'' bound)
+    ymin=yhat(l2); % intersection point (''lower'' bound)
+    
     % generate output
     disp(['range of y-values that favour i=+1: (' num2str(ymin) ',' num2str(ymax) ')']);
-    line([ymin ymin], [0 lik(ymin,t,1,1)],'Linestyle','--');
-    line([ymax ymax], [0 lik(ymax,t,1,1)],'Linestyle','--');
+    line([ymin ymin], [0 il_lik2(ymin,t,1*1)],'Linestyle','--');
+    line([ymax ymax], [0 il_lik2(ymax,t,1*1)],'Linestyle','--');
 
     %-- Question: a posteriori
     t=0:0.001:1; % a time series
+    prior=[0 0.4 0 0.6 0]; % these are the priors for i = -2, -1, 0, 1, 2 respectively
+    % prior=[0 0.5 0 0.5 0]; % using these a priors likelihood and posterior ratio are equal
+    sigma=1;
+    
+    %%%
+    for i = 1:length(prior)
+        apriori_likelihoods(i,:) = prior(i)*likelihoods(i,:);
+    end
 
     figure;
+    plot(yhat,apriori_likelihoods);
+
+    xlabel('observed y-position');
+    ylabel('a priori likelihood of each goal');
+    legend('i=-2','i=-1','i=0','i=1','i=2','Location','SouthWest');
+    %%%
+    
+    figure;
     subplot(2,1,1);
-    plot(t,[il_posterior(1,t.^2,t); il_posterior(-1,t.^2,t)]); % for a postetiori we use the measurement
+    plot(t,[il_posterior2(t.^2,1*t,sigma,prior(4)); il_posterior2(t.^2,-1*t,sigma,prior(2))]); % for a postetiori we use the measurement
     ylim([0 0.25]);
     xlabel('time t');
     ylabel('posterior probability');
     legend('i=+1','i=-1','Location','SouthWest');
 
-    % because the priors are the same the likelihood ratio is identical to the
-    % ratio of posterior probabilities
+    % In case the priors are the same, the likelihood ratio is identical to 
+    % the ratio of posterior probabilities (I think this was the assignment in previous years)
     likelihoodratio=il_lik2(t.^2,1*t,1)./il_lik2(t.^2,-1*t,1);
-    l1=find(likelihoodratio>=2);
-    tmin=t(min(l1));
+    l1=find(likelihoodratio>=2,N_el,'first');
+    tmin=t(l1);
     disp(['likelihoodratio: time after which goal i+1 is most likely: t=' num2str(tmin)]);
-    posteriorratio=il_posterior(1,t.^2,t)./il_posterior(-1,t.^2,t);
-    l2=find(posteriorratio>=2);
-    tmin2=t(min(l2));
+    posteriorratio=il_posterior2(t.^2,1*t,sigma,prior(4))./il_posterior2(t.^2,-1*t,sigma,prior(2));
+    l2=find(posteriorratio>=2,N_el,'first');
+    tmin2=t(l2);
     disp(['posteriorratio: time after which goal i+1 is most likely: t=' num2str(tmin2)]);
 
     % plot it
@@ -130,9 +163,10 @@ if bPart2
     xlabel('time t');
     ylabel('likelihood ratio');
     line([0 1],[2 2],'LineStyle','--','Color','r');
-    line([tmin tmin ],[0 likelihoodratio(min(l1)) ],'LineStyle','--','Color','r');
-    line([tmin2 tmin2],[0 posteriorratio(min(l2))],'LineStyle','--','Color','r');
+    line([tmin tmin ],[0 likelihoodratio(l1) ],'LineStyle','--','Color','r');
+    line([tmin2 tmin2],[0 posteriorratio(l2)],'LineStyle','--','Color','r');
     text(0.1, 2.5,'threshold');
+    legend('likelihood ratio','posterior ratio')
     disp('')
 end
 
@@ -151,6 +185,32 @@ wh      = 1-wv;                         % haptic weight
 sigma2vh= wv.*sigma2v;                  % combined variance
 svh     = wv.*sv + wh.*sh;              % weighted average
 
+function res = il_lik2(yhat,y_i,sigma)
+% function res = il_lik2(yhat,y_i,sigma)
+%
+% il_lik returns the likelihood of observing yhat at time t when the goal is
+% target i and the uncertainty is sigma. The mean is y_i.
+
+c   = 1/sqrt(2*pi)/sigma;
+res = c*exp(-(yhat-y_i).^2/2/sigma^2);
+
+function res=il_posterior2(yhat,yt,sigma,prior)
+% function res=il_posterior2(yhat,yt,sigma,prior)
+%
+% il_posterior returns the posterior probability of goal i for a given
+% observation yhat at time t. Assumes that y_hat has a Gaussian distribution
+% with standard deviation 1 and mean yhat.
+
+res=il_lik2(yhat,yt,sigma)*prior;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% The next functions are as originally programmed by Raymond (in different
+% MATLAB scripts. My opinion: (a) t and i as separate input parameters are
+% confusing; il_lik and il_posterior have the same input arguments (except
+% for sigma) but the order is different; (c) It is better to use as inputs
+% the functions yt and yhat. That was implemented in il_lik2 and il_posterior2(
+% in response to a,b) to replace il_lik and il_posterior, respectively.
+
 function res = il_lik(yhat,t,i,sigma)
 % function res = il_lik(yhat,t,i,sigma)
 %
@@ -158,15 +218,6 @@ function res = il_lik(yhat,t,i,sigma)
 % target i and the uncertainty is sigma. The mean is y_i.
 
 y_i = i.*t;
-c   = 1/sqrt(2*pi)/sigma;
-res = c*exp(-(yhat-y_i).^2/2/sigma^2);
-
-function res = il_lik2(yhat,y_i,sigma)
-% function res = il_lik2(yhat,y_i,sigma)
-%
-% il_lik returns the likelihood of observing yhat at time t when the goal is
-% target i and the uncertainty is sigma. The mean is y_i.
-
 c   = 1/sqrt(2*pi)/sigma;
 res = c*exp(-(yhat-y_i).^2/2/sigma^2);
 

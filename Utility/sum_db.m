@@ -13,17 +13,17 @@ function [Y ymean] = sum_db(X,floor_dB)
 %       Y = sum_db(X); % expected result: 63 dB
 % 
 % 3. Additional info:
-%   Tested cross-platform: No
+%   Tested cross-platform: Yes
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 06/06/2014
 % Last update on: 06/05/2015 
-% Last use on   : 19/08/2015 
+% Last use on   : 17/12/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 x2 = 10.^(X/10); % Anti-log squared
 
-Y       =  10*log10( sum(x2) );
+Y  =  10*log10( sum(x2) );
 
 if nargout > 1
         

@@ -1,5 +1,5 @@
-function r=icra5_noise4piano(data)
-% function r=icra5_noise4piano(data)
+function r=icra5_noise4piano(insig,fs,method)
+% function r=icra5_noise4piano(insig,fs,method)
 %
 % 1. Description:
 %       Imitate the making of the icra5 noise (Dreschler et al, 2005, Int J Aud)
@@ -31,62 +31,105 @@ function r=icra5_noise4piano(data)
 % Last used on: 09/12/2015
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-fs=44100;
-
-[B1,B2,B3,A1,A2,A3]=il_getfilters(fs);
-
-r=zeros(length(data),3);
-r(:,1)=filter(B1,A1,data);
-r(:,2)=filter(B2,A2,data);
-r(:,3)=filter(B3,A3,data);
-
-r(:,1)=il_schroeder(r(:,1));
-r(:,2)=il_schroeder(r(:,2));
-r(:,3)=il_schroeder(r(:,3));
-% rms=meanrms(r);
-
-r(:,1)=filter(B1,A1,r(:,1));
-r(:,2)=filter(B2,A2,r(:,2));
-r(:,3)=filter(B3,A3,r(:,3));
-
-cross=[0 800 2400 fs/2];
-for i=1:3
-    r(:,i)=r(:,i)/meanrms(r(:,i))*sqrt(cross(i+1)-cross(i));
+if nargin < 3
+    method = 2;
 end
+
+if nargin < 2
+    fs=44100;
+end
+
+switch method
+    case 2
+        type    = 1;
+        cross   = Get_icra_cutoff_freqs(type);
+        [B,A]   = il_getfilters(fs,cross);
+        Nbands  = length(cross)+1; 
+        r       = zeros(length(insig),Nbands);
+        for i = 1:Nbands
+            r(:,i)  = filter(B(i,:),A(i,:),insig);
+        end
+    case 3
+        [r, fc] = auditoryfilterbank(insig,fs);
+        Nbands = length(fc);
+end
+
+interimRMS = rmsdb(r)+100;
+
+for i = 1:Nbands
+    r(:,i)  = il_schroeder(r(:,i));
+end
+
+switch method
+    case 2
+        for i = 1:Nbands
+            r(:,i)  = filter(B(i,:),A(i,:),r(:,i));
+        end
+    case 3
+        for i = 1:Nbands
+            rtmp = auditoryfilterbank(r(:,i),fs);
+            r(:,i) = rtmp(:,i);
+        end
+        
+end
+
+interimGlobalRMS    = rmsdb(sum(r,2))+100;
+interimRMS2         = rmsdb(r)+100;
+
+bDebug = 1;
+if bDebug == 1
+    K = 8192/2;
+    figure;
+    subplot(2,1,1)
+    freqfft2(r,K,fs);
+    legend('LP','BP','HP')
+end
+
+for i=1:Nbands
+    r(:,i) = setdbspl( r(:,i),interimRMS(i) );
+end
+interimRMS3 = rmsdb(r)+100;
 r=sum(r,2);
-% figure
-% pwelch(r,[],[],[],fs);
-% return;
 
-r=il_randomize_phase(r);
+RMSbefore = rmsdb(r)+100;
+r         = il_randomize_phase(r); % it can increase or decrease the level
 
-%%% malespectrum_filter removed:
-% B=malespectrum_filter;
-% 
-% N2pad = round(length(B)/2);
-% r = [r; zeros(N2pad,1)]; 
-% 
-% r=filter(B,1,r);
-% 
-% r = r(N2pad+1:end);
+% B       = malespectrum_filter(fs); % effort filter not being applied inside (only for plot)
+% N2pad   = round(length(B)/2);
+% r       = [r; zeros(N2pad,1)]; 
+% r       = filter(B,1,r);
+% r       = r(N2pad+1:end);
+RMSafter  = rmsdb(r)+100;
+r         = gaindb(r,RMSbefore-RMSafter); % compensate decrease or increase in level after phase randomisation
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [B1,B2,B3,A1,A2,A3]=il_getfilters(fs)
-cross=[800 2400];
+function [B,A]=il_getfilters(fs,cross)
 
-order=100/20;           % butterworth: slope=20*order
+if fs <= 22050          % tested for fs = 20000 Hz
+   order=floor(84/6);   % butterworth: A = 6 dB/Oct * Order
+else                    % tested for fs = 48000 Hz
+   order=floor(60/6);   % at 72 starts a little bit of ripple
+end
 
-[B1,A1]=butter(order, cross(1)/fs*2);
-[B2,A2]=butter(order, cross/fs*2);
-[B3,A3]=butter(order, cross(2)/fs*2,'high');
+Nbands = length(cross)+1;
 
-doplot=0;
+B = zeros(Nbands,order+1);
+A = zeros(Nbands,order+1);
+
+[B(1,:),A(1,:)]=butter(order  , cross(1)/fs*2);
+for i = 2:Nbands-1
+    [B(i,:),A(i,:)]=butter(order/2, cross(i-1:i)/fs*2);
+end
+[B(Nbands,:),A(Nbands,:)]=butter(order, cross(Nbands-1)/fs*2,'high');
+
+doplot=1;
 if (doplot)
-    [H1,F]=freqz(B1,A1,[],fs);
-    [H2,F]=freqz(B2,A2,[],fs);
-    [H3,F]=freqz(B3,A3,[],fs);
+    
+    for i = 1:Nbands
+        [H(:,i),F]=freqz(B(i,:),A(i,:),[],fs);
+    end
     figure
-    semilogx(F,20*log10([abs(H1) abs(H2) abs(H3)]));
+    semilogx(F,20*log10([abs(H)]));
 end
 
 function r=il_schroeder(d)

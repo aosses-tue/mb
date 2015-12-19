@@ -35,7 +35,7 @@ if nargin < 3
     method = 1;
 end
 
-if fs < 2
+if nargin < 2
     fs=44100;
 end
 
@@ -58,6 +58,7 @@ r(:,1)=il_schroeder(r(:,1));
 r(:,2)=il_schroeder(r(:,2));
 r(:,3)=il_schroeder(r(:,3));
 
+interimGlobalRMS = rmsdb(sum(r,2))+100;
 interimRMS          = rmsdb(r)+100;
 interimRMS_per_Hz   = interimRMS - 10*log10(BW); 
 
@@ -114,7 +115,7 @@ r       = [r; zeros(N2pad,1)];
 r       = filter(B,1,r);
 r       = r(N2pad+1:end);
 RMSafter= rmsdb(r)+100;
-r       = gaindb(r,RMSbefore-RMSafter);
+r       = gaindb(r,RMSbefore-RMSafter); % compensate decrease or increase in level after phase randomisation
 
 disp('')
 
@@ -123,12 +124,16 @@ function [B1,B2,B3,A1,A2,A3]=il_getfilters(fs)
 
 cross=[800 2400];
 
-% order=100/20;          % butterworth: slope=20*order
-order=floor(84/6);       % butterworth: A = 6 dB/Oct * Order
+% order=100/20;         % butterworth: slope=20*order
+if fs <= 22050          % tested for fs = 20000 Hz
+   order=floor(84/6);   % butterworth: A = 6 dB/Oct * Order
+else                    % tested for fs = 48000 Hz
+   order=floor(66/6);   % at 72 starts a little bit of ripple
+end
 
-[B1,A1]=butter(order  , cross(1)/fs*2);
-[B2,A2]=butter(order/2, cross/fs*2);
-[B3,A3]=butter(order  , cross(2)/fs*2,'high');
+[B1,A1]=butter(order         , cross(1)/fs*2);
+[B2,A2]=butter(round(order/2), cross/fs*2);
+[B3,A3]=butter(order         , cross(2)/fs*2,'high');
 
 doplot=1;
 if (doplot)
@@ -137,6 +142,7 @@ if (doplot)
     [H3,F]=freqz(B3,A3,[],fs);
     figure
     semilogx(F,20*log10([abs(H1) abs(H2) abs(H3)]));
+    title(sprintf('fs=%.0f [Hz]',fs))
 end
 
 function r=il_schroeder(d)
