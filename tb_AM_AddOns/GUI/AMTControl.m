@@ -1081,7 +1081,7 @@ options.zlim4assessment = options.zrange;
 
 if bUsePsySound
     
-    options.calfile = [Get_TUe_paths('db_calfiles') 'track_03.wav'];
+    options.calfile = [Get_TUe_data_paths('db_calfiles') 'track_03.wav'];
     
     callevel = str2num( get(handles.txtCalLevel,'string') ); % rms 90 dB SPL = 0 dBFS 
 
@@ -1094,7 +1094,7 @@ if bUsePsySound
     tmp_h = [];
     tmp_h = [];
 
-    options = Ensure_field(options,'calfile',[Get_TUe_paths('db_calfiles') 'track_03.wav']);
+    options = Ensure_field(options,'calfile',[Get_TUe_data_paths('db_calfiles') 'track_03.wav']);
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1447,25 +1447,6 @@ switch nAnalyser
             param{end+1}   = sprintf('%s-analyser-%s-file2','MU',Num2str(options.nAnalyser));
         end
         
-    % case 1
-    % 
-    %     if bUsePsySound == 0
-    % 
-    %         if bPlotParam2 == 1
-    %             figure;
-    %             plot(f,y1dB,'b',f,y2dB,'r'); grid on
-    %             min2plot = max( min(min([y1dB y2dB])),0 ); % minimum of 0 dB
-    %             max2plot = max(max([y1dB y2dB]))+5; % maximum exceeded in 5 dB
-    %             ylim([min2plot max2plot])
-    %             xlabel('Frequency [Hz]')
-    %             ylabel('Log-spectrum [dB]')
-    % 
-    %             legend(options.label1,options.label2);
-    % 
-    %         end
-    % 
-    %     end
-        
     otherwise
         
         bPercentiles = get(handles.chPercentiles,'value'); % only for loudness
@@ -1586,7 +1567,9 @@ if options.bSave
             str.fs = fs;
             str.sample_inf = sample_inf;
             str.sample_sup = sample_sup;
-            str.HopSize = HopSize;
+            try
+                str.HopSize = HopSize;
+            end
             str.toffset = toffset;
             str.bGenerateExcerpt = options.bGenerateExcerpt;
             str.tanalysis = options.tanalysis;

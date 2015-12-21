@@ -344,7 +344,7 @@ elseif strcmp(param,'average-power-spectrum')
     
 elseif strcmp(param,'spectrogram')
     bPlot_vs_time = 1;
-    switch Analyser
+    switch nAnalyser
         case 1
             f = res1.f;
             option = ef(option,'frange',minmax(f));

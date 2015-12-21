@@ -67,8 +67,8 @@ switch method
         end
     case 3
         for i = 1:Nbands
-            rtmp = auditoryfilterbank(r(:,i),fs);
-            r(:,i) = rtmp(:,i);
+            rtmp = auditoryfilterbank_one_freq(r(:,i),fs,fc(i));
+            r(:,i) = rtmp;
         end
         
 end
@@ -85,9 +85,12 @@ if bDebug == 1
     legend('LP','BP','HP')
 end
 
+% currentRMS = rmsdb(r)+100; % figure; plot(interimRMS,'ro'); hold on; plot(currentRMS,'s--')
+
 for i=1:Nbands
     r(:,i) = setdbspl( r(:,i),interimRMS(i) );
 end
+
 interimRMS3 = rmsdb(r)+100;
 r=sum(r,2);
 

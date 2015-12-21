@@ -172,7 +172,7 @@ options.zlim4assessment = options.zrange;
 
 if bUsePsySound
     
-    options.calfile = [Get_TUe_paths('db_calfiles') 'track_03.wav'];
+    options.calfile = [Get_TUe_data_paths('db_calfiles') 'track_03.wav'];
     
     callevel = str2num( get(handles.txtCalLevel,'string') ); % rms 90 dB SPL = 0 dBFS 
 
@@ -186,7 +186,7 @@ if bUsePsySound
     tmp_h = [];
     tmp_h = [];
 
-    options = Ensure_field(options,'calfile',[Get_TUe_paths('db_calfiles') 'track_03.wav']);
+    options = Ensure_field(options,'calfile',[Get_TUe_data_paths('db_calfiles') 'track_03.wav']);
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
