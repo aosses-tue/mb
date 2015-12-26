@@ -1,5 +1,5 @@
-function y = r20151127_piano_sounds_noise
-% function y = r20151127_piano_sounds_noise
+function r20151127_piano_sounds_noise
+% function r20151127_piano_sounds_noise
 %
 % 1. Description:
 %
@@ -11,7 +11,7 @@ function y = r20151127_piano_sounds_noise
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 24/11/2015
 % Last update on: 24/11/2015 
-% Last use on   : 24/11/2015 
+% Last use on   : 22/12/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 bDiary = 0;
@@ -20,7 +20,7 @@ close all
 
 bSave = 0;
 
-bDoResampling   = 0; % preparing piano samples
+bDoResampling   = 1; % preparing piano samples
 bDoPianoNoise_example  = 0;
 bDoPianoNoise   = 0;
 bDoAtt4experiments = 0;

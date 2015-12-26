@@ -19,7 +19,7 @@ function r20151119_piano_sounds
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 19/11/2015
 % Last update on: 22/11/2015 
-% Last use on   : 22/11/2015 
+% Last use on   : 22/12/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 close all
@@ -39,13 +39,13 @@ bDoEnv = 1;
 % notetmp.note = 'F'; notetmp.octave = 3;
 % notetmp.note = 'C'; notetmp.octave = 4; 
 % notetmp.note = 'A'; notetmp.octave = 4;
-notetmp.note = 'Csh'; notetmp.octave = 5; 
+% notetmp.note = 'Csh'; notetmp.octave = 5; 
 % notetmp.note = 'C'; notetmp.octave = 6; 
-% notetmp.note = 'G'; notetmp.octave = 6; 
+notetmp.note = 'G'; notetmp.octave = 6; 
 
 f0target = note2freq(notetmp);
 note2test = [notetmp.note num2str(notetmp.octave)];
-dir = [Get_TUe_data_paths('piano') delim '04-PAPA' delim '01-Sounds' delim note2test delim];
+dir = [Get_TUe_data_paths('piano') '04-PAPA' delim '01-Sounds' delim note2test delim];
 
 opts.bExtension = 0;
 files = Get_filenames(dir,'wav',opts);

@@ -12,12 +12,12 @@ function Generate_piano_textGrid
 %       See also Check_piano_sounds, Generate_Praat_textGrid, Generate_Fastl2007_textGrid (similar processing)
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
-% Created on    : 14/08/2014
-% Last update on: 14/08/2014
-% Last use on   : 25/11/2014
+% Created on    : 14/08/2015
+% Last update on: 14/08/2015
+% Last use on   : 22/12/2015
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-dir2lookat = [Get_TUe_data_paths('piano') '04-PAPA' delim '01-Tuned-at-44100-Hz' delim];
+dir2lookat = [Get_TUe_data_paths('piano') '04-PAPA' delim '02-Tuned-at-44100-Hz' delim];
 
 registers = {   ['Dsh1' delim]; ...
                 ['F1' delim]; ...

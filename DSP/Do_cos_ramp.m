@@ -1,4 +1,4 @@
-function y = Do_cos_ramp(x,fs,attack,release)
+function y = Do_cos_ramp(x,fs,attack_ms,release_ms)
 % function y = Do_cos_ramp(x,fs,attack,release)
 %
 % 1. Description:
@@ -21,15 +21,15 @@ if nargin < 2
 end
 
 if nargin < 3
-    attack = 25;
+    attack_ms = 25;
 end
 
 if nargin < 4
-    release = attack;
+    release_ms = attack_ms;
 end
 
 sig_len = length(x);
-r =  cos_ramp(sig_len,fs,attack,release);
+r =  cos_ramp(sig_len,fs,attack_ms,release_ms);
 try
     y = transpose(r).*x;
 catch

@@ -28,11 +28,12 @@ function r=icra5_noise4piano(insig,fs,method)
 % 
 % Author: Tom Francart 2010-2013, KU Leuven
 % Modified by: Alejandro Osses, HTI, TU/e 2015
-% Last used on: 09/12/2015
+% First modified on: 09/12/2015
+% Last used on: 23/12/2015
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 3
-    method = 2;
+    method = 3; % Method 3 = with ERB bands, 'approved' (nice first attempt) by AK on 22/12/2015
 end
 
 if nargin < 2
@@ -76,7 +77,7 @@ end
 interimGlobalRMS    = rmsdb(sum(r,2))+100;
 interimRMS2         = rmsdb(r)+100;
 
-bDebug = 1;
+bDebug = 0;
 if bDebug == 1
     K = 8192/2;
     figure;
@@ -95,7 +96,7 @@ interimRMS3 = rmsdb(r)+100;
 r=sum(r,2);
 
 RMSbefore = rmsdb(r)+100;
-r         = il_randomize_phase(r); % it can increase or decrease the level
+r         = il_randomise_phase(r); % it can increase or decrease the level
 
 % B       = malespectrum_filter(fs); % effort filter not being applied inside (only for plot)
 % N2pad   = round(length(B)/2);
@@ -138,7 +139,7 @@ end
 function r=il_schroeder(d)
 r=d.*sign(rand(length(d),1)-0.5);
 
-function r=il_randomize_phase(d)
+function r=il_randomise_phase(d)
 N=512;      % window length
 hop=512/8;
 window=hamming(N);

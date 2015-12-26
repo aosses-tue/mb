@@ -1,5 +1,5 @@
-function [y ty stats] = rmsdb_sec(x,t,tstart,fs)
-% function [y ty stats] = rmsdb_sec(x,t,tstart,fs)
+function [y ty stats] = rmsdb_sec(x,fs,dur_buf_s,tstart)
+% function [y ty stats] = rmsdb_sec(x,fs,dur_buf_s,tstart)
 %
 % 1. Description:
 %       x - signal to be buffered in N = 50 sample-section
@@ -19,23 +19,25 @@ function [y ty stats] = rmsdb_sec(x,t,tstart,fs)
 % 3. Stand-alone example:
 %       VoD_one_signal;
 % 
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
-% Created on: 24/6/2014
-% Last update: 25/6/2014 % Update this date manually
-% Last used: 25/6/2014 % Update this date manually
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
+% Created on : 24/06/2014
+% Last update: 25/06/2014 
+% Last used  : 23/12/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if nargin < 3
+if nargin < 4
     tstart     = 0;
     tstart_idx = 1;
 else
     tstart_idx = tstart*fs;
 end
 
-x = x/max(abs(x));
-N       = 50;
-xsec    = buffer(x,N,0);
-x       = xsec;
+t    = (1:length(x))/fs;
+
+x    = x/max(abs(x));
+N    = round(dur_buf_s * fs);
+xsec = buffer(x,N,0);
+x    = xsec;
 
 [r,c]=size(x);
 if c == 1 %column vector

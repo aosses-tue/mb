@@ -161,8 +161,8 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if bICRA_as_paper
     
-    fnameS_male   = [Get_TUe_data_paths('db_speechmaterials') 'Spanish' delim 'Matrix' delim '00131.wav'];
-    fnameS_female = [Get_TUe_data_paths('db_speechmaterials') 'dutch'   delim 'Matrix' delim '00131.wav'];
+    fnameS_male   = [Get_TUe_data_paths('db_speechmaterials') 'Spanish' delim 'Matrix' delim '00131.wav']; % male
+    fnameS_female = [Get_TUe_data_paths('db_speechmaterials') 'dutch'   delim 'Matrix' delim '00131.wav']; % female
     
     [signalS fsS] = Wavread(fnameS_male); 
     [signalSf   ] = Wavread(fnameS_female); % assuming the same fsS

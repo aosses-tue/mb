@@ -20,7 +20,7 @@ function outsig = Do_pitch_stretch(insig,factor,mode)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 18/11/2015
 % Last update on: 18/11/2015 
-% Last use on   : 02/12/2015 
+% Last use on   : 22/12/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 3
@@ -40,7 +40,8 @@ end
         
 den = 100;
 timesfaster = num/den; % 0.75
-outsig   = pvoc(insig,timesfaster,1024);
+N = 4096; % N = 1024 was giving some phase problems
+outsig   = pvoc(insig,timesfaster,N);
 
 outsig = resample(outsig,num,den); % if den > num outsig the pitch shift is going up (asuming that fs will be constant)
                                    % if den < num outsig the pitch shift is going down

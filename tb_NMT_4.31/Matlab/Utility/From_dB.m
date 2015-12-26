@@ -1,8 +1,9 @@
-function gain = From_dB(gain_dB)
-% function gain = From_dB(gain_dB)
+function gain = From_dB(gain_dB,div)
+% function gain = From_dB(gain_dB,div)
 %
-% From_dB: Convert decibels to voltage gain.
-% gain = From_dB(gain_dB)
+% 1. Description:
+%       From_dB: Convert decibels to voltage gain (if div = 20, default).
+%       gain = From_dB(gain_dB)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Copyright     : Cochlear Ltd
@@ -11,11 +12,15 @@ function gain = From_dB(gain_dB)
 % $DateTime     : 2008/03/04 14:27:13 $
 % Authors       : Brett Swanson
 % Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
-% Last update on: 30/07/2014 % Update this date manually
-% Last use on   : 30/07/2014 % Update this date manually
+% Last update on: 30/07/2014 
+% Last use on   : 30/07/2014 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-gain = 10 .^ (gain_dB / 20.0);
+if nargin < 2
+    div = 20;
+end
+
+gain = 10 .^ (gain_dB / div);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
