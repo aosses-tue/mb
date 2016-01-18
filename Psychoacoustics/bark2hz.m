@@ -13,8 +13,8 @@ function f = bark2hz(z)
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 25/09/2014
-% Last update on: 25/09/2014 % Update this date manually
-% Last use on   : 25/09/2014 % Update this date manually
+% Last update on: 25/09/2014 
+% Last use on   : 06/01/2016 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 f0 = 1000;

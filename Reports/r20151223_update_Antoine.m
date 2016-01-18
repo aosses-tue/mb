@@ -1,5 +1,5 @@
-function y = r20151223_update_Antoine
-% function y = r20151223_update_Antoine
+function r20151223_update_Antoine
+% function r20151223_update_Antoine
 %
 % 1. Description:
 %

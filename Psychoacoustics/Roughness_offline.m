@@ -1,5 +1,5 @@
-function [R dataOut out] = Roughness_offline(insig, Fs, N, options, CParams,bDebug)
-% function [R dataOut out] = Roughness_offline(insig, Fs, N, options, CParams,bDebug)
+function [R dataOut out] = Roughness_offline(insig, fs, N, options, CParams,bDebug)
+% function [R dataOut out] = Roughness_offline(insig, fs, N, options, CParams,bDebug)
 %
 % 1. Description:
 %       Frame-based, off-line implementation of the roughness algorithm.
@@ -77,7 +77,7 @@ if nargin < 3
     N = 8192;
 end
 
-if ~(Fs == 44100 | Fs == 40960 | Fs == 48000)
+if ~(fs == 44100 | fs == 40960 | fs == 48000)
   error(['Incorrect sample rate for this roughness algorithm. Please ' ...
          're-sample original file to be Fs=44100,40960 or 48000 ' ...
          'Hz']);
@@ -90,13 +90,13 @@ end
 Bark    = Get_psyparams('Bark');
 Bark2   = [sort([Bark(:,2);Bark(:,3)]),sort([Bark(:,1);Bark(:,4)])];
 
-N0      = round(20*N/Fs)+1;
+N0      = round(20*N/fs)+1;
 N01     = N0-1;
-N50     = round(50*N/Fs)-N0+1;
+N50     = round(50*N/fs)-N0+1;
 N2      = N/2+1;
-Ntop	= round(20000*N/Fs)+1;
+Ntop	= round(20000*N/fs)+1;
 Ntop2	= Ntop-N0+1;
-dFs     = Fs/N;
+dFs     = fs/N;
 
 % Make list with Barknumber of each frequency bin
 Barkno      = zeros(1,N2);
@@ -106,17 +106,17 @@ Barkno(f)   = interp1(Bark2(:,1),Bark2(:,2),(f-1)*dFs);
 % Make list of frequency bins closest to Cf's
 Cf = ones(2,24);
 for a=1:1:24
-  Cf(1,a)=round(Bark((a+1),2)*N/Fs)+1-N0;
+  Cf(1,a)=round(Bark((a+1),2)*N/fs)+1-N0;
   Cf(2,a)=Bark(a+1,2);
 end
 %Make list of frequency bins closest to Critical Band Border frequencies
 Bf = ones(2,24);
-Bf(1,1)=round(Bark(1,3)*N/Fs);
+Bf(1,1)=round(Bark(1,3)*N/fs);
 for a=1:1:24
-  Bf(1,a+1)=round(Bark((a+1),3)*N/Fs)+1-N0;
+  Bf(1,a+1)=round(Bark((a+1),3)*N/fs)+1-N0;
   Bf(2,a)=Bf(1,a)-1;
 end
-Bf(2,25)=round(Bark((25),3)*N/Fs)+1-N0;
+Bf(2,25)=round(Bark((25),3)*N/fs)+1-N0;
 
 %Make list of minimum excitation (Hearing Treshold)
 HTres = Get_psyparams('HTres');
@@ -128,7 +128,6 @@ MinExcdB = interp1(HTres(:,1),HTres(:,2),Barkno(k));
 zi      = 0.5:0.5:23.5;
 zb      = sort([Bf(1,:),Cf(1,:)]);
 Chno    = 47;
-ei      = zeros(Chno,N);
 Fei     = zeros(Chno,N);
 
 gr = Get_psyparams('gr');
@@ -153,7 +152,7 @@ a0(k) = From_dB(interp1(a0tab(:,1),a0tab(:,2),Barkno(k)));
 
 % BEGIN Hweights:
 
-Hweight = Get_Hweight_roughness(N,Fs);
+Hweight = Get_Hweight_roughness(N,fs);
 
 % END Hweights 
 %%%%%%%%%%%%%%%%
@@ -205,20 +204,20 @@ for idx_j = 1:m_blocks
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Critical-band filterbank - Terhardt:
-    [ei, etmp_fd, etmpExc_fd] = Terhardt_filterbank(FreqIn,Fs,N,qb,MinExcdB,Barkno,N01,zb);
+    [etmp_td, etmp_fd, etmpExc_fd] = Terhardt_filterbank(FreqIn,fs,N,qb,MinExcdB,Barkno,N01,zb);
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    etmp_td = abs(etmp_td);
     
-    % ei = zeros(  )
-    for k=1:1:47
+    for k=1:1:Chno
         % etmp_fd  - excitation pattern in frequency domain
         % etmp  - excitation patterns in time domain (after L242)
         % ei    - excitation patterns in time domain
         % Fei   - envelope in frequency domain, as function of fmod
         % h0    - DC component, average of half-wave rectified signal
 
-        etmp_td(k,:)= abs(ei(k,:));
-        h0(k)       = mean(etmp_td(k,:));
-        Fei(k,:)	= fft( etmp_td(k,:)-h0(k) ); % changes the phase but not the amplitude
+        % etmp_td(k,:)= abs(etmp_td(k,:));
+        h0(k)       = mean( etmp_td(k,:)       );
+        Fei(k,:)	=  fft( etmp_td(k,:)-h0(k) ); % changes the phase but not the amplitude
 
         hBPi(k,:)	= 2*real(  ifft( Fei(k,:).*Hweight(k,:) )  );
         hBPrms(k)	= rms(hBPi(k,:),'dim',2);
@@ -239,7 +238,7 @@ for idx_j = 1:m_blocks
     if bDebug
 
         % params for figures 4 and 5
-        idx2plot = 1:47; 
+        idx2plot = 1:Chno; 
 
         k = idx2plot;
         
@@ -280,7 +279,7 @@ for idx_j = 1:m_blocks
 
         % params just for figure 5
         BandNumber = repmat( ((idx2plot)'), 1, N);
-        t = repmat( (1:N)/Fs ,length(idx2plot),1);
+        t = repmat( (1:N)/fs ,length(idx2plot),1);
 
         %-- Figure 5: -----------------------------------------------------
         figure(5); 
@@ -341,7 +340,7 @@ dataOut{1} = R;
 dataOut{2} = ri;
 dataOut{3} = SPL;
 
-out.t       = transpose(tn/Fs);
+out.t       = transpose(tn/fs);
 out.z       = transpose(zi);
 
 nParam      = 1;

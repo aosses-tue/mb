@@ -1,46 +1,67 @@
-function FluctuationStrength_Garcia_createparams(N)
-% function FluctuationStrength_Garcia_createparams(N)
+function FluctuationStrength_Garcia_createparams(N,fs,Ndataset)
+% function FluctuationStrength_Garcia_createparams(N,fs,Ndataset)
 % 
 % Creates the file 'params.mat' (if the file already exists it is deleted
 % first) containing all the required parameters for the fluctuation
 % strength model.
 % 
+%   - gzi was deleted on 07/01/2015
+%   - Ndataset = 0; is the final fitting, as presented in the thesis
+% 
 % Author: Rodrigo Garcia
 % Original name: Create_params (renamed when copied from Rodrigo's repository)
+% Modified by: Alejandro Osses V.
+% Last modified: 07/01/2015
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    if nargin == 0
-        N   = 264600;
-    end
-    Fs  = 44100;
+if nargin == 0
+    N   = 264600;
+end
     
-    OUTPUT_FILE = sprintf('params-%.0f.mat',N);
+if nargin < 3
+    Ndataset = 0;
+end
+
+OUTPUT_FILE = sprintf('params-%.0f-at-%.0f-Hz-dataset-%.0f.mat',N,fs,Ndataset);
     
-    N0      = round(20 * N / Fs) + 1;
-    N01     = N0 - 1;
-    Ntop    = round(20e3 * N / Fs) + 1;
-    qb      = N0:1:Ntop;
-    freqs   = (qb + 1) * Fs / N;
-    Chno    = 47;
-    Cal     = 0.1017; % 0.25;
-    zi      = 0.5:0.5:23.5; % Added by AO
+% Common parameters:
+N0      = round(20 * N / fs) + 1;
+N01     = N0 - 1;
+Ntop    = round(20e3 * N / fs) + 1;
+qb      = N0:1:Ntop;
+freqs   = (qb + 1) * fs / N;
+Chno    = 47;
+zi      = 0.5:0.5:23.5; % Added by AO
+Bark        = il_get_Bark;
+Barkno      = il_calculate_Barkno(N,fs,qb,Bark);
+a0          = il_calculate_a0(N,qb,Barkno);
+MinExcdB    = il_calculate_MinExcdB(N0,N01,Ntop,qb,Barkno);
+[MinBf zb]  = il_calculate_MinBf(N,N0,fs,Bark,MinExcdB);
+Hweight     = il_create_Hweight(N,fs);
+
+switch Ndataset
+    case 0
+        Cal = 0.1017; % Modified respect to Garcia2015, Eq 6.14
+        p_g = 0; % not accounted for in final expression
+        p_m = 0.25; % Garcia2015, Eq 6.11
+        p_k = 0.375; % Garcia2015, Eq 6.11
+        
+    case 1
+        Cal = 0.1017; % 0.25;
+        p_g = 2;
+        p_m = 2; 
+        p_k = 2;
+end
     
-    Bark        = get_Bark;
-    Barkno      = calculate_Barkno(N,Fs,qb,Bark);
-    a0          = calculate_a0(N,qb,Barkno);
-    MinExcdB    = calculate_MinExcdB(N0,N01,Ntop,qb,Barkno);
-    MinBf       = calculate_MinBf(N,N0,Fs,Bark,MinExcdB);
-    Hweight     = calculate_Hweight(N,Fs);
-    gzi         = calculate_gzi;
-    
-    if exist(OUTPUT_FILE,'file')
-        delete(OUTPUT_FILE);
-    end
-    
-    save(OUTPUT_FILE,'-regexp','^(?!OUTPUT_FILE$).*');
-    
+if exist(OUTPUT_FILE,'file')
+    delete(OUTPUT_FILE);
+end
+
+save(OUTPUT_FILE,'-regexp','^(?!OUTPUT_FILE$).*');
+ 
+% EOF
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function Bark = get_Bark
+function Bark = il_get_Bark
     Bark = [
         0   0       50      0.5
         1   100     150     1.5
@@ -67,12 +88,12 @@ function Bark = get_Bark
         22  9500	10500	22.5
         23  12000	13500	23.5
         24  15500   20000   24.5 ]; 
-end
+% end
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function Barkno = calculate_Barkno(N,Fs,qb,Bark)
+function Barkno = il_calculate_Barkno(N,fs,qb,Bark)
     N2      = N / 2 + 1;
-    dFs     = Fs / N;
+    dFs     = fs / N;
     Bark2	= [
         sort([Bark(:,2);Bark(:,3)]),...
         sort([Bark(:,1);Bark(:,4)])
@@ -80,10 +101,10 @@ function Barkno = calculate_Barkno(N,Fs,qb,Bark)
 
     Barkno      = zeros(1,N2);
     Barkno(qb)  = interp1(Bark2(:,1),Bark2(:,2),(qb-1)*dFs);
-end
+% end
     
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function a0 = calculate_a0(N,qb,Barkno)
+function a0 = il_calculate_a0(N,qb,Barkno)
     a0tab = [
         0       0
         10      0
@@ -114,10 +135,10 @@ function a0 = calculate_a0(N,qb,Barkno)
     for n = qb;
         a0(n) = From_dB(interp1(a0tab(:,1),a0tab(:,2),Barkno(n)));
     end
-end
+% end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function MinExcdB = calculate_MinExcdB(N0,N01,Ntop,qb,Barkno)
+function MinExcdB = il_calculate_MinExcdB(N0,N01,Ntop,qb,Barkno)
     HTres = [
         0		130
         0.01    70
@@ -155,199 +176,72 @@ function MinExcdB = calculate_MinExcdB(N0,N01,Ntop,qb,Barkno)
     for n =	qb
         MinExcdB(n - N01) = interp1(HTres(:,1),HTres(:,2),Barkno(n));
     end
-end
+% end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function MinBf = calculate_MinBf(N,N0,Fs,Bark,MinExcdB)
+function [MinBf zb] = il_calculate_MinBf(N,N0,fs,Bark,MinExcdB)
     Cf = ones(2,24);
 
     for a = 1:1:24
-        Cf(1,a) = round(Bark((a + 1),2) * N / Fs) + 1 - N0;
+        Cf(1,a) = round(Bark((a + 1),2) * N / fs) + 1 - N0;
         Cf(2,a) = Bark(a + 1,2);   
     end
 
     Bf = ones(2,24);
-    Bf(1,1) = round(Bark(1,3) * N / Fs);
+    Bf(1,1) = round(Bark(1,3) * N / fs);
     for a=1:1:24
-        Bf(1,a + 1) = round(Bark((a + 1),3) * N / Fs) + 1 - N0;
+        Bf(1,a + 1) = round(Bark((a + 1),3) * N / fs) + 1 - N0;
         Bf(2,a)     = Bf(1,a) - 1;
     end
-    Bf(2,25) = round(Bark((25),3) * N / Fs) + 1 - N0;
+    Bf(2,25) = round(Bark((25),3) * N / fs) + 1 - N0;
 
     zb      = sort([Bf(1,:),Cf(1,:)]);
     MinBf   = MinExcdB(zb);
-end
+% end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function Hweight = calculate_Hweight(N,Fs)
-    DCbins = 2;
+function Hweight = il_create_Hweight(N,fs)
 
-    H2 = [
-        0       0
-        17      0.8
-        23		0.95
-        25		0.975
-        32		1
-        37		0.975
-        48		0.9
-        67      0.8
-        90		0.7
-        114     0.6
-        171     0.4
-        206     0.3
-        247     0.2
-        294     0.1
-        358     0
-    ];
+params = struct;
+params.sf1 = 0.5;
+params.pf1 = 2;
+params.pf2 = 8;
+params.sf2 = 32;
 
-    H5 = [ 
-        0       0
-        32      0.8
-        43      0.95
-        56      1
-        69      0.975
-        92      0.9
-        120     0.8
-        142     0.7
-        165     0.6
-        231     0.4
-        277     0.3
-        331     0.2
-        397     0.1
-        502     0
-    ];
+try
+    Hweight = designfilt(...
+            'bandpassiir', ...
+            'StopbandFrequency1', params.sf1, ...
+            'PassbandFrequency1', params.pf1, ...
+            'PassbandFrequency2', params.pf2, ...
+            'StopbandFrequency2', params.sf2, ...
+            'StopbandAttenuation1', 100, ...
+            'PassbandRipple', 3, ...
+            'StopbandAttenuation2', 100, ...
+            'SampleRate', fs);
+catch
+    d = fdesign.bandpass('Fst1,Fp1,Fp2,Fst2,Ast1,Ap,Ast2',params.sf1,params.pf1,params.pf2,params.sf2,80,3,80,fs);
+    Hd = design(d,'butter');
+    % fvtool(Hd);
+    % measure(Hd)
 
-    H16 = [
-        0		0
-        23.5	0.4
-        34		0.6
-        47		0.8
-        56		0.9
-        63		0.95
-        79		1
-        100     0.975
-        115     0.95
-        135     0.9
-        159     0.85
-        172     0.8
-        194     0.7
-        215     0.6
-        244     0.5
-        290     0.4
-        348     0.3
-        415     0.2
-        500     0.1
-        645     0
-    ];
+    x = [1; zeros(N-1,1)];
+    y = filter(Hd,x);
+    freq = (0:(2*pi)/length(x):pi)/pi*fs/2;
+    xdft = fft(x);
+    ydft = fft(y);
 
-    H21 = [
-        0		0
-        19		0.4
-        44		0.8
-        52.5	0.9
-        58		0.95
-        75		1
-        101.5	0.95
-        114.5	0.9
-        132.5	0.85
-        143.5	0.8
-        165.5	0.7
-        197.5   0.6
-        241     0.5
-        290     0.4
-        348     0.3
-        415     0.2
-        500     0.1
-        645     0
-    ];
-
-
-    H42 = [
-        0		0
-        15		0.4
-        41		0.8
-        49		0.9
-        53		0.965
-        64		0.99
-        71		1
-        88		0.95
-        94		0.9
-        106     0.85
-        115     0.8
-        137     0.7
-        180     0.6
-        238     0.5
-        290     0.4
-        348     0.3
-        415     0.2
-        500     0.1
-        645     0
-    ];
-
-    Hweight	= zeros(47,N);
-
-    % weighting function H2
-    last            = floor((358 / Fs) * N) ;
-    k               = (DCbins + 1):1:last;
-    f               = (k - 1) * Fs / N;
-    Hweight(2,k)    = interp1(H2(:,1),H2(:,2),f(k - DCbins));
-
-    % weighting function H5
-    last            = floor((502 / Fs) * N);
-    k               = (DCbins + 1):1:last;
-    f               = (k -1) * Fs / N;
-    Hweight(5,k)    = interp1(H5(:,1),H5(:,2),f(k - DCbins));
-
-    % weighting function H16
-    last            = floor((645 / Fs) * N);
-    k               = (DCbins + 1):1:last;
-    f               = (k - 1) * Fs / N;
-    Hweight(16,k)   = interp1(H16(:,1),H16(:,2),f(k - DCbins));
-
-    % weighting function H21
-    Hweight(21,k)   = interp1(H21(:,1),H21(:,2),f(k - DCbins));
-
-    % weighting function H42
-    Hweight(42,k)   = interp1(H42(:,1),H42(:,2),f(k - DCbins));
-
-    % H1-H4
-    Hweight(1,:) = Hweight(2,:);
-    Hweight(3,:) = Hweight(2,:);
-    Hweight(4,:) = Hweight(2,:);
-
-    % H5-H15
-    for l = 6:1:15;
-        Hweight(l,:) = Hweight(5,:);
-    end
-
-    % H17-H20
-    for l = 17:1:20;
-        Hweight(l,:) = Hweight(16,:);
-    end
-
-    % H22-H41
-    for l = 22:1:41;
-        Hweight(l,:) = Hweight(21,:);
-    end
-
-    % H43-H47
-    for l = 43:1:47;
-        Hweight(l,:) = Hweight(42,:);
-    end
+    Hweight = abs(ydft);
+    HweightdB = To_dB(Hweight); 
 end
+
+% figure;
+% plot(freq,20*log10(abs(ydft(1:length(x)/2+1))),'r','linewidth',2);
+% xlim([0 50])
+% disp('')
+
+% legend('Original Signal','Bandpass Signal');
+% end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function gzi = calculate_gzi
-    gr  = [
-        0 1 2.5 4.9  6.5 8 9 10 11 11.5 13 17.5 21 24
-        0 0.35 0.7 0.7 1.1 1.25 1.26 1.18 1.08 1 0.66 0.46 0.38 0.3
-    ];
-
-    gzi = zeros(1,47);
-    k	= 1:1:47;
-
-    gzi(k) = sqrt(interp1(gr(1,:)',gr(2,:)',k / 2));
-end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-end
+% EOF

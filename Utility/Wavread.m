@@ -10,14 +10,22 @@ function [y,Fs,bits,opt_ck] = Wavread(filename)
 % 3. Additional info:
 %       Tested cross-platform: No
 % 
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2016
 % Created on    : 23/06/2014
-% Last update on: 13/08/2014 % Update this date manually
-% Last use on   : 31/03/2015 % Update this date manually
+% Last update on: 07/01/2016 
+% Last use on   : 07/01/2016 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+mv = Matlab_version;
+
 try
-    [y,Fs,bits,opt_ck] = audioread(filename);
+    if mv >= 8.4 % Since MATLAB 2014b
+        [y,Fs] = audioread(filename);
+        opt_ck.fmt = audioinfo(filename);
+        bits = opt_ck.fmt.BitsPerSample;
+    else   
+        [y,Fs,bits,opt_ck] = audioread(filename);
+    end
 catch
     [y,Fs,bits,opt_ck] = wavread(filename);
 end

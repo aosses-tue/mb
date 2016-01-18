@@ -1,5 +1,5 @@
-function r=icra5_noise4piano(insig,fs,method)
-% function r=icra5_noise4piano(insig,fs,method)
+function [r info4pede pede_sample] = icra5_noise4piano(insig,fs,method)
+% function [r info4pede pede_sample] = icra5_noise4piano(insig,fs,method)
 %
 % 1. Description:
 %       Imitate the making of the icra5 noise (Dreschler et al, 2005, Int J Aud)
@@ -70,8 +70,7 @@ switch method
         for i = 1:Nbands
             rtmp = auditoryfilterbank_one_freq(r(:,i),fs,fc(i));
             r(:,i) = rtmp;
-        end
-        
+        end   
 end
 
 interimGlobalRMS    = rmsdb(sum(r,2))+100;
@@ -92,19 +91,31 @@ for i=1:Nbands
     r(:,i) = setdbspl( r(:,i),interimRMS(i) );
 end
 
-interimRMS3 = rmsdb(r)+100;
 r=sum(r,2);
 
 RMSbefore = rmsdb(r)+100;
 r         = il_randomise_phase(r); % it can increase or decrease the level
 
-% B       = malespectrum_filter(fs); % effort filter not being applied inside (only for plot)
-% N2pad   = round(length(B)/2);
-% r       = [r; zeros(N2pad,1)]; 
-% r       = filter(B,1,r);
-% r       = r(N2pad+1:end);
 RMSafter  = rmsdb(r)+100;
 r         = gaindb(r,RMSbefore-RMSafter); % compensate decrease or increase in level after phase randomisation
+info4pede.RMS    = interimRMS - max(interimRMS);
+info4pede.RMStot = rmsdb(r);
+info4pede.RMSmax = rmsdb(prctile(abs(r),95));
+info4pede.fc     = fc;
+info4pede.fs     = fs;
+info4pede.Length = length(r);
+
+if nargout >= 3
+    noise   = AM_random_noise(20,8000,60,5,fs); % 5-seconds white noise
+        
+    pede_sample = auditoryfilterbank(noise,fs);
+    pede_sample = pede_sample(1:length(r),:);
+    for i = 1:size(pede_sample,2)
+        pede_sample(:,i) = setdbspl(pede_sample(:,i),info4pede.RMS(i)+100);
+    end
+    pede_sample = sum(pede_sample,2);
+    pede_sample = setdbspl(pede_sample,info4pede.RMStot+100);
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [B,A]=il_getfilters(fs,cross)

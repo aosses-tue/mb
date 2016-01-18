@@ -1,5 +1,5 @@
-function params = FluctuationStrength_Garcia_getparams(N)
-% function params = FluctuationStrength_Garcia_getparams(N)
+function params = FluctuationStrength_Garcia_getparams(N,fs,Ndataset)
+% function params = FluctuationStrength_Garcia_getparams(N,fs,Ndataset)
 % 
 % Returns a struct with all the required parameters for the fluctuation
 % strength model.
@@ -12,10 +12,10 @@ function params = FluctuationStrength_Garcia_getparams(N)
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
-PARAMS_FILE = sprintf('params-%.0f.mat',N);
+PARAMS_FILE = sprintf('params-%.0f-at-%.0f-Hz-dataset-%.0f.mat',N,fs,Ndataset);
 
 if ~exist(PARAMS_FILE,'file')
-    FluctuationStrength_Garcia_createparams(N); 
+    FluctuationStrength_Garcia_createparams(N,fs); 
 end
 
 params = load(PARAMS_FILE);

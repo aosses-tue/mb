@@ -16,10 +16,10 @@ function z = hz2bark(f)
 %
 %  See also: FREQ2AUD.m (LTFAT)
 % 
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2016
 % Created on    : 15/08/2014
-% Last update on: 15/08/2014 % Update this date manually
-% Last use on   : 02/04/2015 % Update this date manually
+% Last update on: 15/08/2014 
+% Last use on   : 06/01/2016 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 z = 13*atan( 0.76*(f/1000) ) + 3.5*atan( (f/(1000*7.5)).^2 );

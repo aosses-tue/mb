@@ -13,7 +13,7 @@ function [FS, afiles] = r20141126_fluctuation(options)
 % 3. Additional info:
 %       Tested cross-platform: Yes
 %
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2016
 % Created on    : 25/11/2014
 % Last update on: 16/11/2015 
 % Last use on   : 16/11/2015 
@@ -39,7 +39,7 @@ bDiary = options.bDiary;
 Diary(mfilename,bDiary);
 
 optsDebug.all = 0;
-optsDebug.ki = 1;
+optsDebug.ki = 0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

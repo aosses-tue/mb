@@ -21,8 +21,8 @@ close all
 bSave = 0;
 
 bDoResampling   = 1; % preparing piano samples
-bDoPianoNoise_example  = 0;
-bDoPianoNoise   = 0;
+bDoPianoNoise_example  = 1;
+bDoPianoNoise   = 1;
 bDoAtt4experiments = 0;
 bResults = 1;
 
