@@ -34,9 +34,9 @@ end
 trials1 = [11:19]; % put here the trial numbers corresponding to procedure1
 trials2 = [21:29]; % put here the trial numbers corresponding to procedure2
 answers_options = 0:25:200;
-
-fileres = {'/home/alejandro/Documenten/Documenten-TUe/02-Experiments/2015-APEX-Rodrigo/APEX_shared/experiment/fluctuation_strength_results/AM_tones-fm-results-AO-test.apr', ...
-           '/home/alejandro/Documenten/Documenten-TUe/02-Experiments/2015-APEX-Rodrigo/APEX_shared/experiment/fluctuation_strength_results/AM_tones-fm-slider-results-AO-test.apr'};
+           
+fileres = {[dir_results 'experiment' delim 'fluctuation_strength_results' delim 'AM_tones-fm-results-AO-test.apr'], ...
+           [dir_results 'experiment' delim 'fluctuation_strength_results' delim 'AM_tones-fm-slider-results-AO-test.apr']};
 
 results1 = r20150630_plot_FS_results(fileres{1});
 results2 = r20150630_plot_FS_results(fileres{2});

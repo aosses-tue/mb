@@ -1,5 +1,5 @@
-function outs = r20141126_roughness_validation(options)
-% function outs = r20141126_roughness_validation(options)
+function outs = r20141126_roughness_validation(options,bScript2use)
+% function outs = r20141126_roughness_validation(options,bScript2use)
 %
 % 1. Description:
 %       Implement and validate the model of Roughness (off-line).
@@ -20,10 +20,10 @@ function outs = r20141126_roughness_validation(options)
 % 3. Additional info:
 %       Tested cross-platform: Yes
 %
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2016
 % Created on    : 25/11/2014
-% Last update on: 25/06/2015 % Update this date manually
-% Last use on   : 14/07/2015 % Update this date manually
+% Last update on: 28/01/2016 
+% Last use on   : 28/01/2016 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin == 0
@@ -31,9 +31,9 @@ if nargin == 0
 end
 options = ef(options,'bDiary', 0);
 
-options = ef(options,'bDoExp0',1);
+options = ef(options,'bDoExp0',0);
 options = ef(options,'bDoExp1',0);
-options = ef(options,'bDoExp2',0);
+options = ef(options,'bDoExp2',1);
 options = ef(options,'bDoExp3',0);
 options = ef(options,'bDoExp4',0);
 options = ef(options,'bDoExp5',0);
@@ -42,11 +42,15 @@ options = ef(options,'bDoExp6',0);
 bDiary = options.bDiary;
 Diary(mfilename,bDiary);
 
+if nargin < 2
+    bScript2use = input('Please choose the script to use (0=Roughness_offline_debug; 1=Roughness_offline): ');
+end
+
 close all
 
 pathaudio_src = [Get_TUe_data_paths('db_Fastl2007')];
-pathaudio   = [Get_TUe_paths('outputs') 'Fastl2007_R_test_20141126' delim];
-pathaudio_D = [Get_TUe_paths('outputs') 'Daniel1997_R_test_20141126' delim];
+pathaudio   = [Get_TUe_paths('outputs') 'Fastl2007_test_20141126' delim];
+pathaudio_D = [Get_TUe_paths('outputs') 'Daniel1997_test_20141126' delim];
 
 p = Get_date;
 pathfigures = [Get_TUe_paths('outputs') 'Figures-' p.date4files delim];
@@ -154,10 +158,17 @@ if bDoExp0
     starti = 1;
     insig = x(starti:starti + N-1);
 
-    out = Roughness_offline_debug(insig,Fs,N, optsDebug); %No padding needed for off-line version
-    R0(1) = out{1};
+    switch bScript2use
+        case 0
+            out = Roughness_offline_debug(insig,Fs,N, optsDebug); %No padding needed for off-line version
+            R0(1) = out{1};
+        case 1
+            insig = From_dB(-10)*insig;
+            out = Roughness_offline(insig,Fs,N, optsDebug); %No padding needed for off-line version
+            R0(1) = out(1);
+    end
 
-    disp(sprintf('Exp 0: R=%.3f [aspers]\t test signal: %s\n',out{1},name2figname(filenames0{1})));
+    disp(sprintf('Exp 0: R=%.3f [aspers]\t test signal: %s\n',R0(1),name2figname(filenames0{1})));
 
 end
 ExpNo = ExpNo + 1;
@@ -183,10 +194,18 @@ if bDoExp1
         
         for j = 1:3
             insig = insig_tmp(:,j);
-            out = Roughness_offline_debug(insig,Fs,N, optsDebug); % insig at dB SPL
-            R(j,k)  = out{1};
-            dBSPL(k) = out{3};
-            disp(sprintf('R=%.3f [aspers]\t test signal: %s\n',out{1},name2figname(filenames1{k})))
+            switch bScript2use
+                case 0
+                    out = Roughness_offline_debug(insig,Fs,N, optsDebug); % insig at dB SPL
+                    R(j,k)  = out{1};
+                    dBSPL(k) = out{3};
+                case 1
+                    insig = From_dB(-10)*insig;
+                    out = Roughness_offline(insig,Fs,N, optsDebug); % insig at dB SPL
+                    R(j,k)  = out;
+                    % dBSPL(k) = out{3};
+            end
+            disp(sprintf('R=%.3f [aspers]\t test signal: %s\n',R(j,k),name2figname(filenames1{k})))
         end
         
     end
@@ -224,11 +243,19 @@ if bDoExp2
             starti = 1;
             insig = x(starti:starti + N-1);
             t = ( 1:length(insig) )/Fs;     
-            out = Roughness_offline_debug(insig,Fs,N, optsDebug); %No padding needed for off-line version
+            switch bScript2use
+                case 0
+                    out = Roughness_offline_debug(insig,Fs,N, optsDebug); %No padding needed for off-line version
+                    R2(i,j)  = out{1};
+                    dBSPL2(i) = out{3}; % dBFS2(i) + 90;
             
-            R2(i,j)  = out{1};
-            dBSPL2(i) = out{3}; % dBFS2(i) + 90;
-            disp(sprintf('Exp 2: R=%.3f [aspers]\t test signal: %s\n',out{1},name2figname(filenames2)))
+                case 1
+                    insig = From_dB(-10)*insig;
+                    out = Roughness_offline(insig,Fs,N, optsDebug); 
+                    R2(i,j)  = out;
+            end
+            
+            disp(sprintf('Exp 2: R=%.3f [aspers]\t test signal: %s\n',R2(i,j),name2figname(filenames2{i,j})))
 
         end
     end

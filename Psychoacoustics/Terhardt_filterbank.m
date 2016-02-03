@@ -39,7 +39,7 @@ for idx = 1:1:nL;
 
     if steepT < 0
         S2(idx) = steepT;
-        if idx == 1     warning('Correction introduced by AO/RG. steep replaced by steepT (see previous control versions of this script');    end
+        % if idx == 1     warning('Correction introduced by AO/RG. steep replaced by steepT (see previous control versions of this script');    end
     end
 end
 

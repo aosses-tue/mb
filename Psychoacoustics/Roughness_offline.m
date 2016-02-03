@@ -27,7 +27,8 @@ function [R dataOut out] = Roughness_offline(insig, fs, N, options, CParams,bDeb
 % 
 %       2.2 Multi-platform example, requires the ref_rough.wav file in the 
 %           appropriate folder:
-%           [insig fs] = Wavread([Get_TUe_paths('outputs') 'ref_rough.wav']); 
+%           [insig fs] = Wavread([Get_TUe_paths('outputs') 'Fastl2007_test_20141126' delim 'rough_ref.wav']); 
+%           insig = From_dB(-10)*insig;
 %           [R outPsy out] = Roughness_offline(insig,fs,8192);
 %           figure; plot(out.t,R); grid on;
 %           xlabel('Time [s]'); ylabel('Roughness [asper]');
