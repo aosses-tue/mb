@@ -17,7 +17,7 @@ function [R dataOut out] = Roughness_offline_debug(dataIn, Fs, N, optsDebug)
 %       http://home.tm.tue.nl/dhermes/
 %
 % 2. Stand-alone example:
-%           [insig fs] = Wavread([Get_TUe_paths('outputs') 'tmp-cal' delim 'ref_rough.wav']); 
+%           [insig fs] = Wavread([Get_TUe_paths('outputs') delim 'ref_rough.wav']); 
 %           [R outPsy out] = Roughness_offline_debug(insig(1:8192),fs,8192);
 %           figure; plot(out.t,R); grid on;
 %           xlabel('Time [s]'); ylabel('Roughness [asper]');

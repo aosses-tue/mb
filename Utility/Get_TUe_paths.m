@@ -99,6 +99,7 @@ misc.Localisation       = [misc.MATLAB   'Localisation'    delim];
 misc.praat_scripts      = [misc.MATLAB   'Praat'           delim];
 misc.PA_stim_generation = [misc.MATLAB   'PA_stim_generation' delim];
 misc.Psychoacoustics    = [misc.MATLAB   'Psychoacoustics' delim];
+misc.FluctuationStrength= [misc.Psychoacoustics 'FluctuationStrength_Garcia' delim];  
 misc.Reports            = [misc.MATLAB   'Reports'         delim];
 misc.Reports_KUL        = [misc.MATLAB   'Reports_KUL'     delim];
 misc.Speech             = [misc.MATLAB   'Speech'          delim];
