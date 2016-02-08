@@ -6,7 +6,7 @@ function y = r20160205_update_FS_optimisation
 % 2. Stand-alone example:
 %
 % 3. Additional info:
-%       Tested cross-platform: No
+%       Tested cross-platform: Yes
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2016
 % Created on    : 04/02/2016
@@ -14,14 +14,12 @@ function y = r20160205_update_FS_optimisation
 % Last use on   : 04/02/2016 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-dirout = 'D:\Documenten-TUe\01-Text\05-Doc-TUe\lx2016-02-04-update-validation-FS\Test-battery\';
+dirout = [Get_TUe_data_paths('lx_Text') 'lx2016-02-04-update-validation-FS' delim 'Test-battery' delim];
 
 idx_validation  = [2:4 15:66]; % 1 is the reference, to calibrate the model
 
 % % Pilot 1:
 % idx_validation = [2:4]; 
-
-numsamples = length(idx_validation);
 
 idx_AM_tones = [1 24:50];
 idx_AM_1 = 30:38; % fmod
@@ -33,13 +31,16 @@ idx_AM_4 = 24:29; % mdepth
 % idx_validation = idx_AM_1;
 
 idx_FM_1 = 15:23; % fmod
-idx_validation = idx_FM_1;
+% % Pilot 3:
+% idx_validation = idx_FM_1;
 idx_FM_2 = 51:56; % fc
 idx_FM_3 = 57:61; % SPL
 idx_FM_4 = 62:66; % fdev
 
 idx_AM_noise = [2:4 11 14];
 idx_FM_tones = [10 13 15:23 51:66];
+
+numsamples = length(idx_validation);
 
 % 30:38 = AM fmod
 % 39:45 = AM fc

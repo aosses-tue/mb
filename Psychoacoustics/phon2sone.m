@@ -9,7 +9,8 @@ function s = phon2sone(p)
 % 
 % 3. Additional info:
 %       See also: sone2phon
-%       Tested cross-platform: No
+%       Tested cross-platform: Yes
+%       References: Bladon
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2016
 % Created on    : 04/01/2016
