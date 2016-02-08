@@ -1,41 +1,55 @@
-function y = r20160205_update_FS_optimisation
-% function y = r20160205_update_FS_optimisation
+function [pm_opt pk_opt pg_opt] = r20160205_update_FS_optimisation(file_load_results);
+% function [pm_opt pk_opt pg_opt] = r20160205_update_FS_optimisation(file_load_results);
 %
 % 1. Description:
-%
+%       Runs validation process of the fluctuation strength model. It assumes
+%       a weighting as a function of the critical band (gzi different from
+%       unity) and varies the power of the cross correlation factor and the
+%       effective modulation depth to look for the minimised error.
+% 
 % 2. Stand-alone example:
-%
+%       r20160205_update_FS_optimisation;
+% 
 % 3. Additional info:
 %       Tested cross-platform: Yes
-%
+%       See also: r20160208_update_FS_after_opt
+% 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2016
 % Created on    : 04/02/2016
-% Last update on: 04/02/2016 
-% Last use on   : 04/02/2016 
+% Last update on: 08/02/2016 
+% Last use on   : 08/02/2016 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+if nargin == 0
+    bCalculate = input('Calculate errors (1 = yes; 0 = no, then saved outputs are loaded): ');
+    if bCalculate == 0
+        file_load_results = 'info_val_2016-02-08-at-08h-24m-58s.mat';
+    end
+else
+    bCalculate = 0;
+end
+
+bReduced = input('Reduced validation (1 = yes; 0 = no): ');
 
 dirout = [Get_TUe_data_paths('lx_Text') 'lx2016-02-04-update-validation-FS' delim 'Test-battery' delim];
 
-idx_validation  = [2:4 15:66]; % 1 is the reference, to calibrate the model
-
+if bReduced == 0
+    idx_validation  = [2:4 15:66]; % 1 is the reference, to calibrate the model
+else
+    idx_validation  = [2:4 15 17:22 23 26 28:30 34:37 39 42 46 48 50 51 53 55 57 59 61 65:66];
+end
+    
 % % Pilot 1:
 % idx_validation = [2:4]; 
 
 idx_AM_tones = [1 24:50];
 idx_AM_1 = 30:38; % fmod
-idx_AM_2 = 39:45; % fc
-idx_AM_3 = 46:50; % SPL 
-idx_AM_4 = 24:29; % mdepth
-
 % % Pilot 2:
 % idx_validation = idx_AM_1;
 
 idx_FM_1 = 15:23; % fmod
 % % Pilot 3:
 % idx_validation = idx_FM_1;
-idx_FM_2 = 51:56; % fc
-idx_FM_3 = 57:61; % SPL
-idx_FM_4 = 62:66; % fdev
 
 idx_AM_noise = [2:4 11 14];
 idx_FM_tones = [10 13 15:23 51:66];
@@ -137,13 +151,15 @@ Gainfactor = [-10; ... % 01
                3; ... % 15
                ];
 
-pg = 0; % :.1:2;
-pk = 0+.1:.1:2;
-pm = 0+.1:.1:2;
+% pg = 0; % :.1:2;
+pg = 1;
+% step = 0.1;
+step = 0.15;
+pk = 0+step:step:2;
+pm = 0+step:step:2;
 dataset = 99; % 'calibrating'
 
 bShort = 1;
-bCalculate = input('Calculate errors (1 = yes; 0 = no, then saved outputs are loaded): ');
 fs = 44100;
 dur = 2;
 N  = dur*44100; % 1 sec at 44100 Hz
@@ -253,27 +269,37 @@ if bCalculate == 1
     end
 
     p = Get_date;
-    save(['info_val_' p.date2print],'info_val','pg','pk','pm');
+    save(['info_val_' p.date2print],'info_val','pg','pk','pm','FS');
 
 end
 
 if bCalculate == 0
-    % file = ['info_val_2016-02-07-at-08h-22m-37s.mat']; % AM-BBN
-    % file = ['info_val_2016-02-07-at-11h-41m-33s.mat']; % AM-fmod, tones
-    file = ['info_val_2016-02-07-at-16h-08m-12s.mat']; % FM-fmod, tones
+    % file_load_results = ['info_val_2016-02-07-at-08h-22m-37s.mat']; % AM-BBN
+    % file_load_results = ['info_val_2016-02-07-at-11h-41m-33s.mat']; % AM-fmod, tones
+    % file_load_results = ['info_val_2016-02-07-at-16h-08m-12s.mat']; % FM-fmod, tones
+    % file_load_results = ['info_val_2016-02-08-at-08h-24m-58s.mat'];
     
-    load(file);
+    load(file_load_results);
 end
 
 idxmin = find(info_val(:,5) == min(info_val(:,5)));
-[pm(info_val(idxmin,1)) pk(info_val(idxmin,2)) info_val(idxmin,5)]
+pg_opt = pg;
+pm_opt = pm(info_val(idxmin,1));
+pk_opt = pk(info_val(idxmin,2));
+if nargout == 0
+    [pm_opt pk_opt info_val(idxmin,5)];
+end
 
-% Resuls pilot with idx_validation = 2:4, pg = 1: info_val_2016-02-07-at-08h-22m-37s.mat
+% Resuls pilot with idx_validation = 2:4, pg = 0: info_val_2016-02-07-at-08h-22m-37s.mat
 %     pm = 2; pk = 0.1; errorabs = 0.961;
-% Resuls pilot with idx_validation = 30:38, pg = 1: info_val_2016-02-07-at-11h-41m-33s.mat
+% Resuls pilot with idx_validation = 30:38, pg = 0: info_val_2016-02-07-at-11h-41m-33s.mat
 %     pm = 0.5; pk = 2; errorabs = 0.0853;
-% Resuls pilot with idx_validation = 15:23, pg = 1: info_val_2016-02-07-at-16h-08m-12s.mat
+% Resuls pilot with idx_validation = 15:23, pg = 0: info_val_2016-02-07-at-16h-08m-12s.mat
 %     pm = 1.7; pk = 0.4; errorabs = 0.0505;
+% Resuls pilot with idx_validation = all, pg = 1: info_val_2016-02-08-at-08h-24m-58s.mat
+%     pm = 1.3; pk = 0.1; errorabs = 0.8372;
 
+% Results pilot with idx_validation = all (but selection); pg = 1: info_val_2016-02-08-at-18h-00m-27s.mat
+ %     pm = 1.6500; pk = 0.1500; errorabs(0.9907)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end

@@ -10,11 +10,11 @@ function y = r20160205_update_FS
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2016
 % Created on    : 04/02/2016
-% Last update on: 04/02/2016 
-% Last use on   : 04/02/2016 
+% Last update on: 08/02/2016 
+% Last use on   : 08/02/2016 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-dirout = 'D:\Documenten-TUe\01-Text\05-Doc-TUe\lx2016-02-04-update-validation-FS\Test-battery\';
+dirout = [Get_TUe_data_paths('lx_Text') 'lx2016-02-04-update-validation-FS' delim 'Test-battery' delim];
 
 idx_validation  = [1:4 15:66];
 % 30:38 = AM fmod
@@ -296,21 +296,6 @@ for i = 1:4
 end
 
 disp('')
-
-
-%     % % Imported from function Get_specs:
-%     % % handles = {@spec_AM_fmod @AM_fc @AM_md @AM_SPL @FM_fm @FM_fc @FM_df @FM_SPL};
-%     % handles = {@spec_AM_fmod};
-%     % specs   = cellfun(@(x)x(),handles,'UniformOutput',false);
-% 
-%     tic;
-%     model_AM_fmod = cellfun(@(s)il_process_spec(params,s),fnames);
-%     toc;
-%     
-%     figure;
-%     plot( 1:length(tests),model_AM_fmod ); grid on
-%     set(gca,'XTick',1:length(tests))
-%     set(gca,'XTickLabel',tests);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
