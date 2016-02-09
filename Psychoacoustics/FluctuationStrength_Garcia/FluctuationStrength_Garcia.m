@@ -1,5 +1,5 @@
-function [fluct fi] = FluctuationStrength_Garcia(insig_b, fs, N, model_par)
-% function [fluct fi] = FluctuationStrength_Garcia(insig_b, fs, N, model_par)
+function [fluct fi outs] = FluctuationStrength_Garcia(insig_b, fs, N, model_par)
+% function [fluct fi outs] = FluctuationStrength_Garcia(insig_b, fs, N, model_par)
 %
 % 1. Description:
 %       Frame-based, off-line implementation of the Fluctuation Strength 
@@ -82,14 +82,17 @@ for iFrame = 1:nFrames
     switch model_par.dataset
         case {0,99}
             Ki = il_cross_correlation(abs(ei));
-            fi = il_specific_fluctuation(mdept,Ki,model_par,model_par.dataset);
+            [fi mdept kp gzi] = il_specific_fluctuation(mdept,Ki,model_par,model_par.dataset);
 
         case 1
             Ki = il_cross_correlation(hBPi);
             fi = il_specific_fluctuation(mdept,Ki,model_par,model_par.dataset);
     end
 
-    fi        = model_par.cal * fi;
+    outs.mdept = mdept;
+    outs.kp    = kp;
+    outs.gzi   = gzi;
+    fi         = model_par.cal * fi;
     fluct(iFrame) = sum(fi);
 end
 
@@ -98,10 +101,10 @@ disp('')
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [mdept,hBPi,ei] = il_modulation_depths(ei,Hweight)
+    
     [Chno,Nc] = size(ei);
 
     hBPi   = zeros(Chno,Nc);
-    hBPrms = zeros(1,Chno);
     mdept  = zeros(1,Chno);
 
     ei      = abs(ei);
@@ -113,19 +116,22 @@ function [mdept,hBPi,ei] = il_modulation_depths(ei,Hweight)
         else
             hBPi(k,:) = sosfilt(Hweight,ei(k,:));
         end
-    
-        hBPrms(k) = rms(hBPi(k,:));
-
-        if h0(k) > 0
-            mdept(k) = hBPrms(k)/h0(k);
-            if mdept(k) > 1
-                mdept(k) = 1;
-            end
-        else
-            mdept(k) = 0;
-        end
     end
-
+    
+    hBPrms = rms(hBPi,'dim',2);
+    
+    idx = find(h0>0);
+    mdept(idx) = hBPrms(idx)./h0(idx);
+    
+    idx = find(h0==0);
+    mdept(idx) = 0;
+    
+    idx = find(h0<0);
+    if length(idx) ~= 0
+        error('There is an error in the algorithm')
+    end
+    
+    disp('')
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -140,7 +146,10 @@ function ki = il_cross_correlation(hBPi)
 
         if den(2,1) > 0
             ki(k) = cfac(2,1)/den(2,1);
+        elseif den(2,1) == 0
+            ki(k) = 0;
         else
+            warning('Cross correlation factor less than 1')
             ki(k) = 0;
         end
     end
@@ -148,7 +157,7 @@ function ki = il_cross_correlation(hBPi)
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function fi = il_specific_fluctuation(mdept,Ki,model_par,dataset)
+function [fi mdept kp gzi] = il_specific_fluctuation(mdept,Ki,model_par,dataset)
     
     gzi = model_par.gzi; 
     p_g = model_par.p_g;
@@ -158,13 +167,26 @@ function fi = il_specific_fluctuation(mdept,Ki,model_par,dataset)
     Chno = length(gzi);
 
     fi = zeros(1,Chno);
+    
+    switch dataset
+        case {0,99}
+            
+            [xxx idx] = find(mdept>1 * 1.05); % 5\% security margin
+            if length(idx) ~= 0
+                mdmax = max(mdept);
+                md = mdept/mdmax;
+            else
+                md = mdept;
+            end
+            md    = min(md,ones(size(mdept)));
+        case 1
+            md    = min(mdept,ones(size(mdept)));
+            md    = mdept-0.1*ones(size(mdept));
+            md    = max(mdept,zeros(size(mdept)));
+    end
+    
     for k = 1:Chno
         
-        md(k) = mdept(k)-0.1;
-        if md(k) < 0
-            md(k) = 0;
-        end
-
         if k == Chno-1 || k == Chno
             ki = 1;
         else
@@ -176,19 +198,21 @@ function fi = il_specific_fluctuation(mdept,Ki,model_par,dataset)
         else
             ki2 = Ki(k-2);
         end
-        kp(k) = abs(ki*ki2);
-
+        kp(k) = ki*ki2;
+            
     end
+    kpsign = sign(kp);
+    kp     = abs(kp);
     
     switch dataset
         case {0,99}
-            fi = gzi.^p_g .* mdept.^p_m .* kp.^p_k;
-            pgtest = [0 0.25 0.5 0.75 1 1.25 1.5 1.75 2 3 4];
-            calval = model_par.cal;
-            for i = 1:length(pgtest)
-                fitest(i,1:47) = gzi.^pgtest(i) .* mdept.^p_m .* kp.^p_k;
-                FStest(i) = calval*sum(fitest(i,:));
-            end
+            fi = gzi.^p_g .* md.^p_m .* (kp.^p_k).*kpsign;
+            % pgtest = [0 0.25 0.5 0.75 1 1.25 1.5 1.75 2 3 4];
+            % calval = model_par.cal;
+            % for i = 1:length(pgtest)
+            %     fitest(i,1:47) = gzi.^pgtest(i) .* mdept.^p_m .* kp.^p_k;
+            %     FStest(i) = calval*sum(fitest(i,:));
+            % end
         case 1
             fi = gzi.^p_g*md.^p_m*kp.^p_k;
     end
@@ -199,16 +223,6 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
 
-%     for k = 1:Chno
-%         
-%         % Fei         = fft( etmp_td(k,:) - h0(k) );
-%         % hBPi(k,:)   = 2 * real(ifft(Fei.* Hweight'));
-%         hBPi(k,:) = 2*filter(Hweight,etmp_td(k,:)-h0(k));
-%         
-%     end
-%     
-%     hBPrms  = rms( hBPi ,'dim',2);
-%     
 %     idx = find(h0 > 0);
 %     mdept(idx) = hBPrms(idx) ./ h0(idx);
 %     

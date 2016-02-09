@@ -158,16 +158,16 @@ Gainfactor = [-10; ... % 01
 % step = 0.15;
 
 step = 0.2;
-pg = 0+step:step:2;
-pm = [1.35 2]; % 0+step:step:2;
-pk = [1.35 2]; % 0+step:step:2;
+pg = 0+2*step:2*step:2;
+pm = 0+  step:  step:2; % 0+step:step:2;
+pk = 0+  step:  step:2; % 0+step:step:2;
 
 dataset = 99; % 'calibrating'
 
 bShort = 1;
-fs = 44100;
+fs  = 44100;
 dur = 2;
-N  = dur*44100; % 1 sec at 44100 Hz
+N   = dur*44100; % 1 sec at 44100 Hz
 model_par = Get_fluctuation_strength_params(N,fs,dataset);
 
 if bCalculate == 1
@@ -265,9 +265,9 @@ if bCalculate == 1
 
                 end
 
-                errortot = FS(idxstart:idxend,2)-FS(idxstart:idxend,3);
+                errortot = FS(idxstart:idxend,1)-FS(idxstart:idxend,3);
 
-                info_val(k,:) = [irun jrun hrun sum(errortot)/numsamples sum(abs(errortot))/numsamples idxstart idxend numsamples];
+                info_val(k,:) = [irun jrun hrun sum(errortot) sum(abs(errortot)) idxstart idxend numsamples];
                 k = k + 1;
                 disp('')
                 toc
