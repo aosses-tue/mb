@@ -152,11 +152,16 @@ Gainfactor = [-10; ... % 01
                ];
 
 % pg = 0; % :.1:2;
-pg = 1;
 % step = 0.1;
-step = 0.15;
-pk = 0+step:step:2;
-pm = 0+step:step:2;
+
+% pg = 1;
+% step = 0.15;
+
+step = 0.2;
+pg = 0+step:step:2;
+pm = [1.35 2]; % 0+step:step:2;
+pk = [1.35 2]; % 0+step:step:2;
+
 dataset = 99; % 'calibrating'
 
 bShort = 1;
@@ -168,103 +173,105 @@ model_par = Get_fluctuation_strength_params(N,fs,dataset);
 if bCalculate == 1
     sampleNr = 1;
     k = 1;
-    for irun = 1:length(pk)
-        for jrun = 1:length(pm)
-            fprintf('Processing combination %.0f, %.0f\n',irun,jrun);
-            tic
-            % 1. Calibration
-            model_par.p_g = pg;
-            model_par.p_m = pm(irun);
-            model_par.p_k = pk(jrun);
-            model_par.cal = 0.25; % only starting point
+    for irun = 1:length(pm)
+        for jrun = 1:length(pk)
+            for hrun = 1:length(pg);
+                fprintf('Processing combination %.0f, %.0f, %.0f\n',irun,jrun,hrun);
+                tic
+                % 1. Calibration
+                model_par.p_g = pg(hrun);
+                model_par.p_m = pm(irun);
+                model_par.p_k = pk(jrun);
+                model_par.cal = 0.25; % only starting point
 
-            %%% idx = 1
-            idx = 1;
-            [insig fs]  = Wavread(files{idx});
+                %%% idx = 1
+                idx = 1;
+                [insig fs]  = Wavread(files{idx});
 
-            insig  = From_dB(Gainfactor(idx)) * insig;
-            dBSPL  = rmsdb(insig)+100;
-            Nlength     = round(dur*fs);
+                insig  = From_dB(Gainfactor(idx)) * insig;
+                dBSPL  = rmsdb(insig)+100;
+                Nlength     = round(dur*fs);
 
-            Nstart = 1;
-            insig1 = insig(Nstart:Nstart+Nlength-1);
+                Nstart = 1;
+                insig1 = insig(Nstart:Nstart+Nlength-1);
 
-            FS2cal = FluctuationStrength_Garcia(insig1,fs,N,model_par);
-            model_par.cal = model_par.cal / FS2cal;
+                FS2cal = FluctuationStrength_Garcia(insig1,fs,N,model_par);
+                model_par.cal = model_par.cal / FS2cal;
 
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            % 2. Confirming whether calibration tone gives 1
-            %%% idx = 1
-            idx = 1;
-            [insig fs]  = Wavread(files{idx});
-            insig       = From_dB(Gainfactor(idx)) * insig;
-            dBSPL(idx)  = rmsdb(insig)+100;
-            Nlength     = round(dur*fs);
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                % 2. Confirming whether calibration tone gives 1
+                %%% idx = 1
+                idx = 1;
+                [insig fs]  = Wavread(files{idx});
+                insig       = From_dB(Gainfactor(idx)) * insig;
+                dBSPL(idx)  = rmsdb(insig)+100;
+                Nlength     = round(dur*fs);
 
-            Nstart = 1*fs; % after one second
-            insig1 = insig(Nstart:Nstart+Nlength-1);
-
-            FStmp = FluctuationStrength_Garcia(insig1,fs,N,model_par); % it has to be 1
-
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            % 2. Starting validation
-            %%% idx = 2
-
-            idxstart    = sampleNr;
-            for counti = 1:length(idx_validation)
-
-                idx         = idx_validation(counti);
-                switch idx
-                    case {2,3,4}
-                        [insig fs]  = Wavread(files{2});
-                        insig       = From_dB(Gainfactor(idx)) * insig;
-                        dBSPL(idx)  = rmsdb(insig)+100;
-                        Nlength     = round(dur*fs);
-
-                        if bShort
-                            Nstart = 1; % after one second
-                            insig1 = insig(Nstart:Nstart+Nlength-1);
-                        else
-                            insig1 = insig;
-                        end
-                    otherwise
-                        [insig fs]  = Wavread(files{idx});
-                        if idx >= 15
-                            insig   = From_dB(Gainfactor(15))*insig;
-                        else
-                            insig   = From_dB(Gainfactor(idx))*insig;
-                        end
-                        Nlength     = round(dur*fs);
-                        dBSPL(idx)  = rmsdb(insig)+100;
-                        % fluct_tmp = FluctuationStrength_Garcia(insig,fs,N,model_par); 
-
-                        if bShort
-                            Nstart = 1;
-                            insig1 = insig(Nstart:Nstart+Nlength-1);
-                        else
-                            insig1 = insig;
-                        end
-                        FStmp = FluctuationStrength_Garcia(insig1,fs,N,model_par);
-                end
+                Nstart = 1*fs; % after one second
+                insig1 = insig(Nstart:Nstart+Nlength-1);
 
                 FStmp = FluctuationStrength_Garcia(insig1,fs,N,model_par); % it has to be 1
-                if length(FStmp) > 1
-                    FStmp = median(FStmp);
+
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                % 2. Starting validation
+                %%% idx = 2
+
+                idxstart    = sampleNr;
+                for counti = 1:length(idx_validation)
+
+                    idx         = idx_validation(counti);
+                    switch idx
+                        case {2,3,4}
+                            [insig fs]  = Wavread(files{2});
+                            insig       = From_dB(Gainfactor(idx)) * insig;
+                            dBSPL(idx)  = rmsdb(insig)+100;
+                            Nlength     = round(dur*fs);
+
+                            if bShort
+                                Nstart = 1; % after one second
+                                insig1 = insig(Nstart:Nstart+Nlength-1);
+                            else
+                                insig1 = insig;
+                            end
+                        otherwise
+                            [insig fs]  = Wavread(files{idx});
+                            if idx >= 15
+                                insig   = From_dB(Gainfactor(15))*insig;
+                            else
+                                insig   = From_dB(Gainfactor(idx))*insig;
+                            end
+                            Nlength     = round(dur*fs);
+                            dBSPL(idx)  = rmsdb(insig)+100;
+                            % fluct_tmp = FluctuationStrength_Garcia(insig,fs,N,model_par); 
+
+                            if bShort
+                                Nstart = 1;
+                                insig1 = insig(Nstart:Nstart+Nlength-1);
+                            else
+                                insig1 = insig;
+                            end
+                            FStmp = FluctuationStrength_Garcia(insig1,fs,N,model_par);
+                    end
+
+                    FStmp = FluctuationStrength_Garcia(insig1,fs,N,model_par); % it has to be 1
+                    if length(FStmp) > 1
+                        FStmp = median(FStmp);
+                    end
+                    FS(sampleNr,1) = FStmp;
+                    FS(sampleNr,2) = FS(sampleNr,1)-files{idx,2};
+                    FS(sampleNr,3) = files{idx,2};
+                    idxend = sampleNr;
+                    sampleNr = sampleNr+1;
+
                 end
-                FS(sampleNr,1) = FStmp;
-                FS(sampleNr,2) = FS(sampleNr,1)-files{idx,2};
-                FS(sampleNr,3) = files{idx,2};
-                idxend = sampleNr;
-                sampleNr = sampleNr+1;
 
+                errortot = FS(idxstart:idxend,2)-FS(idxstart:idxend,3);
+
+                info_val(k,:) = [irun jrun hrun sum(errortot)/numsamples sum(abs(errortot))/numsamples idxstart idxend numsamples];
+                k = k + 1;
+                disp('')
+                toc
             end
-
-            errortot = FS(idxstart:idxend,2)-FS(idxstart:idxend,3);
-
-            info_val(k,:) = [irun jrun numsamples sum(errortot)/numsamples sum(abs(errortot))/numsamples idxstart idxend];
-            k = k + 1;
-            disp('')
-            toc
         end
     end
 
@@ -283,11 +290,16 @@ if bCalculate == 0
 end
 
 idxmin = find(info_val(:,5) == min(info_val(:,5)));
-pg_opt = pg;
 pm_opt = pm(info_val(idxmin,1));
 pk_opt = pk(info_val(idxmin,2));
+try
+    pg_opt = pg(info_val(idxmin,3));
+catch
+    pg_opt = pg;
+end
+
 if nargout == 0
-    [pm_opt pk_opt info_val(idxmin,5)];
+    [pm_opt pk_opt pg_opt info_val(idxmin,5)]
 end
 
 % Resuls pilot with idx_validation = 2:4, pg = 0: info_val_2016-02-07-at-08h-22m-37s.mat

@@ -20,7 +20,10 @@ function r20160208_update_FS_after_opt
 % Last use on   : 08/02/2016 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-dirout = [Get_TUe_data_paths('lx_Text') 'lx2016-02-04-update-validation-FS' delim 'Test-battery' delim];
+dirmain = [Get_TUe_data_paths('lx_Text') 'lx2016-02-04-update-validation-FS' delim];
+dirout  = [dirmain 'Test-battery' delim];
+dirfigs = [dirmain 'Figures' delim];
+
 bCalculate = 1;
 
 if bCalculate
@@ -124,9 +127,12 @@ if bCalculate
                    3; ... % 15
                    ];
 
-
-    % [pm pk pg] = r20160205_update_FS_optimisation('info_val_2016-02-08-at-08h-24m-58s.mat');
-    [pm pk pg] = r20160205_update_FS_optimisation('info_val_2016-02-08-at-18h-00m-27s.mat');
+    % [pm pk pg] = r20160205_update_FS_optimisation('info_val_2016-02-07-at-08h-22m-37s.mat'); % pg = 0
+    % [pm pk pg] = r20160205_update_FS_optimisation('info_val_2016-02-08-at-08h-24m-58s.mat'); % pg = 0
+    % [pm pk pg] = r20160205_update_FS_optimisation('info_val_2016-02-08-at-18h-00m-27s.mat'); % pg = 1
+    pm = 1.7;
+    pk = 0.1;
+    pg = 0.2;
     
     dataset = 99; % 'calibrating'
 
@@ -250,6 +256,8 @@ for i = 1:length(idx_validation)
     end
 end
 
+hFig = [];
+
     % 30:38 = AM fmod
     % 39:45 = AM fc
     % 46:50 = AM SPL
@@ -291,6 +299,7 @@ for i = 1:4
     title('AM')
     set(gca,'XTick',1:length(idx2plot))
     set(gca,'XTickLabel',labelticks);
+    hFig(end+1) = gcf;
 end
 
 % 15:23 = FM fmod
@@ -331,7 +340,10 @@ for i = 1:4
     title('FM')
     set(gca,'XTick',1:length(idx2plot))
     set(gca,'XTickLabel',labelticks);
+    hFig(end+1) = gcf;
 end
+
+Save_all_figures(hFig,dirfigs)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end

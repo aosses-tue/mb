@@ -19,7 +19,7 @@ if nargin == 0
     flag = 3;
 end
 
-where_data = 'D:\MATLAB_shared\Psychoacoustics\FluctuationStrength\Literature\Data-processed\';
+where_data = [Get_TUe_paths('tb_AM_AddOns') 'auxdata' delim 'fastl2007-fluctuation-strength' delim];
 
 switch flag
     case {0,'fmod'}

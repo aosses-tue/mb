@@ -12,10 +12,10 @@ function Save_all_figures(Handles, outputdir, counter_i)
 %       figure;
 %       Save_all_figures;
 % 
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2016
 % Created on    : 12/08/2014
-% Last update on: 26/11/2014 % Update this date manually
-% Last use on   : 20/03/2015 % Update this date manually
+% Last update on: 08/02/2016 
+% Last use on   : 08/02/2016 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin == 0
@@ -25,6 +25,8 @@ end
 if nargin < 2
     outputdir = Get_TUe_paths('outputs');
 end
+
+Mkdir(outputdir);
 
 if nargin < 3
     counter_i = 1;
