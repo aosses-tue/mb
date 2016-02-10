@@ -78,6 +78,11 @@ for iFrame = 1:nFrames
     [mdept,hBPi,ei] = il_modulation_depths(ei,model_par.Hweight);
     %%%    
 
+    bDebug = 0;
+    if bDebug == 1
+    	t = ( 1:size(ei,2) )/fs;
+        figure; plot(t,ei(20,:)); xlabel('[s]')
+    end
     %% 3. Cross-correlation coefficient:
     switch model_par.dataset
         case {0,99}
@@ -106,7 +111,7 @@ function [mdept,hBPi,ei] = il_modulation_depths(ei,Hweight)
 
     hBPi   = zeros(Chno,Nc);
     mdept  = zeros(1,Chno);
-
+    
     ei      = abs(ei);
     h0      = mean(ei,2);
     ei      = ei - repmat(h0,1,Nc);
@@ -174,11 +179,12 @@ function [fi mdept kp gzi] = il_specific_fluctuation(mdept,Ki,model_par,dataset)
             [xxx idx] = find(mdept>1 * 1.05); % 5\% security margin
             if length(idx) ~= 0
                 mdmax = max(mdept);
-                md = mdept/mdmax;
+                md = mdept; % /mdmax;
+                warning('temporal solution')
             else
                 md = mdept;
             end
-            md    = min(md,ones(size(mdept)));
+            % md    = min(md,ones(size(mdept)));
         case 1
             md    = min(mdept,ones(size(mdept)));
             md    = mdept-0.1*ones(size(mdept));
@@ -223,63 +229,6 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
 
-%     idx = find(h0 > 0);
-%     mdept(idx) = hBPrms(idx) ./ h0(idx);
-%     
-%     idx = find(mdept > 1);
-%     mdept(idx) = 1;
-%     
-%     %%%
-%     warning('Temporal')
-%     Md = mdept - 0.1;
-%     idx = find(Md < 0);
-%     Md(idx) = 0;
-%     %%%
-%     
-%     ki = zeros(1,Chno - 2);
-%     fi = zeros(1,Chno);
-% 
-%     % Find cross-correlation coefficients
-%     for k=1:1:Chno-2
-%         cfac    = cov(hBPi(k,:),hBPi(k + 2,:));
-%         den     = diag(cfac);
-%         den     = Round( sqrt(den * den'), 10); % rounded to 10 decimals
-% 
-%         if den(2,1) > 0
-%             ki(k) = cfac(2,1) / den(2,1);
-%         elseif den(2,1) < 0
-%             ki(k) = 0;
-%         else
-%             ki(k) = 0;
-%         end
-%     end
-% 
-%     % Calculate specific fluctuation strength fi and total FS
-%     fi(iFrame,1) = gzi(1)^p_g * Md(1)^p_m * abs(ki(1))^p_k;
-%     fi(iFrame,2) = gzi(2)^p_g * Md(2)^p_m * abs(ki(2))^p_k;
-% 
-%     for k = 3:1:45
-%         fi(iFrame,k) = gzi(k)^p_g * Md(k)^p_m * abs( ki(k - 2) * ki(k) )^p_k;
-%     end
-% 
-%     fi(iFrame,46) = gzi(46)^p_g * Md(46)^p_m * abs(ki(44))^p_k;
-%     fi(iFrame,47) = gzi(47)^p_g * Md(47)^p_m * abs(ki(45))^p_k;
-% 
-%     FS(iFrame) = Cal * sum(fi(iFrame,:));
-% end
-% 
-% dataOut{1} = FS;
-% dataOut{2} = fi;
-% dataOut{3} = SPL;
-% 
-% nParam      = 1;
-% out.Data1   = transpose(FS);
-% output.name{nParam} = 'Fluctuation strength';
-% output.param{nParam} = strrep( lower( output.name{nParam} ),' ','-');
-% 
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% % end
-% 
 % function gzi = il_create_gzi(Chno);
 % 
 %     Chstep = 0.5;

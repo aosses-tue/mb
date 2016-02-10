@@ -7,7 +7,12 @@ function [outsig, fc, mfc, extra] = Gammatone_analysis(insig,fs)
 %   Tested cross-platform: No
 %
 % 3. Stand-alone example:
-%
+%       dirmain = [Get_TUe_data_paths('lx_Text') 'lx2016-02-04-update-validation-FS' delim];
+%       dirout  = [dirmain 'Test-battery' delim];
+%       file = [dirout '65-FM_tone-fm_4.00-fc_1500-df_300-SPL_70-w_25-fs_44100-N_88200.wav'];
+%       [insig fs] = Wavread(file);
+%       [outsig, fc, mfc, extra] = Gammatone_analysis(insig,fs);
+% 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on: 2/6/2014
 % Last update: 2/6/2014 % Update this date manually

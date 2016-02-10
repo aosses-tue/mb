@@ -8,7 +8,6 @@ function [R dataOut out] = Roughness_offline_debug(dataIn, Fs, N, optsDebug)
 %       Some changes respect to the Dik's implementation:
 %           amp2db replaced by To_dB
 %           db2amp replaced by From_dB
-%           private rms renamed to dw_rms
 %
 % Modified by:  Alejandro Osses,
 %               Matt Flax <flatmax @ http://www.flatmax.org> in March 2006 (psySoundPro project)
@@ -334,7 +333,6 @@ for k=1:1:Chno % each critical band number
     Fei(k,:)	= fft( etmp_td(k,:)-h0(k) ); % changes the phase but not the amplitude
     
     hBPi(k,:)	= 2*real(  ifft( Fei(k,:).*Hweight(k,:) )  );
-    % hBPrms(k)	= dw_rms(hBPi(k,:)); % this is the old function
     hBPrms(k)	= rms(hBPi(k,:),'dim',2);
     if h0(k)>0
         mdept(k) = hBPrms(k)/h0(k);

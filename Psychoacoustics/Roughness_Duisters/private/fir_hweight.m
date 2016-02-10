@@ -14,8 +14,8 @@ function [numH7, denH7, numH14, denH14, numH30, denH30, numH36, denH36, numH66, 
 % Adapted by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Author        : Vincent Jourdes
 % Created on    : 26/05/2015
-% Last update on: 26/05/2015 % Update this date manually
-% Last use on   : 27/05/2015 % Update this date manually
+% Last update on: 26/05/2015
+% Last use on   : 27/05/2015
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin == 0

@@ -285,6 +285,7 @@ if bCalculate == 0
     % file_load_results = ['info_val_2016-02-07-at-11h-41m-33s.mat']; % AM-fmod, tones
     % file_load_results = ['info_val_2016-02-07-at-16h-08m-12s.mat']; % FM-fmod, tones
     % file_load_results = ['info_val_2016-02-08-at-08h-24m-58s.mat'];
+    file_load_results = ['info_val_2016-02-10-at-02h-21m-04s.mat'];
     
     load(file_load_results);
 end
@@ -297,6 +298,17 @@ try
 catch
     pg_opt = pg;
 end
+
+idxs = (1:size(info_val,1))';
+
+info_val2 = [idxs info_val];
+
+[xx idx2sort] = sort(info_val2(:,6));
+info_sorted = info_val2(idx2sort,:);
+
+figure; 
+plot(info_sorted(:,6),'o'); hold on
+plot(abs(info_sorted(:,5)),'rx'); grid on
 
 if nargout == 0
     [pm_opt pk_opt pg_opt info_val(idxmin,5)]

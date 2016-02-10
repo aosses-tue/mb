@@ -1,5 +1,5 @@
-function dataOut = FluctuationStrength_offline_debug(insig, Fs, N, bDebug)
-% function dataOut = FluctuationStrength_offline_debug(insig, Fs, N, bDebug)
+function dataOut = FluctuationStrength_Sontacchi_debug(insig, Fs, N, bDebug)
+% function dataOut = FluctuationStrength_Sontacchi_debug(insig, Fs, N, bDebug)
 %
 % 1. Description:
 %       Off-line implementation of the Fluctuation Strength algorithm based 
@@ -29,11 +29,13 @@ function dataOut = FluctuationStrength_offline_debug(insig, Fs, N, bDebug)
 % 3. Additional info:
 %       Tested cross-platform: Yes
 %
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2016
 % Created on    : 10/11/2014
-% Last update on: 18/11/2014 % Update this date manually
-% Last use on   : 18/11/2014 % Update this date manually
+% Last update on: 18/11/2014
+% Last use on   : 18/11/2014
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+error('Review code, this is just an idea of the Sontacchi''s processing')
 
 if nargin < 4
     bDebug = 0;
@@ -337,25 +339,19 @@ for idx_j = 1:m_blocks
         Fei(k,:)	= fft( etmp_td(k,:)-h0(k) ); % changes the phase but not the amplitude
         
         hBPi(k,:)	= 2*real(  ifft( Fei(k,:).*Hweight(k,:) ,N)  );
-        hBPrms(k)	= dw_rms(hBPi(k,:));
+        hBPrms(k)	= rms(hBPi(k,:),'dim',2);
         
         downsamplefactor = round(N/8192);
         Fsnew       = Fs/downsamplefactor;
         Hhweight    = Get_Hweight_fluctuation(8192,Fsnew);
         
-        Feir        = fft( etmp_td(k,:)-h0(k) ,8192);
         tBPi        = conv(Fei(k,:),Hhann);
-        tBPir       = downsample( tBPi,downsamplefactor );
-        h0r(k)      = mean(abs(tBPir));
         
         tBPffti     = fft(tBPir,8192);
-        hBPir       = 2*real(  ifft( tBPffti.*Hhweight ,8192)  );
-        hBPrmsr(k)	= dw_rms(hBPir);
         
         if h0(k)>0
             
             mdept(k) = hBPrms(k)/h0(k);
-            mdeptr(k) = hBPrmsr(k)/h0r(k);
             
             if mdept(k)>1
                 mdept(k)=1;
@@ -363,7 +359,6 @@ for idx_j = 1:m_blocks
             
         else
             mdept(k)=0;
-            mdeptr(k) = 0;
         end
 
         if bDebug
@@ -481,17 +476,6 @@ for idx_j = 1:m_blocks
     fi(idx_j,Chno  )	=	(h0(Chno  )^qg)*(mdept(Chno  )^p)*(ki(Chno-2)^kg);
     FS(idx_j)           =	Cal*( sum(fi(idx_j,:)) )^(1/s);
 
-    % TMP
-    fir(idx_j,1)         =	(h0(1)^qg)*(mdeptr(1)^p)*(ki(1)^kg);
-    fir(idx_j,2)         =	(h0(2)^qg)*(mdeptr(2)^p)*(ki(2)^kg);
-
-    for k = 3:1:Chno-2
-        fir(idx_j,k)     =	(h0(k)^qg)*(mdeptr(k)^p)*( ki(k-2)*ki(k) )^kg;
-    end
-
-    fir(idx_j,Chno-1)	=	(h0(Chno-1)^qg)*(mdeptr(Chno-1)^p)*(ki(Chno-3)^kg);
-    fir(idx_j,Chno  )	=	(h0(Chno  )^qg)*(mdeptr(Chno  )^p)*(ki(Chno-2)^kg);
-    FSr(idx_j)           =	Cal*( sum(fir(idx_j,:)) )^(1/s);
     % END: TMP
     
     SPL(idx_j) = mean(rms(dataIn));

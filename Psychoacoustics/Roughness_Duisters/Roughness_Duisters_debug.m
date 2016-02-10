@@ -1,9 +1,9 @@
-function [R dataOut out] = Roughness_Duisters_offline(insig, fs, N, options, CParams)
-% function [R dataOut out] = Roughness_Duisters_offline(insig, fs, N, options, CParams)
+function [R dataOut out] = Roughness_Duisters_debug(insig, fs, N, options, CParams)
+% function [R dataOut out] = Roughness_Duisters_debug(insig, fs, N, options, CParams)
 %
 % 1. Description:
 %       Frame-based, off-line implementation of the roughness algorithm.
-% 
+%       
 %       Outputs:
 %           out - has the same format as in the PsySound toolbox
 % 
@@ -21,12 +21,12 @@ function [R dataOut out] = Roughness_Duisters_offline(insig, fs, N, options, CPa
 % 2. Stand-alone example:
 %       2.1 Unix-based example:
 %           [insig fs] = Wavread('~/Documenten/MATLAB/outputs/tmp-cal/ref_rough.wav'); % Unix-based
-%           [out outPsy] = Roughness_Duisters_offline(insig,fs,8192);
+%           [out outPsy] = Roughness_Duisters_debug(insig,fs,8192);
 % 
 %       2.2 Multi-platform example, requires the ref_rough.wav file in the 
 %           appropriate folder:
 %           [insig fs] = Wavread([Get_TUe_paths('outputs') 'ref_rough.wav']); 
-%           [out outPsy] = Roughness_Duisters_offline(insig,fs,8192);
+%           [out outPsy] = Roughness_Duisters_debug(insig,fs,8192);
 % 
 %       2.3 60-dB sine tone:
 %           f = 1000;
@@ -34,21 +34,22 @@ function [R dataOut out] = Roughness_Duisters_offline(insig, fs, N, options, CPa
 %           lvl = 60;
 %           insig = Create_sin(f,8192/fs,fs);
 %           insig = setdbspl(insig,lvl);
-%           [out outPsy] = Roughness_Duisters_offline(insig,fs,8192);
+%           [out outPsy] = Roughness_Duisters_debug(insig,fs,8192);
 % 
 %       2.4 Impulse response:
 %           N = 8192;
 %           insig  = [zeros(N/2-1,1); 1; zeros(N/2,1)];
 %           fs = 44100;
-%           [out outPsy] = Roughness_Duisters_offline(insig,fs,N);
+%           [out outPsy] = Roughness_Duisters_debug(insig,fs,N);
 % 
 % 3. Additional info:
 %       Tested cross-platform: Yes
 %
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2016
+% Original file name: Roughness_Duisters_offline
 % Created on    : 27/05/2015
-% Last update on: 29/06/2015 % Update this date manually
-% Last use on   : 29/06/2015 % Update this date manually
+% Last update on: 29/06/2015
+% Last use on   : 29/06/2015
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % switches(1) - Outer-, Middle- ear transmission
@@ -67,6 +68,8 @@ function [R dataOut out] = Roughness_Duisters_offline(insig, fs, N, options, CPa
 % switches(4) - Defines the resolution of the auditory filterbank + Roughness model to be used
 %       -  1
 %       -* 3: Aures
+
+warning('Status of this code: running, but not validated...')
 
 if nargin < 4
     options = [];
@@ -98,15 +101,6 @@ nSkipStart  = options.nSkipStart; % to correct time series, in case an analysis 
 N_hop   = CParams.HopSize;
 insig   = insig( nSkipStart*N_hop+1:end );
  
-
-try
-    fir_hweight; % just to check whether all folders are in the MATLAB path
-catch
-    warning('Temporal adjustment to add proper folders')
-    misc.path = [Get_TUe_paths('MATLAB') 'Psychoacoustics' delim 'Roughness_Duisters' delim];
-    Add_paths(misc);
-end
-
 %%%%%%%%%%%%%%%%%
 % BEGIN InitAll %
 %%%%%%%%%%%%%%%%%
@@ -219,8 +213,8 @@ for idx_j = 1:m_blocks
         sBP(37:65,:) = filter(numH36, denH36, excd(37:65,Ni:Nf), [], 2);
         sBP(66:76,:) = filter(numH66, denH66, excd(66:76,Ni:Nf), [], 2);
         
-        sBPrms = rmsDik(sBP);
-        rexc = rmsDik(exc);
+        sBPrms = rms(sBP,'dim',2);
+        rexc   = rms(exc,'dim',2);
         maxi = max(rexc);
         if maxi > 0
             calib = rexc / maxi;

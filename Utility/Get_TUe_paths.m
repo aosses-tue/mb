@@ -28,10 +28,10 @@ function misc = Get_TUe_paths(type)
 % % Example 2: to get directory where database of the voice of the dragon is:
 %       misc = Get_TUe_paths('db_voice_of_dragon');
 %
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2016
 % Created on    : 15/03/2014
 % Last update on: 07/02/2016
-% Last use on   : 07/02/2016
+% Last use on   : 10/02/2016
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Alejandro's paths
@@ -99,9 +99,11 @@ misc.Localisation       = [misc.MATLAB   'Localisation'    delim];
 misc.praat_scripts      = [misc.MATLAB   'Praat'           delim];
 misc.PA_stim_generation = [misc.MATLAB   'PA_stim_generation' delim];
 misc.Psychoacoustics    = [misc.MATLAB   'Psychoacoustics' delim];
-misc.FluctuationStrength= [misc.Psychoacoustics 'FluctuationStrength_Garcia' delim];  
+misc.FluctuationStrength= [misc.Psychoacoustics 'FluctuationStrength_Garcia' delim];
+misc.FluctuationStrength_Sontacchi= [misc.Psychoacoustics 'FluctuationStrength_Sontacchi' delim];
 misc.Reports            = [misc.MATLAB   'Reports'         delim];
 misc.Reports_KUL        = [misc.MATLAB   'Reports_KUL'     delim];
+misc.Roughness_Duisters = [misc.Psychoacoustics 'Roughness_Duisters' delim];
 misc.Speech             = [misc.MATLAB   'Speech'          delim];
 misc.ltass              = [misc.Speech   'LTASS'           delim];
 misc.ICRA               = [misc.Speech   'ICRA'            delim];

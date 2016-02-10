@@ -345,7 +345,7 @@ for idx_j = 1:m_blocks
         hBPi(k,:)	= 2*real(  ifft( Fei(k,:).*Hweight(k,:) ,N)  );
         hCrossi(k,:)= 2*real(  ifft( Fei(k,:)               ,N)  );
         
-        hBPrms(k)	= dw_rms(hBPi(k,:));
+        hBPrms(k)	= rms(hBPi(k,:),'dim',2);
         
        
         if k == 17

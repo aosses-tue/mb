@@ -1,7 +1,10 @@
-% Author: V.J.P. Jourdes
-% This function calculates the maximum of the cross correlation between two
-% signal calculated after shifting one of them of a certain number of
-% samples.
+function y = shiftcov(f1, f2, amount)
+% function y = shiftcov(f1, f2, amount)
+%
+% 1. Description:
+%       This function calculates the maximum of the cross correlation between 
+%       two signal calculated after shifting one of them of a certain number of
+%       samples.
 %
 % y = shifcov(f1, f2, amount);
 %
@@ -9,8 +12,9 @@
 % f2: signal 2
 % amount: defines the maximum number of samples that the signal will be
 % shifted.
-%
-function y = shiftcov(f1, f2, amount)
+% Author: V.J.P. Jourdes
+% Version: 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 L = length(f1);
 ff2 = f2;

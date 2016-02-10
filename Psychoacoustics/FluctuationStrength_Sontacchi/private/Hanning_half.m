@@ -12,8 +12,8 @@ function [w, corr_dB] = Hanning_half(N)
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
 % Created on    : 13/11/2014
-% Last update on: 20/11/2014 % Update this date manually
-% Last use on   : 20/11/2014 % Update this date manually
+% Last update on: 20/11/2014 
+% Last use on   : 20/11/2014 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin == 0

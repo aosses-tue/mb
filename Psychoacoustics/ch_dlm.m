@@ -25,9 +25,9 @@ function [N, main_N, spec_N] = ch_dlm(sig, HL, k)
 % Created on    : 12/12/2000
 % Edited on     : 06/01/2007 (new version with comments and examples)
 % Downloaded on : 07/08/2014 (approx.)
-% Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
-% Last update on: 07/08/2014 % Update this date manually
-% Last use on   : 21/08/2014 % Update this date manually
+% Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2016
+% Last update on: 07/08/2014
+% Last use on   : 21/08/2014 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Altered by MFFM Matt Flax <flatmax> for the Psy-Sound project
@@ -41,8 +41,8 @@ function [N, main_N, spec_N] = ch_dlm(sig, HL, k)
 
 f_abt = 1/2e-3; % 2 ms sampling period
 if nargin == 2 % return the window size
-  [t_pa,w,t_sb,t_sa,t_pb] = ch_staticParamDLM.m;
-  [h,t, erd] = ch_tep_window(t_pb,t_pa,t_sb,t_sa,w,fs);
+  [t_pa,w,t_sb,t_sa,t_pb] = staticParamDLM.m;
+  [h,t, erd] = tep_window(t_pb,t_pa,t_sb,t_sa,w,fs);
   N = length(h);
   
   out = N;
@@ -67,18 +67,18 @@ HL_ihc = HL-HL_ohc;
 
 % Approximation of the transfer function through the human outer and middle ear
 % HPF with cut-off at (around) 65 Hz
-[b, a] = ch_butter_hp(fs); % generate the butterworth filter coeffs
+[b, a] = butter_hp(fs); % generate the butterworth filter coeffs
 
 % filter state vector.
 Z = [];
 
 % Calculation of coefficients of critical band filterbank
-S = ch_make_fttbank1(fs);
+S = make_fttbank1(fs);
 
 kern_l = [];
 
 % Smoothed critical band loudness fitler creation
-[smooth.b, smooth.a] = ch_int_tp(f_abt);
+[smooth.b, smooth.a] = int_tp(f_abt);
 smooth.Zfa = [];
 smooth.Zfb = [];
 
@@ -92,19 +92,19 @@ smooth.Zfb = [];
     [sig, Z] = filter(b, a, sig, Z);
   
     % Applying critical band filterbank
-    [fgrp, S] = ch_ftt_bank1(sig, S, f_abt,fs);
-    fgrp_d    = ch_damp_a0(fgrp, HL_ihc); % Attenuation due to outer & middle
+    [fgrp, S] = ftt_bank1(sig, S, f_abt,fs);
+    fgrp_d    = damp_a0(fgrp, HL_ihc); % Attenuation due to outer & middle
                                           % ear and inner hair cell hearing
                                           % loss
   
     % Calculation of main loudness
-    kern_l = [kern_l; ch_kernlaut24_two(fgrp_d, HL_ohc)];
+    kern_l = [kern_l; kernlaut24_two(fgrp_d, HL_ohc)];
     
   % ii = 10; figure; plot(kern_l(:,ii)); % to visualise post-masking 
   
   % Calculation of forward masking (aka "post masking")
   try
-        kern_dyn = ch_post_maskn(kern_l, f_abt);
+        kern_dyn = post_maskn(kern_l, f_abt);
   catch
         % caught the case where no postprocessing is possible, use a string to
         % indicate to the calling function.
@@ -117,7 +117,7 @@ smooth.Zfb = [];
   kern_l = []; % On successful post-processing, clear the processed data
 
   % Calculation of spectral masking and spectral summation of specific loudness 
-  [spec_N, lauth] = ch_flankenlautheit24(kern_dyn);
+  [spec_N, lauth] = flankenlautheit24(kern_dyn);
   
   % Calculation of critical band loudness
   kl = ch_bark_sum(spec_N);

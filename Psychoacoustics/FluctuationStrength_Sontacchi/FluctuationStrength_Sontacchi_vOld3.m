@@ -1,5 +1,5 @@
-function dataOut = FluctuationStrength_offline(dataIn, Fs, N, bDebug)
-% function dataOut = FluctuationStrength_offline(dataIn, Fs, N, bDebug)
+function dataOut = FluctuationStrength_Sontacchi_vOld3(dataIn, Fs, N, bDebug)
+% function dataOut = FluctuationStrength_Sontacchi_vOld3(dataIn, Fs, N, bDebug)
 %
 % 1. Description:
 %
@@ -9,6 +9,7 @@ function dataOut = FluctuationStrength_offline(dataIn, Fs, N, bDebug)
 %       Tested cross-platform: No
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Original file name: FluctuationStrength_offline.m
 % Created on    : 10/11/2014
 % Last update on: 10/11/2014 % Update this date manually
 % Last use on   : 10/11/2014 % Update this date manually

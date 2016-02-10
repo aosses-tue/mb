@@ -1,5 +1,5 @@
-function dataOut = fs_offline(insig, Fs, bDebug)
-% function dataOut = fs_offline(insig, Fs, bDebug)
+function dataOut = FluctuationStrength_Sontacchi_vOld(insig, Fs, bDebug)
+% function dataOut = FluctuationStrength_Sontacchi_vOld(insig, Fs, bDebug)
 %
 % 1. Description:
 %
@@ -8,12 +8,14 @@ function dataOut = fs_offline(insig, Fs, bDebug)
 % 3. Additional info:
 %       Tested cross-platform: No
 %
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2016
+% Original name: fs_offline.m
 % Created on    : 26/01/2015
-% Last update on: 26/01/2015 % Update this date manually
-% Last use on   : 27/01/2015 % Update this date manually
+% Last update on: 26/01/2015 
+% Last use on   : 27/01/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+error('Status of this code: not running')
 insig = From_dB(-10)*insig;
 
 fprintf('Average level of input signal: %.2f dB\n',rmsdb(insig)+100);
@@ -364,12 +366,12 @@ for k = 1:1:Chno
             disp('');
         end
  
-        % hBPrms(k)       = dw_rms(hBPi_red(k,:));
-        % hBPrms(k)	= dw_rms( eil ); 
-        hBPrms(k)	= dw_rms( hBPi(k,1:length(eil(k,:))) ); % average of the band-pass filtered signals
+        % hBPrms(k)       = rms(hBPi_red(k,:),'dim',2);
+        % hBPrms(k)	= rms( eil ,'dim',2); 
+        hBPrms(k)	= rms( hBPi(k,1:length(eil(k,:))) ,'dim',2); % average of the band-pass filtered signals
         if k == 17
-            % dw_rms( hBPi(k,1:length(eil(k,:))) )
-            % dw_rms( h_no_filt(k,1:length(eil(k,:))) )
+            % rms( hBPi(k,1:length(eil(k,:))) ,'dim',2)
+            % rms( h_no_filt(k,1:length(eil(k,:))) ,'dim',2)
         end
         
         if h0(k)>0

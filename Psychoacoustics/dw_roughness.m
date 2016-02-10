@@ -7,7 +7,6 @@ function dataOut = dw_roughness(dataIn, Fs, N)
 %       Changes:
 %           db2amp replaced by To_dB
 %           amp2db replaced by From_dB
-%           private rms renamed to dw_rms
 % 
 % author : Matt Flax <flatmax @ http://www.flatmax.org> : Matt Flax is flatmax
 % March 2006 : For the psySoundPro project
@@ -418,7 +417,7 @@ for k=1:1:sizL
       h0(k)	= mean(etmp);
       Fei(k,:)	= fft(etmp-h0(k));
       hBPi(k,:)	= 2*real(ifft(Fei(k,:).*Hweight(k,:)));
-      hBPrms(k)	= dw_rms(hBPi(k,:));
+      hBPrms(k)	= rms(hBPi(k,:),'dim',2);
       if h0(k)>0
         mdept(k) = hBPrms(k)/h0(k);
         if mdept(k)>1

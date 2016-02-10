@@ -34,7 +34,7 @@ dirfigs = [dirmain 'Figures' delim];
 
 files = {[dirout '01-ref_fluct.wav']                                        ,1  ; ... % -10 dB
          [dirout '02-fluct_test_bbn_AM_m_100_fmod_004Hz_60_dBSPL.wav']      ,1.8; ...  % 02-03-04
-         ['']                                                               ,3; ...
+         ['']                                                               ,3.0; ...
          ['']                                                               ,0.9; ...
          [dirout '05-man001-longer.wav']                                    ,NaN; ...  
          [dirout '06-vrouw002.wav']                                         ,NaN; ... 
@@ -131,6 +131,10 @@ model_par = Get_fluctuation_strength_params(N,fs,dataset);
 pm = 1.7;
 pk = 0.15;
 pg = 2;
+
+% pm = 0.8;
+% pk = 0.2;
+% pg = 0.4;
 model_par.p_g = pg;
 model_par.p_m = pm;
 model_par.p_k = pk;

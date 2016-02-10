@@ -21,10 +21,10 @@ function out = Get_psyparams(param)
 % 
 %       see also Roughness_offline to use this script
 %
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2016
 % Created on    : 12/11/2014
-% Last update on: 12/11/2014 % Update this date manually
-% Last use on   : 26/06/2015 % Update this date manually
+% Last update on: 12/11/2014 
+% Last use on   : 26/06/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 switch param

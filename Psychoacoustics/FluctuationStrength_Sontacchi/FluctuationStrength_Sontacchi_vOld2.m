@@ -1,5 +1,5 @@
-function dataOut = FluctuationStrength_debug(insig, Fs, bDebug)
-% function dataOut = FluctuationStrength_debug(insig, Fs, bDebug)
+function dataOut = FluctuationStrength_Sontacchi_vOld2(insig, Fs, bDebug)
+% function dataOut = FluctuationStrength_Sontacchi_vOld2(insig, Fs, bDebug)
 %
 % 1. Description:
 %       Off-line implementation of the Fluctuation Strength algorithm based 
@@ -29,10 +29,11 @@ function dataOut = FluctuationStrength_debug(insig, Fs, bDebug)
 % 3. Additional info:
 %       Tested cross-platform: Yes
 %
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2016
+% Original file name: FluctuationStrength_debug.m
 % Created on    : 10/11/2014
-% Last update on: 18/11/2014 % Update this date manually
-% Last use on   : 18/11/2014 % Update this date manually
+% Last update on: 18/11/2014 
+% Last use on   : 18/11/2014 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 3
