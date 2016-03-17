@@ -17,9 +17,9 @@ function Demo_fluct
 % Author        : Josef Chalupper (josef.chalupper@siemens.com)
 % Created in    : 2000
 % Downloaded on : 07/08/2014 (approx.)
-% Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
-% Last update on: 07/08/2014 % Update this date manually
-% Last use on   : 21/08/2014 % Update this date manually
+% Modified by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2016
+% Last update on: 07/08/2014 
+% Last use on   : 11/02/2016 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 amsigs = [];

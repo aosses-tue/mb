@@ -18,7 +18,7 @@ close all
 bDiary = 0;
 Diary(mfilename,bDiary);
 
-bSave   = 1;
+bSave   = 0;
 bCreate = 0;
 hFig    = [];
 
@@ -29,8 +29,11 @@ addpath([dir delim 'Tools']);
 
 if bComparingICRA_piano
     
+    dir_out   = [Get_TUe_paths('outputs') 'piano-sounds-for-Antoine' delim];
+    Mkdir(dir_out);
+    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Sounds to be processed:
+    % 1. Sounds to be processed:
     note_test = 'A4';
     dir_where = [Get_TUe_data_paths('piano') '04-PAPA' delim '03-Exported-as-segments' delim note_test delim];
     
@@ -39,10 +42,7 @@ if bComparingICRA_piano
     fname1   = [dir_where fname1suffix '.wav'];
     fname2   = [dir_where fname2suffix '.wav'];
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
-    dir_out   = [Get_TUe_paths('outputs') 'piano-sounds-for-Antoine' delim];
-    Mkdir(dir_out);
-    
+    % 2. Aligning the sounds (looking at the maximum RMS value):
     [signal1 fs] = Wavread(fname1); 
     [signal2 fs] = Wavread(fname2); 
     

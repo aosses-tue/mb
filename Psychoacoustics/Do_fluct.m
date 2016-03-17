@@ -11,10 +11,10 @@ function outs = Do_fluct(insig,fs,dBFS)
 % 3. Additional info:
 %       Tested cross-platform: No
 % 
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2016
 % Created on    : 22/08/2014
-% Last update on: 16/02/2015 % Update this date manually
-% Last use on   : 16/02/2015 % Update this date manually
+% Last update on: 16/02/2015 
+% Last use on   : 16/02/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 3

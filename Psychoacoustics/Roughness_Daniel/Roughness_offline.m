@@ -107,22 +107,21 @@ Barkno(f)   = interp1(Bark2(:,1),Bark2(:,2),(f-1)*dFs);
 % Make list of frequency bins closest to Cf's
 Cf = ones(2,24);
 for a=1:1:24
-  Cf(1,a)=round(Bark((a+1),2)*N/fs)+1-N0;
-  Cf(2,a)=Bark(a+1,2);
+    Cf(1,a)=round(Bark((a+1),2)*N/fs)+1-N0;
+    Cf(2,a)=Bark(a+1,2);
 end
 %Make list of frequency bins closest to Critical Band Border frequencies
 Bf = ones(2,24);
 Bf(1,1)=round(Bark(1,3)*N/fs);
 for a=1:1:24
-  Bf(1,a+1)=round(Bark((a+1),3)*N/fs)+1-N0;
-  Bf(2,a)=Bf(1,a)-1;
+    Bf(1,a+1)=round(Bark((a+1),3)*N/fs)+1-N0;
+    Bf(2,a)=Bf(1,a)-1;
 end
 Bf(2,25)=round(Bark((25),3)*N/fs)+1-N0;
 
 %Make list of minimum excitation (Hearing Treshold)
-HTres = Get_psyparams('HTres');
-
-k = (N0:1:Ntop);
+k        = (N0:1:Ntop);
+HTres    = Get_psyparams('HTres');
 MinExcdB = interp1(HTres(:,1),HTres(:,2),Barkno(k));
   
 % Initialize constants and variables
@@ -131,12 +130,11 @@ zb      = sort([Bf(1,:),Cf(1,:)]);
 Chno    = 47;
 Fei     = zeros(Chno,N);
 
-gr = Get_psyparams('gr');
-
-gzi    = zeros(1,Chno);
-h0     = zeros(1,Chno);
-k      = 1:1:Chno;
-gzi(k) = sqrt(interp1(gr(1,:)',gr(2,:)',k/2));
+gzi     = zeros(1,Chno);
+h0      = zeros(1,Chno);
+k       = 1:1:Chno;
+gr      = Get_psyparams('gr');
+gzi(k)  = sqrt(interp1(gr(1,:)',gr(2,:)',k/2));
     
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Calculates a0
@@ -145,7 +143,6 @@ a0tab =	Get_psyparams('a0tab');
 a0    = ones(1,N);
 k     = (N0:1:Ntop);
 a0(k) = From_dB(interp1(a0tab(:,1),a0tab(:,2),Barkno(k)));
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%
 % END InitAll %
@@ -170,8 +167,9 @@ end
 
 ri          = zeros(m_blocks,Chno);
 
+dBFS        = 100;
 Window      = blackman(N, 'periodic') .* 1.8119;
-dBcorr      = 80+2.72;
+dBcorr      = dBFS+2.72;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for idx_j = 1:m_blocks
@@ -180,10 +178,9 @@ for idx_j = 1:m_blocks
     dataIn = insig_buf(:,idx_j);
     
     dataIn = dataIn .*Window;
-    AmpCal = From_dB(dBcorr)*2/(N*mean(blackman(N, 'periodic'))); % cal to get magnitude spectrum to the power spectrum L
+    AmpCal = From_dB(dBcorr-20)*2/(N*mean(blackman(N, 'periodic'))); % cal to get magnitude spectrum to the power spectrum L
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
     % Calibration between wav-level and loudness-level (assuming
     % blackman window and FFT will follow)
 
@@ -205,7 +202,7 @@ for idx_j = 1:m_blocks
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Critical-band filterbank - Terhardt:
-    [etmp_td, etmp_fd, etmpExc_fd] = Terhardt_filterbank(FreqIn,fs,N,qb,MinExcdB,Barkno,N01,zb);
+    [etmp_td, etmp_fd, etmpExc_fd] = Terhardt_filterbank(FreqIn,fs,N,qb,MinExcdB,Barkno,N01,zb,Chno);
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     etmp_td = abs(etmp_td);
     
@@ -213,12 +210,11 @@ for idx_j = 1:m_blocks
         % etmp_fd  - excitation pattern in frequency domain
         % etmp  - excitation patterns in time domain (after L242)
         % ei    - excitation patterns in time domain
-        % Fei   - envelope in frequency domain, as function of fmod
-        % h0    - DC component, average of half-wave rectified signal
+        % Fei   - envelope in frequency domain
+        % h0    - DC component, average of full-wave rectified signal
 
-        % etmp_td(k,:)= abs(etmp_td(k,:));
         h0(k)       = mean( etmp_td(k,:)       );
-        Fei(k,:)	=  fft( etmp_td(k,:)-h0(k) ); % changes the phase but not the amplitude
+        Fei(k,:)	=  fft( etmp_td(k,:)-h0(k) ); 
 
         hBPi(k,:)	= 2*real(  ifft( Fei(k,:).*Hweight(k,:) )  );
         hBPrms(k)	= rms(hBPi(k,:),'dim',2);

@@ -1,5 +1,5 @@
-function [y ty stats] = rmsdb_sec(x,fs,dur_buf_s,tstart)
-% function [y ty stats] = rmsdb_sec(x,fs,dur_buf_s,tstart)
+function [y ty stats] = rmsdb_sec(x,fs,dur_buf_s,bOverlap,tstart)
+% function [y ty stats] = rmsdb_sec(x,fs,dur_buf_s,bOverlap,tstart)
 %
 % 1. Description:
 %       x - signal to be buffered in N = 50 sample-section
@@ -20,23 +20,34 @@ function [y ty stats] = rmsdb_sec(x,fs,dur_buf_s,tstart)
 %       VoD_one_signal;
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
-% Created on : 24/06/2014
-% Last update: 25/06/2014 
-% Last used  : 23/12/2015 
+% Created on    : 24/06/2014
+% Last update on: 25/06/2014 
+% Last use on   : 23/12/2015 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if nargin < 4
+if nargin < 5
     tstart     = 0;
     tstart_idx = 1;
 else
     tstart_idx = tstart*fs;
 end
 
+if nargin < 4
+    bOverlap = 1;
+end
+
 t    = (1:length(x))/fs;
 
-x    = x/max(abs(x));
+% x    = x/max(abs(x)); % by-passed on 16/03/2016
 N    = round(dur_buf_s * fs);
-xsec = buffer(x,N,0);
+
+if bOverlap == 1
+    Noverlap = round(N/2);
+else
+    Noverlap = 0;
+end
+
+xsec = buffer(x,N,Noverlap);
 x    = xsec;
 
 [r,c]=size(x);
@@ -51,6 +62,9 @@ end
 if nargout >= 2
     ty = buffer(t,N,0);
     ty = ty(1,:);
+end
+
+if nargout >=3
     tstart_idx = round(tstart_idx/N);
     bDuringFirstSecond = 0;
     idx = [];

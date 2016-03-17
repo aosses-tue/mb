@@ -18,7 +18,25 @@ function [fluct fi outs] = FluctuationStrength_Garcia(insig_b, fs, N, model_par)
 %           gzi - where was it taken from?
 % 
 % 2. Stand-alone example:
-%        
+%         Fmodeff = 4;
+%         BW = Fmodeff/0.64;
+%         Fmod = 0;
+%         dur = 2;
+%         fs = 44100;
+%         fc = 1000;
+%         Mdept = 0;
+%         SPL = 70;
+%         insig = AM_random_noise_BW(fc,BW,SPL,dur,fs,Fmod,Mdept);
+%         N = length(insig);
+%         % sound(insig,Fs); 
+%         [fluct fi outs] = FluctuationStrength_Garcia(insig, fs, N);
+% 
+%         BW = 2000;
+%         fc = 2000; % then sound from 1000 to 3000 Hz
+%         insig2 = AM_random_noise_BW(fc,BW,SPL,dur,fs,Fmod,Mdept);
+%         N = length(insig2);
+%         % sound(insig,Fs); 
+%         [fluct2 fi outs] = FluctuationStrength_Garcia(insig2, fs, N);
 % 
 % 3. Additional info:
 %       Tested cross-platform: Yes
@@ -49,7 +67,6 @@ switch model_par.window_type
         window = ones(N,1);
         attackrelease = 50;
         window = Do_cos_ramp(window,fs,attackrelease);
-        % window = From_dB(100)*window; %/mean(window); % No correction to the window
 end
 
 overlap = round(0.9*N);
@@ -86,7 +103,17 @@ for iFrame = 1:nFrames
     %% 3. Cross-correlation coefficient:
     switch model_par.dataset
         case {0,99}
-            Ki = il_cross_correlation(abs(ei));
+            
+            cutofffreq  = 1000;
+            [b, a]      = butter(2, cutofffreq*2/fs);
+            inoutsig    = filtfilt(b,a, transpose(abs(ei))); 
+            inoutsig    = filtfilt(b,a, inoutsig);
+            inoutsig    = repmat(window,1,model_par.Chno) .* inoutsig;
+            inoutsig    = transpose(inoutsig);
+            % error('Apply cosramp, written on 20/02/2016')
+            % Now in envelope domain...
+            
+            Ki = il_cross_correlation(inoutsig); % with hBPi Ki goes down but not as much as 'it should'
             [fi mdept kp gzi] = il_specific_fluctuation(mdept,Ki,model_par,model_par.dataset);
 
         case 1

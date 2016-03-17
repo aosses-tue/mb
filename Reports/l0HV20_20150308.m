@@ -8,10 +8,10 @@ function l0HV20_20150308
 % 3. Additional info:
 %       Tested cross-platform: No
 %
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2016
 % Created on    : 08/03/2015
-% Last update on: 08/03/2015 % Update this date manually
-% Last use on   : 08/03/2015 % Update this date manually
+% Last update on: 08/03/2015
+% Last use on   : 08/03/2015
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 close all
@@ -96,6 +96,5 @@ title('7')
 %% Experiment B
 
 disp('')
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

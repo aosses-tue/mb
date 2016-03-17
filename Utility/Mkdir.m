@@ -6,9 +6,9 @@ function status = Mkdir(folder)
 %       'status' is 1 if the directory was sucessfully created
 %       'status' is 0 if the directory already exists.
 %
-% Programmed by Alejandro Osses, ExpORL, KULeuven, 2014
+% Programmed by Alejandro Osses, ExpORL, KU Leuven, 2014
 % Last update on: 12/08/2014
-% Last use on   : 26/06/2015
+% Last use on   : 16/03/2016
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 bCreateFolder = ~isdir(folder);

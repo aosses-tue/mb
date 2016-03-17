@@ -23,13 +23,13 @@ function varargout = PsySoundControl(varargin)
 %       instance to run (singleton)".
 % 
 %       Line    Stage                               Last updated on
-%       46      Initialisation                      16/02/2015
-%       98      Calculation - calculate_Callback    28/01/2015
-%       267     reset_Callback                      18/01/2015
-%       309     Initialisation GUI                  18/01/2015
-%       313     unitgroup_SelectionChangeFcn        21/01/2015
-%       504     popAnalyser_Callback                02/02/2015
-%       916     Load data                           16/02/2015
+%       44      Initialisation                      12/02/2016
+%       96      Load data                           12/02/2016
+%       295      Calculation - calculate_Callback   12/02/2016
+%       467     reset_Callback                      18/01/2015
+%       509     Initialisation GUI                  18/01/2015
+%       513     unitgroup_SelectionChangeFcn        21/01/2015
+%       704     popAnalyser_Callback                02/02/2015
 %       
 % TO DO:
 %       2. SLM: problem at @Analyser/process, line 381. Object subclass is not readable 'AZ'
@@ -91,9 +91,208 @@ function varargout = PsySoundControl_OutputFcn(hObject, eventdata, handles)
 % Get default command line output from handles structure
 varargout{1} = handles.output;
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 3. Load data: Executes on button press in btnLoad.
+function btnLoad_Callback(hObject, eventdata, handles)
+% hObject    handle to btnLoad (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+txtFreqmin_Callback(handles.txtFreqmin,[],handles);
+txtFreqmax_Callback(handles.txtFreqmax,[],handles);
+
+dir_out = get(handles.txtOutputDir,'string');
+
+% if output directory is not specified:
+if length(dir_out) == 0 
+    
+    try
+        dir_out = Get_TUe_paths('outputs');
+    catch
+        warning('Type your output dir in the GUI');
+    end
+    set(handles.txtOutputDir,'string',dir_out)
+
+% if output directory it is specified:
+else
+    
+    % it checks whether last character is separator '\' (win) or '/' (unix):
+    if ~strcmp( dir_out(end), delim )
+        dir_out = [dir_out delim];
+    end
+    
+    % creates folder in case it does not exist:
+    Mkdir(dir_out);
+    
+end
+
+filename1 = get(handles.txtFile1,'string');
+filename2 = get(handles.txtFile2,'string');
+
+if strcmp(filename1,'')|strcmp(filename2,'')
+    try
+        filename1 = [Get_TUe_paths('outputs') 'Fastl2007_test_20141126' delim 'fluct_test_bbn_AM_m_000_fmod_004Hz_60_dBSPL.wav'];
+        filename2 = [Get_TUe_paths('outputs') 'Fastl2007_test_20141126' delim 'fluct_test_bbn_AM_m_070_fmod_004Hz_60_dBSPL.wav'];
+    catch
+        warning('Enter you wav filenames...')
+    end
+
+    set(handles.txtFile1    ,'string',filename1);
+    set(handles.txtFile2    ,'string',filename2);
+end
+set(handles.txtOutputDir,'string',dir_out)
+
+G1 = str2num( get(handles.txtGain1,'string') );
+G2 = str2num( get(handles.txtGain2,'string') );
+
+[insig1,fs]  = Wavread(filename1);
+[insig2,fs2] = Wavread(filename2);
+
+% This sould be the normal case:
+if fs == fs2
+    handles.audio.fs = fs;
+end
+
+if strcmp( get(handles.txtti,'String'), '')
+    set(handles.txtti,'String','1');
+end
+if strcmp(get(handles.txttf,'String'),'' )
+    set(handles.txttf,'String',num2str(min(length(insig1),length(insig2))));
+end
+
+t1 = ( 0:length(insig1)-1 )/fs;
+t2 = ( 0:length(insig2)-1 )/fs2;
+
+txt2display = sprintf('Length: %.3f [s],\n\t %.0f [samples]\nSample rate: %.0f [Hz]\n',max(t1),length(insig1),fs); 
+set( handles.txtFile1info,'string',txt2display);
+
+txt2display2 = sprintf('Length: %.3f [s],\n\t %.0f [samples]\nSample rate: %.0f [Hz]\n',max(t2),length(insig2),fs2); 
+set( handles.txtFile2info,'string',txt2display2);
+
+txtti_Callback(handles.txtti,[],handles);
+txttf_Callback(handles.txttf,[],handles);
+
+try
+    ti_samples  = handles.audio.ti_samples;
+    tf_samples  = handles.audio.tf_samples;
+catch
+    % Redundant, but first time running needs it (aparently)
+    handles.audio.ti_samples = str2num( get(handles.txtti,'String') );
+    handles.audio.tf_samples = str2num( get(handles.txttf,'String') );
+    ti_samples  = handles.audio.ti_samples;
+    tf_samples  = handles.audio.tf_samples;
+end
+toffset     = str2num( get(handles.txtXoffset,'string') );
+
+if length(ti_samples)==0 & length(tf_samples)==0
+    ti_samples = 1;
+    tf_samples = min( length(insig1), length(insig2) );
+    set( handles.txtti,'string',num2str(ti_samples) );
+    set( handles.txttf,'string',num2str(tf_samples) );
+    txtti_Callback(handles.txtti,[],handles);
+    txttf_Callback(handles.txttf,[],handles);
+    handles.audio.ti_samples = ti_samples;
+    handles.audio.tf_samples = tf_samples;
+end
+
+if ti_samples ~= 1 | (tf_samples ~= length(insig1) & tf_samples ~= length(insig2) )
+    handles.audio.bGenerateExcerpt = 1;
+    set(handles.txtExcerpt,'visible','on');
+else
+    handles.audio.bGenerateExcerpt = 0;
+    set(handles.txtExcerpt,'visible','off');
+end
+bGenerateExcerpt = handles.audio.bGenerateExcerpt;
+
+xliminf = ti_samples/fs;
+xlimsup = tf_samples/fs;
+
+axes(handles.axes1)
+plot(t1,From_dB(G1)*insig1);
+% title( name2figname( filename1 ) )
+xlim([xliminf xlimsup])
+set(gca,'XTickLabel',''); % Time scale will be the same as in File2 (Axes2)
+
+axes(handles.axes2)
+try
+    plot(t2(1:end-toffset+1),From_dB(G2)*insig2(toffset:end),'r');
+catch
+    plot(t2,From_dB(G2)*insig2,'r');
+end
+xlim([xliminf xlimsup])
+
+set(gca,'YTick',[])
+
+lvl_m_30_dBFS = str2num( get(handles.txtCalLevel,'string') );
+adjustmentvalue = 70-lvl_m_30_dBFS; % values calibrated to 100 dB RMS = 0 dBFS
+
+insig1_orig = From_dB(adjustmentvalue+G1) * insig1;    
+insig2_orig = From_dB(adjustmentvalue+G2) * insig2;
+
+insig1 = insig1_orig(ti_samples        :tf_samples);
+insig2 = insig2_orig(ti_samples+toffset:tf_samples);
+
+if bGenerateExcerpt
+    Nextra = length(insig1)-(tf_samples - ti_samples)-1;
+    if Nextra >= 8192
+        Nextra = 8192;
+    end
+ 
+    try
+        insig1tmp = insig1_orig( ti_samples:tf_samples + Nextra ); % one additional frame
+        insig2tmp = insig2_orig( ti_samples + toffset:tf_samples + toffset + Nextra ); % one additional frame
+        insig1 = insig1tmp;
+        insig2 = insig2tmp;
+    catch
+        insig1 = insig1_orig( ti_samples:tf_samples ); % one additional frame
+        insig2 = insig2_orig( ti_samples + toffset:tf_samples + toffset ); % one additional frame
+        warning('using catch...')
+    end
+    set(handles.txtExcerpt,'visible','on');
+
+    %% Extracts excerpt:
+    fname1_excerpt = [Delete_extension(filename1,'wav') '-e.wav']; 
+    fname2_excerpt = [Delete_extension(filename2,'wav') '-e.wav']; 
+
+    Wavwrite(insig1,fs,fname1_excerpt);
+    Wavwrite(insig2,fs,fname2_excerpt);
+
+    filename1 = fname1_excerpt;
+    filename2 = fname2_excerpt;
+
+    handles.audio.filename1 = filename1;
+    handles.audio.filename2 = filename2;
+   
+else
+    set(handles.txtExcerpt,'visible','off');
+
+    handles.audio.filename1 = filename1;
+    handles.audio.filename2 = filename2;
+
+end
+
+dBFS = lvl_m_30_dBFS+30+adjustmentvalue;
+RMS1 = rmsdb(insig1) + dBFS; 
+RMS2 = rmsdb(insig2) + dBFS; 
+
+thres_silence = 1/3; % one-third of the median value of the envelope 
+[xx xx xx RMS1nosil] = Rmssilence(insig1,fs,thres_silence);
+[xx xx xx RMS2nosil] = Rmssilence(insig2,fs,thres_silence);
+
+set( handles.txtRMS1,'string',sprintf('RMS1 = %.1f [dB SPL] (%.1f no silent)',RMS1,RMS1nosil + dBFS) );
+set( handles.txtRMS2,'string',sprintf('RMS2 = %.1f [dB SPL] (%.1f no silent)',RMS2,RMS2nosil + dBFS) );
+
+handles.audio.toffset = toffset;
+handles.audio.insig1orig = insig1_orig;     
+handles.audio.insig1 = insig1;
+handles.audio.insig2 = insig2;
+handles.audio.G1 = G1;
+handles.audio.G2 = G2;
+
+guidata(hObject,handles)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 3. Calculations: 
+% 4. Calculations: 
 %   Executes on button press in calculate.
 
 function calculate_Callback(hObject, eventdata, handles)
@@ -124,8 +323,6 @@ options.bLogScale = get(handles.cbLogAxis,'value'); % to be used in PsySound_Fig
 
 fs          = handles.audio.fs;
 
-% sample_inf = str2num(get(handles.txtti,'string')); % in samples
-% sample_sup = str2num(get(handles.txttf,'string')); % in samples
 sample_inf = handles.audio.ti_samples;
 sample_sup = handles.audio.tf_samples;
 
@@ -170,6 +367,9 @@ options          = Ensure_field(options,'ylim_bDrawLine',0);
 options.bLoudnessContrained = get(handles.chAvgLoudnessLimits,'Value'); % only validated for Analyser 12
 options.zlim4assessment = options.zrange; 
 
+lvl_m_30_dBFS = str2num( get(handles.txtCalLevel,'string') );
+calvalue = lvl_m_30_dBFS-70; 
+
 if bUsePsySound
     
     options.calfile = [Get_TUe_data_paths('db_calfiles') 'track_03.wav'];
@@ -210,8 +410,8 @@ else
     callevel = str2num( get(handles.txtCalLevel,'string') ); % rms 90 dB SPL = 0 dBFS 
     warning('callevel not used at all for m-file scripts...');
     
-    [insig1 fs1] = Wavread(filename1);
-    [insig2 fs2] = Wavread(filename2);
+    insig1 = handles.audio.insig1; 
+    insig2 = handles.audio.insig2; 
     
     if options.bGenerateExcerpt
         Nextra = length(insig1)-(sample_sup - sample_inf)-1;
@@ -246,9 +446,9 @@ else
     end
     
     lvl_m_30dBFS = str2num( get(handles.txtCalLevel,'string') );
-    calvalue = lvl_m_30dBFS-60; % values calibrated to 90 dB RMS = 0 dBFS (Fastl's standard)
-    insig1 = From_dB(calvalue+handles.audio.G1) * insig1;    
-    insig2 = From_dB(calvalue+handles.audio.G2) * insig2;
+    calvalue = lvl_m_30dBFS-calvalue; % values calibrated to 90 dB RMS = 0 dBFS (Fastl's standard)
+    % insig1 = From_dB(calvalue+handles.audio.G1) * insig1;    
+    % insig2 = From_dB(calvalue+handles.audio.G2) * insig2;
     
     switch options.nAnalyser
         
@@ -274,15 +474,15 @@ else
             N = 8192; % default frame length
             opts.nSkipStart = nSkipStart;
             opts.nSkipEnd   = nSkipEnd;
-            [xx xx out_1] = Roughness_offline(insig1,fs1,N,opts,CParams,0);
-            [xx xx out_2] = Roughness_offline(insig2,fs2,N,opts,CParams,0);
+            [xx xx out_1] = Roughness_offline(insig1,fs,N,opts,CParams,0);
+            [xx xx out_2] = Roughness_offline(insig2,fs,N,opts,CParams,0);
             
         case 20 % Fluctuation strength, see also r20141126_fluctuation
             
             N = 44100*4; % 8192*4;
             opts.nSkipStart = nSkipStart;
             opts.nSkipEnd   = nSkipEnd;
-            warning('Fluctuation strength: temporal value...')
+            error('Fluctuation strength: not validated yet...')
             [xx out_1] = FluctuationStrength_offline_debug(insig1(1:N),fs1,N,0);
             [xx out_2] = FluctuationStrength_offline_debug(insig2(1:N),fs2,N,0);
             
@@ -1070,148 +1270,6 @@ end
 % % handles    structure with handles and user data (see GUIDATA)
 % 
 % % Hint: get(hObject,'Value') returns toggle state of chParam4
-
-%% Load data
-%   - Executes on button press in btnLoad.
-function btnLoad_Callback(hObject, eventdata, handles)
-% hObject    handle to btnLoad (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-txtFreqmin_Callback(handles.txtFreqmin,[],handles);
-txtFreqmax_Callback(handles.txtFreqmax,[],handles);
-
-dir_out = get(handles.txtOutputDir,'string');
-
-% if output directory is not specified:
-if length(dir_out) == 0 
-    
-    try
-        dir_out = Get_TUe_paths('outputs');
-    catch
-        warning('Type your output dir in the GUI');
-    end
-    set(handles.txtOutputDir,'string',dir_out)
-
-% if output directory it is specified:
-else
-    
-    % it checks whether last character is separator '\' (win) or '/' (unix):
-    if ~strcmp( dir_out(end), delim )
-        dir_out = [dir_out delim];
-    end
-    
-    % creates folder in case it does not exist:
-    Mkdir(dir_out);
-    
-end
-
-filename1 = get(handles.txtFile1,'string');
-filename2 = get(handles.txtFile2,'string');
-
-if strcmp(filename1,'')|strcmp(filename2,'')
-    try
-        % filename1 = [Get_TUe_paths('db_voice_of_dragon') '02-Wav-files' delim '2015-02-wav-files' delim '02-calibrated' delim 'meas-ac-2-close-ane.wav'];
-        % filename2 = [Get_TUe_paths('db_voice_of_dragon') '03-Wav-files-predicted' delim '2015-02-wav-files' delim '02-calibrated' delim 'model-ac-2-close-ane.wav'];
-        filename1 = [Get_TUe_paths('outputs') 'Fastl2007_test_20141126' delim 'fluct_test_bbn_AM_m_000_fmod_004Hz_60_dBSPL.wav'];
-        filename2 = [Get_TUe_paths('outputs') 'Fastl2007_test_20141126' delim 'fluct_test_bbn_AM_m_070_fmod_004Hz_60_dBSPL.wav'];
-    catch
-        warning('Enter you wav filenames...')
-    end
-
-    set(handles.txtFile1    ,'string',filename1);
-    set(handles.txtFile2    ,'string',filename2);
-end
-set(handles.txtOutputDir,'string',dir_out)
-
-handles.audio.G1 = str2num( get(handles.txtGain1,'string') );
-handles.audio.G2 = str2num( get(handles.txtGain2,'string') );
-
-[x1,fs]  = Wavread(filename1);
-[x2,fs2] = Wavread(filename2);
-
-% This sould be the normal case:
-if fs == fs2
-    handles.audio.fs = fs;
-end
-
-if strcmp( get(handles.txtti,'String'), '')
-    set(handles.txtti,'String','1');
-end
-if strcmp(get(handles.txttf,'String'),'' )
-    set(handles.txttf,'String',num2str(min(length(x1),length(x2))));
-end
-
-t1 = ( 0:length(x1)-1 )/fs;
-t2 = ( 0:length(x2)-1 )/fs2;
-
-% set(handles.txtti,'string',num2str(1));
-% set(handles.txttf,'string',num2str(min(length(x1),length(x2))));
-
-txt2display = sprintf('Length: %.3f [s],\n\t %.0f [samples]\nSample rate: %.0f [Hz]\n',max(t1),length(x1),fs); 
-set( handles.txtFile1info,'string',txt2display);
-
-txt2display2 = sprintf('Length: %.3f [s],\n\t %.0f [samples]\nSample rate: %.0f [Hz]\n',max(t2),length(x2),fs2); 
-set( handles.txtFile2info,'string',txt2display2);
-
-txtti_Callback(handles.txtti,[],handles);
-txttf_Callback(handles.txttf,[],handles);
-
-try
-    ti_samples  = handles.audio.ti_samples;
-    tf_samples  = handles.audio.tf_samples;
-catch % Redundant, but first time running needs it (aparently)
-    handles.audio.ti_samples = str2num( get(handles.txtti,'String') );
-    handles.audio.tf_samples = str2num( get(handles.txttf,'String') );
-    ti_samples  = handles.audio.ti_samples;
-    tf_samples  = handles.audio.tf_samples;
-end
-toffset     = str2num( get(handles.txtXoffset,'string') );
-
-if length(ti_samples)==0 & length(tf_samples)==0
-    ti_samples = 1;
-    tf_samples = min( length(x1), length(x2) );
-    set( handles.txtti,'string',num2str(ti_samples) );
-    set( handles.txttf,'string',num2str(tf_samples) );
-end
-
-if ti_samples ~= 1 | (tf_samples ~= length(x1) & tf_samples ~= length(x2) )
-    handles.audio.bGenerateExcerpt = 1;
-    set(handles.txtExcerpt,'visible','on');
-else
-    handles.audio.bGenerateExcerpt = 0;
-    set(handles.txtExcerpt,'visible','off');
-end
-
-xliminf = ti_samples/fs;
-xlimsup = tf_samples/fs;
-
-axes(handles.axes1)
-plot(t1,From_dB(handles.audio.G1)*x1);
-% title( name2figname( filename1 ) )
-xlim([xliminf xlimsup])
-
-axes(handles.axes2)
-try
-    plot(t2(1:end-toffset+1),From_dB(handles.audio.G2)*x2(toffset:end),'r');
-catch
-    plot(t2,From_dB(handles.audio.G2)*x2,'r');
-end
-xlim([xliminf xlimsup])
-
-set(gca,'YTick',[])
-
-lvl_m_30_dBFS = str2num( get(handles.txtCalLevel,'string') );
-
-RMS1 = rmsdb(x1(ti_samples        :tf_samples))+handles.audio.G1+lvl_m_30_dBFS+30; % Zwicker's correction
-RMS2 = rmsdb(x2(ti_samples+toffset:tf_samples))+handles.audio.G2+lvl_m_30_dBFS+30; % Zwicker's correction
-
-set( handles.txtRMS1,'string',sprintf('RMS, file 1 = %.2f [dB SPL]',RMS1) )
-set( handles.txtRMS2,'string',sprintf('RMS, file 2 = %.2f [dB SPL]',RMS2) )
-
-handles.audio.toffset = toffset;
-
-guidata(hObject,handles)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function txtti_Callback(hObject, eventdata, handles)

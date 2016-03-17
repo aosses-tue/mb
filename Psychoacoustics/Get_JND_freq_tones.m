@@ -8,10 +8,10 @@ function JND = Get_JND_freq_tones(f)
 %
 % 3. Stand-alone example:
 %       
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2016
 % Created on    : 27/08/2014
-% Last update on: 27/08/2014 % Update this date manually
-% Last use on   : 27/08/2014 % Update this date manually
+% Last update on: 27/08/2014 
+% Last use on   : 27/08/2014 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 1

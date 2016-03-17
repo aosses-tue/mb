@@ -8,10 +8,11 @@ function [ei, etmp_fd etmpExc_fd] = Terhardt_filterbank(insig_f,fs,N,qb,MinExcdB
 %
 % 3. Additional info:
 %       References: Terhardt1979
-%       See also: Roughness_offline.m
+%       See also: Roughness_offline.m, Terhardt_filterbank_debug.m
 %       Tested cross-platform: No
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2016
+% Version       : 1
 % Created on    : 26/05/2015
 % Last update on: 26/05/2015 
 % Last use on   : 06/01/2016 
@@ -24,8 +25,9 @@ end
 freqs	= (qb+1)*fs/N;
 MinBf   = MinExcdB(zb);
 
-Lg		= abs(insig_f(qb));
-LdB		= To_dB(Lg);
+Lamp    = abs(insig_f(qb));     % It takes only the frequencies of interest
+
+LdB		= To_dB(Lamp);
 LdB_idx	= find(LdB>MinExcdB); % index of levels above threshold
 nL	    = length(LdB_idx);
 
@@ -35,7 +37,7 @@ S2 = zeros(1,nL);
 
 for idx = 1:1:nL;
     % Steepness of upper slope [dB/Bark] in accordance with Terhardt
-    steepT  = -24-(230/freqs(LdB_idx(idx)))+(0.2*LdB(LdB_idx(idx)));
+    steepT = -24-(230/freqs(LdB_idx(idx)))+(0.2*LdB(LdB_idx(idx)));
 
     if steepT < 0
         S2(idx) = steepT;
@@ -94,13 +96,13 @@ for k=1:1:Chno % each critical band k
         N1tmp = LdB_idx(l);
         N2tmp = N1tmp + N01;
         if (whichZ(1,l) == k)
-            ExcAmp(N1tmp, k) = 1;
+            ExcAmp(N1tmp, k) = 1; % no gain, no attenuation (component within critical band)
         elseif (whichZ(2,l) == k)
-            ExcAmp(N1tmp, k) = 1;
+            ExcAmp(N1tmp, k) = 1; % no gain, no attenuation (component within critical band)
         elseif (whichZ(2,l) > k)
-            ExcAmp(N1tmp,k) = Slopes(l,k+1)/Lg(N1tmp);
+            ExcAmp(N1tmp,k) = Slopes(l,k+1)/Lamp(N1tmp); % attenuation, freq component outside critical band
         else
-            ExcAmp(N1tmp,k) = Slopes(l,k-1)/Lg(N1tmp);
+            ExcAmp(N1tmp,k) = Slopes(l,k-1)/Lamp(N1tmp); % attenuation, freq component outside critical band
         end
         etmp(N2tmp)     = ExcAmp(N1tmp,k)*insig_f(N2tmp); 
         etmpExc(N2tmp)  = ExcAmp(N1tmp,k);

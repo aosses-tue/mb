@@ -33,8 +33,8 @@ if size(fout,2) < size(fout,1)
 	fout = fout';
 end
 
-[t_pa,w,t_sb,t_sa,t_pb] = ch_staticParamDLM;
-[h, t, erd] = ch_tep_window(t_pb, t_pa, t_sb, t_sa, w, fs);
+[t_pa,w,t_sb,t_sa,t_pb] = staticParamDLM;
+[h, t, erd] = tep_window(t_pb, t_pa, t_sb, t_sa, w, fs);
 h = fliplr(h.^2)'; %due to convolution and intensity; 
 
 dauer   = erd*fs;

@@ -1,6 +1,11 @@
 function [note, GluedNote] = freq2note(freq)
 % function [note, GluedNote] = freq2note(freq)
 %
+% 1. Description:
+%
+% 2. Stand-alone example:
+%       freq = 27.5; % Hz
+%       [note GluedNote] = freq2note(freq)
 % Programmed by Matthias, updated by Alejandro
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

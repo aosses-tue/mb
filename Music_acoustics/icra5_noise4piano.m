@@ -91,8 +91,7 @@ for i=1:Nbands
     r(:,i) = setdbspl( r(:,i),interimRMS(i) );
 end
 
-r=sum(r,2);
-
+r         = sum(r,2);
 RMSbefore = rmsdb(r)+100;
 r         = il_randomise_phase(r); % it can increase or decrease the level
 
@@ -106,15 +105,10 @@ info4pede.fs     = fs;
 info4pede.Length = length(r);
 
 if nargout >= 3
-    noise   = AM_random_noise(20,8000,60,5,fs); % 5-seconds white noise
-        
-    pede_sample = auditoryfilterbank(noise,fs);
-    pede_sample = pede_sample(1:length(r),:);
-    for i = 1:size(pede_sample,2)
-        pede_sample(:,i) = setdbspl(pede_sample(:,i),info4pede.RMS(i)+100);
-    end
-    pede_sample = sum(pede_sample,2);
-    pede_sample = setdbspl(pede_sample,info4pede.RMStot+100);
+    
+    SNR_dB = 0;
+    pede_sample = icra_noise4piano_pedestal(r,fs,info4pede.RMS,SNR_dB);
+    
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -150,15 +144,15 @@ end
 function r=il_schroeder(d)
 r=d.*sign(rand(length(d),1)-0.5);
 
-function r=il_randomise_phase(d)
-N=512;      % window length
-hop=512/8;
-window=hamming(N);
-r=zeros(length(d),1);
+function r = il_randomise_phase(d)
+N      = 512; % window length
+hop    = 512/8;
+window = hamming(N);
+r      = zeros(length(d),1);
 for i=0:round(length(d)/hop)-1-N/hop
-   from=i*hop+1;
-   to=i*hop+N;
-   stuk=fft(d(from:to).*window,N);
-   stuk=stuk.*exp(j*rand(N,1)*2*pi);
+   from = i*hop+1;
+   to   = i*hop+N;
+   stuk = fft(d(from:to).*window,N);
+   stuk = stuk.*exp(j*2*pi*rand(N,1));
    r(from:to)=r(from:to)+real(ifft(stuk));
 end

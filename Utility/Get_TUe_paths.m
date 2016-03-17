@@ -103,6 +103,7 @@ misc.FluctuationStrength= [misc.Psychoacoustics 'FluctuationStrength_Garcia' del
 misc.FluctuationStrength_Sontacchi= [misc.Psychoacoustics 'FluctuationStrength_Sontacchi' delim];
 misc.Reports            = [misc.MATLAB   'Reports'         delim];
 misc.Reports_KUL        = [misc.MATLAB   'Reports_KUL'     delim];
+misc.Roughness_Daniel   = [misc.Psychoacoustics 'Roughness_Daniel'   delim];
 misc.Roughness_Duisters = [misc.Psychoacoustics 'Roughness_Duisters' delim];
 misc.Speech             = [misc.MATLAB   'Speech'          delim];
 misc.ltass              = [misc.Speech   'LTASS'           delim];
@@ -128,6 +129,7 @@ misc.tb_SP15AddOns      = [misc.MATLAB   'tb_SP15_AddOns'  delim];
 % misc.FluctuationStrength_TestTones = [misc.outputs 'FS_test_tones' delim]; % temporal folder
 
 misc.tb_APEX            = [misc.MATLAB   'tb_APEX'         delim];
+misc.tb_APEX_templates  = [misc.tb_APEX  'a3templates'     delim];
 misc.tb_APEX_AddOns     = [misc.MATLAB   'tb_APEX_AddOns'  delim];
 misc.tb_APEX_tools      = [misc.tb_APEX  'tools'           delim];
 misc.tb_Loudness_v12    = [misc.MATLAB   'tb_Loudness_v12' delim];

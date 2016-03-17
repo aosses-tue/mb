@@ -10,19 +10,19 @@ function [y t] = Create_sin(f,dur,fs,window)
 %       1 = hanning
 %       2 = triangular
 %
-% 2. Additional info:
-%   Tested cross-platform: No
-%
-% 3. Stand-alone example, sine wave with default values:
+% 2. Stand-alone example, sine wave with default values:
 %   f       = 1000;
 %   dur     = 20e-3;
 %   [y, t]  = Create_sin(f,dur);
 %   plot(t,y); xlabel('time [s]'); ylabel('Amplitude')
 % 
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
+% 3. Additional info:
+%   Tested cross-platform: Yes
+%
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2016
 % Created on    : 26/05/2014
 % Last update on: 26/06/2014 
-% Last use on   : 25/09/2015 
+% Last use on   : 16/03/2016 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 1
@@ -48,9 +48,14 @@ w = 2*pi*f;
 y =  sin(w*t);
 T = 1/f;
 
-[win, wtype] = Get_window(window,y);
-
-y = y.*win;
+try
+    [win, wtype] = Get_window(window,y);
+    y = y.*win;
+catch
+    if window ~= 0
+        error('The window has not been applied, use window = 0 (rectangular) otherwise get the script Get_window');
+    end
+end
 
 if nargout == 0
     plot(t,y);

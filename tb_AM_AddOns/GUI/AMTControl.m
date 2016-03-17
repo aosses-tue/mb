@@ -40,7 +40,7 @@ function varargout = AMTControl(varargin)
 % 
 % Created on        : 30/07/2015
 % Last modified on  : 02/09/2015
-% Last used on      : 02/09/2015 % Remember to check compatibility with template_PsySoundCL.m
+% Last used on      : 12/02/2016 % Remember to check compatibility with template_PsySoundCL.m
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -144,8 +144,8 @@ if strcmp(filename1,'')|strcmp(filename2,'')
 end
 set(handles.txtOutputDir,'string',dir_out)
 
-G1 = str2num( get(handles.txtGain1,'string') );
-G2 = str2num( get(handles.txtGain2,'string') );
+G1 = str2num( get(handles.txtGain1,'string') ); handles.audio.G1 = G1;
+G2 = str2num( get(handles.txtGain2,'string') ); handles.audio.G2 = G2;
 
 [insig1,fs]  = Wavread(filename1);
 [insig2,fs2] = Wavread(filename2);
@@ -274,7 +274,7 @@ else
 end
 
 dBFS = lvl_m_30_dBFS+30+adjustmentvalue;
-RMS1 = rmsdb(insig1) + dBFS; % Zwicker's correction
+RMS1 = rmsdb(insig1) + dBFS; 
 RMS2 = rmsdb(insig2) + dBFS; 
 
 thres_silence = 1/3; % one-third of the median value of the envelope 
@@ -315,9 +315,7 @@ if bDFT
     
 end
 
-% if get(handles.popNavg,'value') ~= 1 % then file 1 should be 'running'
-   handles.audio.insig1orig = insig1_orig;     
-% end
+handles.audio.insig1orig = insig1_orig;     
 handles.audio.insig1 = insig1;
 handles.audio.insig2 = insig2;
 handles.audio.G1 = G1;
@@ -1118,8 +1116,8 @@ else % if NOT PsySound
     callevel = str2num( get(handles.txtCalLevel,'string') ); % rms 90 dB SPL = 0 dBFS 
     warning('callevel not used at all for m-file scripts...');
     
-    insig1 = handles.audio.insig1; % [insig1 fs1] = Wavread(filename1);
-    insig2 = handles.audio.insig2; % [insig2 fs2] = Wavread(filename2);
+    insig1 = handles.audio.insig1; 
+    insig2 = handles.audio.insig2; 
     
     lvl_m_30_dBFS = str2num( get(handles.txtCalLevel,'string') );
     calvalue = lvl_m_30_dBFS-70; 
