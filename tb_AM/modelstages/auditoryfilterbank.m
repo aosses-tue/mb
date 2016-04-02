@@ -1,5 +1,5 @@
-function [outsig, fc] = auditoryfilterbank(insig, fs, varargin)
-% function [outsig, fc] = auditoryfilterbank(insig, fs, varargin)
+function [outsig, fc, gt_b, gt_a] = auditoryfilterbank(insig, fs, varargin)
+% function [outsig, fc, gt_b, gt_a] = auditoryfilterbank(insig, fs, varargin)
 % 
 %   1. Description:
 %     	Linear auditory filterbank

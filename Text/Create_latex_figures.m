@@ -23,10 +23,10 @@ function Create_latex_figures(p)
 %       p.FigWidth = 1;
 %       Create_latex_figures(p); % when asked, select the figures folder
 %
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2016
 % Created on    : 16/05/2014
-% Last update on: 30/06/2014 % Update this date manually
-% Last used on  : 22/10/2014 % Update this date manually
+% Last update on: 30/06/2014 
+% Last used on  : 01/04/2016 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin == 0
@@ -34,12 +34,12 @@ if nargin == 0
 end
 
 disp('Select directory where *.eps files are located...')
-figurepath      = uigetdir;
+figurepath      = uigetdir(Get_TUe_paths('outputs'));
 figurepath      = [figurepath delim];
 suffix          = 'eps';
 
-misc.lx_Templates = Get_TUe_paths('lx_Templates');
-misc.lx_Text      = Get_TUe_paths('lx_Text'     );
+misc.lx_Templates = Get_TUe_data_paths('lx_Templates');
+misc.lx_Text      = Get_TUe_data_paths('lx_Text'     );
 % style             = 'wu.tex';
 style             = 'doc_plain.tex';
 templateheader    = 'latex-fig-template-header.tex';

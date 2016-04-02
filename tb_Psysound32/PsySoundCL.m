@@ -16,6 +16,7 @@ function [output h ha] = PsySoundCL(filename,option,params)
 %           option.nAnalyser = 10; % ThirdOctaveBand(fh);
 %           option.nAnalyser = 11; % CPBFFT(fh);
 %           option.nAnalyser = 12; % LoudnessCF(fh);
+%           option.nAnalyser = 13; % LoudnessMGB(fh);
 %           option.nAnalyser = 15; % RoughnessDW(fh);
 %           option.nAnalyser = 20; % FluctuationStrength(fh);
 %       st - to pass config parameters to object
@@ -100,21 +101,21 @@ if ~isfield(option,'calfile')
     switch bCal
         case 1
             option.calfile = filename;
-            option.calfile = [Get_TUe_paths('db_calfiles') 'track_03.wav']; %white noise, adjusted to AMT convention
+            option.calfile = [Get_TUe_data_paths('db_calfiles') 'track_03.wav']; %white noise, adjusted to AMT convention
             option.callevel = 70;
         case 2
-            option.calfile = [Get_TUe_paths('db_fastl2007') 'track_03.wav']; %white noise
+            option.calfile = [Get_TUe_data_paths('db_fastl2007') 'track_03.wav']; %white noise
             option.callevel = 60;
         case 3
-            tmp = Get_TUe_subpaths('db_speechmaterials');
+            tmp = Get_TUe_data_paths('db_speechmaterials');
             option.calfile = [tmp.allfiles_PB 'whitenoise-f.wav']; % white noise
             option.callevel = 65;
         case 4
-            tmp = Get_TUe_subpaths('db_speechmaterials');
+            tmp = Get_TUe_data_paths('db_speechmaterials');
             option.calfile = [tmp.allfiles_PB 'whitenoise-m.wav']; % white noise
             option.callevel = 65;
         case 5
-            tmp = Get_TUe_subpaths('db_speechmaterials');
+            tmp = Get_TUe_data_paths('db_speechmaterials');
             option.calfile = [tmp.allfiles_LISTf 'wivineruis.wav']; % SSN
             option.callevel = 65;
     end
@@ -260,10 +261,6 @@ if nAnalyser == 1
     
     f   = get(tmpObj{1,2},'Freq'); % 1:fs/2
     
-elseif nAnalyser == 12 | nAnalyser == 15 | nAnalyser == 20
-    
-    z   = get(tmpObj{1,2},'Freq'); % 1:24
-    
 elseif nAnalyser == 10 
     
     f_cell = get(tmpObj{1,2},'Freq');
@@ -285,6 +282,14 @@ elseif nAnalyser == 11
     for i=1:length(f_cell)
         f_octv(i) = str2num(f_cell{i});
     end
+    
+elseif nAnalyser == 12 | nAnalyser == 15 | nAnalyser == 20
+    
+    z   = get(tmpObj{1,2},'Freq'); % 1:24
+
+elseif nAnalyser == 13;
+    
+    t   = get(tmpObj{1,1},'Time');
     
 end
        
@@ -606,6 +611,10 @@ switch nAnalyser
         output.Data3 = Data3;
         output.name{nParam} = get(tmpObj{1,nParam},'Name');
         output.param{nParam}    = strrep( lower( output.name{nParam} ),' ','-');
+        
+        output.Data1    = Data1; % Param 1: Instantaneous Loudness
+        output.Data2    = Data2; % Param 2: Short-term Loudness
+        output.Data3    = Data3; % Param 3: Long-term Loudness
         
     case 15
         

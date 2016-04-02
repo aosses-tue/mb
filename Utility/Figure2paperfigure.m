@@ -10,10 +10,10 @@ function hOutput = Figure2paperfigure(nHandle,numRows,numCols)
 %
 % 3. Stand-alone example:
 %       
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2016
 % Created on    : 26/09/2014
 % Last update on: 26/09/2014 
-% Last use on   : 07/01/2015 
+% Last use on   : 22/03/2016 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 2

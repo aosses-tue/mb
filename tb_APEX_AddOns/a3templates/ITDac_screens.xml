@@ -1,0 +1,32 @@
+<screens>
+    <reinforcement>
+        <progressbar>true</progressbar>
+        <feedback length="500">false</feedback>
+        <showcurrent>false</showcurrent>
+    </reinforcement>
+    
+    <screen id="screen">
+<gridLayout height="2" width="1">
+    <label x="1" y="1" id="uitleg">
+        <text>Klinkt het tweede geluid links of rechts van het eerste?</text>
+    </label>
+
+      <gridLayout height="1" width="2" x="1" y="2">
+        <button x="1" y="1" id="buttonL">
+          <shortcut>LeftArrow</shortcut>
+          <text>Links</text>
+        </button>
+        <button x="2" y="1" id="buttonR">
+          <shortcut>RightArrow</shortcut>
+          <text>Rechts</text>
+        </button>
+
+      </gridLayout>
+</gridLayout>
+	<buttongroup id="buttongroup1">
+      	<button id="buttonL"/>
+        <button id="buttonR"/>
+	</buttongroup>
+      <default_answer_element>buttongroup1</default_answer_element>
+    </screen>
+</screens>

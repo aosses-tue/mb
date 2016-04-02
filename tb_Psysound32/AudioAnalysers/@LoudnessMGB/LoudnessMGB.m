@@ -1,6 +1,35 @@
 function obj = LoudnessMGB(varargin)
-% LoudnessMGB Constructor
+% function obj = LoudnessMGB(varargin)
 %
+% 1. Description:
+%       This is the constructor for LoudnessMGB: 'Model for estimating the 
+%       loudness of time-varying sounds' following Moore, Glasberg and Baer. 
+%     
+%       'THIS ANALYSER IS SLOW, therefore test a short duration recording first.
+% 
+%     References:
+%       B.R. Glasberg and B.C.J. Moore. 1990. 'Derivation of Auditory Filter 
+%           Shapes from Notched Noise Data. Hearing Research, 47: 103-137.
+% 
+%       B.C.J. Moore, B.R. Glasberg and T. Baer. 1997. A Model for the 
+%           Prediction of Thresholds, 'Loudness, and Partial Loudness. 
+%           Journal of the Audio Engineering Society, 45(4): 224-240.
+%
+%       B.R. Glasberg and B.C.J. Moore. 2002. A Model of Loudness Applicable 
+%           to Time-Varying Sounds. Journal of the Audio Engineering 
+%           Society, 50(5): 331-342. 
+% 
+%       B.R. Glasberg and B.C.J. Moore. 2006. Prediction of absolute 
+%           thresholds and equal-loudness contours using a modified loudness 
+%           model. J. Acoust. Soc. Am. 120: 585-588.
+% 
+%       B.C.J. Moore and B.R. Glasberg. 2007. Modelling Binaural Loudness
+%           J. Acoust. Soc. Am. 121: 1604-1612
+%
+% Code by D Cabrera, D Lee & S Ferguson.
+% Some additional comments by Alejandro Osses V., TU/e Eindhoven 2014-2016
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 obj = struct('filterMethod',1);
 
 switch nargin

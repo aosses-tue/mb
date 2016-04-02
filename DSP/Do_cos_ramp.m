@@ -1,5 +1,5 @@
-function y = Do_cos_ramp(x,fs,attack_ms,release_ms)
-% function y = Do_cos_ramp(x,fs,attack,release)
+function outsig = Do_cos_ramp(insig,fs,attack_ms,release_ms)
+% function outsig = Do_cos_ramp(insig,fs,attack,release)
 %
 % 1. Description:
 %       Applies a cosine ramp with attack and release times given in [ms]
@@ -9,10 +9,10 @@ function y = Do_cos_ramp(x,fs,attack_ms,release_ms)
 %
 % 3. Stand-alone example:
 %       
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2016
 % Created on    : 20/08/2014
-% Last update on: 20/08/2014 % Update this date manually
-% Last use on   : 20/08/2014 % Update this date manually
+% Last update on: 20/08/2014 
+% Last use on   : 24/03/2016 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 2
@@ -28,12 +28,12 @@ if nargin < 4
     release_ms = attack_ms;
 end
 
-sig_len = length(x);
+sig_len = length(insig);
 r =  cos_ramp(sig_len,fs,attack_ms,release_ms);
 try
-    y = transpose(r).*x;
+    outsig = transpose(r).*insig;
 catch
-    y = r.*x;
+    outsig = r.*insig;
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

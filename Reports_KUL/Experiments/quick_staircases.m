@@ -7,25 +7,32 @@ function [SRT Stdev filenames] = quick_staircases(directories2check, opts, dest_
 %       Valid for 1 directory at a time
 % 
 % 2. Stand-alone example:
-% % Example 2015:
-%   dir2check = {'D:\Documenten-TUe\02-Experiments\2015-APEX-my-experiments\Experiments\Roughness\'};
-%   quick_staircases(dir2check);
+% % 2.1. Example 2015:
+%       dir2check = {'D:\Documenten-TUe\02-Experiments\2015-APEX-my-experiments\Experiments\Roughness\'};
+%       quick_staircases(dir2check);
 % 
-% % Example 2012-2013 (Ubuntu computer):
-%   directories2check = {   'ci-Jean-Baptiste_Daumerie/20131016-LT/', ...
-%                           'ci-Jean-Baptiste_Daumerie/20131022-LT/', ...
-%                           'nh-Anneke_Lenssen/20130806-LT/'};
-%   hoofd_folder = '~/Documenten/Meas/Meas/Experiments/Results_XML/';
-%   dest_folder  = [hoofd_folder 'ci_pooled/Figures/'];
-%   quick_staircases(directories2check, dest_folder, hoofd_folder);
+% % 2.2.  Example 2012-2013 (Ubuntu computer):
+%       directories2check = {   'ci-Jean-Baptiste_Daumerie/20131016-LT/', ...
+%                               'ci-Jean-Baptiste_Daumerie/20131022-LT/', ...
+%                               'nh-Anneke_Lenssen/20130806-LT/'};
+%       hoofd_folder = '~/Documenten/Meas/Meas/Experiments/Results_XML/';
+%       dest_folder  = [hoofd_folder 'ci_pooled/Figures/'];
+%       quick_staircases(directories2check, dest_folder, hoofd_folder);
 %
+% % 2.3 Example 2016 (Windows computer), using one input file:
+%       file = 'D:\Documenten-TUe\02-Experiments\2015-APEX-my-experiments\Piano\Pilot-ICRA-v2\Stage-4-Multiprocedure\piano-P1-P7-A4-multi-test.apr';
+%       opts.bPlot = 1; % if you want to plot the figure
+%       opts.bSave = 1; % if you want to save the figure
+%       quick_staircases(file,opts);      
+% 
 % 3. Additional info:
 %       Tested cross-platform: Yes
+%       See also: r20150313_update.m
 %
 % Programmed by Alejandro Osses, ExpORL, KU Leuven, Belgium, 2012-2013
 % Created in    : 2012-2013
-% Last update on: 13/03/2015 
-% Last use on   : 13/03/2015 
+% Last update on: 30/03/2016 
+% Last use on   : 30/03/2016 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 5
@@ -60,7 +67,7 @@ bPlot   = opts.bPlot;
 SRT = [];
 
 FontSize = 14;
-N       = 25;
+N        = 10;
 
 Stairs  = [];
 % ymin    = -5;
@@ -83,10 +90,16 @@ for j = 1
         else
             file = files{1};
         end
-        tmp_staircase = a3adaptiveresults(file);
-        Stairs = [Stairs; nan(1,N)];
-        NumProcedures = 1;
-
+        [tmp_staircase xx procID] = a3adaptiveresults(file);
+        
+        Nprocedures = length(fieldnames(tmp_staircase));
+        for k = 1:Nprocedures
+            N = max(N, length(tmp_staircase.(procID{k})));
+        end
+            
+        % Stairs = nan(1,N); 
+        Stairs = nan(Nprocedures,N);
+        
         if ~isstruct( tmp_staircase );
             
             switch mode
@@ -98,53 +111,51 @@ for j = 1
                     SRT(i,1) = median(Md);
                     Stdev = std(tmp_staircase(end-N4mean+1:end));
             end
-            Stairs(end,1:length(tmp_staircase)) = tmp_staircase';
+            Stairs(1,1:length(tmp_staircase)) = tmp_staircase';
             
         else
             switch mode
                 case 'mean'
-                    SRT(i,1) = mean(tmp_staircase.procedure1(end-N4mean+1:end));
-                    Stdev(i,1) = std(tmp_staircase.procedure1(end-N4mean+1:end));
+                    SRT(i,1) = mean(tmp_staircase.(procID{1})(end-N4mean+1:end));
+                    Stdev(i,1) = std(tmp_staircase.(procID{1})(end-N4mean+1:end));
                 case 'median'
-                    Md = Get_mAFC_reversals(tmp_staircase.procedure1);
+                    Md = Get_mAFC_reversals(tmp_staircase.(procID{1}));
                     SRT(i,1) = median(Md(end-N4mean+1:end));
                     Stdev(i,1) = std(Md(end-N4mean+1:end));
             end
-            Stairs(end,1:length(tmp_staircase.procedure1)) = tmp_staircase.procedure1';
-            
-
-            for k = 2:length(fieldnames(tmp_staircase)) 
+            Stairs(1,1:length(tmp_staircase.(procID{1}))) = tmp_staircase.(procID{1})';
+       
+            for k = 2:Nprocedures
                 switch mode
                     case 'mean'
-                        exp = sprintf('SRT(i,%.0f) = mean(tmp_staircase.procedure%.0f(end-%.0f+1:end));',k,k,N4mean);
+                        exp = sprintf('SRT(i,%.0f) = mean(tmp_staircase.(procID{%.0f})(end-%.0f+1:end));',k,k,N4mean);
                         eval(exp);
-                        exp = sprintf('Stdev(i,%.0f) = std(tmp_staircase.procedure%.0f(end-%.0f+1:end));',k,k,N4mean);
+                        exp = sprintf('Stdev(i,%.0f) = std(tmp_staircase.(procID{%.0f})(end-%.0f+1:end));',k,k,N4mean);
                         eval(exp);
                     case 'median'
-                        exp = sprintf('Md = Get_mAFC_reversals(tmp_staircase.procedure%.0f);',k);
+                        exp = sprintf('Md = Get_mAFC_reversals(tmp_staircase.(procID{%}).0f);',k);
                         eval(exp);
                         exp = sprintf('SRT(i,%.0f) = median(Md(end-%.0f+1:end));',k,N4mean);
                         eval(exp);
                         exp = sprintf('Stdev(i,%.0f) = std(Md(end-%.0f+1:end));',k,N4mean);
                         eval(exp);
                 end
-                exp = sprintf('Stairs(end,1:length(tmp_staircase.procedure%.0f)) = tmp_staircase.procedure%.0f;',k,k);
+                exp = sprintf('Stairs(k,1:length(tmp_staircase.(procID{%.0f}))) = tmp_staircase.(procID{%.0f});',k,k);
                 eval(exp)
                 
-                NumProcedures = NumProcedures + 1;
             end
         end
 
         if bPlot
             figure
         end
-        for k = 1:NumProcedures
+        for k = 1:Nprocedures
             if bPlot
-                subplot(NumProcedures,1,k)
-                plot(1:N, Stairs(end,:),'ro','LineWidth',4), hold on
+                subplot(Nprocedures,1,k)
+                plot(1:N, Stairs(k,:),'ro','LineWidth',4), hold on
                 plot([0 N],[SRT(i,k) SRT(i,k)],'k--','LineWidth',2)
 
-                plot(1:N, Stairs(end,:))
+                plot(1:N, Stairs(k,:))
                 hxLabel = xlabel('Trial number');
                 set(hxLabel,'FontSize',FontSize)
                 hyLabel = ylabel('Signal-to-noise ratio (dB)');
@@ -153,19 +164,41 @@ for j = 1
                 set(hLegend,'Location','NorthWest')
                 set(hLegend,'FontSize',FontSize)
 
-                if NumProcedures == 1
-                    hTitle = title(name2figname(files(i).name));
+                if Nprocedures == 1
+                    try
+                        hTitle = title(name2figname(files(i).name));
+                    catch
+                        hTitle = title(name2figname(files{i}));
+                    end
                 else
-                    tmp = fieldnames(tmp_staircase);
-                    hTitle = title( [name2figname(files(i).name) ' - ' tmp{k}]);
+                    try
+                        tmp = fieldnames(tmp_staircase);
+                        hTitle = title( [name2figname(files(i).name) ' - ' tmp{k}]);
+                    catch
+                        for_title = procID{k};
+                        hTitle = title(for_title);
+                    end
+                    
                 end
 
-                set(hTitle,'FontSize',FontSize)
+                try
+                    set(hTitle,'FontSize',FontSize)
+                end
                 % ylim([ymin ymax])
                 grid on
             end
-            filenames{i} = files(i).name;
-            name2save = strsplit(files(i).name,'.');
+            
+            try
+                filenames{i} = files(i).name;
+            catch
+                filenames{i} = files{i};
+            end
+            try
+                name2save = strsplit(filenames{i},'.');
+                name2save = name2save{1};
+                name2save = strsplit(name2save,delim);
+                name2save = name2save{end};
+            end
         end
 
         if bSave

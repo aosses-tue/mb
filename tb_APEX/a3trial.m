@@ -1,4 +1,6 @@
-function temp=a3trial(id, screen, stimuli, answer, standards)
+function temp=a3trial(id_names, id_screen, stimuli, answer, standards)
+% function temp=a3trial(id_names, id_screen, stimuli, answer, standards)
+%
 % result=a3trial(id, screen, stimuli, answer, standards)
 %
 % id
@@ -6,7 +8,8 @@ function temp=a3trial(id, screen, stimuli, answer, standards)
 % stimuli
 % answer
 % standards
-
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (nargin<4)
     answer='';
 end
@@ -17,11 +20,11 @@ end
 lf=sprintf('\n');
 tb=sprintf('\t');
 
-temp=['<trial id="' id '">' lf];
+temp=['<trial id="' id_names '">' lf];
 if (length(answer)~=0)
     temp=[temp tb '<answer>' answer '</answer>' lf];
 end
-temp=[temp tb '<screen id="' screen '"/>' lf];
+temp=[temp tb '<screen id="' id_screen '"/>' lf];
 if (iscell(stimuli))
     for i=1:length(stimuli)
         temp=[temp tb '<stimulus id="' stimuli{i} '"/>' lf];

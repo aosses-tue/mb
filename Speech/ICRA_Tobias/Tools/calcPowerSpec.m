@@ -89,8 +89,7 @@ spec = spec / sqrt(nfft);
 % Compute power spectrum
 pspec = spec .* conj(spec);
 
-% Take positive frequencies times two (to reflect energy of negative
-% frequencies) 
+% Take positive frequencies times two (to reflect energy of negative frequencies) 
 if rem(nfft,2)
     % Single-sided power spectrum is odd, only DC is unique
     pspec(2:end,:) = pspec(2:end,:) * 2;

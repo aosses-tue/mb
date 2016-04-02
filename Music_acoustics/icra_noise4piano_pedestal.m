@@ -1,5 +1,5 @@
-function outsig = icra_noise4piano_pedestal(insig,fs,RMSrel,SNR,fcmin,fcmax)
-% function outsig = icra_noise4piano_pedestal(insig,fs,RMSrel,SNR,fcmin,fcmax)
+function [outsig signal_plus_pede] = icra_noise4piano_pedestal(insig,fs,RMSrel,SNR,fcmin,fcmax)
+% function [outsig signal_plus_pede] = icra_noise4piano_pedestal(insig,fs,RMSrel,SNR,fcmin,fcmax)
 %
 % 1. Description:
 %
@@ -28,7 +28,7 @@ if nargin < 6
     fcmax = max(fc); 
 end
 
-rms_Buf = rmsdb_sec(insig,fs,350e-3);
+rms_Buf = rmsdb_sec(insig,fs,10e-3);
 rms_Buf = max(rms_Buf); % max peak value
 
 erbmin = freqtoaud(min(fcmin))-0.5;
@@ -39,12 +39,16 @@ fmax   = audtofreq(erbmax);
 noise  = AM_random_noise(fmin,fmax,60,5,fs); % 5-seconds white noise
 
 pede_sample = auditoryfilterbank(noise,fs);
-pede_sample = pede_sample(1:length(insig),:);
+% pede_sample = pede_sample(1:length(insig),:);
 for i = 1:size(pede_sample,2)
     pede_sample(:,i) = From_dB(RMSrel(i))*pede_sample(:,i);
 end
 pede_sample = sum(pede_sample,2);
 outsig = setdbspl(pede_sample,rms_Buf-SNR+100); % should be respect to the maximum value...
+
+% pede_sample = pede_sample(1:length(insig),:);
+
+signal_plus_pede = insig + outsig(1:length(insig));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end

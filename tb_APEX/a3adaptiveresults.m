@@ -1,12 +1,19 @@
-function [sequence,stimuli]=a3adaptiveresults(filename,xsltscript,forcetransform)
-% function [sequence,stimuli]=a3adaptiveresults(filename,xsltscript,forcetransform)
+function [sequence,stimuli, procID]=a3adaptiveresults(filename,xsltscript,forcetransform)
+% function [sequence,stimuli, procID]=a3adaptiveresults(filename,xsltscript,forcetransform)
 %
 % 1. Description:
-%       Return adaptive staircase from APEX 3 results file
+%       Return adaptive staircase from APEX 3 results file.
 %
-% % Example:
-% filename = '~/Documenten/Meas/Meas/Experiments/Results_XML/ci-Jean-Baptiste_Daumerie/20131016-LT/SPIN-LIST-vrouw_30-LISTvrouw_ltass-results-baseline-JB.apr'; 
-% [sequence,stimuli]=a3adaptiveresults(filename);
+% 2. Stand-alone example:
+%       filename = '~/Documenten/Meas/Meas/Experiments/Results_XML/ci-Jean-Baptiste_Daumerie/20131016-LT/SPIN-LIST-vrouw_30-LISTvrouw_ltass-results-baseline-JB.apr'; 
+%       [sequence,stimuli]=a3adaptiveresults(filename);
+% 
+% 3. Additional information:
+%       Tested cross-platform: yes
+% 
+% Programmed by ExpORL, KU Leuven, Belgium, 2012-2014
+% Comments by Alejandro Osses V.
+% Last used on: 30/03/2016
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if (nargin<2)
@@ -54,14 +61,22 @@ else        % Multiprocedure
 %     end
 %     uproc = sort(unique(procid));
     
-    sequences = struct;
+    sequences   = struct;
+    
     for i=1:length(s)
+        
         proc = s(i).procedure;
+        procID{i} = proc;
+        stimuli.(proc){i} = {s(i).stimulus};
+        
         if (~isfield(sequences, proc))
             sequences.(proc) = [];
         end
         sequences.(proc) = [sequences.(proc) str2num(s(i).adaptiveparameter)];
+        
     end
 
     sequence = sequences;
 end
+
+procID = unique(procID);

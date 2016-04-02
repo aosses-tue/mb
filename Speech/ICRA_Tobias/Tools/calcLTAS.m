@@ -1,9 +1,9 @@
-function [ltasdB,fHz] = calcLTAS(input,fsHz,blockSec,stepSec,winType)
+function [ltasdB,fHz,cal] = calcLTAS(input,fsHz,blockSec,stepSec,winType)
 %calcLTAS   Compute the long-term average spectrum (LTAS) via FFT.
 % 
 %USAGE
-%   [ltasdB,fHz] = calcLTAS(mix,fsHz)
-%   [ltasdB,fHz] = calcLTAS(mix,fsHz,blockSec,stepSec,winType)
+%   [ltasdB,fHz,cal] = calcLTAS(mix,fsHz)
+%   [ltasdB,fHz,cal] = calcLTAS(mix,fsHz,blockSec,stepSec,winType)
 % 
 %INPUT ARGUMENTS
 %      input : input signal [nSamples x 1]
@@ -15,6 +15,8 @@ function [ltasdB,fHz] = calcLTAS(input,fsHz,blockSec,stepSec,winType)
 %OUTPUT ARGUMENTS
 %     ltasdB : single-sided LTAS in dB [nRealFreq x 1]
 %        fHz : vector of frequencies in Hz [nRealFreq x 1]
+%        cal : amplitude to be summed in order to get a scaled output levels 
+%              (approximation by A. Osses)
 % 
 %   calcLTAS(...) plots the LTAS in a new figure.
 % 
@@ -40,7 +42,7 @@ if nargin < 2 || nargin > 5
 end
 
 % Set default values
-if nargin < 3 || isempty(blockSec); blockSec = 20E-3;        end
+if nargin < 3 || isempty(blockSec); blockSec = 8192/44100;   end % about 185 ms
 if nargin < 4 || isempty(stepSec);  stepSec  = blockSec / 2; end
 if nargin < 5 || isempty(winType);  winType  = 'hamming';    end
 
@@ -48,7 +50,6 @@ if nargin < 5 || isempty(winType);  winType  = 'hamming';    end
 if min(size(input)) > 2
     error('Monaural input is required!')
 end
-
 
 %% COMPUTE BLOCK PROCESSING PARAMETERS
 % 
@@ -58,9 +59,7 @@ overlap   = blockSize - stepSize;
 nfft      = pow2(nextpow2(blockSize));
 winFct    = window(winType,blockSize);
 
-
 %% COMPUTE LTAS
-%
 % Compute power spectrum
 [pspec,fHz] = calcPowerSpec(input, fsHz, winFct, overlap, nfft);
 
@@ -70,6 +69,7 @@ ltas = nanmean(pspec, 2);
 % Scale LTAS to dB
 ltasdB = 10 * log10(ltas);
 
+cal = 57;
 
 %% PLOT RESULT
 % 

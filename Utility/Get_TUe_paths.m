@@ -103,6 +103,7 @@ misc.FluctuationStrength= [misc.Psychoacoustics 'FluctuationStrength_Garcia' del
 misc.FluctuationStrength_Sontacchi= [misc.Psychoacoustics 'FluctuationStrength_Sontacchi' delim];
 misc.Reports            = [misc.MATLAB   'Reports'         delim];
 misc.Reports_KUL        = [misc.MATLAB   'Reports_KUL'     delim];
+misc.Loudness_MGB       = [misc.Psychoacoustics 'Loudness_MGB' delim];
 misc.Roughness_Daniel   = [misc.Psychoacoustics 'Roughness_Daniel'   delim];
 misc.Roughness_Duisters = [misc.Psychoacoustics 'Roughness_Duisters' delim];
 misc.Speech             = [misc.MATLAB   'Speech'          delim];

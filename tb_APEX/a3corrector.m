@@ -1,7 +1,13 @@
 function result=a3corrector(type,param1)
 % result=a3corrector(type,param1)
 %   type=['isequal' 'afc']
-
+%
+% 2. Stand-alone example:
+%       corrector=a3corrector('isequal');
+%       disp('corrector');
+%
+% Comments by Alejandro Osses V.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 lf=sprintf('\n');
 tb=sprintf('\t');
@@ -9,7 +15,9 @@ tb=sprintf('\t');
 result='';
 
 if (strcmp(type, 'isequal'))
+    
     result=[result '<corrector xsi:type="apex:isequal" />'];
+    
 elseif (strcmp(type, 'afc'))
     if (nargin~=2)
         error('afccorrector: Invalid number of choices');

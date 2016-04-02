@@ -1,8 +1,21 @@
 function temp=a3datablock(id,filename,device,channels)
-% result=a3datablock(id,filename,device,chanenls)
+% function result = a3datablock(id,filename,device,channels)
 %
-% lf=sprintf('\n'); % enter
-% tb=sprintf('\t'); % tab
+% 1. Description:
+%       id - string
+%       filename - string ('*.wav')
+%       device - string ('wavdevice')
+%       channels - integer
+% 
+%       lf=sprintf('\n'); % enter
+%       tb=sprintf('\t'); % tab
+% 
+% 2. Stand-alone example:
+%       id = 'rawdata-20-0-0';
+%       filename = 'sin2000Hz_sin2000Hz_itd0.wav';
+%       device = 'wavdevice';
+%       result = a3datablock(id,filename,device);
+%       disp(result)
 % 
 % Comments by Alejandro Osses, ExpORL 2013
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

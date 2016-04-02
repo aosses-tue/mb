@@ -12,10 +12,10 @@ function timesep = Check_piano_sounds(filename)
 % 3. Additional info:
 %       Tested cross-platform: No
 %
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
+% Programmed by Alejandro Osses V., HTI, TU/e, the Netherlands, 2014-2016
 % Created on    : 24/11/2015
 % Last update on: 25/11/2015 
-% Last use on   : 02/12/2015 
+% Last use on   : 29/03/2016 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % filename = 'track_04';
@@ -65,7 +65,7 @@ switch filename
     case 'JBS51-4486-C2.wav'
         timesep = [0.01 6.7];
     case 'JBS51-4544-C2.wav'
-        timesep = [0.01 4 5 9.6 10.65 16 16.5 20.15];
+        timesep = [0.01 4 5 9.6 10.75 16 16.65 20.15];
     case 'JBS73-C2.wav'
         timesep = [0.01 5.01];
     case 'JBS73-C2-V2.wav'
@@ -135,13 +135,13 @@ switch filename
     case 'GRAF28-A4.wav'
         timesep = [0.05 1.7 1.75 3.8 3.85 5.9];
     case 'JBS36-A4.wav'
-        timesep = [0.03 3.7 3.8 7.9];
+        timesep = [0.18 3.7 3.8 7.9];
     case 'JBS50-A4.wav'
-        timesep = [0.01 3.3 3.35 7.5 7.6 12 12.1 16.4];
+        timesep = [0.01 3.3 3.35 7.5 7.8 12 12.1 16.4];
     case 'JBS51-4486-A4.wav'
         timesep = [0.03 3.7 3.8 6.8];
     case 'JBS51-4544-A4.wav'
-        timesep = [0.01 3.4 3.45 7.5 7.6 11.5 12 15];
+        timesep = [0.01 3.4 3.45 7.5 7.9 11.5 12.2 15];
     case 'JBS73-A4.wav'
         timesep = [0.01 4.2];
     case 'NS19-A4.wav'

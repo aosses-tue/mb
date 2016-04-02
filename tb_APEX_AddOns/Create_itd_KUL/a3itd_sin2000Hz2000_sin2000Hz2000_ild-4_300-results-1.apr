@@ -1,0 +1,1011 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<?xml-stylesheet  href="https://gilbert.med.kuleuven.be/apex/xslt/apexresult.xsl" type="text/xsl"?>
+<apex:results experiment_file="file:/D:/MATLAB_git/tb_APEX_AddOns/Create_itd_KUL/a3itd_sin2000Hz2000_sin2000Hz2000_ild-4_300.apx" xmlns:apex="http://med.kuleuven.be/exporl/apex/result">
+<?matlab script="a3itd_lr_results.m"?>
+<general>
+	<startdate>2016-03-25T14:32:13</startdate>
+	<enddate>2016-03-25T14:35:55</enddate>
+	<duration unit="seconds">222</duration>
+	<xsltscript>apexresult.xsl</xsltscript>
+</general>
+<trial id="trial300">
+<procedure >
+<trial_start_time>2016-03-25T14:33:40</trial_start_time>
+<stimulus>stimulus300</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">links</element>
+</screenresult>
+<corrector>
+<result>false</result>
+<answer>links</answer>
+<correctanswer>rechts</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+  <buffer underruns="0"/>
+  <buffer underruns="0"/>
+  <buffer underruns="0"/>
+  <buffer underruns="0"/>
+  <buffer underruns="0"/>
+  <buffer underruns="0"/>
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>47045</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial0">
+<procedure >
+<trial_start_time>2016-03-25T14:34:31</trial_start_time>
+<stimulus>stimulus0</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">links</element>
+</screenresult>
+<corrector>
+<result>false</result>
+<answer>links</answer>
+<correctanswer>rechts</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>523</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial-450">
+<procedure >
+<trial_start_time>2016-03-25T14:34:35</trial_start_time>
+<stimulus>stimulus-450</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">rechts</element>
+</screenresult>
+<corrector>
+<result>false</result>
+<answer>rechts</answer>
+<correctanswer>links</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>347</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial-900">
+<procedure >
+<trial_start_time>2016-03-25T14:34:45</trial_start_time>
+<stimulus>stimulus-900</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">rechts</element>
+</screenresult>
+<corrector>
+<result>false</result>
+<answer>rechts</answer>
+<correctanswer>links</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>256</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial450">
+<procedure >
+<trial_start_time>2016-03-25T14:34:46</trial_start_time>
+<stimulus>stimulus450</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">links</element>
+</screenresult>
+<corrector>
+<result>false</result>
+<answer>links</answer>
+<correctanswer>rechts</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>321</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial-600">
+<procedure >
+<trial_start_time>2016-03-25T14:34:48</trial_start_time>
+<stimulus>stimulus-600</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">rechts</element>
+</screenresult>
+<corrector>
+<result>false</result>
+<answer>rechts</answer>
+<correctanswer>links</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>328</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial-750">
+<procedure >
+<trial_start_time>2016-03-25T14:34:49</trial_start_time>
+<stimulus>stimulus-750</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">rechts</element>
+</screenresult>
+<corrector>
+<result>false</result>
+<answer>rechts</answer>
+<correctanswer>links</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>476</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial600">
+<procedure >
+<trial_start_time>2016-03-25T14:34:51</trial_start_time>
+<stimulus>stimulus600</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">links</element>
+</screenresult>
+<corrector>
+<result>false</result>
+<answer>links</answer>
+<correctanswer>rechts</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>173</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial300">
+<procedure >
+<trial_start_time>2016-03-25T14:34:53</trial_start_time>
+<stimulus>stimulus300</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">links</element>
+</screenresult>
+<corrector>
+<result>false</result>
+<answer>links</answer>
+<correctanswer>rechts</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>583</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial600">
+<procedure >
+<trial_start_time>2016-03-25T14:34:54</trial_start_time>
+<stimulus>stimulus600</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">links</element>
+</screenresult>
+<corrector>
+<result>false</result>
+<answer>links</answer>
+<correctanswer>rechts</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>339</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial-450">
+<procedure >
+<trial_start_time>2016-03-25T14:34:56</trial_start_time>
+<stimulus>stimulus-450</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">rechts</element>
+</screenresult>
+<corrector>
+<result>false</result>
+<answer>rechts</answer>
+<correctanswer>links</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>279</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial450">
+<procedure >
+<trial_start_time>2016-03-25T14:34:58</trial_start_time>
+<stimulus>stimulus450</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">rechts</element>
+</screenresult>
+<corrector>
+<result>true</result>
+<answer>rechts</answer>
+<correctanswer>rechts</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>3159</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial-750">
+<procedure >
+<trial_start_time>2016-03-25T14:35:02</trial_start_time>
+<stimulus>stimulus-750</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">rechts</element>
+</screenresult>
+<corrector>
+<result>false</result>
+<answer>rechts</answer>
+<correctanswer>links</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>383</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial750">
+<procedure >
+<trial_start_time>2016-03-25T14:35:04</trial_start_time>
+<stimulus>stimulus750</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">links</element>
+</screenresult>
+<corrector>
+<result>false</result>
+<answer>links</answer>
+<correctanswer>rechts</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>371</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial-300">
+<procedure >
+<trial_start_time>2016-03-25T14:35:05</trial_start_time>
+<stimulus>stimulus-300</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">links</element>
+</screenresult>
+<corrector>
+<result>true</result>
+<answer>links</answer>
+<correctanswer>links</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>950</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial150">
+<procedure >
+<trial_start_time>2016-03-25T14:35:08</trial_start_time>
+<stimulus>stimulus150</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">links</element>
+</screenresult>
+<corrector>
+<result>false</result>
+<answer>links</answer>
+<correctanswer>rechts</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>390</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial750">
+<procedure >
+<trial_start_time>2016-03-25T14:35:09</trial_start_time>
+<stimulus>stimulus750</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">links</element>
+</screenresult>
+<corrector>
+<result>false</result>
+<answer>links</answer>
+<correctanswer>rechts</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>403</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial0">
+<procedure >
+<trial_start_time>2016-03-25T14:35:11</trial_start_time>
+<stimulus>stimulus0</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">links</element>
+</screenresult>
+<corrector>
+<result>false</result>
+<answer>links</answer>
+<correctanswer>rechts</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>1734</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial150">
+<procedure >
+<trial_start_time>2016-03-25T14:35:14</trial_start_time>
+<stimulus>stimulus150</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">links</element>
+</screenresult>
+<corrector>
+<result>false</result>
+<answer>links</answer>
+<correctanswer>rechts</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>375</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial750">
+<procedure >
+<trial_start_time>2016-03-25T14:35:16</trial_start_time>
+<stimulus>stimulus750</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">links</element>
+</screenresult>
+<corrector>
+<result>false</result>
+<answer>links</answer>
+<correctanswer>rechts</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>237</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial-450">
+<procedure >
+<trial_start_time>2016-03-25T14:35:17</trial_start_time>
+<stimulus>stimulus-450</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">rechts</element>
+</screenresult>
+<corrector>
+<result>false</result>
+<answer>rechts</answer>
+<correctanswer>links</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>296</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial-150">
+<procedure >
+<trial_start_time>2016-03-25T14:35:19</trial_start_time>
+<stimulus>stimulus-150</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">rechts</element>
+</screenresult>
+<corrector>
+<result>false</result>
+<answer>rechts</answer>
+<correctanswer>links</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>616</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial-600">
+<procedure >
+<trial_start_time>2016-03-25T14:35:21</trial_start_time>
+<stimulus>stimulus-600</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">rechts</element>
+</screenresult>
+<corrector>
+<result>false</result>
+<answer>rechts</answer>
+<correctanswer>links</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>390</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial450">
+<procedure >
+<trial_start_time>2016-03-25T14:35:23</trial_start_time>
+<stimulus>stimulus450</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">links</element>
+</screenresult>
+<corrector>
+<result>false</result>
+<answer>links</answer>
+<correctanswer>rechts</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>276</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial300">
+<procedure >
+<trial_start_time>2016-03-25T14:35:24</trial_start_time>
+<stimulus>stimulus300</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">links</element>
+</screenresult>
+<corrector>
+<result>false</result>
+<answer>links</answer>
+<correctanswer>rechts</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>232</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial0">
+<procedure >
+<trial_start_time>2016-03-25T14:35:26</trial_start_time>
+<stimulus>stimulus0</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">rechts</element>
+</screenresult>
+<corrector>
+<result>true</result>
+<answer>rechts</answer>
+<correctanswer>rechts</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>329</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial-150">
+<procedure >
+<trial_start_time>2016-03-25T14:35:27</trial_start_time>
+<stimulus>stimulus-150</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">rechts</element>
+</screenresult>
+<corrector>
+<result>false</result>
+<answer>rechts</answer>
+<correctanswer>links</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>310</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial-900">
+<procedure >
+<trial_start_time>2016-03-25T14:35:29</trial_start_time>
+<stimulus>stimulus-900</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">rechts</element>
+</screenresult>
+<corrector>
+<result>false</result>
+<answer>rechts</answer>
+<correctanswer>links</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>374</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial900">
+<procedure >
+<trial_start_time>2016-03-25T14:35:31</trial_start_time>
+<stimulus>stimulus900</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">links</element>
+</screenresult>
+<corrector>
+<result>false</result>
+<answer>links</answer>
+<correctanswer>rechts</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>102</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial-150">
+<procedure >
+<trial_start_time>2016-03-25T14:35:32</trial_start_time>
+<stimulus>stimulus-150</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">rechts</element>
+</screenresult>
+<corrector>
+<result>false</result>
+<answer>rechts</answer>
+<correctanswer>links</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>515</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial-750">
+<procedure >
+<trial_start_time>2016-03-25T14:35:34</trial_start_time>
+<stimulus>stimulus-750</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">rechts</element>
+</screenresult>
+<corrector>
+<result>false</result>
+<answer>rechts</answer>
+<correctanswer>links</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>360</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial-300">
+<procedure >
+<trial_start_time>2016-03-25T14:35:35</trial_start_time>
+<stimulus>stimulus-300</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">rechts</element>
+</screenresult>
+<corrector>
+<result>false</result>
+<answer>rechts</answer>
+<correctanswer>links</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>343</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial600">
+<procedure >
+<trial_start_time>2016-03-25T14:35:37</trial_start_time>
+<stimulus>stimulus600</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">links</element>
+</screenresult>
+<corrector>
+<result>false</result>
+<answer>links</answer>
+<correctanswer>rechts</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>147</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial900">
+<procedure >
+<trial_start_time>2016-03-25T14:35:38</trial_start_time>
+<stimulus>stimulus900</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">links</element>
+</screenresult>
+<corrector>
+<result>false</result>
+<answer>links</answer>
+<correctanswer>rechts</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>423</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial900">
+<procedure >
+<trial_start_time>2016-03-25T14:35:40</trial_start_time>
+<stimulus>stimulus900</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">links</element>
+</screenresult>
+<corrector>
+<result>false</result>
+<answer>links</answer>
+<correctanswer>rechts</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>327</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial-900">
+<procedure >
+<trial_start_time>2016-03-25T14:35:42</trial_start_time>
+<stimulus>stimulus-900</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">rechts</element>
+</screenresult>
+<corrector>
+<result>false</result>
+<answer>rechts</answer>
+<correctanswer>links</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>182</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial-600">
+<procedure >
+<trial_start_time>2016-03-25T14:35:43</trial_start_time>
+<stimulus>stimulus-600</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">rechts</element>
+</screenresult>
+<corrector>
+<result>false</result>
+<answer>rechts</answer>
+<correctanswer>links</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>905</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial-300">
+<procedure >
+<trial_start_time>2016-03-25T14:35:46</trial_start_time>
+<stimulus>stimulus-300</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">rechts</element>
+</screenresult>
+<corrector>
+<result>false</result>
+<answer>rechts</answer>
+<correctanswer>links</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>1446</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<trial id="trial150">
+<procedure >
+<trial_start_time>2016-03-25T14:35:53</trial_start_time>
+<stimulus>stimulus150</stimulus>
+</procedure>
+<screenresult>
+	<element id="buttongroup1">rechts</element>
+</screenresult>
+<corrector>
+<result>true</result>
+<answer>rechts</answer>
+<correctanswer>rechts</correctanswer>
+</corrector>
+<output>
+<device id="soundcard">
+  <buffer underruns="0"/>
+  <buffer underruns="0"/>
+</device>
+</output>
+<responsetime unit='ms'>695</responsetime>
+<randomgenerators>
+
+</randomgenerators>
+</trial>
+
+<calibration>
+<parameter id="cardgain0">-15</parameter>
+<parameter id="cardgain1">-15</parameter>
+</calibration>
+<processed>
+
+
+ExperimentFile=file:/D:/MATLAB_git/tb_APEX_AddOns/Create_itd_KUL/a3itd_sin2000Hz2000_sin2000Hz2000_ild-4_300.apx
+Duration=222 seconds
+Header=trial;stimulus;correctanswer;corrector;useranswer
+START
+trial300;stimulus300;rechts;false;links
+trial0;stimulus0;rechts;false;links
+trial-450;stimulus-450;links;false;rechts
+trial-900;stimulus-900;links;false;rechts
+trial450;stimulus450;rechts;false;links
+trial-600;stimulus-600;links;false;rechts
+trial-750;stimulus-750;links;false;rechts
+trial600;stimulus600;rechts;false;links
+trial300;stimulus300;rechts;false;links
+trial600;stimulus600;rechts;false;links
+trial-450;stimulus-450;links;false;rechts
+trial450;stimulus450;rechts;true;rechts
+trial-750;stimulus-750;links;false;rechts
+trial750;stimulus750;rechts;false;links
+trial-300;stimulus-300;links;true;links
+trial150;stimulus150;rechts;false;links
+trial750;stimulus750;rechts;false;links
+trial0;stimulus0;rechts;false;links
+trial150;stimulus150;rechts;false;links
+trial750;stimulus750;rechts;false;links
+trial-450;stimulus-450;links;false;rechts
+trial-150;stimulus-150;links;false;rechts
+trial-600;stimulus-600;links;false;rechts
+trial450;stimulus450;rechts;false;links
+trial300;stimulus300;rechts;false;links
+trial0;stimulus0;rechts;true;rechts
+trial-150;stimulus-150;links;false;rechts
+trial-900;stimulus-900;links;false;rechts
+trial900;stimulus900;rechts;false;links
+trial-150;stimulus-150;links;false;rechts
+trial-750;stimulus-750;links;false;rechts
+trial-300;stimulus-300;links;false;rechts
+trial600;stimulus600;rechts;false;links
+trial900;stimulus900;rechts;false;links
+trial900;stimulus900;rechts;false;links
+trial-900;stimulus-900;links;false;rechts
+trial-600;stimulus-600;links;false;rechts
+trial-300;stimulus-300;links;false;rechts
+trial150;stimulus150;rechts;true;rechts
+END
+
+</processed>
+</apex:results>

@@ -1,5 +1,5 @@
-function [y ty stats] = rmsdb_sec(x,fs,dur_buf_s,bOverlap,tstart)
-% function [y ty stats] = rmsdb_sec(x,fs,dur_buf_s,bOverlap,tstart)
+function [y ty stats] = rmsdb_sec(x,fs,dur_buf_s,pOverlap,tstart)
+% function [y ty stats] = rmsdb_sec(x,fs,dur_buf_s,pOverlap,tstart)
 %
 % 1. Description:
 %       x - signal to be buffered in N = 50 sample-section
@@ -33,7 +33,7 @@ else
 end
 
 if nargin < 4
-    bOverlap = 1;
+    pOverlap = 0;
 end
 
 t    = (1:length(x))/fs;
@@ -41,13 +41,9 @@ t    = (1:length(x))/fs;
 % x    = x/max(abs(x)); % by-passed on 16/03/2016
 N    = round(dur_buf_s * fs);
 
-if bOverlap == 1
-    Noverlap = round(N/2);
-else
-    Noverlap = 0;
-end
+Noverlap = round(pOverlap*N);
 
-xsec = buffer(x,N,Noverlap);
+xsec = buffer(x,N,Noverlap,'nodelay');
 x    = xsec;
 
 [r,c]=size(x);
@@ -59,10 +55,8 @@ else % Generic case:
     y = 10*log10(sum(x.*x)/length(x));
 end
 
-if nargout >= 2
-    ty = buffer(t,N,0);
-    ty = ty(1,:);
-end
+ty = buffer(t,N,Noverlap,'nodelay');
+ty = ty(1,:);
 
 if nargout >=3
     tstart_idx = round(tstart_idx/N);

@@ -96,10 +96,15 @@ RMSbefore = rmsdb(r)+100;
 r         = il_randomise_phase(r); % it can increase or decrease the level
 
 RMSafter  = rmsdb(r)+100;
-r         = gaindb(r,RMSbefore-RMSafter); % compensate decrease or increase in level after phase randomisation
+
+ri = Apply_IIR_Butter(r,fs,audtofreq(2.5),'high',4);
+ro = Apply_IIR_Butter(ri,fs,audtofreq(33.5),'low',8);
+RMSafter2 = rmsdb(ro)+100;
+
+% r = gaindb(r,RMSbefore-RMSafter); % compensate decrease or increase in level after phase randomisation
 info4pede.RMS    = interimRMS - max(interimRMS);
 info4pede.RMStot = rmsdb(r);
-info4pede.RMSmax = rmsdb(prctile(abs(r),95));
+info4pede.RMSmax = rmsdb(prctile(abs(r),99));
 info4pede.fc     = fc;
 info4pede.fs     = fs;
 info4pede.Length = length(r);
