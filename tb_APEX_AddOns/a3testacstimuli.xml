@@ -10,10 +10,10 @@ Training procedure for acoustic stimuli 'a3testacstimuli':
 Template to generate a training procedure in APEX 3, monaural presentation (left channel). Run the MATLAB script a3testacstimuli.m specifying as input parameter the path where the audio files are
 
     % Programmed by APEX3 team, 
-    % Adapted by Alejandro Osses V., HTI, TU/e, the Netherlands, 2015
+    % Adapted by Alejandro Osses V., HTI, TU/e, the Netherlands, 2015-2016
     % Created on    : 2013-2014
-    % Last update on: 11/06/2015 % Update this date manually
-    % Last use on   : 11/06/2015 % Update this date manually
+    % Last update on: 11/06/2015 
+    % Last use on   : 11/06/2015 
   -->
 
 <!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->

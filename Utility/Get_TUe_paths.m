@@ -132,6 +132,7 @@ misc.tb_SP15AddOns      = [misc.MATLAB   'tb_SP15_AddOns'  delim];
 misc.tb_APEX            = [misc.MATLAB   'tb_APEX'         delim];
 misc.tb_APEX_templates  = [misc.tb_APEX  'a3templates'     delim];
 misc.tb_APEX_AddOns     = [misc.MATLAB   'tb_APEX_AddOns'  delim];
+misc.tb_APEX_AddOns_templates  = [misc.tb_APEX_AddOns 'a3templates' delim];
 misc.tb_APEX_tools      = [misc.tb_APEX  'tools'           delim];
 misc.tb_Loudness_v12    = [misc.MATLAB   'tb_Loudness_v12' delim];
 

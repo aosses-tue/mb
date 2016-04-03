@@ -2,17 +2,23 @@ function misc = Get_TUe_data_paths(type)
 % function misc = Get_TUe_data_paths(type)
 %
 % 1. Description:
-%
+%       Some possible fields (sorted alphabetically):
+%           Databases
+%           db_audacity
+%           ex_Experiments
+%           lx_Text
+%           username
+% 
 % 2. Stand-alone example:
 %       dir_audacity = [Get_TUe_data_paths('db_audacity') delim];
 % 
 % 3. Additional info:
 %       Tested cross-platform: No
 % 
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2016
 % Created on    : 25/08/2014
 % Last update on: 02/12/2014 
-% Last use on   : 02/12/2015 
+% Last use on   : 02/04/2016 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Alejandro's paths

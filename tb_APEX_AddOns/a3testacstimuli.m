@@ -31,9 +31,9 @@ function a3testacstimuli(savefilename, path, ncols, opts)
 % 
 % Programmed by the APEX3 team
 % Created on    : 2013-2014
-% Adapted by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
-% Last update on: 11/06/2015 % Update this date manually
-% Last use on   : 11/06/2015 % Update this date manually
+% Adapted by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2016
+% Last update on: 11/06/2015 
+% Last use on   : 02/04/2016 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 4
@@ -63,6 +63,12 @@ experiment.screen='';
 experiment.datablocks='';
 experiment.map='';
 experiment.stimuli='';
+
+try 
+    dir_templates = Get_TUe_paths('tb_APEX_AddOns_templates');
+catch
+    dir_templates = '';
+end
 
 try
     path=makedirend(path);
@@ -113,13 +119,13 @@ experiment.buttongroup  = a3buttongroup(buttons);
 
 switch presentation
     case 'monaural'
-        result=readfile_replace('a3testacstimuli.xml',experiment);
+        result=readfile_replace([dir_templates 'a3testacstimuli.xml'],experiment);
         % result=readfile_replace('a3testacstimuli-TF-20131029.xml',experiment);
     case 'diotic'
-        result=readfile_replace('a3testacstimuli-diotic.xml',experiment);
+        result=readfile_replace([dir_templates 'a3testacstimuli-diotic.xml'],experiment);
 end
 
-fid=fopen([path savefilename],'w');
+fid=fopen([path savefilename '.apx302'],'w');
 if (fid==-1)
     error(['Can''t open file ' savefilename ]);
 end

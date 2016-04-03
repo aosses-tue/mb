@@ -1,0 +1,14 @@
+<calibration profile="outs-2">
+    <stimuli>
+        <stimulus id="stimcaltone"/>
+    </stimuli>
+    
+    <parameters>
+        <parameter id="gain0">
+            <targetamplitude>97</targetamplitude>
+            <calibrationamplitude>97</calibrationamplitude>
+            <mute>-150.0</mute>
+            <max>50</max>
+        </parameter>
+    </parameters>
+</calibration>

@@ -1,0 +1,40 @@
+<procedure xsi:type="apex:adaptiveProcedureType" id="procedure$$ProcedureID$$"> <!-- note = $$test_note$$; test piano = $$Piano1label$$; ref. piano = $$Piano2label$$ -->
+    
+<parameters>
+    <presentations>1</presentations>
+    <order>sequential</order>
+    <choices >3</choices>
+    <pause_between_stimuli>100</pause_between_stimuli>
+    <time_before_first_trial>1</time_before_first_trial>
+    <nUp>1</nUp>
+    <nDown>1</nDown>
+    <adapt_parameter>gain</adapt_parameter>
+    <start_value>8</start_value> <!-- SNR if related amplifier is with 'inversed gain' -->
+    <stop_after_type>reversals</stop_after_type>
+    <stop_after>6</stop_after>
+    <min_value>-16</min_value>
+    <max_value>20</max_value>
+    <larger_is_easier>true</larger_is_easier> <!-- have a look at start_value and the variable parameter  -->
+    <repeat_first_until_correct>true</repeat_first_until_correct>
+    <stepsizes>
+        <change_after>reversals</change_after>
+        <stepsize begin="0" size="4"/>
+        <stepsize begin="2" size="2"/>
+    </stepsizes>
+</parameters>
+<trials>
+    <trial id="trial$$ProcedureID$$">
+        <screen id="screen1"/>
+        <stimulus id="stimulus$$ProcedureID$$_11"/> 
+        <stimulus id="stimulus$$ProcedureID$$_12"/> 
+        <stimulus id="stimulus$$ProcedureID$$_21"/> 
+        <stimulus id="stimulus$$ProcedureID$$_22"/> 
+        
+        <standard id="standard$$ProcedureID$$_11"/> 
+        <standard id="standard$$ProcedureID$$_12"/> 
+        <standard id="standard$$ProcedureID$$_21"/> 
+        <standard id="standard$$ProcedureID$$_22"/> 
+    </trial>
+</trials>
+
+</procedure>

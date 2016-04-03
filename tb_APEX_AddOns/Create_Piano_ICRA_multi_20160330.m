@@ -62,6 +62,7 @@ fi = [];
 fi_datablocks = [];
 fi_pedestal = [];
 rampout_len = 100; % ms
+SNR4pede = 10; 
 
 for nproc = 1:Nprocedures
     
@@ -216,8 +217,6 @@ for nproc = 1:Nprocedures
         fname1   = [dir_where piano1 '-' note_test '_' num2str(take1(i)) '.wav'];
         fname2   = [dir_where piano2 '-' note_test '_' num2str(take2(i)) '.wav'];
     
-        SNR4pede= 10; 
-         
         % 2. Aligning the sounds (looking at the maximum RMS value):
         [signal1, signal2, fs] = il_wavread(fname1, fname2, opts);
         noise1 = icra_noise4piano(signal1,fs);
@@ -227,10 +226,10 @@ for nproc = 1:Nprocedures
     
         out_tmp = auditoryfilterbank(noise3,fs);
         RMSrel  = rmsdb(out_tmp)-max(rmsdb(out_tmp));
-        pede    = icra_noise4piano_pedestal(noise3,fs,RMSrel,SNR4pede);
+        pede    = icra_noise4piano_pedestal(noise3,fs,RMSrel,0); % SNR of 0 dB, target SNR adjusted inside the experiment file
      
         % % 2.1. Saving ICRA noise:
-        fname_out3p{i} = sprintf('pedestal-%s_%s-SNR-%.0f-dB.wav',fname1suffix,fname2suffix,SNR4pede);
+        fname_out3p{i} = sprintf('pedestal-%s_%s-SNR-%.0f-dB.wav',fname1suffix,fname2suffix,0);
 
         signals{1+2*(i-1)} = signal1;
         signals{2+2*(i-1)} = signal2;
@@ -350,7 +349,7 @@ for i = 1:length(fi_pedestal)
     dataid      = ['data_' suffixid{1}];
     filterid    = ['filter_' suffixid{1}];
     
-    gain        = -15;
+    gain        = -SNR4pede;
     continuous  = 'true';
     psub.filters_pedestal = [psub.filters_pedestal lf a3dataloop(dataid,0,filterid,continuous,'wavdevice',gain)];
     

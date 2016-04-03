@@ -1,0 +1,67 @@
+$$connection$$
+
+<connection>
+    <from>
+        <id>amp_use_test1</id>
+        <channel>0</channel>
+    </from>
+    <to>
+        <id>rampout</id>
+        <channel>0</channel>
+    </to>
+</connection>
+
+<connection>
+    <from>
+        <id>rampout</id>
+        <channel>0</channel>
+    </from>
+    <to>
+        <id>ampCal</id>
+        <channel>0</channel>
+    </to>
+</connection>
+
+<connection>
+    <from>
+        <id>rampout_inst_noise</id>
+        <channel>0</channel>
+    </from>
+    <to>
+        <id>amp_SNR</id>
+        <channel>0</channel>
+    </to>
+</connection>
+
+
+<connection>
+    <from>
+        <id>amp_SNR</id>
+        <channel>0</channel>
+    </from>
+    <to>
+        <id>ampCal</id>
+        <channel>0</channel>
+    </to>
+</connection>
+
+<connection>
+    <from>
+        <id>ampCal</id>
+        <channel>0</channel>
+    </from>
+    <to>
+        <id>wavdevice</id>
+        <channel>0</channel>
+    </to>
+</connection>
+<connection>
+    <from>
+        <id>ampCal</id>
+        <channel>0</channel>
+    </from>
+    <to>
+        <id>wavdevice</id>
+        <channel>1</channel>
+    </to>
+</connection>
