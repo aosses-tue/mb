@@ -25,7 +25,7 @@ end
 wc = fc/(fs/2); % normalised frequency (fs/2 = 1)
 [b, a] = butter(order,wc,type);
 
-outsig = filter(b,a,insig);
+outsig = filtfilt(b,a,insig);
 
 if nargout == 0
     

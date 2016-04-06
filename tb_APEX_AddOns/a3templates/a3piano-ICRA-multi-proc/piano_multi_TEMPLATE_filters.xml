@@ -7,7 +7,15 @@
         <invertgain>true</invertgain> <!-- now it is SNR -->
         <gain id="gain">0</gain> <!-- Total gain = basegain + gain -->
     </filter>
-    
+
+    <filter id="pede_SNR" xsi:type="apex:amplifier">
+        <device>wavdevice</device>
+        <channels>1</channels>
+        <basegain>0</basegain>
+        <invertgain>true</invertgain> <!-- now it is SNR -->
+        <gain>$$SNR4pede$$</gain> 
+    </filter>
+
     <filter id="amp_use_test1" xsi:type="apex:amplifier">
         <device>wavdevice</device>
         <channels>1</channels>

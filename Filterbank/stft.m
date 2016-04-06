@@ -23,10 +23,17 @@ function [stft, f, t, info] = stft(x, fs, nfft, wlen, overlap, nwtype,info)
 %       [x fs] = wavread('stft_audiofile.wav');
 %       stft(x,fs);
 % 
+%       [x fs] = wavread('stft_audiofile.wav');
+%       nfft = 8192;
+%       wlen = nfft/2;
+%       overlap = 87.5; % percent
+%       nwtype = 4; % 4 = hamming
+%       stft(x,fs, nfft, wlen, overlap, nwtype);
+% 
 % Author: M.Sc. Eng. Hristo Zhivomirov
 % Created on   : 21/12/2013
 % Downloaded on: 23/06/2014
-% Last used on : 28/07/2014
+% Last used on : 05/04/2016
 % Edited by Alejandro Osses, HTI, TU/e, the Netherlands
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -40,6 +47,8 @@ if nargout == 0
     info = Ensure_field(info,'normalise_time_factor',1);
     
 end
+
+info = ef(info,'bColourBar',1);
 
 if nargin < 3
     nfft = 4096*2; % number of fft points (recomended to be power of 2)
@@ -175,9 +184,11 @@ if nargout == 0
     
     title(info.txtTitle)
     
-    handl = colorbar;
-    set(handl, 'FontName', 'Times New Roman', 'FontSize', 14)
-    ylabel(handl, 'Magnitude [dB]')
+    if info.bColourBar
+        handl = colorbar;
+        set(handl, 'FontName', 'Times New Roman', 'FontSize', 14)
+        ylabel(handl, 'Magnitude [dB]')
+    end
     
     if isfield(info,'scale_dB')
         YTick = get(handl,'YTick');

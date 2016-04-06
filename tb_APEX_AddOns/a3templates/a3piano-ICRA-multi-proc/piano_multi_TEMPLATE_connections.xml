@@ -47,6 +47,17 @@ $$connection$$
 
 <connection>
     <from>
+        <id>pede_SNR</id>
+        <channel>0</channel>
+    </from>
+    <to>
+        <id>ampCal</id>
+        <channel>0</channel>
+    </to>
+</connection>
+
+<connection>
+    <from>
         <id>ampCal</id>
         <channel>0</channel>
     </from>

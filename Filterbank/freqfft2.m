@@ -15,7 +15,7 @@ function [y ydB f, RMS] = freqfft2(x,K,fs,windowtype,dBFS,typeplot)
 % Programmed by Alejandro Osses, TUe
 % Created on    : 07/08/2015
 % Last update on: 07/08/2015
-% Last use on   : 07/08/2015
+% Last use on   : 06/04/2016
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 6
@@ -60,7 +60,7 @@ df  = f(2) - f(1);
 constant = sqrt(1/(df*K*N));
 % y = abs(y*constant);
 
-y = From_dB(dBFS) * y * constant * From_dB(corrWindow_dB);
+y = From_dB(dBFS) * From_dB(corrWindow_dB) * y * constant;
 
 ydB = 20*log10(abs(y));
 

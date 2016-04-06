@@ -31,7 +31,7 @@ function [r info4pede pede_sample] = icra_noise4piano(insig,fs)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2016
 % Created on    : 21/03/2016
 % Last update on: 21/03/2016 
-% Last use on   : 21/03/2016 
+% Last use on   : 05/04/2016 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 2
@@ -39,10 +39,10 @@ if nargin < 2
 end
 
 [r, fc] = auditoryfilterbank(insig,fs);
-Nbands = length(fc);
+Nbands  = length(fc);
 
 interimRMStot = rmsdb(insig)+100;
-interimRMS = rmsdb(r)+100;
+interimRMS    = rmsdb(r)+100;
 
 for i = 1:Nbands
     r(:,i)  = il_schroeder(r(:,i));
@@ -53,16 +53,11 @@ for i = 1:Nbands
     r(:,i) = rtmp;
 end   
 
-% for i=1:Nbands
-%     r(:,i) = setdbspl( r(:,i),interimRMS(i) );
-% end
-
 r         = sum(r,2);
 r         = il_randomise_phase(r); % it can increase or decrease the level
 
-ri = Apply_IIR_Butter(r ,fs,audtofreq( 2.5),'high',4);
-ro = Apply_IIR_Butter(ri,fs,audtofreq(33.5),'low',8);
-
+% ri        = Apply_IIR_Butter(r ,fs,audtofreq( 2.5),'high',4);
+r         = Apply_IIR_Butter(r,fs,audtofreq(33.5),'low',8);
 r         = setdbspl( r,interimRMStot );
 % r = gaindb(r,RMSbefore-RMSafter); % compensate decrease or increase in level after phase randomisation
 info4pede.RMS    = interimRMS - max(interimRMS);
