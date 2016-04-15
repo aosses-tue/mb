@@ -1,5 +1,5 @@
-function [SRT Stdev filenames] = quick_staircases(directories2check, opts, dest_folder, hoofd_folder, bSave)
-% function [SRT Stdev filenames] = quick_staircases(directories2check, opts, dest_folder, hoofd_folder, bSave)
+function [SRT Stdev filenames outs] = quick_staircases(directories2check, opts, dest_folder, hoofd_folder, bSave)
+% function [SRT Stdev filenames outs] = quick_staircases(directories2check, opts, dest_folder, hoofd_folder, bSave)
 %
 % 1. Description:
 %       Since 09/03/2015 this script is compatible to extract results from
@@ -70,13 +70,10 @@ FontSize = 14;
 N        = 10;
 
 Stairs  = [];
-% ymin    = -5;
-% ymax    = 15;
 
 for j = 1
     
     if isdir(directories2check)
-        % files = dir([hoofd_folder directories2check{j} '*.apr*']);
         files = dir([hoofd_folder directories2check opts.filter '*.apr*']);
     else
         files{1} = directories2check;
@@ -207,6 +204,14 @@ for j = 1
             end
         end
         
+    end
+end
+
+outs.staircases = tmp_staircase;
+tmp = fieldnames(tmp_staircase);
+try
+    for i = 1:Nprocedures
+        outs.reversals(i,:) = Get_mAFC_reversals( tmp_staircase.(tmp{i}) );
     end
 end
 

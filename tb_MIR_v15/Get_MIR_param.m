@@ -14,10 +14,10 @@ function y = Get_MIR_param(a,Param)
 %       figure;
 %       plot(t,x), grid on
 %       
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2016
 % Created on    : 07/08/2014
-% Last update on: 07/08/2014 % Update this date manually
-% Last use on   : 07/08/2014 % Update this date manually
+% Last update on: 07/08/2014 
+% Last use on   : 07/08/2014 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 y = get(a,Param);

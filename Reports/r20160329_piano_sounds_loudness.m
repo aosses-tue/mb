@@ -1,5 +1,5 @@
 function r20160329_piano_sounds_loudness
-% function r20151127_r20160329_piano_sounds_loudness
+% function r20160329_piano_sounds_loudness
 %
 % 1. Description:
 %
@@ -36,16 +36,18 @@ if bDoLB
     %             'Csh', 5;... 
     %             'C'  , 6;... 
     %             'G'  , 6}; 
-	notetmp = { 'C'  , 2 ... 
-                'A'  , 4; ... 
-                'Csh', 5}; 
+	notetmp = {'F',3};
+%     notetmp = { 'C'  , 2 ... 
+%                 'C'  , 4, ...
+%                 'A'  , 4; ... 
+%                 'Csh', 5}; 
 	loud_max = [ 18, ... % 18 sones approx 81.5 dB (sine tone at 1 kHz)
                  18, ... 
                  18];
              
 	fstarget = 44100;
     
-    for i = 1:length(notetmp)
+    for i = 1 %:length(notetmp)
         
         ntmp.note   = notetmp{i,1};
         ntmp.octave = notetmp{i,2};
@@ -79,7 +81,8 @@ disp(['EOF: ' mfilename '.m'])
 function [gains] = il_loudness_balance(directory,fs,loudness_max)
 % function [gains] = il_loudness_balance(directory,fs,loudness_max)
 
-file_orig = Get_filenames(directory,['*n.wav']);
+warning('Temporal file filter...')
+file_orig = Get_filenames(directory,['GH*.wav']); % file_orig = Get_filenames(directory,['*.wav']);
 dirout = sprintf('%sloudness-balanced%s',directory,delim);
 Mkdir(dirout);
 

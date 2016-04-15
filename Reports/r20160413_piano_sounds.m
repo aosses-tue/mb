@@ -1,5 +1,5 @@
-function r20151119_piano_sounds
-% function r20151119_piano_sounds
+function r20160413_piano_sounds
+% function r20160413_piano_sounds
 %
 % 1. Description:
 %       bDoSTFT_f0 - checks out f0 for every piano sound of the refister set
@@ -17,9 +17,10 @@ function r20151119_piano_sounds
 %       See also r20150724_piano_sounds.m
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
-% Created on    : 19/11/2015
-% Last update on: 22/11/2015 
-% Last use on   : 22/12/2015 
+% Original file name: r20151119_piano_sounds.m
+% Created on    : 13/04/2016
+% Last update on: 13/04/2016 
+% Last use on   : 13/04/2016 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 close all
@@ -28,8 +29,10 @@ Diary(mfilename,bDiary);
 
 bSave = 1;
 
-bDoSTFT_f0  = 0;
+bDo_f0_only_check = 0;
 bDo_f0_shift = 1;
+method_f0 = 1;
+
 bDoEnv = 1;
 
 % notetmp.note = 'Dsh'; notetmp.octave = 1; % Not yet % very difficult to label
@@ -45,11 +48,8 @@ notetmp.note = 'C'; notetmp.octave = 4;
 
 f0target = note2freq(notetmp);
 note2test = [notetmp.note num2str(notetmp.octave)];
-dir = [Get_TUe_data_paths('piano') '04-PAPA' delim '01-Sounds' delim note2test delim];
 
 opts.bExtension = 0;
-files = Get_filenames(dir,'wav',opts);
-% files = Get_filenames([dir 'norm-117-Hz' delim],'wav',opts);
 
 %%%
 sens = 50e-3;   % Given by Antoine
@@ -59,63 +59,96 @@ Cal  = 1/(G*sens);  % 1 =  94 dB
 Cal  = Cal/2;       % 1 = 100 dB (AMT convention)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if bDoSTFT_f0
+
+if bDo_f0_only_check
     
-    % This process was not automated. Run it for every piano sound and write
-    % down in a txt file with the same name of the wav file the fundamental
-    % frequency read from the plots (e.g. GH05-A4.txt if GH05-A4.wav was plotted
-    
+    % dir     = [Get_TUe_data_paths('piano') '04-PAPA' delim '02-Tuned-at-44100-Hz' delim note2test delim];
+    % dir     = [Get_TUe_data_paths('piano') '04-PAPA' delim '02-Tuned-at-44100-Hz' delim note2test delim];
+    dir     = [Get_TUe_data_paths('piano') '04-PAPA' delim '01-Sounds' delim note2test delim 'norm-' num2str(round(f0target)) '-Hz-ESPRIT' delim];
+    files   = Get_filenames(dir,['wav']);
     for i = 1:length(files)
         title1 = files{i};
         fullfile{i} = [dir files{i}];
-        
-        [insig fs] = Wavread([fullfile{i} '.wav']);  % non-calibrated audio files
-        
-        nfft = 4096*4;
-        wlen = nfft/2;
-        overlap = 75;
-        nwtype = 4; % Hamming window
-        [y1 f t1] = stft(insig, fs, nfft, wlen, overlap, nwtype);
+        [insig fs] = Wavread([fullfile{i}]);
 
-        idxt1 = 1:length(t1); % find(t1>0.3 & t1<1.4);
-        idxf  = find(f>0.8*f0target & f<1.3*f0target); %find(f>0.7*f0target & f<1.3*f0target);
+        tolerance = 10;
+        N   = round(0.1*fs); 
+        [outsig Fi Ai] = il_get_ESPRIT_piano(insig,fs,N,f0target,tolerance);
 
-        y1dB = To_dB(abs(y1));
-        [xx idx] = max(y1dB(idxf,:));
-        idx = idx + min(idxf)-1;
-        fmax1 = f(idx(idxt1));
-
-        figure; 
-        plot(t1(idxt1),fmax1); grid on
-        title(title1)
-        
-        disp('')
     end
-    
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 if bDo_f0_shift
+    dir     = [Get_TUe_data_paths('piano') '04-PAPA' delim '01-Sounds' delim note2test delim];
+    files   = Get_filenames(dir,'wav',opts);
+
     for i = 1:length(files)
         title1 = files{i};
         fullfile{i} = [dir files{i}];
-        [insig fs] = Wavread([fullfile{i} '.wav']);
+        try
+            [insig fs] = Wavread([fullfile{i} '.wav']);
+        catch
+            [insig fs] = Wavread([fullfile{i}]);
+        end
 
-        f0(i) = il_get_f0([fullfile{i} '.txt']);
+        switch method_f0
+            case 0
+                f0(i) = il_get_f0([fullfile{i} '.txt']);
+            case 1
 
+            N   = round(0.1*fs); % N has to be greater than 5*L, arbitrarily chosen
+            [outsig Fi Ai] = il_get_ESPRIT_piano(insig,fs,N,f0target);
+            f0(i) = Fi(1);
+            
+            fprintf('\tf0 = %.3f [Hz] (Sound %s)\n\n',f0(i),files{i});
+        end
     end
 
-    dir_new = sprintf('%snorm-%.0f-Hz%s',dir,f0target,delim);
+    switch method_f0 
+        case 0
+            dir_new = sprintf('%snorm-%.0f-Hz%s',dir,f0target,delim);
+        case 1
+            dir_new = sprintf('%snorm-%.0f-Hz-ESPRIT%s',dir,f0target,delim);
+    end
     Mkdir(dir_new);
 
     for i = 1:length(files)
 
-        [insig fs] = Wavread([fullfile{i} '.wav']);
-
-        Perc = round(100*(f0target-f0(i))/f0target); 
-        outsig  = Do_pitch_stretch(insig,Perc,'percentage');
-
+        try
+            [insig fs] = Wavread([fullfile{i} '.wav']);
+        catch
+            [insig fs] = Wavread([fullfile{i}]);
+        end
+        
+        switch method_f0
+            case 0
+                Perc = round(100*(f0target-f0(i))/f0(i)); % shift to be defined respect to the initial f0 
+            case 1
+                Perc = 100*(f0target-f0(i))/f0(i); 
+        end
+            
+        %[outsig f0out]  = Do_pitch_stretch(insig,Perc,'percentage',fs);
+        
+        if Perc > 3
+            outsig = insig;
+            while Perc > 3
+                Perc = 3;
+                outsig  = Do_pitch_stretch(outsig,Perc,'percentage',fs);
+                tolerance = 5;
+                [xx Fi Ai f0_new] = il_get_ESPRIT_piano(outsig,fs,N,f0target,tolerance);
+                Perc = 100*(f0target-f0_new)/f0_new; 
+                % Perc = Perc_still;
+            end
+            insig = outsig;
+        end
+        
+        if Perc > 0.5
+            [outsig f0out]  = Do_pitch_stretch(insig,Perc,'percentage',fs);
+        else
+            outsig = insig;
+            disp([files{i} ' untouched'])
+        end
+        
         fullfile_new{i} = [dir_new files{i} '.wav'];
         if bSave
             Wavwrite(outsig,fs,fullfile_new{i});
@@ -205,3 +238,39 @@ fileID = fopen(file);
 C = textscan(fileID,'%.1f %s');
 fclose(fileID);
 f0 = C{1,1};
+
+function [outsig Fi Ai f0] = il_get_ESPRIT_piano(insig,fs,N,f0target,tolerance)
+
+if nargin < 5
+    tolerance = 10;
+end
+
+[insig_max Ni] = max(abs(insig)); % max of the waveform (manually computed)
+Ni = Ni + round(0.020*fs); % 20-ms after the max
+Nf  = Ni+N-1; 
+insig_t = insig(Ni:Nf);
+p = 180;
+[outsig Fi Ai] = Get_ESPRIT_analysis(insig_t,p,N,fs);
+
+[Amax idxmax] = max(Ai); % first 10 partials
+idxFi = find( 100*abs(Fi/f0target-1)<tolerance ); % 10 %
+factor2div = 1;
+
+partial_nr = 2;
+
+while length(idxFi) == 0
+    idxFi = find( 100*abs((Fi/partial_nr)/f0target-1)<tolerance/partial_nr ); % second harmonic
+    factor2div = partial_nr;
+    partial_nr = partial_nr + 1;
+end
+
+Ait = Ai(idxFi);
+Fit = Fi(idxFi)/factor2div; % if factor2divide ~= 0, then 'virtual pitch' (when using ESPRIT) 
+[Amax idxmax] = max(Ait); % first 10 partials
+f0 = Fit(idxmax);
+
+if factor2div == 1
+    fprintf('\tf0 = %.3f [Hz]\n\n',f0);
+else
+    fprintf('\tf0 = %.3f [Hz] - ''virtual pitch'' \n\n',f0);
+end

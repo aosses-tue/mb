@@ -167,7 +167,8 @@ end
 
 % Search for SOFA package
 if ~exist('SOFAstart','file')
-  sofapath=fullfile(bp,'thirdparty','SOFA','API_MO');
+  % sofapath=fullfile(bp,'thirdparty','SOFA','API_MO');
+  sofapath=fullfile(bp,'thirdparty','sofa_api-1.0.1','API_MO');
   if exist(sofapath,'dir')
     addpath(sofapath);
   end
@@ -193,7 +194,9 @@ end
 
 % Search for the package
 if ~exist('SFS_start','file')
-    sfspath=fullfile(bp,'thirdparty','SFS');
+    % sfspath=fullfile(bp,'thirdparty','SFS');
+    sfspath=fullfile(bp,'thirdparty','sfs_toolbox-2.1.0');
+    
     if exist(sfspath,'dir')
         addpath(sfspath);
     end

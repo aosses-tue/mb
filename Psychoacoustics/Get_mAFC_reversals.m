@@ -12,11 +12,10 @@ function [r idx] = Get_mAFC_reversals(staircase)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
 % Created on    : 20/11/2015
 % Last update on: 20/11/2015 
-% Last use on   : 20/11/2015 
+% Last use on   : 12/04/2016 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargout == 0
-    figure; 
     plot(staircase); hold on;
 end
 

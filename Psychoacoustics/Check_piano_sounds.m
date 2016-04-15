@@ -113,19 +113,19 @@ switch filename
                
     %%% C4:    
     case 'GH05-C4.wav'
-        timesep = [0.15 3.3 3.4 8];
+        timesep = [0.213 3.5 8];
     case 'GRAF28-C4.wav'
         timesep = [0.15 3.2 3.3 5.5 6.2 8.5];
     case 'JBS36-C4.wav'
-        timesep = [0.18 3.6 3.65 7.5];
+        timesep = [0.264 3.6 3.770 7.5];
     case 'JBS50-C4.wav'
         timesep = [0.01 3.6 4 8 8.65 12.7];
     case 'JBS51-4486-C4.wav'
         timesep = [0.05 3.25 3.3 8];
     case 'JBS51-4544-C4.wav'
-        timesep = [0.01 3 3.35 7.2 7.3 10.5 11 14.2];
+        timesep = [0.058 3 3.419 7.2 7.329 10.5 11.1 14.2];
     case 'JBS73-C4.wav'
-        timesep = [0.01 2.5 2.6 6.1 6.2 9.6 9.7 12];
+        timesep = [0.068 2.5 2.717 6.1 6.4 9.6 9.777 12];
     case 'NS19-C4.wav'
         timesep = [0.1 3.1 3.15 6.3 6.35 9.41 9.5 12.25 12.3 15 15.1 15.15 17.5];
         

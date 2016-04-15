@@ -1,5 +1,5 @@
-function outsig = Do_pitch_stretch(insig,factor,mode)
-% function y = Do_pitch_stretch(insig,factor,mode)
+function [outsig f0] = Do_pitch_stretch(insig,factor,mode,fs)
+% function [outsig f0] = Do_pitch_stretch(insig,factor,mode,fs)
 %
 % 1. Description:
 %       The input signal insig is increased/decreased in pitch according to
@@ -31,20 +31,61 @@ if nargin < 2
     factor = 5;
 end
 
+den = 10000;
 switch mode
     case 'semitone'
         num = round(100*(1/ (2^(factor/12))));
     case 'percentage'
-        num = 100-round(factor);
+        num = den-round(den*factor/100);
 end
         
-den = 100;
 timesfaster = num/den; % 0.75
-N = 4096; % N = 1024 was giving some phase problems
-outsig   = pvoc(insig,timesfaster,N);
+N       = 4096; % N = 1024 was giving some phase problems
+outsigtmp  = pvoc(insig,timesfaster,N); % produces a time-stretched output signal (same pitch)
 
-outsig = resample(outsig,num,den); % if den > num outsig the pitch shift is going up (asuming that fs will be constant)
-                                   % if den < num outsig the pitch shift is going down
+% num = round( factor*fs );
+% den = fs;
+outsig  = resample(outsigtmp,num,den); % if den > num outsig the pitch shift is going up (asuming that fs will be constant)
+                                    % if den < num outsig the pitch shift is going down
+if nargout == 0 | nargout == 2
+    
+    f0(1) = il_get_ESPRIT(insig,fs);
+    f0(2) = il_get_ESPRIT(outsig,fs);
+
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function f0 = il_get_ESPRIT(insig,fs,fmax)
+
+if nargin < 3
+    fmax = 2000;
+end
+
+N   = round(0.1*fs); % N has to be greater than 5*L, arbitrarily chosen
+[insig_max Ni] = max(abs(insig)); % max of the waveform (manually computed)
+Ni = Ni + round(0.020*fs); % 20-ms after the max
+Nf  = Ni+N-1; 
+insig_t = insig(Ni:Nf);
+p = 180;
+[out_ Fi Ai] = Get_ESPRIT_analysis(insig_t,p,N,fs);
+
+idxx = find(Fi < fmax);
+Fi = Fi(idxx); 
+Ai = Ai(idxx);
+
+[Amax idxmax] = max(Ai); % first 10 partials
+idxFi = idxmax;
+Fit = Fi;
+
+factor2div = 1;
+
+Ait = Ai(idxFi);
+Fit = Fi(idxFi)/factor2div; % if factor2divide ~= 0, then 'virtual pitch' (when using ESPRIT) 
+[Amax idxmax] = max(Ait); % first 10 partials
+f0 = Fit(idxmax);
+
+if factor2div == 1
+    fprintf('\tf0 = %.3f [Hz]\n\n',f0);
+else
+    fprintf('\tf0 = %.3f [Hz] - ''virtual pitch'' \n\n',f0);
 end

@@ -1,9 +1,14 @@
-function [outsig Fi Ai Alpha_i Phi_i L] = Get_ESPRIT_analysis(insig,p,N,fs)
-% function [outsig Fi Ai Alpha_i Phi_i L] = Get_ESPRIT_analysis(insig,p,N,fs)
+function [outsig Fi Ai sigma_i Phi_i L] = Get_ESPRIT_analysis(insig,p,N,fs)
+% function [outsig Fi Ai sigma_i Phi_i L] = Get_ESPRIT_analysis(insig,p,N,fs)
 %
 % 1. Description:
 %       outsig is a synthesised signal by approximating the insig signal
 %       using the pencil matrix method.
+% 
+%       outsig = sum_{i=1}^L A_i \exp{-\alpha_i n} \cdot cos(2*pi*n*f_i + \phi_i)
+% 
+%       Fi = fi * fs;   % [Hz], fi is expressed in [decrement/sample]
+%       sigma_i = alpha_i * fs; % [1/s] damping factor
 % 
 %       Input parameters:
 %        - N samples of the input signal are used
@@ -40,21 +45,23 @@ if nargin < 2
     p = 180;
 end
 
-X0 = il_get_X0(insig,p,'X0');
-X1 = il_get_X0(insig,p,'X1');
-X0plus = pinv(X0);
-Matr = X0plus*X1;
+X0 = il_get_X0(insig,p,'X0'); % Laroche1993, Eq. 2. Matrix (N-p) x p
+X1 = il_get_X0(insig,p,'X1'); % Laroche1993, Eq. 3. Matrix (N-p) x p
+X0plus = pinv(X0); % Laroche1993, Step (2)
+
+% Laroche1993, Step (3):
+Matr = X0plus*X1;  
+lambda = eig(Matr); 
     
-lambda = eig(Matr);
-    
-idxposim = find(imag(lambda)>0);
+% Laroche1993, Step (4):
+idxposim = find(imag(lambda)>0); % finds lambda with imaginary part > 0
     
 L = length(idxposim);
 
 %%% Frequency and damping factors:
 fi = ( atan2(imag(lambda(idxposim)),real(lambda(idxposim))) )/(2*pi);
-alpha_i = abs(-log10(abs(lambda(idxposim))));
-    
+alpha_i = abs(-log(abs(lambda(idxposim))));
+
 M = N; % this should not be necessarily
 
 %%% Form matrix T
@@ -87,11 +94,6 @@ Phi_i = tan(bi./ai);
 
 %%% Obtained parameters: Ai, alpha_i, fi, Phi_i
 
-if nargout == 0
-    figure;
-    stem(Fi,Ai); grid on
-end
-
 n = transpose(1:fs/2);
 outsig = zeros(size(n));
 
@@ -103,7 +105,12 @@ alpha_i = alpha_i(fi_idx);
 Phi_i   = Phi_i(fi_idx);
 
 Fi      = fi*fs;
-Alpha_i = alpha_i*fs;
+sigma_i = alpha_i*fs;
+
+if nargout == 0
+    figure;
+    stem(Fi,Ai); grid on
+end
 
 for i = 1:L %maxidx %L
 

@@ -1,5 +1,5 @@
-function [sequence,stimuli, procID]=a3adaptiveresults(filename,xsltscript,forcetransform)
-% function [sequence,stimuli, procID]=a3adaptiveresults(filename,xsltscript,forcetransform)
+function [sequence,stimuli, procID]=a3constantresults(filename,xsltscript,forcetransform)
+% function [sequence,stimuli, procID]=a3constantresults(filename,xsltscript,forcetransform)
 %
 % 1. Description:
 %       Return adaptive staircase from APEX 3 results file.
@@ -40,9 +40,6 @@ end
 %% use new apex version
 results = a3getresults(filename,xsltscript,forcetransform);
 s       = a3parseresults(results);
-if (~isfield(s,'adaptiveparameter'))
-    error('Adaptiveparameter field not found in results. Did you use an adaptive procedure?');
-end
 
 if (~isfield(s(1),'procedure'))
     
@@ -72,8 +69,11 @@ else        % Multiprocedure
         if (~isfield(sequences, proc))
             sequences.(proc) = [];
         end
-        sequences.(proc) = [sequences.(proc) str2num(s(i).adaptiveparameter)];
-        
+        if strcmp(s(i).corrector,'true')
+            sequences.(proc) = [sequences.(proc) 1];
+        else
+            sequences.(proc) = [sequences.(proc) 0];
+        end
     end
 
     sequence = sequences;

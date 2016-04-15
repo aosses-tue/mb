@@ -1,5 +1,5 @@
-function Create_Piano_ICRA_multi_20160406(experiment_nr,do_skip,bAdaptive)
-% function Create_Piano_ICRA_multi_20160406(experiment_nr,do_skip,bAdaptive)
+function Create_Piano_ICRA_multi_20160418(experiment_nr,do_skip,bAdaptive)
+% function Create_Piano_ICRA_multi_20160418(experiment_nr,do_skip,bAdaptive)
 %
 % 1. Description:
 %       Generate APEX experiments if do_skip is set to 0 (default) the audio
@@ -8,26 +8,26 @@ function Create_Piano_ICRA_multi_20160406(experiment_nr,do_skip,bAdaptive)
 % 
 % 2. Stand-alone example:
 %   Experiments = [1 1.1 2 2.1  11 11.1 12 12.1 21 21.1 22 22.1];
-%   Create_Piano_ICRA_multi_20160406(Experiments);
+%   Create_Piano_ICRA_multi_20160418(Experiments);
 %   
 %   Experiments = [1 1.1 2 2.1]; % only C2
 %   do_skip = 0;
-%   Create_Piano_ICRA_multi_20160406(Experiments,do_skip);
+%   Create_Piano_ICRA_multi_20160418(Experiments,do_skip);
 % 
 %   Experiments = [11 11.1 12 12.1]; % only A4
 %   do_skip = 0;
-%   Create_Piano_ICRA_multi_20160406(Experiments,do_skip);
+%   Create_Piano_ICRA_multi_20160418(Experiments,do_skip);
 % 
 %   Experiments = 16; 
 %   do_skip = 0;
-%   Create_Piano_ICRA_multi_20160406(Experiments,do_skip);
+%   Create_Piano_ICRA_multi_20160418(Experiments,do_skip);
 % 
 % 3. Additional info:
 %       Tested cross-platform: No
-%       See also: r20160330_update_APEX_ICRA.m
+%       See also: r20160330_update_APEX_ICRA, r20160406_update_APEX_ICRA
 % 
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2016
-% Adapted from: r20160330_update_APEX_ICRA.m
+% Adapted from: r20160406_update_APEX_ICRA.m
 % Created on    : 25/03/2016
 % Last update on: 25/03/2016 
 % Last use on   : 25/03/2016 
@@ -120,59 +120,7 @@ for nproc = 1:Nprocedures
     dir_where = [Get_TUe_data_paths('piano') '04-PAPA' delim '05-loudness-balanced' delim note_test delim];
      
     switch exp_nr
-        case 1 % C2 
-        case 1.1
-        case 2
-        case 2.1
-            
-        case 5 % F3
-            ID_1 = 5; idx_1 = ID_1 + 1; % JBS-50
-            take1 = 1;
-            
-            ID_2 = 5; idx_2 = ID_2 + 1;
-            take2 = 4;
-            
-        case 5.1
-            ID_1 = 5; idx_1 = ID_1 + 1; % JBS-50
-            take1 = 2;
-            
-            ID_2 = 5; idx_2 = ID_2 + 1;
-            take2 = 3;
-            
-        case 5.2
-            ID_1 = 5; idx_1 = ID_1 + 1; % JBS-50
-            take1 = 2;
-            
-            ID_2 = 5; idx_2 = ID_2 + 1;
-            take2 = 4;
-            
-        case 5.3
-            ID_1 = 5; idx_1 = ID_1 + 1; % JBS-50
-            take1 = 4;
-            
-            ID_2 = 5; idx_2 = ID_2 + 1;
-            take2 = 2;
-        
-        case 6
-            ID_1 = 0; idx_1 = ID_1 + 1; % GH05
-            take1 = 1;
-            
-            ID_2 = 5; idx_2 = ID_2+1; % JBS50
-            take2 = 3;
-            
-        case 6.1
-            ID_1 = 5; idx_1 = ID_1 + 1; % JBS50 
-            take1 = 3;
-            
-            ID_2 = 0; idx_2 = ID_2+1; % GH05
-            take2 = 1;
-            
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        case 11 % A4
-        case 11.1
-        case 12
-        case 12.1
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         case 16 % C4
             ID_1 = 4; idx_1 = ID_1 + 1; % JBS51-4544
             take1 = 2;
@@ -198,11 +146,7 @@ for nproc = 1:Nprocedures
             ID_2 = 4; idx_2 = ID_2 + 1;
             take2 = 2;
             
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        case 21 % Csh5
-        case 21.1
-        case 22
-        case 22.1
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     end
     
     piano1      = pianos{idx_1}; 

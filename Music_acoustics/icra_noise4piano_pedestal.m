@@ -14,7 +14,7 @@ function [outsig signal_plus_pede] = icra_noise4piano_pedestal(insig,fs,RMSrel,S
 % Last use on   : 16/03/2016 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-method = 1; % method 0 is respect to max RMS
+method = 0; % method 0 is respect to max RMS
             % method 1 loudness balancing respect to ICRA noise (SNR = 0 dB) then gain is applied to match the target SNR
 
 if nargin < 4

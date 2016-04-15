@@ -1,9 +1,10 @@
 function [stimuli, buttons, corrector,parameters, s]=a3cstresults(filenames,xsltscript)
 % [stimuli, buttons, corrector, parameters, s]=a3cstresults(filenames)
 %
-% filenames can be a single file name or a cell array of files from which
-% the results will be merged
-% Cell array 's' contains all parsed answers
+% 1. Description:
+%   File names can be a single file name or a cell array of files from which
+%   the results will be merged
+%   Cell array 's' contains all parsed answers
 %
 % Edited by Alejandro Osses
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
