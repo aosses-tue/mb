@@ -21,7 +21,7 @@ if nargin < 2
     fs = 44100;
 end
 if nargin < 1
-    N = 12*fs; % 12 seconds
+    N = 2*fs; % 2 seconds
 end
 
 params         = struct;
@@ -29,32 +29,51 @@ params.fs      = fs;
 params.N       = N;
 params.Chno    = 47;
 params.debug   = 'none';
+
 switch dataset
-    case {0,99}
+    case 0
         params.window_type = 'cosine';
+        params.filterbank = 'terhardt'; 
+        % params.p_g     = 1; warning('pg temporarily to 1')
+        params.p_g     = 1; 
+        params.p_m     = 1.7;  
+        params.p_k     = 1.7; % warning('Temporal value') 
+        params.a0_in_time = 1;
+        params.a0_in_freq = ~params.a0_in_time;
+        
+        params.cal     = 0.2499; % on 13/05/2016
+        params.bIdle = 1; % v5
+        warning('loading FS, v5, set bIdle back to 0 for v4');
+        
     case 1
         params.window_type = 'blackman';
+        params.filterbank = 'terhardt'; 
+        params.p_g     = 2;
+        params.p_m     = 0.25;
+        params.p_k     = 0.375;
+        params.cal     = 0.15/1.116;
+        params.a0_in_time = 0;
+        params.a0_in_freq = ~params.a0_in_time;
+        
+    case 90
+        params.window_type = 'cosine';
+        params.filterbank = 'erb';
+        params.p_g     = 1;   
+        params.p_m     = 1.7;  
+        params.p_k     = 1.7; 
+        params.cal     = 0.0419;
+        params.a0_in_time = 0;
+        params.a0_in_freq = ~params.a0_in_time;
+        
+    case 99
+        params.window_type = 'cosine';
+        params.filterbank = 'terhardt'; 
+        params.a0_in_time = 0;
+        params.a0_in_freq = ~params.a0_in_time;
+        
 end
+
 params.dataset = dataset;
 
 params.Hweight = Get_Hweight_fluctuation(fs);
 params.gzi     = Calculate_gzi(params.Chno,dataset);
-
-switch dataset
-    case 0
-        % params.p_g     = 2;
-        % params.p_m     = 0.25;
-        % params.p_k     = 0.375;
-        % params.cal = 0.1135; % New calibration factor by AO on 5/02/2016
-        params.p_g     = 1;    % gzi = 1
-        params.p_m     = 1.25;  % 1.25    1.5     2       2       2
-        params.p_k     = 0.35;  % 0.4     0.4     0.4     0.5     2
-        params.cal     = 0.2016;  % 0.2126  0.2477  0.335   0.3377  0.3621 New calibration factor by AO on 5/02/2016
-    case 1
-        params.p_g     = 2;
-        params.p_m     = 0.25;
-        params.p_k     = 0.375;
-        params.cal     = 0.15;
-    otherwise
-        disp('Calibrating...assign your own values')
-end

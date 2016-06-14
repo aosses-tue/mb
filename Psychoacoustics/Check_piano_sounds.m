@@ -149,23 +149,23 @@ switch filename
 
 	%%% Csh5:    
     case 'GH05-Cd5.wav'
-        timesep = [0.5 3.5 3.6 7.3 7.5 11.5];
+        timesep = [0.59 3.5 3.716 7.3 7.656 11.5];
     case 'GRAF28-Cd5.wav'
-        timesep = [0.01 2.1 2.15 4.3 4.35 6.6];
+        timesep = [0.0 2.1 2.117 4.3 4.35 6.6]; % add silence of 55 ms to first sound (in Audacity)
     case 'JBS36-Cd5.wav'
-        timesep = [0.15 3.6 3.7 3.8 7.1 9.4];
+        timesep = [0.193 3.6 3.79 7.233 9.4];
     case 'JBS51-4486-Cd5.wav'
-        timesep = [0.1 2.9 3 5.9 6 8.2];
+        timesep = [0.114 2.990 5.959 8.2];
     case 'JBS51-4544-Cd5.wav'
-        timesep = [0.01 2.7 3.1 6.5 6.9 9.5];
+        timesep = [0.024 2.7 3.259 6.5 6.991 9.5];
     case 'JBS51-4544-Cd5-V2.wav'
-        timesep = [0.01 3.4 3.5 7.5 7.6 11.5 11.9 14.7];
+        timesep = [0.058 3.4 3.548 7.5 7.745 11.5 11.932 14.7];
     case 'JBS73-Cd5.wav'
-        timesep = [0.01 2.65];
+        timesep = [2.65]; % add silence of 45 ms to this sound (in Audacity)
     case 'NS19-Cd5.wav'
-        timesep = [0.05 1.7 1.75 3.25];   
+        timesep = [0 1.7 1.727 3.25];   
 	case 'NS19-Cd5-V2.wav'
-        timesep = [0.01 1.7 1.75 3.2]; 
+        timesep = [0.01 1.701 3.2]; 
         
 	%%% C6
     case 'GH05-C6.wav'

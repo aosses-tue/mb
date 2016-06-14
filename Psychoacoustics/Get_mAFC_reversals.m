@@ -1,5 +1,5 @@
-function [r idx] = Get_mAFC_reversals(staircase)
-% function [r idx] = Get_mAFC_reversals(staircase)
+function [r idx reve staircase] = Get_mAFC_reversals(staircase)
+% function [r idx reve staircase] = Get_mAFC_reversals(staircase)
 %
 % 1. Description:
 %

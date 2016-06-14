@@ -61,8 +61,8 @@ y = setdbspl(y,SPL-3,dBFS); % same than applying calibration factor: cal = From_
 
 if nargout == 0
     
-    sound(y,fs);
-    filename = [Get_TUe_paths('outputs') sprintf('tone-fc-%.0f__Fmod-%.0f_Mdept-%.0f',fc,fmod,Mdept)];
+    % sound(y,fs);
+    filename = [Get_TUe_paths('outputs') sprintf('tone-fc-%.0f_fmod-%.0f_mdept-%.0f',fc,fmod,Mdept)];
     Wavwrite(y,fs,filename);
     
 end

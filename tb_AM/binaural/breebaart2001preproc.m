@@ -84,7 +84,7 @@ function [ei_map, fc] = breebaart2001preproc(insig, fs, tau, ild, varargin);
 
 %   References: breebaart2001binaural
 
-%   AUTHOR : Peter L. S�ndergaard
+%   AUTHOR : Peter L. Soendergaard
   
 % ------ Checking of input parameters ------------
 

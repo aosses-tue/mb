@@ -9,14 +9,15 @@ function cc = Correlation(x,y,method)
 %       data1 = wgn(1,100,1); % 100 element white noise
 %       data2 = wgn(1,100,1); % 100 element white noise
 %       CF = Correlation(data1,data2,'coefficient');
-
+%
 % 3. Additional info:
 %       Tested cross-platform: Yes
-%
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2015
+%       See van de Par and Kohlrausch 1995
+% 
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2016
 % Created on    : 01/05/2015
 % Last update on: 02/05/2015 
-% Last use on   : 04/09/2015 
+% Last use on   : 14/05/2016 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 3
@@ -24,7 +25,8 @@ if nargin < 3
 end
 
 switch method
-    case 'coefficient'
+    case 'coefficient' % normalised cross covariance, see van de Par 1995 Eq. 2 and 4
+        % identical to cc = corrcoef(x,y);
         cfac =	cov(x,y);
         den	=	diag(cfac);
         den	=	sqrt(den*den');
@@ -33,7 +35,7 @@ switch method
         else
           cc =	0;
         end
-    case 'coefficient-non-normalised'
+    case 'coefficient-non-normalised' % cross covariance
         cfac =	cov(x,y);
         den	=	diag(cfac);
         den	=	sqrt(den*den');

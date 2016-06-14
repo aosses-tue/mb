@@ -7,10 +7,10 @@ function [r info4pede pede_sample] = icra_noise4piano(insig,fs)
 %       using method = 3
 % 
 % 2. Stand-alone example:
-%       file = [Get_TUe_data_paths('db_speechmaterials') 'Spanish' delim 'Matrix' delim '00131.wav'];
+%       file       = [Get_TUe_data_paths('db_speechmaterials') 'Spanish' delim 'Matrix' delim '00131.wav'];
 %       [insig fs] = Wavread(file);
-%       outsig = icra5_noise4piano(insig);
-%       lvl = rmsdb(insig);
+%       outsig     = icra5_noise4piano(insig);
+%       lvl        = rmsdb(insig);
 %       outsig = setdbspl(outsig,lvl+100);
 %       sound(insig,fs);
 %       pause(length(insig)/fs*1.2);
@@ -35,7 +35,7 @@ function [r info4pede pede_sample] = icra_noise4piano(insig,fs)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 2
-    fs=44100;
+    fs  = 44100;
 end
 
 [r, fc] = auditoryfilterbank(insig,fs);
@@ -59,7 +59,7 @@ r         = il_randomise_phase(r); % it can increase or decrease the level
 % ri        = Apply_IIR_Butter(r ,fs,audtofreq( 2.5),'high',4);
 r         = Apply_IIR_Butter(r,fs,audtofreq(33.5),'low',8);
 r         = setdbspl( r,interimRMStot );
-% r = gaindb(r,RMSbefore-RMSafter); % compensate decrease or increase in level after phase randomisation
+
 info4pede.RMS    = interimRMS - max(interimRMS);
 info4pede.RMStot = rmsdb(r);
 info4pede.RMSmax = rmsdb(prctile(abs(r),99));

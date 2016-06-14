@@ -83,16 +83,45 @@ for iFrame = 1:nFrames
 
     %% 1. Peripheral stages
 
-    % 1.1 Peripheral hearing system
-    insig = PeripheralHearingSystem(insig,fs,N);
+    % 1.1 Peripheral hearing system (transmission factor a0)
+    
+    if model_par.a0_in_time
+        % 4096th order FIR filter:
+        insig = PeripheralHearingSystem_t(insig,fs,model_par.bIdle); % since 14/05
+    elseif model_par.a0_in_freq
+        % The signal is converted to frequency domain, filtered and then
+        % converted back to time domain  
+        insig = PeripheralHearingSystem(insig,fs,N);
+    end
 
     % 1.2 Excitation patterns
-    dBFS = 100; % unit amplitude corresponds to 100 dB (AMT Toolbox convention)
-    ei = TerhardtExcitationPatterns(insig,fs,dBFS);
-    %%%
-
+    switch model_par.filterbank
+        case 'terhardt'
+            dBFS = 100; % unit amplitude corresponds to 100 dB (AMT Toolbox convention)
+            ei = TerhardtExcitationPatterns_v3(insig,fs,dBFS);
+            fc = bark2hz(0.5:0.5:23.5);
+            flow = bark2hz(0:0.5:23); flow(1) = 0.01;
+            fup  = bark2hz(1:0.5:24);
+            BWHz = fup - flow;
+        case 'erb'
+            fc = bark2hz(0.5:0.5:23.5);
+            flow = freqtoaud(bark2hz(0:0.5:23)); flow(1) = 0.01;
+            fup  = freqtoaud(bark2hz(1:0.5:24));
+            beta = fup - flow;
+            
+            % beta = 1.5;
+            for i = 1:length(beta)
+                [gt_b(i,1), gt_a(i,:)]=gammatone(fc(i), fs, 4, beta(i),'complex');
+            end
+            % [gt_b, gt_a]=gammatone(fc, fs, 'complex'); % ,'bmul',1
+            ei = transpose(squeeze( 2*real(ufilterbankz(gt_b,gt_a,insig)) )); % ei = auditoryfilterbank(insig,fs,fc);
+            ei = From_dB(100)*ei;
+    end
+        
     %% 2. Modulation depth (estimation)
     [mdept,hBPi,ei] = il_modulation_depths(ei,model_par.Hweight);
+    % idx = find( rmsdb(transpose(ei))-10*log10(BWHz) <10);
+    % mdept(idx) = 0;
     %%%    
 
     bDebug = 0;
@@ -104,28 +133,40 @@ for iFrame = 1:nFrames
     switch model_par.dataset
         case {0,99}
             
+            % % here cross-correlation is computed before band-pass filtering:
+            % Ki = il_cross_correlation(inoutsig); % with hBPi Ki goes down but not as much as 'it should'
+            Ki = il_cross_correlation(hBPi);
+            [fi_ mdept kp gzi] = il_specific_fluctuation(mdept,Ki,model_par,model_par.dataset);
+
+        case 90
             cutofffreq  = 1000;
-            [b, a]      = butter(2, cutofffreq*2/fs);
-            inoutsig    = filtfilt(b,a, transpose(abs(ei))); 
+            [b, a]      = butter(2, cutofffreq*2/fs); % 770 Hz
+            inoutsig    = filtfilt(b,a, transpose( ei )); 
             inoutsig    = filtfilt(b,a, inoutsig);
             inoutsig    = repmat(window,1,model_par.Chno) .* inoutsig;
             inoutsig    = transpose(inoutsig);
-            % error('Apply cosramp, written on 20/02/2016')
-            % Now in envelope domain...
             
             Ki = il_cross_correlation(inoutsig); % with hBPi Ki goes down but not as much as 'it should'
-            [fi mdept kp gzi] = il_specific_fluctuation(mdept,Ki,model_par,model_par.dataset);
-
+            [fi_ xx kp gzi] = il_specific_fluctuation(mdept,Ki,model_par,model_par.dataset);
+            
         case 1
             Ki = il_cross_correlation(hBPi);
-            fi = il_specific_fluctuation(mdept,Ki,model_par,model_par.dataset);
+            [fi_ xx kp gzi] = il_specific_fluctuation(mdept,Ki,model_par,model_par.dataset);
     end
 
     outs.mdept = mdept;
     outs.kp    = kp;
     outs.gzi   = gzi;
-    fi         = model_par.cal * fi;
-    fluct(iFrame) = sum(fi);
+    outs.cal   = model_par.cal;
+    outs.p_g   = model_par.p_g;
+    outs.p_k   = model_par.p_k;
+    outs.p_m   = model_par.p_m;
+    
+    fi(iFrame,:)  = model_par.cal * fi_;
+    fluct(iFrame) = sum(fi(iFrame,:));
+    % model_par.cal* sum( (mdept.^model_par.p_m).*(kp.^model_par.p_k) )
+    % model_par.cal* sum( (mdept.^model_par.p_m).*(kp.^2) )
+    % figure; plot(kp); hold on; plot(kp.^2,'r')
 end
 
 disp('')
@@ -143,6 +184,9 @@ function [mdept,hBPi,ei] = il_modulation_depths(ei,Hweight)
     h0      = mean(ei,2);
     ei      = ei - repmat(h0,1,Nc);
     for k = 1:Chno
+        if k == 12
+            disp('')
+        end
         if ~isnumeric( Hweight )
             hBPi(k,:) = filter(Hweight,ei(k,:));
         else
@@ -150,7 +194,7 @@ function [mdept,hBPi,ei] = il_modulation_depths(ei,Hweight)
         end
     end
     
-    hBPrms = rms(hBPi,'dim',2);
+    hBPrms = rms(hBPi,'dim',2); % mean(abs(hBPi),2);
     
     idx = find(h0>0);
     mdept(idx) = hBPrms(idx)./h0(idx);
@@ -163,7 +207,6 @@ function [mdept,hBPi,ei] = il_modulation_depths(ei,Hweight)
         error('There is an error in the algorithm')
     end
     
-    disp('')
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -201,17 +244,21 @@ function [fi mdept kp gzi] = il_specific_fluctuation(mdept,Ki,model_par,dataset)
     fi = zeros(1,Chno);
     
     switch dataset
-        case {0,99}
+        case {0,90,99}
             
-            [xxx idx] = find(mdept>1 * 1.05); % 5\% security margin
-            if length(idx) ~= 0
-                mdmax = max(mdept);
-                md = mdept; % /mdmax;
-                warning('temporal solution')
-            else
-                md = mdept;
-            end
-            % md    = min(md,ones(size(mdept)));
+            % Version 1: tested on 13/05:
+            % % md    = mdept;
+            
+            % % Version 2:
+            % md    = min(mdept,ones(size(mdept)));
+            
+            % % Version 3:
+            thres = 0.7;
+            idx = find(mdept>thres);
+            exceed = mdept(idx)-thres;
+            mdept(idx) = thres+(1-thres)*exceed;
+            md    = min(mdept,ones(size(mdept)));
+            
         case 1
             md    = min(mdept,ones(size(mdept)));
             md    = mdept-0.1*ones(size(mdept));
@@ -234,11 +281,11 @@ function [fi mdept kp gzi] = il_specific_fluctuation(mdept,Ki,model_par,dataset)
         kp(k) = ki*ki2;
             
     end
-    kpsign = sign(kp);
+    kpsign = (sign(kp));
     kp     = abs(kp);
     
     switch dataset
-        case {0,99}
+        case {0,90,99}
             fi = gzi.^p_g .* md.^p_m .* (kp.^p_k).*kpsign;
             % pgtest = [0 0.25 0.5 0.75 1 1.25 1.5 1.75 2 3 4];
             % calval = model_par.cal;
@@ -248,9 +295,12 @@ function [fi mdept kp gzi] = il_specific_fluctuation(mdept,Ki,model_par,dataset)
             % end
         case 1
             fi = gzi.^p_g*md.^p_m*kp.^p_k;
+        otherwise
+            error('Dataset does not include the calculation of fi')
     end
 
-    disp('')
+    mdept = md;
+    
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

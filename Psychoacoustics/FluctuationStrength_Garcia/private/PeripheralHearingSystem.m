@@ -18,8 +18,9 @@ outsig  = 2*real(ifft(a0.*fft(insig)));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function a0 = il_calculate_a0(fs,N)
+% Compensation of the transmission factor from Free-field, taken from
+% Fastl2007, Fig. 8.18, page 226
 
-% Defines audible range indexes and frequencies
 df    = fs/N;
 N0    = round(20/df)+1;
 Ntop  = round(20e3/df)+1;

@@ -13,7 +13,7 @@ function hOutput = Figure2paperfigure(nHandle,numRows,numCols)
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2016
 % Created on    : 26/09/2014
 % Last update on: 26/09/2014 
-% Last use on   : 22/03/2016 
+% Last use on   : 01/05/2016 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 2

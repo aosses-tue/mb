@@ -66,7 +66,7 @@ hOpts.I_KeepColor = 0;
 hOpts.I_FontSize = 24;
 hOpts.I_Width  = 20;
 hOpts.I_Height = 8;
-h(end+1) = Figure2paperfigureT2(h,1,2,hOpts);
+h(end+1) = Figure2paperfigureT(h,1,2,hOpts);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Ploting markers (time-onsets)

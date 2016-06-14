@@ -1,5 +1,5 @@
-function Create_Piano_ICRA_multi_20160418(experiment_nr,do_skip,bAdaptive)
-% function Create_Piano_ICRA_multi_20160418(experiment_nr,do_skip,bAdaptive)
+function Create_Piano_ICRA_multi_20160418(experiment_nr,do_skip,bAdaptive,opts)
+% function Create_Piano_ICRA_multi_20160418(experiment_nr,do_skip,bAdaptive,opts)
 %
 % 1. Description:
 %       Generate APEX experiments if do_skip is set to 0 (default) the audio
@@ -14,11 +14,11 @@ function Create_Piano_ICRA_multi_20160418(experiment_nr,do_skip,bAdaptive)
 %   do_skip = 0;
 %   Create_Piano_ICRA_multi_20160418(Experiments,do_skip);
 % 
-%   Experiments = [11 11.1 12 12.1]; % only A4
+%   Experiments = 17:0.1:17.5;
 %   do_skip = 0;
 %   Create_Piano_ICRA_multi_20160418(Experiments,do_skip);
 % 
-%   Experiments = 16; 
+%   Experiments = [17 17.1]; 
 %   do_skip = 0;
 %   Create_Piano_ICRA_multi_20160418(Experiments,do_skip);
 % 
@@ -40,6 +40,17 @@ end
 if nargin < 3
     bAdaptive = 1;
 end
+
+if nargin == 0
+    experiment_nr = [17 17.1];
+end
+
+if nargin < 4
+    opts = [];
+end
+
+opts = Ensure_field(opts,'dirstimuli','Stimuli-pilot-20160502');
+dirstimuli = opts.dirstimuli; % name of the directory where the Stimuli will be stored
 
 dir_main   = [Get_TUe_data_paths('ex_Experiments') '2015-APEX-my-experiments' delim 'Piano' delim 'Pilot-ICRA-v2' delim];
 template_main           = [dir_main 'Templates-v1' delim 'piano_multi_TEMPLATE.xml'];
@@ -65,31 +76,45 @@ psub    = [];
 %           0        1       2          3            4         5       6      7
 pianos = {'GH05','GRAF28','JBS36','JBS51-4486','JBS51-4544','JBS50','JBS73','NS19'};
  
-if nargin == 0
-    experiment_nr = [1 1.1];
-end
-
 Nprocedures = length(experiment_nr);
 
 fi = [];
 fi_datablocks = [];
 fi_pedestal_nosort = [];
 rampout_len = 100; % ms
-SNR4pede = 90; 
+SNR4pede    = 20; 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Parameters of the experiments:
 nUp     = 1;
 nDown   = 2;
 max_value = 50;
+start_value = 8; % 16
 stop_after = 12;
+step1 = 4;
+step2 = 4; % 2
+step3 = 2; % 1
+pause_between_stimuli = 250; % ms
+nPresentations = 12;
 
-bL = 1;
-fs_theo = 44100;
-L = round(1*fs_theo); % assuming 800 ms stimuli length
+% Parameters of the stimuli:
+bL = 1; % if 1 = then the manual set L-length is going to be used.
+fs_theo    = 44100;
+dur_piano_samples = 0.1+1+rampout_len/1000;
 
-i_noises = 12;
+L          = round(dur_piano_samples*fs_theo); 
+loud2use   = 18; % sones
+suffixloud = sprintf('-%.0f-sone',loud2use);
+i_noises   = 12;
+gain4pede_ON = 0;
+gain4pede_OFF = -99;
 
-fprintf(['\tStimuli will be %.0f [ms] long\n\t %.0f noises will be generated \n\t Experimental ' ...
-        'procedure = %.0f (1 = adaptive; 0 = constant)\n'],L/fs_theo*1000,i_noises,bAdaptive);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+fprintf(['\tStimuli will be %.0f [ms] long\n ' ...
+         '\tOutput dir for stimuli: %s\n' ...
+         '\t %.0f noises will be generated \n' ...
+         '\t Experimental procedure = %.0f (1 = adaptive; 0 = constant)\n'],L/fs_theo*1000,dirstimuli,i_noises,bAdaptive);
 disp('Press any button to continue ')
 
 disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
@@ -121,38 +146,101 @@ for nproc = 1:Nprocedures
      
     switch exp_nr
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        case 16 % C4
-            ID_1 = 4; idx_1 = ID_1 + 1; % JBS51-4544
-            take1 = 2;
+        case 3 % C2
+            ID   = [0 2]; % Piano 0, piano 2
+            take = [1 1]; % take  1, take  1
             
-            ID_2 = 4; idx_2 = ID_2 + 1;
-            take2 = 3;
-        case 16.1  
-            ID_1 = 4; idx_1 = ID_1 + 1;
-            take1 = 1;
-            
-            ID_2 = 4; idx_2 = ID_2 + 1;
-            take2 = 3;
-        case 16.2 
-            ID_1 = 4; idx_1 = ID_1 + 1;
-            take1 = 4;
-            
-            ID_2 = 4; idx_2 = ID_2 + 1;
-            take2 = 2;
-        case 16.4 
-            ID_1 = 4; idx_1 = ID_1 + 1; % JBS51-4544
-            take1 = 3;
-            
-            ID_2 = 4; idx_2 = ID_2 + 1;
-            take2 = 2;
-            
+        case 3.1
+            ID   = [2 4]; 
+            take = [1 3]; 
+        
+        case 3.2
+            ID   = [4 0]; 
+            take = [3 1]; 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    end
-    
-    piano1      = pianos{idx_1}; 
-    piano2      = pianos{idx_2}; 
+        
+        case 16 % C4   
+            ID   = [4 4]; % Piano 4, piano 4 (JBS51-4544)
+            take = [2 3]; % take  2, take  3
             
-    dirstimuli = 'Stimuli';
+        case 16.1  
+            ID   = [4 4]; 
+            take = [1 3];
+
+        case 16.2 
+            ID   = [4 4];
+            take = [4 2];
+            
+        case 16.4 
+            ID   = [4 4]; 
+            take = [3 2]; % JBS51-4544
+            
+        case 17
+            ID   = [2 2]; % JBS36, intra piano comparison
+            take = [1 2];
+            
+        case 17.1
+            ID   = [2 2]; % JBS36, intra piano comparison
+            take = [2 1];
+        
+        case 17.2 
+            ID   = [2 4]; % JBS36, JBS51-4544, inter piano, similar
+            take = [2 3];
+        
+        case 17.3
+            ID   = [4 2]; % JBS51-4544, JBS36, inter piano, similar
+            take = [3 2];
+            
+        case 17.4
+            ID   = [0 2]; % GH05, JBS36, inter piano, dissimilar
+            take = [2 2];
+        
+        case 17.5
+            ID   = [2 0]; % JBS36, GH05, inter piano, dissimilar
+            take = [2 2];
+            
+        case 17.6
+            ID   = [0 4]; % GH05, JBS51-4544
+            take = [2 3];
+            
+        case 17.7
+            ID   = [4 0]; % JBS51-4544, GH05
+            take = [3 2];
+            
+        case 17.8
+            ID   = [4 6]; 
+            take = [4 3];
+            
+        case 18 % C4
+            ID   = [0 2]; 
+            take = [2 2];
+            
+        case 18.1
+            ID   = [2 4]; 
+            take = [2 3];
+
+        case 18.2
+            ID   = [4 0]; 
+            take = [3 2];
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        case 25 % Csh5
+            ID   = [0 2]; 
+            take = [1 3];
+            
+        case 25.1
+            ID   = [2 4]; 
+            take = [3 3];
+
+        case 25.2
+            ID   = [4 0]; 
+            take = [3 1];
+
+    end
+    idx = ID + 1;
+    
+    piano1      = pianos{idx(1)}; 
+    piano2      = pianos{idx(2)}; 
+            
     dir_out_stimuli = [dir_main dirstimuli delim];
     
     if do_skip == 0
@@ -162,18 +250,18 @@ for nproc = 1:Nprocedures
         Mkdir(dir_out_aux);
     end
      
-    for i = 1:length(take1)
+    for i = 1:length(take(1))
         % 1. Sounds to be processed:
-        fname1suffix = sprintf('P%.0ft%.0f',ID_1,take1(i)); % [ piano1 '-' note_test '_' num2str(take1)];
-        fname2suffix = sprintf('P%.0ft%.0f',ID_2,take2(i));
+        fname1suffix = sprintf('P%.0ft%.0f',ID(1),take(1)); % [ piano1 '-' note_test '_' num2str(take1)];
+        fname2suffix = sprintf('P%.0ft%.0f',ID(2),take(2));
         
         switch note_test
             case 'Csh5'
                 note_test = 'Cd5';
         end
                 
-        fname1   = [dir_where piano1 '-' note_test '_' num2str(take1(i)) '.wav'];
-        fname2   = [dir_where piano2 '-' note_test '_' num2str(take2(i)) '.wav'];
+        fname1   = [dir_where piano1 '-' note_test '_' num2str(take(1)) suffixloud '.wav'];
+        fname2   = [dir_where piano2 '-' note_test '_' num2str(take(2)) suffixloud '.wav'];
     
         if do_skip == 0
             % 2. Aligning the sounds (looking at the maximum RMS value):
@@ -204,9 +292,13 @@ for nproc = 1:Nprocedures
         fnames{2+2*(i-1)} = [note_test fname2suffix];
                 
         % % 2.1. Saving ICRA noise:
-        fname_out3p{i} = sprintf('%s_pedestal_%s_%s_SNR_%.0f_dB.wav',note_test,fname1suffix,fname2suffix,0);
+        lvlPede = 60;
+        
+        % fname_out3p{i} = sprintf('%s_pedestal_%s_%s_SNR_%.0f_dB.wav',note_test,fname1suffix,fname2suffix,0);
+        fname_out3p{i} = sprintf('%s_pedestal_%s_%s_%.0f_dB.wav',note_test,fname1suffix,fname2suffix,lvlPede);
         
         if do_skip == 0
+            pede = setdbspl(pede,lvlPede);
             Wavwrite(pede,fs,[dir_out_stimuli fname_out3p{i}]);
         end
          
@@ -239,13 +331,13 @@ for nproc = 1:Nprocedures
         fnames_Piano2{end+1} = fnames{i};
     end
     
-    if ID_1 == ID_2
-        ProcedureID{nproc}  = sprintf('%.0f_t%.0f_t%.0f',ID_1,take1,take2);
+    if ID(1) == ID(2)
+        ProcedureID{nproc}  = sprintf('%.0f_t%.0f_t%.0f',ID(1),take(1),take(2));
     else
-        ProcedureID{nproc}  = sprintf('%.0f%.0f',ID_1,ID_2);
+        ProcedureID{nproc}  = sprintf('%.0f%.0f',ID(1),ID(2));
     end
-    Piano1{nproc}       = sprintf('P%.0f',ID_1);
-    Piano2{nproc}       = sprintf('P%.0f',ID_2);
+    Piano1{nproc}       = sprintf('P%.0f',ID(1));
+    Piano2{nproc}       = sprintf('P%.0f',ID(2));
     
     psub.ProcedureID    = ProcedureID{nproc};
     psub.test_note      = note_test;
@@ -256,9 +348,14 @@ for nproc = 1:Nprocedures
         psub.nDown          = nDown;
         psub.max_value      = max_value;
         psub.stop_after     = stop_after;
+        psub.start_value    = start_value;
+        psub.step1    = step1;
+        psub.step2    = step2;
+        psub.step3    = step3;
     elseif bAdaptive == 0
-        psub.nPresentations = 8;
+        psub.nPresentations = nPresentations;
     end
+    psub.pause_between_stimuli = pause_between_stimuli;
     
     proc_tmp            = readfile_replace(template_1_proc,psub);
     
@@ -332,11 +429,11 @@ for i = 1:length(fi_pedestal)
     
     suffixid    = strsplit(fi_pedestal{i},'.');
     dataid      = ['data_' suffixid{1}];
-    filterid    = ['filter_' suffixid{1}];
-    
+    filterid{i,1} = suffixid{1};
+    filterid{i,2} = ProcedureID{i};
     gain        = 0;
     continuous  = 'true';
-    psub.filters_pedestal = [psub.filters_pedestal lf a3dataloop(dataid,0,filterid,continuous,'wavdevice',gain)];
+    psub.filters_pedestal = [psub.filters_pedestal lf a3dataloop(dataid,0,['filter_' filterid{i,1}],continuous,'wavdevice',gain)];
     
 end
 
@@ -358,17 +455,17 @@ for nproc = 1:Nprocedures
     psub.audio2 = ['data_' suffixid{1}];
 
     psub.noise_prefix = sprintf('noise_%s_%s',fnames{1},fnames{2});
-
-%     psub.Piano1 = Piano1{nproc};
-%     psub.Piano2 = Piano2{nproc};
-%     
-%     psub.pede11 = fi_pedestal{1};
-%     
-%     psub.g11 = -99;
-%     psub.g12 = -99;
-%     psub.g21 = -99;
-%     psub.g22 = -99;
+    psub.pedestal_gains = '';
     
+    for i = 1:length(fi_pedestal)
+        suffixid    = strsplit(fi_pedestal{i},'.');
+        if strcmp(filterid{i,2},psub.ProcedureID)
+            psub.pedestal_gains = [psub.pedestal_gains '\n\t<parameter id="filter_' suffixid{1} '_gain">' num2str(gain4pede_ON) '</parameter>'];
+        else
+            psub.pedestal_gains = [psub.pedestal_gains '\n\t<parameter id="filter_' suffixid{1} '_gain">' num2str(gain4pede_OFF) '</parameter>'];
+        end
+        warning('continuar aqui')
+    end
     p.stimuli   = [p.stimuli lf readfile_replace(template_4_stimuli,psub)];
     
 end
@@ -510,7 +607,7 @@ elseif samples_diff ~= 0
    [signal1 t1] = Do_alignment(t1,signal1,t1(samples_diff));
 end
 
-bAdditionalAlignment = 1;
+bAdditionalAlignment = 0;
 
 if bAdditionalAlignment
     figure(100); 
@@ -559,6 +656,8 @@ if bAdditionalAlignment
     subplot(2,1,2)
     plot(t_se1, RMS_se1, t_se2, RMS_se2);
     
+else
+    warning('Additional alignment turned off, be aware of this')
 end
 
 [L idxL] = min([length(signal1) length(signal2)]);

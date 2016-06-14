@@ -11,7 +11,7 @@ function y = r20160405_DSP_Antoine_Vienna_talk
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2016
 % Created on    : 05/04/2016
 % Last update on: 05/04/2016 
-% Last use on   : 05/04/2016 
+% Last use on   : 07/05/2016 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 close all
@@ -161,11 +161,22 @@ plot(f,abs(y)/max(abs(y)));
 xlabel('Frequency [Hz]')
 ylabel('Magnitude [normalised]')
 title(sprintf('%.f sinus - FFT - N = %.0f',length(A),N));
+hold on;
 
+%%% ESPRIT method:
 L = 4;
 p = 2*L;
 [outsig fi ai alpha_i Phi_i L] = Get_ESPRIT_analysis(insig,p,N,fs);
+plot(fi,ai,'r*')
 
+%%%
+%       N = 2^11;
+%       Ni  = 3191; % max of the waveform (manually computed)
+%       Nf  = Ni+N-1; 
+
+[A2 f2] = searchp_impulseV2(insig,fs,1,length(insig));
+plot(f2,0*f2+1,'ks');
+legend('FFT','ESPRIT','Peak detection')
 Tau_est = 1./alpha_i;
 
 figure; 

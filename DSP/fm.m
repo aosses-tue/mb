@@ -18,10 +18,10 @@ function [sig t] = fm(fc, dur, fs, fmod, deltaf)
 % 2. Additional info:
 %       Tested cross-platform: No
 % 
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2016
 % Created on    : 16/08/2014
-% Last update on: 27/11/2014 % Update this date manually
-% Last use on   : 27/11/2014 % Update this date manually
+% Last update on: 27/11/2014 
+% Last use on   : 27/11/2014 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 1

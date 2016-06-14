@@ -1,5 +1,5 @@
-function outsig = AM_random_noise(Finf,Fsup,SPL,dur,Fs,Fmod,Mdept,dBFS)
-% function outsig = AM_random_noise(Finf,Fsup,SPL,dur,Fs,Fmod,Mdept,dBFS)
+function [outsig filename] = AM_random_noise(Finf,Fsup,SPL,dur,Fs,Fmod,Mdept,dBFS)
+% function [outsig filename] = AM_random_noise(Finf,Fsup,SPL,dur,Fs,Fmod,Mdept,dBFS)
 % 
 % 1. Description:
 %       Creates one frame of AM-'running' noise at Fs, N
@@ -92,9 +92,10 @@ Sig     = real(ifft(Sig.*BPmul)); % Inverse FFT of band-passed filter signal
 Amp     = From_dB(-dBFS)*( From_dB(SPL)/mean(rms(Sig)) );
 outsig  = Amp*Sig;
 
+filename = sprintf('randomnoise-Fc-%.0f_BW-%.0f_Fmod-%.0f_Mdept-%.0f_SPL-%.0f',Fc,BW,Fmod,Mdept,SPL);
 if nargout == 0
     
-    filename = [Get_TUe_paths('outputs') sprintf('randomnoise-Fc-%.0f_BW-%.0f_Fmod-%.0f_Mdept-%.0f_SPL-%.0f',Fc,BW,Fmod,Mdept,SPL)];
+    filename = [Get_TUe_paths('outputs') filename]; % default directory
     Wavwrite(outsig,Fs,filename);
     
 end

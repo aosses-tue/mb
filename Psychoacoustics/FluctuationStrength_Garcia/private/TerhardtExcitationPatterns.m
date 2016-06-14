@@ -18,6 +18,7 @@ function ei = TerhardtExcitationPatterns(insig,fs,dBFS)
 %   ei: Excitation patterns.
 % 
 % Author: Alejandro Osses Vecchi
+% version: 3 on 13/05/2016
 % version: 2 on 5/02/2016 (not updated in general script +3 in line 24)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -25,6 +26,8 @@ if nargin < 3
     dBFS = 100; % AMT toolbox convention
 end
 corr = dBFS + 3;
+
+dB2calibrate = rmsdb(insig)+100;
 
 % General parameters
 params = il_calculate_params(insig,fs);
@@ -100,7 +103,13 @@ for k = 1:params.Chno
 
     ei(k,:) = 2*params.N*real(ifft(etmp));
 end
-    
+
+outsig = sum(ei,1);
+gain = dB2calibrate - dbspl(outsig);
+
+ei = From_dB(gain)*ei;
+
+disp('');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function params = il_calculate_params(x,fs)
     params      = struct;
@@ -155,6 +164,7 @@ function MinExcdB = calculate_MinExcdB(N01,qb,Barkno)
 
     MinExcdB            = zeros(1,length(qb));
     MinExcdB(qb-N01)    = interp1(HTres(:,1),HTres(:,2),Barkno(qb));
+   
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function MinBf = calculate_MinBf(N01,df,Bark,MinExcdB)
@@ -166,5 +176,4 @@ function MinBf = calculate_MinBf(N01,df,Bark,MinExcdB)
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 end

@@ -1,5 +1,5 @@
-function [outsig Fi Ai sigma_i Phi_i L] = Get_ESPRIT_analysis(insig,p,N,fs)
-% function [outsig Fi Ai sigma_i Phi_i L] = Get_ESPRIT_analysis(insig,p,N,fs)
+function [outsig Fi Ai sigma_i Phi_i L] = Get_ESPRIT_analysis(insig,p,M,fs)
+% function [outsig Fi Ai sigma_i Phi_i L] = Get_ESPRIT_analysis(insig,p,M,fs)
 %
 % 1. Description:
 %       outsig is a synthesised signal by approximating the insig signal
@@ -11,7 +11,7 @@ function [outsig Fi Ai sigma_i Phi_i L] = Get_ESPRIT_analysis(insig,p,N,fs)
 %       sigma_i = alpha_i * fs; % [1/s] damping factor
 % 
 %       Input parameters:
-%        - N samples of the input signal are used
+%        - M samples of the input signal are used
 %        - p is the pencil parameter
 % 
 %       Output parameters:
@@ -62,8 +62,6 @@ L = length(idxposim);
 fi = ( atan2(imag(lambda(idxposim)),real(lambda(idxposim))) )/(2*pi);
 alpha_i = abs(-log(abs(lambda(idxposim))));
 
-M = N; % this should not be necessarily
-
 %%% Form matrix T
 T = nan(M,2*L);
 
@@ -110,6 +108,7 @@ sigma_i = alpha_i*fs;
 if nargout == 0
     figure;
     stem(Fi,Ai); grid on
+    xlabel('Frequency [Hz]')
 end
 
 for i = 1:L %maxidx %L
@@ -124,10 +123,12 @@ if nargout == 0
     figure;
     subplot(2,1,1)
     plot(outsig,'r');
-
+    title('Synthesised signal')
+    
     subplot(2,1,2)
     x2plot = insig;
     plot(x2plot);
+    title('Input signal')
 
     sound(outsig,fs)
     pause(1.2*length(outsig)/fs)

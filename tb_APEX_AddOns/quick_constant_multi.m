@@ -1,5 +1,5 @@
-function [perc tmp_staircase filenames] = quick_constant_multi(directories2check, opts, dest_folder, hoofd_folder, bSave)
-% function [perc tmp_staircase filenames] = quick_constant_multi(directories2check, opts, dest_folder, hoofd_folder, bSave)
+function [perc tmp_staircase proc_names filenames] = quick_constant_multi(directories2check, opts, dest_folder, hoofd_folder, bSave)
+% function [perc tmp_staircase proc_names filenames] = quick_constant_multi(directories2check, opts, dest_folder, hoofd_folder, bSave)
 %
 % 1. Description:
 %       Since 09/03/2015 this script is compatible to extract results from

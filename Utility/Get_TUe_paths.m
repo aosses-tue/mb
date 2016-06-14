@@ -92,7 +92,8 @@ else
 end
 
 misc.DSP                = [misc.MATLAB   'DSP'             delim]; 
-misc.F0_extraction      = [misc.MATLAB   'F0_extraction' delim];
+misc.Experiments        = [misc.MATLAB   'Experiments'     delim];
+misc.F0_extraction      = [misc.MATLAB   'F0_extraction'   delim];
 misc.Filterbank         = [misc.MATLAB   'Filterbank'      delim];
 misc.language           = 'NL'; % other possibilities: 'EN'
 misc.Localisation       = [misc.MATLAB   'Localisation'    delim];

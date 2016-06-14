@@ -120,8 +120,12 @@ for itd=p.itds
     end
 
     % introduce ILD if necessary
-    if (p.ild)
-        right=right*10^(p.ild/20);
+    if p.ild > 0
+        % Right leads, left has to be attenuated
+        left = left*10^(-abs(p.ild)/20);
+    else
+        % Left leads, right has to be attenuated
+        right  = right*10^(-abs(p.ild)/20);
     end
 
     data=[left right];

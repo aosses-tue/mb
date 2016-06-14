@@ -13,14 +13,14 @@ function Create_latex_empty(filename)
 % 3. Stand-alone example:
 %       Create_latex_empty;
 % 
-% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014
+% Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2016
 % Created on    : 16/05/2014
-% Last update on: 17/07/2014 % Update this date manually
-% Last use on   : 17/10/2014 % Update this date manually
+% Last update on: 17/07/2014 
+% Last use on   : 21/04/2016 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-misc.lx_Templates = Get_TUe_paths('lx_Templates');
-misc.lx_Text      = Get_TUe_paths('lx_Text'     );
+misc.lx_Templates = Get_TUe_data_paths('lx_Templates');
+misc.lx_Text      = Get_TUe_data_paths('lx_Text'     );
 
 type_doc = input('Which kind of document do you want to create? (1 = weekly update): ');
 

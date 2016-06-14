@@ -1,5 +1,5 @@
-function [y ydB f, RMS] = freqfft2(x,K,fs,windowtype,dBFS,typeplot)
-% function [y ydB f, RMS] = freqfft2(x,K,fs,windowtype,dBFS,typeplot)
+function [y, ydB, f, RMS] = freqfft2(x,K,fs,windowtype,dBFS,typeplot)
+% function [y, ydB, f, RMS] = freqfft2(x,K,fs,windowtype,dBFS,typeplot)
 %
 % 1. Description:
 %       FFT with plot (if no output is specified)
@@ -31,7 +31,7 @@ if nargin < 5
 end
 
 N = size(x,1);
-f = (1:K)/K*fs/2;
+f = (0:K-1)/K*fs/2;
 
 if nargin < 4
     windowtype = 'hanning';
