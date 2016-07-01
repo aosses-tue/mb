@@ -18,7 +18,7 @@ close all
 bDiary = 0;
 Diary(mfilename,bDiary);
 
-bSave   = 1;
+bSave   = 0;
 bCreate = 1;
 hFig    = [];
 
@@ -163,7 +163,7 @@ if bPart1
     RMSrel = rmsdb(out3)-max(rmsdb(out3));
     SNR    = 0;
     pede3  = icra_noise4piano_pedestal(noise3,fs,RMSrel,SNR);
-
+    pede3 = pede3(1:length(noise3));
     fname_out3     = sprintf('%snoise-mixed-ICRA-meth-%.0f.wav'                 ,dir_out,method);
     fname_out3pede_p10_dB = sprintf('%snoise-mixed-ICRA-meth-%.0f+pede-SNR-%.0f-dB.wav',dir_out,method,SNR+10);
     fname_out3pede_0_dB   = sprintf('%snoise-mixed-ICRA-meth-%.0f+pede-SNR-%.0f-dB.wav',dir_out,method,SNR);
@@ -185,8 +185,8 @@ if bPart1
     Text_xlabel = 'Time [s]';
     subplot(3,1,1)
     plot(t,noise1); hold on, grid on
-    plot(t,  nenv1,'k','LineWidth',2);
-    plot(t, -nenv1,'k','LineWidth',2);
+    % plot(t,  nenv1,'k','LineWidth',2);
+    % plot(t, -nenv1,'k','LineWidth',2);
     % plot(t_se1, From_dB(RMS_se1,10),'k','LineWidth',2);
     ylabel(Text_ylabel)
     legend('1');
@@ -194,8 +194,8 @@ if bPart1
 
     subplot(3,1,2)
     plot(t, noise2,'r'); hold on, grid on
-    plot(t,  nenv2,'k','LineWidth',2);
-    plot(t, -nenv2,'k','LineWidth',2);
+    % plot(t,  nenv2,'k','LineWidth',2);
+    % plot(t, -nenv2,'k','LineWidth',2);
     % plot(t_se2, From_dB(RMS_se2,10),'k','LineWidth',2);
     ylabel(Text_ylabel)
     legend('2');
@@ -392,7 +392,9 @@ if bPart4
     hFig(1) = gcf;
     fname = [];
     fname{end+1} = [dir_out_figs sprintf('time-signal-%s-take-%.0f',piano_2,take_2)];
-    Saveas(hFig(end),fname{end});
+    if bSave
+        Saveas(hFig(end),fname{end});
+    end
     
     % Figure 2:
     figure;
@@ -417,7 +419,9 @@ if bPart4
     ylim([45 75])
     xlim([0 dur2])
     fname{end+1} = [dir_out_figs sprintf('time-signal+noise-%s-take-%.0f',piano_2,take_2)];
-    Saveas(hFig(end),fname{end});
+    if bSave
+        Saveas(hFig(end),fname{end});
+    end
     
     % Figure 3:
     figure;
@@ -432,7 +436,9 @@ if bPart4
     set(gca,'XTickLabel',XTick);
     hFig(end+1) = gcf;
     fname{end+1} = [dir_out_figs sprintf('LTAS-signal+noise-%s-take-%.0f',piano_1,take_1)];
-    Saveas(hFig(end),fname{end});
+    if bSave
+        Saveas(hFig(end),fname{end});
+    end
     
     figure;
     semilogx(   fHz,ltass2P,'-b'); hold on, grid on;
@@ -446,7 +452,9 @@ if bPart4
     set(gca,'XTickLabel',XTick);
     hFig(end+1) = gcf;
     fname{end+1} = [dir_out_figs sprintf('LTAS-signal+noise-%s-take-%.0f',piano_2,take_2)];
-    Saveas(hFig(end),fname{end});
+    if bSave
+        Saveas(hFig(end),fname{end});
+    end
     
     % Figure 4:
     figure;
@@ -459,7 +467,9 @@ if bPart4
     legend({leg2,'noise (icra)'},'location','northwest')
     hFig(end+1) = gcf;
     fname{end+1} = [dir_out_figs sprintf('MTF-signal+noise-%s-take-%.0f',piano_2,take_2)];
-    Saveas(hFig(end),fname{end});
+    if bSave
+        Saveas(hFig(end),fname{end});
+    end
     
     disp('')
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -493,7 +503,9 @@ if bPart4
     hFig(end+1) = gcf;
     
     fname{end+1} = [dir_out_figs 'time-signals-short-long'];
-    Saveas(hFig(end),fname{end});
+    if bSave
+        Saveas(hFig(end),fname{end});
+    end
     
     noise3 = 0.5*noise1 + 0.5*noise2;
         
@@ -524,7 +536,9 @@ if bPart4
     hFig(end+1) = Figure2paperfigureT(gcf,1,3,opts);
     
     fname{end+1} = [dir_out_figs 'time-ICRA-noises'];
-    Saveas(hFig(end),fname{end});
+    if bSave
+        Saveas(hFig(end),fname{end});
+    end
     
     [RMS_n3 tRMS3] = rmsdb_sec(2*noise3,fs,10e-3,0.5);
     tRMS3 = tRMS3 + 10e-3/2;
@@ -582,75 +596,14 @@ if bPart4
     hFig(end+1) = gcf; % Figure2paperfigureT(gcf,1,3,opts);
     
     fname{end+1} = [dir_out_figs 'time-ICRA-schematic'];
-    Saveas(hFig(end),fname{end});
+    if bSave
+        Saveas(hFig(end),fname{end});
+    end
     
     % get(gcf,'children')
     
     disp('')
-    % [RMS_s2 tRMS_s2] = rmsdb_sec(2*s2,fs,10e-3,0.5);
-    % tRMS_s2 = tRMS_s2 + 10e-3/2;
-     
-    % plot(tRMS_s1,RMS_s1+100,'Color',Get_colour('blue_dark'),'LineWidth',2);
-    % plot(tRMS_s2,RMS_s2+100,'Color',Get_colour('red_dark'),'LineWidth',2); 
-     
-    % xlim([0 dur1])
-    % ylim([30 78])
-    % annotation('doublearrow',xa1,ya1_2,'LineWidth',2);
-    % annotation('doublearrow',xa2,ya2_2,'LineStyle','--');
-    % 
-    % leg1 = sprintf('Piano %s (take %.0f)',piano_1,take_1);
-    % leg2 = sprintf('Piano %s (take %.0f)',piano_2,take_2);
-    % 
-    % legend(leg1,leg2)
-    % xlabel('Time [s]')
-    % ylabel('Sound Pressure Level [dB]')
-    % 
-    % hFig(end+1) = gcf;
-    % 
     
-    % % 
-    % % filename{end+1} = [dir_out_figs 'time-signals-short-long-dBSPL'];
-    % % Saveas(hFig(2),filename{2});
-    % 
-    % %%%
-    % 
-    % % [RMS_1 tRMS_1] = rmsdb_sec(2*signal1,fs,10e-3,0.5);
-    % % tRMS_1 = tRMS_1 + 10e-3/2;
-    % % 
-    % % [RMS_2 tRMS_2] = rmsdb_sec(2*signal2,fs,10e-3,0.5);
-    % % tRMS_2 = tRMS_2 + 10e-3/2;
-    % 
-    % % Figure 3
-    % % figure
-    % % plot(t,20*log10(abs(2*signal1)/2e-5)); hold on
-    % % plot(t,20*log10(abs(2*signal2)/2e-5),'r'); grid on
-    % % 
-    % % plot(tRMS_1,RMS_1+100,'k-','LineWidth',2); hold on
-    % % plot(tRMS_2,RMS_2+100,'k-','LineWidth',2); grid on
-    % % 
-    % % xlim([0 dur2])
-    % % ylim([30 78])
-    % % 
-    % % leg1 = sprintf('Piano %s (take %.0f)',piano_1,take_1);
-    % % leg2 = sprintf('Piano %s (take %.0f)',piano_2,take_2);
-    % % legend(leg1,leg2)
-    % % xlabel('Time [s]')
-    % % ylabel('Sound Pressure Level [dB]')
-    % % hFig(3) = gcf;
-    % 
-    % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % 
-    % fname_out1 = sprintf('%snoise-%s.wav',dir_out,fname1suffix);
-    
-    % [noise1 info4pede1 pede1] = icra_noise4piano(signal1,fs);
-    % Wavwrite(noise1,fs,fname_out1);
-    % 
-    
-    % 
-    % noise3 = 0.5*noise1 + 0.5*noise2;
-    % 
-    % %     icra_noise4piano_pedestal(noise3
-
 end
 
 rmpath([dir delim 'Tools'])

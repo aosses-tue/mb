@@ -41,7 +41,7 @@ switch dataset
         params.a0_in_time = 1;
         params.a0_in_freq = ~params.a0_in_time;
         
-        params.cal     = 0.2499; % on 13/05/2016
+        params.cal     = 0.2490; % on 15/06/2016
         params.bIdle = 1; % v5
         warning('loading FS, v5, set bIdle back to 0 for v4');
         

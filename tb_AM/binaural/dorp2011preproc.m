@@ -1,25 +1,25 @@
-function [ei_map, fc] = breebaart2001preproc(insig, fs, tau, ild, varargin);
-%BREEBAART2001PREPROC   Auditory model from Breebaart et. al. 2001
-%   Usage: [outsig, fc] = breebaart2001preproc(insig,fs);
-%          [outsig, fc] = breebaart2001preproc(insig,fs,...);
+function [outsig, fc] = dorp2011preproc(insig, fs, varargin);
+% function [outsig, fc] = dorp2011preproc(insig, fs, varargin);
+%
+% 1. Description:
+%  Auditory model from van Dorp et. al. 2001
+%   Usage: [outsig, fc] = dorp2011preproc(insig,fs);
+%          [outsig, fc] = dorp2011preproc(insig,fs,...);
 %
 %   Input parameters:
 %        insig  : input acoustic signal.
 %        fs     : sampling rate.
-%        tau    : characteristic delay in seconds (positive: left is leading)
-%        ild    : characteristic ILD in dB (positive: left is louder)
 %  
-%   BREEBAART2001PREPROC(insig,fs,tau,ild) computes the EI-cell
+%   DORP2011PREPROC(insig,fs,tau,ild) computes the EI-cell
 %   representation of the signal insig sampled with a frequency of fs Hz
-%   as described in Breebaart (2001). The parameters tau and ild define
-%   the sensitivity of the EI-cell.
+%   as described in Breebaart (2001). 
 %
 %   The input must have dimensions time x left/right channel
 %   x signal no.
 %
 %   The output has dimensions time x frequency x signal no. 
 %  
-%   [outsig,fc]=BREEBAART2001PREPROC(...) additionally returns the center
+%   [outsig,fc]=DORP2011PREPROC(...) additionally returns the center
 %   frequencies of the filter bank.
 %  
 %   The Breebaart 2001 model consists of the following stages:
@@ -58,37 +58,28 @@ function [ei_map, fc] = breebaart2001preproc(insig, fs, tau, ild, varargin);
 %     x1 = n1*sqrt((1+rho)/2) + n2*sqrt((1-rho)/2);
 %     x2 = n1*sqrt((1+rho)/2) - n2*sqrt((1-rho)/2);
 %
-%     % Run the model and plot it
-%     [ei_map, fc] = breebaart2001preproc([x1,x2], fs, tau, ild);
-%     plotfilterbank(ei_map,1,fc,fs,'audtick','lin');
-%
+%     % % Run the model and plot it
+%     [ei_map, fc] = dorp2011preproc([x1,x2], fs);
+%     % plotfilterbank(ei_map,1,fc,fs,'audtick','lin');
+%       file = 'D:\Databases\dir01-Instruments\Piano\00-Original-files\pressionexpeCd5.wav';
+%       [insig fs] = Wavread(file);
+%       lvl = rmsdb(insig)+100;
+%       [par psi] = raa(file,100);
+% 
 %   See also: eicell, auditoryfilterbank, ihcenvelope, adaptloop
 %
 %   Url: http://amtoolbox.sourceforge.net/doc/binaural/breebaart2001preproc.php
 
 % Copyright (C) 2009-2014 Peter L. Soendergaard and Piotr Majdak.
 % This file is part of AMToolbox version 0.9.5
-%
-% This program is free software: you can redistribute it and/or modify
-% it under the terms of the GNU General Public License as published by
-% the Free Software Foundation, either version 3 of the License, or
-% (at your option) any later version.
-%
-% This program is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU General Public License for more details.
-%
-% You should have received a copy of the GNU General Public License
-% along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+% 
 %   References: breebaart2001binaural
 
 %   AUTHOR : Peter L. Soendergaard
   
 % ------ Checking of input parameters ------------
 
-if nargin<4
+if nargin<2
   error('%s: Too few input arguments.',upper(mfilename));
 end;
 
@@ -100,8 +91,8 @@ if ~isnumeric(fs) || ~isscalar(fs) || fs<=0
   error('%s: fs must be a positive scalar.',upper(mfilename));
 end;
 
-definput.import = {'auditoryfilterbank','ihcenvelope','adaptloop','eicell'};
-definput.importdefaults={'fhigh',8000,'ihc_breebaart','adt_breebaart'};
+definput.import = {'auditoryfilterbank','ihcenvelope','adaptloop'};
+definput.importdefaults={'gtf_dorp','ihc_breebaart','adt_dorp'};
 
 [flags,keyvals,flow,fhigh,basef]  = ltfatarghelper({'flow','fhigh','basef'},definput,varargin);
 
@@ -116,12 +107,19 @@ outsig = ihcenvelope(outsig,fs,'argimport',flags,keyvals);
 %% non-linear adaptation loops
 outsig = adaptloop(outsig,fs,'argimport',flags,keyvals);
 
-[siglen,nfreqchannels,naudiochannels,nsignals] = size(outsig);
+% [siglen,nfreqchannels,naudiochannels,nsignals] = size(outsig);
 
-ei_map = zeros(siglen, nfreqchannels, nsignals);
-for k=1:nsignals
-  for g=1:nfreqchannels
-    ei_map(:,g,k) = eicell(squeeze(outsig(:,g,:,k)),fs,tau,ild);
-  end
+[mlp_b mlp_a] = IRIfolp(8,fs);
+outsig = filter(mlp_b,mlp_a,outsig);
+    
+if nargout == 0
+    
+    idx_i = 5-4;
+    idx_f = 9-4;
+    K = (idx_f-idx_i)+1;
+    N = size(outsig,1);
+    LLow = 1/(K*N)*sum(  sum( sqrt(outsig(:,idx_i:idx_f,1).^2+outsig(:,idx_i:idx_f,2).^2 ))  ); % Eq. 3.25, pp 82
+    
+    disp('Energy per channel and per band...')
+    mean( abs(outsig) )
 end
-

@@ -69,8 +69,11 @@ switch model_par.window_type
         window = Do_cos_ramp(window,fs,attackrelease);
 end
 
+t_b = ( 1:length(insig_b) )/fs;
+
 overlap = round(0.9*N);
 insig_b = buffer(insig_b,N,overlap,'nodelay');
+t_b     = buffer(t_b    ,N,overlap,'nodelay');
 nFrames = size(insig_b,2);
 
 fluct   = zeros(1,nFrames); % Memory allocation
@@ -78,6 +81,7 @@ fluct   = zeros(1,nFrames); % Memory allocation
 for iFrame = 1:nFrames
     
     insig = insig_b(:,iFrame);
+    t(iFrame,1) = t_b(1,iFrame);
     % Apply window to frame
     insig = transpose(window .* insig);
 
@@ -154,20 +158,24 @@ for iFrame = 1:nFrames
             [fi_ xx kp gzi] = il_specific_fluctuation(mdept,Ki,model_par,model_par.dataset);
     end
 
-    outs.mdept = mdept;
-    outs.kp    = kp;
-    outs.gzi   = gzi;
-    outs.cal   = model_par.cal;
-    outs.p_g   = model_par.p_g;
-    outs.p_k   = model_par.p_k;
-    outs.p_m   = model_par.p_m;
-    
+    kp_fr(iFrame,:)= kp;
+    gzi_fr(iFrame,:) = gzi;
+    md_fr(iFrame,:) = mdept;
     fi(iFrame,:)  = model_par.cal * fi_;
     fluct(iFrame) = sum(fi(iFrame,:));
     % model_par.cal* sum( (mdept.^model_par.p_m).*(kp.^model_par.p_k) )
     % model_par.cal* sum( (mdept.^model_par.p_m).*(kp.^2) )
     % figure; plot(kp); hold on; plot(kp.^2,'r')
 end
+
+outs.mdept = md_fr;
+outs.kp    = kp_fr;
+outs.gzi   = gzi_fr;
+outs.cal   = model_par.cal;
+outs.p_g   = model_par.p_g;
+outs.p_k   = model_par.p_k;
+outs.p_m   = model_par.p_m;
+outs.t     = t; % time stamp
 
 disp('')
 %%%%
@@ -249,16 +257,16 @@ function [fi mdept kp gzi] = il_specific_fluctuation(mdept,Ki,model_par,dataset)
             % Version 1: tested on 13/05:
             % % md    = mdept;
             
-            % % Version 2:
-            % md    = min(mdept,ones(size(mdept)));
+            % Version 2:
+            % % md    = min(mdept,ones(size(mdept)));
             
-            % % Version 3:
+            % Version 3: % Improves approximation for FM tones
             thres = 0.7;
             idx = find(mdept>thres);
             exceed = mdept(idx)-thres;
             mdept(idx) = thres+(1-thres)*exceed;
             md    = min(mdept,ones(size(mdept)));
-            
+
         case 1
             md    = min(mdept,ones(size(mdept)));
             md    = mdept-0.1*ones(size(mdept));

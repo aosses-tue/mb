@@ -10,13 +10,18 @@ function r20160605_processing_results_further
 %
 % Programmed by Alejandro Osses, HTI, TU/e, the Netherlands, 2014-2016
 % Created on    : 25/05/2016
-% Last update on: 25/05/2016 
-% Last use on   : 25/05/2016 
+% Last update on: 27/06/2016 
+% Last use on   : 27/06/2016 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 close all
-bDoTriadic = 0; % TODO: check consistency of the MATRIX
+bDoTriadic = 1; % TODO: check consistency of the MATRIX
 bDoStaircase = 1;
 
+bSave = 1;
+dirfigures = 'D:\Documenten-TUe\01-Text\05-Doc-TUe\lx2016-09-11-ISMRA\Figures-MATLAB\';
+
+h = [];
+hname = [];
 dirmain = 'D:\Documenten-TUe\02-Experiments\2015-APEX-my-experiments\Piano\Main-ICRA-v3\';
 if bDoTriadic
     dir = [dirmain 'All-Triadic' delim];
@@ -40,6 +45,7 @@ if bDoTriadic
     Msim_all = Msim_S01;
     
     idxSubjects = [2:8 10:15]; %  1 was already processed
+    nSubjects = length(idxSubjects)+1;
     
     for i = idxSubjects
         if i < 10
@@ -82,8 +88,10 @@ if bDoTriadic
         D = [D Msim_all(i,i+1:end)];
     end
     
+    Dmax = nSubjects*2*5; % maximum possible score
     squareform(D)
-    D = D/max(D);
+    D = sqrt(1-D/Dmax);
+    squareform(D)
     
     [Y,eigvals] = cmdscale(D);
 
@@ -96,13 +104,21 @@ if bDoTriadic
     Ntreatments = 7;
     xoffset = 0.025;
 
+    FontSize = 14;
+    
     figure;
-    plot( Yred(:,1),Yred(:,2),'rd' ); grid on
+    plot( Yred(:,1),Yred(:,2),'rd' ,'LineWidth',2); grid on
     labels = num2str((1:Ntreatments)');
     % text(X(:,1)+.05,X(:,2),labels,'Color','b');
-    text(Yred(:,1)+xoffset,Yred(:,2),labels,'Color','r');
-    xlabel('Dimension 1');
-    ylabel('Dimension 2');
+    text(Yred(:,1)+xoffset,Yred(:,2),labels,'Color','r','FontSize',FontSize);
+    Xlabel('Dimension 1');
+    Ylabel('Dimension 2');
+    set(gca,'FontSize',FontSize);
+    xlim([-0.6 0.6])
+    ylim([-0.4 0.4])
+    h(end+1) = gcf;
+    hname{end+1} = 'piano-eval-2D';
+    
     % legend({'2D space'},'Location','SE');
 
     pairs = Get_pairwise_combinations(1,Ntreatments);
@@ -125,10 +141,71 @@ if bDoTriadic
         data1 = Y(pairs(i,1),1:4);
         data2 = Y(pairs(i,2),1:4);
         % leg4plot{i} = sprintf('%.0f%.0f',pairs(i,1),pairs(i,2));
-        distance4D(i,1) = il_euclidean_dist( data1,data2 );
+        Tr_distance4D(i,1) = il_euclidean_dist( data1,data2 );
     end
     
-    [pairs distance distance3D distance4D]
+    Xaxis = 1:length(pairs);
+    offsetx = 0.2;
+    
+    for i=1:length(pairs)
+        Tr_Xlabels{i} = sprintf('%.0f%.0f',pairs(i,:))
+    end
+    
+    figure;
+    plot(Xaxis - offsetx,distance  ,'ro'); hold on; grid on
+    plot(Xaxis          ,distance3D,'bs');
+    plot(Xaxis + offsetx,Tr_distance4D,'k>');
+    set(gca,'XTick',Xaxis);
+    set(gca,'XTickLabel',Tr_Xlabels);
+    legend('2D','3D','4D');
+    ylabel('Euclidean distance')
+    xlabel('Piano pair');
+    
+    [xx Tr_idx] = sort(Tr_distance4D,'ascend');
+    
+    figure;
+    plot(Xaxis - offsetx,distance(Tr_idx)  ,'ro'); hold on; grid on
+    plot(Xaxis          ,distance3D(Tr_idx),'bs');
+    plot(Xaxis + offsetx,Tr_distance4D(Tr_idx),'k>');
+    set(gca,'XTick',Xaxis);
+    set(gca,'XTickLabel',Tr_Xlabels(Tr_idx));
+    legend('2D','3D','4D');
+    ylabel('Euclidean distance')
+    xlabel('Piano pair');
+    title('Piano pairs in ascending order')
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    figure;
+    plot(Xaxis + offsetx,Tr_distance4D(Tr_idx),'k>','LineWidth',2); grid on
+    set(gca,'XTick',Xaxis);
+    set(gca,'XTickLabel',Tr_Xlabels(Tr_idx));
+    Ylabel('Euclidean distance',FontSize);
+    Xlabel('Piano pair'        ,FontSize);
+    % title('Piano pairs in ascending order')
+    
+    ha = gca;
+    set(ha,'FontSize',FontSize);
+    
+    Pos = get(gcf,'Position');
+    Pos(3) = Pos(3)*1.5;
+    set(gcf,'Position',Pos);
+    ylim([0 1])
+    xlim([min(Xaxis)-1 max(Xaxis)+1])
+    h(end+1) = gcf;
+    hname{end+1} = 'triadic-4D-sorted';
+    
+    % if bSave
+    %     for i = 1:length(h)
+    %         opts = [];
+    %         opts.format = 'eps';
+    %         Saveas(h(i),[dirfigures hname{i}],opts);
+    %         opts = [];
+    %         opts.format = 'fig';
+    %         Saveas(h(i),[dirfigures hname{i}],opts);
+    %     end
+    % end
+    
+    [pairs distance distance3D Tr_distance4D]
     disp('')
     % How to get Pearson correlation
 end
@@ -260,6 +337,10 @@ if bDoStaircase
     offsetx = 0.05;
     offsety = 0.05;
     
+    SRTmin = -8;
+    SRTmax = 21;
+    FontSize = 14;
+    
     figure; 
     plot(piano_pair_idx        , thresholds,'x','LineWidth',2); grid on, hold on
     text(piano_pair_idx+offsetx, thresholds+offsety,num2str(subjects),'Color','b');
@@ -267,39 +348,188 @@ if bDoStaircase
     ha = gca;
     set(ha,'XTick',piano_label_idx);
     set(ha,'XTickLabel',piano_label);
-    ylim([-15 20])
-    h = gcf;
+    ylim([SRTmin SRTmax])
+    h(end+1) = gcf;
+    hname{end+1} = 'piano-SRT-all';
+    
+    %%%%%%%%%%%%%%
+    % Ranking
+    [xx idxSort] = sort(piano_med,'descend');
+    
+    if isnan( piano_med(idxSort(1)) )
+        % piano_label(idxSort(1)) = [];
+        idxSort(1) = [];
+        piano_label_idx(end) = [];
+        piano_unique_idx(end) = [];
+    end
+    Trank = piano_unique(idxSort);
+    Thres_rank = piano_med(idxSort);
+    %%%%%%%%%%%%%%
+    
+    for i = 1:length(idxSort)
+        idxtmp = find( piano_pair_idx == idxSort(i) );
+        piano_pair_idx_sorted(idxtmp) = i;
+        piano_nr_estimates(i) = length(idxtmp);
+    end
+    idxtmp = find( piano_pair_idx_sorted == 0 );
+    piano_pair_idx_sorted(idxtmp) = NaN;
     
     figure; 
-    errorbar(piano_unique_idx, piano_med, piano_med-piano_L, piano_U-piano_med, 'r>','LineWidth',2);
+    plot(piano_pair_idx_sorted        , thresholds,'x','LineWidth',2); grid on, hold on
+    text(piano_pair_idx_sorted+offsetx, thresholds+offsety,num2str(subjects),'Color','b');
+    plot(piano_unique_idx, piano_med(idxSort),'r>','LineWidth',2);
+    ha = gca;
+    set(ha,'XTick',piano_label_idx);
+    set(ha,'XTickLabel',piano_label(idxSort));
+    % ylim([SRTmin SRTmax])
+    xlim([min(piano_unique_idx)-1 max(piano_unique_idx)+1])
+    h(end+1) = gcf;
+    hname{end+1} = 'piano-SRT-all-sorted';
+    Xlabel('Piano pair',FontSize)
+    Ylabel('SNR ratio at threshold [dB]',FontSize)
+    
     grid on
     ha = gca;
     set(ha,'XTick',piano_label_idx);
-    set(ha,'XTickLabel',piano_label);
-    ylim([-15 20])
-    h(end+1) = gcf;
+    set(ha,'XTickLabel',piano_label(idxSort));
+    set(ha,'FontSize',FontSize);
     
-    [xx idxSort] = sort(piano_med,'descend');
+    Pos = get(gcf,'Position');
+    Pos(3) = Pos(3)*1.5;
+    set(gcf,'Position',Pos);
     
-    Trank = piano_unique(idxSort);
-    Thres_rank = piano_med(idxSort);
-
+    % figure; 
+    % errorbar(piano_unique_idx, piano_med, piano_med-piano_L, piano_U-piano_med, 'r>','LineWidth',2);
+    % grid on
+    % ha = gca;
+    % set(ha,'XTick',piano_label_idx);
+    % set(ha,'XTickLabel',piano_label);
+    % ylim([SRTmin SRTmax])
+    % h(end+1) = gcf;
+    % hname{end+1} = 'piano-werb-all';
+    
+    %%%
     
     figure; 
     errorbar(piano_unique_idx, piano_med(idxSort), ...
                                piano_med(idxSort)-piano_L(idxSort), ...
                                piano_U(idxSort)-piano_med(idxSort), 'r>','LineWidth',2);
+	Xlabel(sprintf('Piano pair\n'),FontSize)
+    Ylabel('SNR ratio at threshold [dB]',FontSize)
+    
     grid on
     ha = gca;
     set(ha,'XTick',piano_label_idx);
     set(ha,'XTickLabel',piano_label(idxSort));
-    ylim([-15 20])
+    set(ha,'FontSize',FontSize);
+    
+    Pos = get(gcf,'Position');
+    Pos(3) = Pos(3)*1.5;
+    set(gcf,'Position',Pos);
+    
+    ylim([SRTmin SRTmax])
+    xlim([min(piano_unique_idx)-1 max(piano_unique_idx)+1])
     h(end+1) = gcf;
+    hname{end+1} = 'piano-werb-all-sorted';
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    if bDoStaircase & bDoTriadic
+        piano_unique_idx(end+1) = 21;
+        idxSortNaN = [find(isnan(piano_med)); idxSort]; % including the NaN index
 
+        offsetx = 0.15;
+        figure; 
+        [AX, H1, H2] = plotyy( piano_unique_idx(2:end)-offsetx, piano_med(idxSort), ...
+                               piano_unique_idx+offsetx, Tr_distance4D(idxSortNaN)); grid on; hold on
+        hl1 = get(AX(1),'Ylabel');
+        hl2 = get(AX(2),'Ylabel');
+        set(hl1,'String','SNR at threshold [dB]') 
+        set(hl2,'String','Euclidean distance') 
+        set(hl1,'Color','k');
+        set(hl1,'FontSize',FontSize);
+        set(hl2,'Color','k');
+        set(hl2,'FontSize',FontSize);
+
+        set(H1,'Marker','>');
+        set(H2,'MarkerEdgeColor','r');
+        set(H1,'Color',[1 1 1]);
+        set(AX(1),'YColor','r');
+
+        set(H2,'Marker','s');
+        set(H2,'MarkerEdgeColor','k');
+        set(H2,'LineStyle',':');
+        set(H2,'LineWidth',2);
+        set(H2,'Color',[1 1 1]);
+        set(AX(2),'YColor','k');
+
+        errorbar(piano_unique_idx(2:end)-offsetx, piano_med(idxSort), ...
+                                          piano_med(idxSort)-piano_L(idxSort), ...
+                                          piano_U(idxSort)-piano_med(idxSort), 'r>','LineWidth',2);
+        Xlabel(sprintf('Piano pair\n'),FontSize)
+
+        grid on
+        set(AX(1),'XTick',piano_unique_idx);
+        set(AX(1),'XTickLabel',piano_label(idxSortNaN));
+
+        set(AX(1),'FontSize',FontSize);
+        set(AX(2),'FontSize',FontSize);
+
+        ha2 = AX(2); % gca;
+        set(ha2,'XTickLabel',[]);
+
+        Pos = get(gcf,'Position');
+        Pos(3) = Pos(3)*1.5;
+        Pos(4) = Pos(4)*0.95;
+        set(gcf,'Position',Pos);
+
+        YTick_SRTmin = -5;
+        YTick_SRTmax = 15;
+        step = 3;
+        step_perc = step/(YTick_SRTmax-YTick_SRTmin+2*step);
+
+        SRTmin = YTick_SRTmin-step;
+        SRTmax = YTick_SRTmax+step;
+
+        YTick_step = (YTick_SRTmax-YTick_SRTmin)/4;
+
+        set(AX(1),'YLim',[SRTmin SRTmax])
+        set(AX(1),'XLim',[min(piano_unique_idx)-1 max(piano_unique_idx)+1])
+        set(AX(1),'YTick',[YTick_SRTmin:YTick_step:YTick_SRTmax]);
+
+        YTick_distmin = 0.2;
+        YTick_distmax = 1;
+        step = step_perc* YTick_distmax;
+        YTick_step = (YTick_distmax-YTick_distmin)/4;
+
+        set(AX(2),'YLim',[YTick_distmin-step YTick_distmax+step])
+        set(AX(2),'XLim',[min(piano_unique_idx)-1 max(piano_unique_idx)+1])
+        set(AX(2),'YTick',[YTick_SRTmin:YTick_step:YTick_SRTmax]);
+
+        h(end+1) = gcf;
+        hname{end+1} = 'piano-werb-both-scales';
+    end
     
-    [Trank Thres_rank piano_L(idxSort) piano_U(idxSort)]
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % [Trank Thres_rank piano_L(idxSort) piano_U(idxSort)]
     
-    Save_all_figures(h);
+    % X = [20; piano_med(idxSort)]; % adding ceiling as threshold
+    % Y = Tr_distance4D(idxSortNaN); 
+    X = piano_med(idxSort); 
+    Y = Tr_distance4D(idxSort); 
+    [Rho pvalue] = corr(X,Y,'type','Pearson');
+    
+    fprintf('Pearson''s correlation = %.2f (p-value = %.2f)\n',Rho,pvalue);
+    
+    for i = 1:length(h)
+        dirout = 'D:\Documenten-TUe\01-Text\05-Doc-TUe\lx2016-09-11-ISMRA\Figures-new\';
+        Mkdir(dirout);
+        opts = [];
+        opts.format = 'epsc';
+        Saveas(h(i),[dirout hname{i}],opts);
+        opts.format = 'fig';
+        Saveas(h(i),[dirout hname{i}],opts);
+        
+    end
     
     disp('')
     
