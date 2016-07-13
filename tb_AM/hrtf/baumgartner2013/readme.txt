@@ -1,1 +1,0 @@
-These are the HRTFs required for baumgartner2013 and baumgartner2014 and should be located at the hrtf folder of your AMToolbox repository. 

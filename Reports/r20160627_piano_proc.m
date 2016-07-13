@@ -1,5 +1,5 @@
-function r20160627_piano_proc(file1,file2)
-% function r20160627_piano_proc(file1,file2)
+function r20160627_piano_proc(fname1,fname2)
+% function r20160627_piano_proc(fname1,fname2)
 %
 % 1. Description:
 % 
@@ -29,8 +29,8 @@ FontSize = 14;
 bSave = 0;
 
 bPart1 = 1; % Waveforms          + envelopes (20-Hz LPF)
-bPart1b = 1; % Waveforms [dB SPL] + envelopes 
-bPart2 = 1; % FFT (LTAS)
+bPart2 = 1; % Waveforms [dB SPL] + envelopes 
+bPart3 = 1; % FFT (LTAS)
 
 h = [];
 
@@ -51,103 +51,89 @@ if nargin == 0
     fname2   = [dir_where fname2suffix '.wav'];
 end
 
-legend1txt = 'JBS36 (C#_5)';
-legend1txtn = 'ICRA noise from JBS36 (C#_5)';
+legend1txt = 'signal1';
 colour1 = 'b';
 
-legend2txt = 'JBS51-4544 (C#_5)';
-legend2txtn = 'ICRA noise from JBS51-4544';
+legend2txt = 'signal2';
 colour2 = 'r';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 1. Reading the wav files:
-[signal1 fs] = Wavread(fname1); 
-[signal2 fs] = Wavread(fname2); 
+[signal1 fs1] = Wavread(fname1); 
+[signal2 fs2] = Wavread(fname2); 
+
+if fs1 ~= fs2
+    error('Signals with different sampling frequency');
+else
+    fs = fs1;
+end
 
 [L idxL] = min([length(signal1) length(signal2)]);
 
-t = (1:L) / fs;
-
-% method    = 3; % i = 3 = ERB;
-fname_out1 = sprintf('%snoise-%s-ICRA.wav',diraudio,fname1suffix);
-fname_out2 = sprintf('%snoise-%s-ICRA.wav',diraudio,fname2suffix);
-
-try
-    noise1  = Wavread(fname_out1);
-    noise2  = Wavread(fname_out2);
-catch
-    disp('At least one of the noises was not found...')
-    noise1   = icra_noise4piano(signal1,fs);
-    Wavwrite(noise1,fs,fname_out1);
-    noise2   = icra_noise4piano(signal2,fs);
-    Wavwrite(noise2,fs,fname_out2);
-end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 hname = [];
 
-nSig2plot = 1;
+t1 = (1:length(signal1))/fs;
+t2 = (1:length(signal2))/fs;
 
-signal = signal1;
-noise  = noise1;
-fnamesuffix = fname1suffix;
+rms1    = rmsdb(signal1)+100;
+signal2 = setdbspl(signal2,rms1);
+
+% noise  = noise1;
+% fnamesuffix = fname1suffix;
 ylimits = [-55 5];
-legendtxt = legend1txt;
-legendtxtn = legend1txtn;
-colour = colour1;
-pianoID = '1';
 
 if bPart1
     fc = 20;
-    yenv  = il_get_envelope(signal,fs,fc);
-    yenvn = il_get_envelope(noise,fs,fc);
+    yenv1  = il_get_envelope(signal1,fs,fc);
+    yenv2  = il_get_envelope(signal2,fs,fc);
 
     figure;
     Text_ylabel = 'Amplitude';
     Text_xlabel = 'Time [s]';
 
     subplot(2,1,1)
-    plot(t,signal,colour); hold on, grid on
-    plot(t,  yenv,'k','LineWidth',2);
-    plot(t, -yenv,'k','LineWidth',2);
+    plot(t1,signal1,colour1); hold on, grid on
+    plot(t1,  yenv1,'k','LineWidth',2);
+    plot(t1, -yenv1,'k','LineWidth',2);
     ylabel(Text_ylabel)
-    title(legendtxt)
+    xlabel(Text_xlabel)
+    title(legend1txt)
     ha = gca;
 
     subplot(2,1,2)
-    plot(t, noise,colour); hold on, grid on
-    plot(t,  yenvn,'k','LineWidth',2);
-    plot(t, -yenvn,'k','LineWidth',2);
+    plot(t2, signal2,colour2); hold on, grid on
+    plot(t2,   yenv2,'k','LineWidth',2);
+    plot(t2,  -yenv2,'k','LineWidth',2);
     ylabel(Text_ylabel)
-    title(legendtxtn)
-    ha(end+1) = gca;
-
-    linkaxes(ha,'xy');
     xlabel(Text_xlabel)
-    ylim([-0.6 0.6])
-    xlim([0 max(t)])
+    title(legend2txt)
+    ha(end+1) = gca;
 
     plotOpts = [];
     plotOpts.I_Width = 11;
     plotOpts.FontSize = FontSize;
 
     h(end+1) = gcf;
-    hname{end+1} = ['waveform' pianoID];
+    % hname{end+1} = ['waveform' pianoID];
     h_old = h(end); 
     h(end) = Figure2paperfigureT(h(end),2,1,plotOpts);
     close(h_old);
 
-    if bSave
-        Saveas(h(end),sprintf('%s%s',outputdir,hname{end}),'epsc');
-        Saveas(h(end),sprintf('%s%s',outputdir,hname{end}),'emf');
-    end
+    figure;
+    plot(t1,  yenv1, colour1,'LineWidth',2); hold on; grid on
+    plot(t2,  yenv2, colour2,'LineWidth',2); 
+    legend(legend1txt,legend2txt);
+    ylabel(Text_ylabel)
+    xlabel(Text_xlabel)
+   
 end
 
-if bPart1b
+if bPart2
 
-    inene = signal;
-    ene_v1 = il_get_envelope(       signal,fs, 20);
-
+    fc = 20;
+    yenv1  = il_get_envelope(signal1,fs,fc);
+    yenv2  = il_get_envelope(signal2,fs,fc);
+    
     plotOpts = [];
     plotOpts.I_Width = 10;
     plotOpts.FontSize = FontSize;
@@ -155,68 +141,62 @@ if bPart1b
 
     figure;
     subplot(1,2,1)
-    plot(t,20*log10(abs(2*signal)/2e-5),colour); hold on
+    plot(t1,20*log10(abs(2*signal1)/2e-5),colour1); hold on
     ylabel('Sound Pressure Level [dB]');
     xlabel('Time [s]')
-    title(sprintf('piano %s',pianoID));
+    title(legend1txt)
 
-    ylim([30 89]);
-    xlim([0 1.3]);
+    ha = gca;
 
-    plot(t,20*log10((2*ene_v1)/2e-5),'k','LineWidth',2);
+    plot(t1,20*log10((2*yenv1)/2e-5),'k','LineWidth',2);
     legend('Waveform','1. Hilb+LPF');
-
-    inene = noise;
-    ene_v1 = il_get_envelope(       noise,fs, 20);
 
     %%%
     subplot(1,2,2)
-    plot(t,20*log10(abs(2*noise)/2e-5),colour); hold on
-    plot(t,20*log10((2*ene_v1)/2e-5),'k','LineWidth',2);
-    % legend('Waveform','1. Hilb+LPF');
-    title(sprintf('noise for piano %s',pianoID));
-
-    ylim([30 89]);
-    xlim([0 1.3]);
+    plot(t2,20*log10(abs(2*signal2)/2e-5),colour2); hold on
+    plot(t2,20*log10((2*yenv2)/2e-5),'k','LineWidth',2);
+    title(legend2txt)
     xlabel('Time [s]')
 
+    ha(end+1) = gca;
+    linkaxes(ha,'xy');
+    ylim([40 90]);
+    
     h(end+1) = gcf;
-    hname{end+1} = ['waveform-SPL-' pianoID];
     h_old = h(end);
     h(end) = Figure2paperfigureT(h(end),1,2,plotOpts);
     close(h_old);
-
-    if bSave
-        Saveas(h(end),sprintf('%s%s',outputdir,hname{end}),'epsc');
-        Saveas(h(end),sprintf('%s%s',outputdir,hname{end}),'emf');
-    end
+    
+    figure;
+    plot(t1, 20*log10((2*yenv1)/2e-5), colour1,'LineWidth',2); hold on; grid on
+    plot(t2, 20*log10((2*yenv2)/2e-5), colour2,'LineWidth',2); 
+    ylabel(Text_ylabel)
+    xlabel(Text_xlabel)
 end
 
-if bPart2
+if bPart3
 
     dir = [Get_TUe_paths('ICRA_Tobias')];
     addpath([dir delim 'Tools'])
 
-
-    [RMS_se t_se] = rmsdb_sec(signal,fs,10e-3);
-    [max_0 idx_0] = max(RMS_se);
-
-    Ni = find(t<t_se(idx_0),1,'last');
-    Nf = Ni + round(500e-3*fs);
+    % [RMS_se1 t_se1] = rmsdb_sec(signal1,fs,10e-3);
+    % [max_0 idx_0] = max(RMS_se1);
+    % Ni = find(t<t_se1(idx_0),1,'last');
+    % Nf = Ni + round(500e-3*fs);
 
     % % Calculate LTAS
-    [ltassP, fHz] = calcLTAS(signal,fs);
-    [ltassN     ] = calcLTAS(noise,fs);
+    [ltass1, fHz1] = calcLTAS(signal1,fs);
+    [ltass2, fHz2] = calcLTAS(signal2,fs);
 
-    dBMax = max( max([ltassP ltassN]) );
-    ltassP = ltassP-dBMax;
-    ltassN = ltassN-dBMax;
+    dBMax = max( max([ltass1 ltass2]) );
+    ltass1 = ltass1-dBMax;
+    ltass2 = ltass2-dBMax;
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     figure;
     % subplot(1,2,1);
-    semilogx(   fHz,ltassP,colour, ... 
-                fHz,ltassN,'-k'); hold on, grid on;
+    semilogx(   fHz1,ltass1,colour1, ... 
+                fHz1,ltass2,'-k'); hold on, grid on;
     xlabel('Frequency [Hz]')
     ylabel('Relative amplidude [dB]')
     axis tight;
@@ -229,7 +209,7 @@ if bPart2
 
     linkaxes(ha0,'xy');
     ylim(ylimits)
-    xlim([400 4200]);
+    % xlim([400 4200]);
 
     h(end+1) = gcf;
     plotOpts = [];
@@ -237,15 +217,10 @@ if bPart2
     plotOpts.FontSize = FontSize;
     h_old = h(end);
     h(end) = Figure2paperfigureT(h(end),1,1,plotOpts);
-    hname{end+1} = ['spectrum-' pianoID];
+    % hname{end+1} = ['spectrum-' pianoID];
     close(h_old);
 
     legend({'piano','noise'},'location','northeast')
-
-    if bSave
-        Saveas(h(end),sprintf('%s%s',outputdir,hname{end}),'epsc')
-        Saveas(h(end),sprintf('%s%s',outputdir,hname{end}),'emf')
-    end
 
     rmpath([dir delim 'Tools'])  
 
