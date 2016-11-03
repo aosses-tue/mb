@@ -1,2 +1,0 @@
-<entry type="int" description="level, relative to 60dBA" expression="/apex:apex/filters/filter[@id='amplifier']/gain" default="0" />
-

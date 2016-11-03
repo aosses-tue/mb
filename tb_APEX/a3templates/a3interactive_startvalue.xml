@@ -1,2 +1,0 @@
-<entry type="int" description="$$description$$" expression="/apex:apex/procedure/parameters/start_value" default="-10" />
-

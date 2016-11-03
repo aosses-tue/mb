@@ -1,6 +1,0 @@
-This folder contains some scripts to perform CI analyses.
-Some of the scripts might be fully or partially available at my KU Leuven repository, however, here all of them are guaranteed to be Win7 (TU/e set-up) compatible
-
-Created by: Alejandro Osses, HTI, TU/e
-Folder created on: 16/06/2014
-
